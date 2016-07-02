@@ -10,9 +10,8 @@ python:
   - "pypy3"
 
 install:
+  - pip install -r requirements.txt
   - pip install .
-  #- pip install -r requirements.txt
 
 script: 
-  - cd ..
-  - python pronto/test.py
+  - python -m pronto.test

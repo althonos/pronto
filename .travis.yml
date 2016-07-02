@@ -1,16 +1,27 @@
 language: python
 
 python:
+  - "2.6"
   - "2.7"
   - "3.2"
   - "3.3"
   - "3.4"
+  - "3.5"
   - "pypy"
-#  - "pypy3"
+  - "pypy3"
+
+matrix:
+  allow_failures:
+    - python: "2.6"
+    - python: "3.2"
+    - python: "3.3"
+    - python: "3.4"
+    - python: "pypy"
+    - python: "pypy3"
 
 install:
   - pip install -r requirements.txt
   - pip install .
 
-script: 
+script:
   - python -m pronto.test

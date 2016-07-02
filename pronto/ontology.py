@@ -6,8 +6,8 @@ import collections
 
 from multiprocessing.dummy import Pool
 
-from pronto import utils
-from pronto.term import Term, TermList
+#import pronto.utils
+import pronto.term
 from pronto.relationship import RSHIPS, RSHIP_INVERSE
 
 
@@ -19,21 +19,22 @@ class Ontology(object):
     method.
     """
     
-    def __init__(self, location=None):
+    def __init__(self, path=None, imports=True):
 
+        self.path = path
         self.terms = {}
         self.meta = {}
 
-        if location is not None:
+        if path is not None:
             self.pool = Pool(16)
 
-            if location.startswith('http') or location.startswith('ftp'):
-                handle = rq.urlopen(location)
+            if path.startswith('http') or path.startswith('ftp'):
+                handle = rq.urlopen(path)
             else:
-                if not os.path.exists(location):
-                    raise FileNotFoundError('Ontology file {} could not be found'.format(location))
+                if not os.path.exists(path):
+                    raise FileNotFoundError('Ontology file {} could not be found'.format(path))
                 else:
-                    handle = open(location, 'r')
+                    handle = open(path, 'r')
 
             self._parse(handle)
 
@@ -41,9 +42,12 @@ class Ontology(object):
 
             self._adopt()
 
-            
+            if imports:
+                self._import()
+
             self._reference()
-                
+
+                            
             
             self.pool.join()
             del self.pool
@@ -53,7 +57,7 @@ class Ontology(object):
         """Returns the ontology serialized in json format.
         """        
         return json.dumps(self.terms, indent=4, sort_keys=True,
-                          default=lambda o: o.__json__)
+                          default=lambda o: o.__deref__)
 
     @property
     def obo(self):
@@ -73,16 +77,16 @@ class Ontology(object):
             for relkey, relval in termval.relations.items():
 
                 relvalref = [self.terms[x] if x in self.terms.keys() 
-                             else Term(x, '','') if not isinstance(x, Term)
+                             else pronto.term.Term(x, '','') if not isinstance(x, pronto.term.Term)
                              else x for x in relval]
-                self.terms[termkey].relations[relkey] = relvalref
+                self.terms[termkey].relations[relkey] = pronto.term.TermList(relvalref)
 
     def __getitem__(self, item):
         return self.terms[item]
 
     def __contains__(self, item):
-        if isinstance(item, Term):
-            return item in self.terms.values()
+        if isinstance(item, pronto.term.Term):
+            return item.id in self.terms.keys()
         elif isinstance(item, str):
             return item in self.terms.keys()
         else:
@@ -102,6 +106,8 @@ class Ontology(object):
             del self._terms_accessions
             raise StopIteration
     
+    def __len__(self):
+        return len(self.terms)
 
     def _adopt(self):
         """Make terms aware of their childs via 'can_be' and 'has_part' relationships"""
@@ -127,7 +133,7 @@ class Ontology(object):
             if parent in self:
                 if not rel in self[parent].relations.keys():
                 
-                    self[parent].relations[rel] = TermList()
+                    self[parent].relations[rel] = pronto.term.TermList()
                 
                 self[parent].relations[rel].append(child)
 
@@ -154,12 +160,6 @@ class Ontology(object):
         else:
             raise TypeError("'merge' requires an Ontology as argument, not {}".format(type(other)))
         
-
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
 
 
 

@@ -1,9 +1,13 @@
-from pronto.ontology import Ontology
-from pronto.term import Term
+import os
+import urllib.error
+
+import pronto.ontology
+import pronto.term
+
 from pronto.relationship import RSHIPS, RSHIP_INVERSE
 
 
-class Obo(Ontology):
+class Obo(pronto.ontology.Ontology):
     """An ontology parsed from an obo file.
     """
 
@@ -115,7 +119,7 @@ class Obo(Ontology):
                 name = ''
                 del term['id']
 
-            return {tid: Term(tid, name, desc, relations, term)}
+            return {tid: pronto.term.Term(tid, name, desc, relations, term)}
 
     def _metanalyze(self):
 
@@ -147,6 +151,22 @@ class Obo(Ontology):
                             self.meta['remark'] = []
                         self.meta['remark'].append(remark)
 
+    def _manage_imports(self):
+        raise NotImplementedError
 
+    def _import(self):
+        if 'import' in self.meta.keys():
+            for path in self.meta['import']:
+                
+                try:
 
+                    if 'http' in path or 'ftp' in path:
+                        self.merge(Obo(path))
+
+                    else:
+                        dirname = os.path.dirname(self.path)
+                        self.merge(Obo(os.path.join(dirname, path)))
+
+                except (FileNotFoundError, urllib.error.URLError, urllib.error.HTTPError) as e:
+                    print("Error importing {}: {}".format(path, e))
 

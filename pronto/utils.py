@@ -1,4 +1,6 @@
 import functools
+import re
+
 
 
 def memoize(obj):
@@ -60,12 +62,17 @@ def parse_comment(comment):
 
     return parsed
 
-def format_accession(accession, ns={}, obo="http://purl.obolibrary.org/obo/"):
-    for v in ns.values():
+def format_accession(accession, nsmap={}):
+    """Formats an accession URI/string to the YY:XXXXXXX token format."""
+    for v in nsmap.values():
         accession = accession.replace(v, '')
 
-    accession = accession.replace(obo, '')
+    #accession = accession.replace(obo, '')
     if not accession.startswith('_'):
         accession = accession.replace('_', ':')
 
     return accession
+
+
+
+

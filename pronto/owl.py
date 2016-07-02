@@ -1,11 +1,12 @@
 from lxml import etree
 from functools import partial
 
-from pronto.ontology import Ontology
-from pronto.term import Term
-from pronto.utils import explicit_namespace, parse_comment, format_accession
+import pronto.utils
+import pronto.ontology
+import pronto.term
 
-class OwlXML(Ontology):
+
+class OwlXML(pronto.ontology.Ontology):
     """An ontology parsed from an owl xml file.
     """
 
@@ -14,6 +15,7 @@ class OwlXML(Ontology):
         self._read(handle)
         self._makeTree()
         self._metanalyze()
+        self._manage_imports()
 
         del self._tree
         del self._ns
@@ -32,12 +34,12 @@ class OwlXML(Ontology):
         for t in self.pool.map(self._classify, terms_elements):
             self.terms.update(t)
 
-                
     def _classify(self, term):
 
-        nspaced = partial(explicit_namespace, nsmap=self._ns)
+        nspaced = partial(pronto.utils.explicit_namespace, nsmap=self._ns)
+        accession = partial(pronto.utils.format_accession, nsmap=self._ns)
 
-        tid = format_accession(term.get(nspaced('rdf:about')), self._ns)
+        tid = accession(term.get(nspaced('rdf:about')))
         term_dict = {'name':'', 'relations': {}, 'desc': ''}
 
         translator = [
@@ -48,13 +50,13 @@ class OwlXML(Ontology):
             },
             {
              'hook': lambda c: c.tag == nspaced('rdfs:subClassOf'),
-             'callback': lambda c: format_accession(c.get(nspaced('rdf:resource')), self._ns),
+             'callback': lambda c: accession(c.get(nspaced('rdf:resource'))),
              'dest': 'relations',
              'action': 'list',
              'list_to': 'is_a'
             },
             {'hook': lambda c: c.tag == nspaced('rdfs:comment'), 
-             'callback': lambda c: parse_comment(c.text),
+             'callback': lambda c: pronto.utils.parse_comment(c.text),
              'action': 'update'
             }   
         ]
@@ -81,9 +83,35 @@ class OwlXML(Ontology):
                     break
 
         if ':' in tid: #remove administrative classes
-            return {tid: Term(tid, **term_dict)}
+            return {tid: pronto.term.Term(tid, **term_dict)}
         else:
             return {}
+
+    def _manage_imports(self):
+        nspaced = partial(pronto.utils.explicit_namespace, nsmap=self._ns)
+        self.imports = []
+        for imp in self._tree.iterfind('./owl:Ontology/owl:imports', self._ns):
+            path = imp.attrib[nspaced('rdf:resource')]
+            if path.endswith('.owl'):
+                self.imports.append(path)
+
+    def _import(self):
+        """Imports the required ontologies.
+
+        :Example:
+        >>> from pronto import OwlXML
+        >>> nmr = OwlXML('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
+        >>> nmr_i = OwlXML('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', True)
+        >>> bfo = OwlXML('http://purl.obolibrary.org/obo/bfo.owl', False)
+        
+        >>> all(term in nmr for term in bfo)
+        False
+        >>> all(term in nmr_i for term in bfo)
+        True
+
+        """
+        for i in self.imports:
+            self.merge(OwlXML(i))
 
     def _metanalyze(self):
         self.meta = {}

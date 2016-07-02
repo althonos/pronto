@@ -1,8 +1,9 @@
 import json
-from functools import reduce
+import functools
 
 from pronto import utils
 from pronto.relationship import RSHIPS
+
 
 class Term(object):
     """ An ontology term.
@@ -19,7 +20,7 @@ class Term(object):
         return "<{}: {}>".format(self.id, self.name)
 
     @property
-    @utils.memoize
+    @functools.lru_cache(None)
     def parents(self):
         parents = TermList()
         for parental_rship in ('is_a', 'is_part', 'part_of'):
@@ -33,10 +34,7 @@ class Term(object):
         children = TermList()
         for children_rship in ('has_part', 'can_be'):
             if children_rship in self.relations.keys():
-
                 children.extend(self.relations[children_rship])
-
-
         return children
 
     @property
@@ -75,50 +73,45 @@ class Term(object):
 
         return obo
 
-    def isReferenced(self):
-        """
-        Check if relations to other Terms are referenced or named.
+    def rchildren(self, level=-1, intermediate=True):
+        """Create a recursive list of children.
 
-        By default, this returns True for terms that have no relations
-        to other terms.
-        """
-        if self.relations:
-            linked_terms = reduce(lambda a,b: a+b, self.relations.values())
-            return not all( isinstance(x, str) for x in linked_terms )
-        return True
-
-    def rchildren(self, *ontology_list, level=-1, intermediate=True):
+        Note that the :param:`intermediate` can be used to include every 
+        child to the returned list, not only the most nested ones.
         
+        """
         rchildren = []
 
         if level==0:
             return []
 
-        if self.isReferenced():
+        if self.children:
+            
+            if intermediate or level==1:
+                rchildren.extend(self.children)
 
-            if self.children:
-                
-                if intermediate or level==1:
-                    rchildren.extend(self.children)
+            for child in self.children:
+                rchildren.extend(child.rchildren(level=level-1, 
+                                                 intermediate=intermediate))
 
-                for child in self.children:
-                    rchildren.extend(child.rchildren(level=level-1, 
-                                                     intermediate=intermediate))
-
-        return list(set(rchildren))
+        return TermList(set(rchildren))
 
     @property    
-    def __json__(self):
+    def __deref__(self):
+        """A dereferenced 
 
-        jsondict = {'id': self.id ,#if not isinstance(self.id, Term) else self.id.id,
-         'name': self.name,
-         'other': self.other,
-         'desc': self.desc,
-         'relations': {k:[x.id for x in v]   for k, v in self.relations.items() }
+        Relations dictionary only contains other Terms id to avoid 
+        circular references when 
+        """
+        jsondict = {
+            'id':        self.id , 
+            'name':      self.name,
+            'other':     self.other,
+            'desc':      self.desc,
+            'relations': {k:v.id for k,v in self.relations.items()}
          }
 
-        return jsondic
-
+        return jsondict
 
 
 class TermList(object):
@@ -145,16 +138,19 @@ class TermList(object):
     def __init__(self, *elements):
         if not elements:
             self.terms = []
-        elif elements:
-            if len(elements)==1 and isinstance(elements[0], list):
+        elif len(elements)==1:
+            if isinstance(elements[0], list):
                 self.terms = elements[0].copy()
-            else:
-                self.terms = []
-                for term in element:
-                    if isinstance(term, Term):
-                        self.terms.append(term)
-                    else:
-                        raise TypeError('TermList can only contain Terms.')
+            elif isinstance(elements[0], set):
+                self.terms = list(elements[0])
+        else:
+            self.terms = [term for term in elements]
+        self._check_content()
+
+    def _check_content(self):
+        for term in self.terms:
+            if not isinstance(term, Term):
+                raise TypeError('TermList can only contain Terms.')
 
     def __repr__(self):
         return self.terms.__repr__()
@@ -174,7 +170,3 @@ class TermList(object):
         return self.terms[item]
 
 
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

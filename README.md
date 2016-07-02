@@ -68,6 +68,7 @@ print(ont['RF:XXXXXXX'].children.children)
 ```
 
 #### TODO
+* properly define Import Warnings whenever an import fails. 
 * write a proper documentation
 * create a proper relationship class
 * test with many different ontologies

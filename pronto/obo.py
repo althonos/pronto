@@ -1,5 +1,9 @@
 import os
-import urllib.error
+
+try:
+    import urllib.error
+except ImportError:
+    import urllib2 as error
 
 import pronto.ontology
 import pronto.term
@@ -15,6 +19,7 @@ class Obo(pronto.ontology.Ontology):
         self._read(handle)
         self._makeTree()
         self._metanalyze()
+        self._manage_imports()
 
         del self._meta
         del self._rawterms
@@ -47,7 +52,7 @@ class Obo(pronto.ontology.Ontology):
 
             if ': ' in line:
 
-                k, v = line.split(': ', maxsplit=1)
+                k, v = line.split(': ', 1)
 
                 if IN=='meta':
                     to_update = self._meta
@@ -76,14 +81,14 @@ class Obo(pronto.ontology.Ontology):
 
                 if isinstance(term['relationship'], list):
                     for r in term['relationship']:
-                        name, value = r.split(' ', maxsplit=1)
+                        name, value = r.split(' ', 1)
 
                         if name not in term.keys():
                             term[name] = []
                         term[name].append(value)
 
                 else:
-                    name, value = term['relationship'].split(' ', maxsplit=1)
+                    name, value = term['relationship'].split(' ', 1)
 
                     if name not in term.keys():
                         term[name] = []
@@ -139,7 +144,7 @@ class Obo(pronto.ontology.Ontology):
 
                 for remark in value:
                     if ': ' in remark:
-                        key_remark, value_remark = remark.split(': ', maxsplit=1)
+                        key_remark, value_remark = remark.split(': ', 1)
                         
                         if not key_remark in self.meta:
                             self.meta[key_remark] = []
@@ -152,11 +157,11 @@ class Obo(pronto.ontology.Ontology):
                         self.meta['remark'].append(remark)
 
     def _manage_imports(self):
-        raise NotImplementedError
+        self.imports = self.meta['import']
 
     def _import(self):
         if 'import' in self.meta.keys():
-            for path in self.meta['import']:
+            for path in self.imports:
                 
                 try:
 
@@ -167,6 +172,6 @@ class Obo(pronto.ontology.Ontology):
                         dirname = os.path.dirname(self.path)
                         self.merge(Obo(os.path.join(dirname, path)))
 
-                except (FileNotFoundError, urllib.error.URLError, urllib.error.HTTPError) as e:
-                    print("Error importing {}: {}".format(path, e))
+                except:
+                    print("Error importing {}".format(path))
 

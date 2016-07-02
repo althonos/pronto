@@ -1,12 +1,16 @@
 
 import json
 import os
-import urllib.request as rq 
 import collections
 
 from multiprocessing.dummy import Pool
 
-#import pronto.utils
+try:
+    import urllib.request as rq 
+except:
+    import urllib2 as rq
+
+
 import pronto.term
 from pronto.relationship import RSHIPS, RSHIP_INVERSE
 
@@ -87,15 +91,15 @@ class Ontology(object):
     def __contains__(self, item):
         if isinstance(item, pronto.term.Term):
             return item.id in self.terms.keys()
-        elif isinstance(item, str):
+        elif isinstance(item, str) or isinstance(item, unicode):
             return item in self.terms.keys()
         else:
             raise TypeError("'in <ontology>' requires string or Term as left operand, not {}".format(type(item)))
 
     def __iter__(self):
         self._terms_accessions = sorted(self.terms.keys())
-        self._index = -1
-        return self
+        #self._index = -1
+        return (self.terms[i] for i in self._terms_accessions)
 
     def __next__(self):
         try:
@@ -143,8 +147,8 @@ class Ontology(object):
         :Example:
 
         >>> from pronto import OwlXML, Obo
-        >>> nmr = OwlXML('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
-        >>> ms = Obo('http://purl.obolibrary.org/obo/ms.obo')
+        >>> nmr = OwlXML('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
+        >>> ms = Obo('http://purl.obolibrary.org/obo/ms.obo', False)
         >>> 'NMR:1000271' in nmr
         True
         >>> 'NMR:1000271' in ms

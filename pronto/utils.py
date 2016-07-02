@@ -15,7 +15,7 @@ def memoize(obj):
     return memoizer
 
 def explicit_namespace(attr, nsmap):
-	prefix, term = attr.split(':', maxsplit=1)
+	prefix, term = attr.split(':', 1)
 	return '{'+nsmap[prefix]+'}'+term
 
 def parse_comment(comment):
@@ -39,7 +39,7 @@ def parse_comment(comment):
             parsed['desc'] = line.split('def:')[-1].strip()
 
         elif ': ' in line:
-            ref, value = line.split(': ', maxsplit=1)
+            ref, value = line.split(': ', 1)
             if not 'other' in parsed.keys():
                 parsed['other'] = {}
             if not ref in parsed['other']:

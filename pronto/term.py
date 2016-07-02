@@ -1,5 +1,6 @@
 import json
 import functools
+import copy
 
 from pronto import utils
 from pronto.relationship import RSHIPS
@@ -20,7 +21,7 @@ class Term(object):
         return "<{}: {}>".format(self.id, self.name)
 
     @property
-    @functools.lru_cache(None)
+    #@functools.lru_cache(None)
     def parents(self):
         parents = TermList()
         for parental_rship in ('is_a', 'is_part', 'part_of'):
@@ -140,9 +141,9 @@ class TermList(object):
             self.terms = []
         elif len(elements)==1:
             if isinstance(elements[0], list):
-                self.terms = elements[0].copy()
+                self.terms = copy.copy(elements[0])
             elif isinstance(elements[0], set):
-                self.terms = list(elements[0])
+                self.terms = list(copy.copy(elements[0]))
         else:
             self.terms = [term for term in elements]
         self._check_content()

@@ -14,10 +14,10 @@ setup(
     py_modules=['pronto'],
     
     author= pronto.__author__,
-    author_email= 'martin.larralde@ens-cachan.fr',
+    author_email= pronto.__author_email__,
 
-    description="Python for Rife ONTOlogies - an unified frontend for different ontology formats.",
-    long_description=open('README.md').read(),
+    description="Python frontend to ontologies - a library to parse, create, browse and export ontologies.",
+    long_description=open('README.rst').read(),
     
     install_requires=open('requirements.txt').read().splitlines(),
     extras_require = {
@@ -30,24 +30,21 @@ setup(
 
     classifiers=[
     "Programming Language :: Python",
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
-    "Environment :: Console",
+    "Programming Language :: Python :: 3.3",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Text Processing :: Markup",
-    "Topic :: Utilities",
     "Operating System :: OS Independent",
     ],
 
-    #entry_points = {
-    #    'console_scripts': [
-    #        'pronto = pronto.__main__.run()',
-    #    ],
-    #},
     license="GPLv3",
 
     keywords = ['Bio-Informatics', 'Ontology', 'OBO', 'Owl', 'convert', 'parse'],

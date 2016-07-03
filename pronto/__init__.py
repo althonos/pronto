@@ -1,6 +1,6 @@
-__version__='0.1.1'
+__version__='0.1.2'
 __author__='Martin Larralde'
-__email__ = 'martin.larralde@ens-cachan.fr'
+__author_email__ = 'martin.larralde@ens-cachan.fr'
 
 from pronto.ontology import Ontology
 from pronto.obo import Obo

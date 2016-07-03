@@ -21,7 +21,8 @@ matrix:
 
 install:
   - pip install -r requirements.txt
-  - pip install .[doc]
+  - pip install Sphinx sphinx-rtd-theme #needed for the doc but not the actual package
+  - pip install .
 
 script:
   - python -m pronto.test

@@ -22,7 +22,7 @@ setup(
     install_requires=open('requirements.txt').read().splitlines(),
     extras_require = {
         'doc':  ['Sphinx', 'sphinx-rtd-theme']
-    }
+    },
 
     include_package_data=True,
 

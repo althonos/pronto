@@ -1,5 +1,7 @@
 # pronto : **P**ython f**ron**tend **t**o **O**ntologies
 
+[![Build Status (Py2.7 and Py3.5)](https://travis-ci.org/althonos/pronto.svg?branch=master)](https://travis-ci.org/althonos/pronto)
+
 #### Overview
 pronto is a python module to parse, analyse and explore ontologies in some popular formats. For now, **obo** and **owl/xml** were added, but more formats are to be added in the future (you can even add your own to work with the current API).
 

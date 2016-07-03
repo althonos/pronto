@@ -10,8 +10,8 @@ class Term(object):
     """ An ontology term.
     """
 
-    def __init__(self, cid, name, desc, relations = {} , other={}):
-        self.id = cid
+    def __init__(self, tid, name, desc='', relations = {} , other={}):
+        self.id = tid
         self.name = name
         self.desc = desc
         self.relations = relations
@@ -74,6 +74,19 @@ class Term(object):
 
         return obo
 
+    @property    
+    def __deref__(self):
+        """A dereferenced relations dictionary only contains other Terms id 
+        to avoid circular references when creating a json.
+        """
+        return Term(
+            self.id,
+            self.name,
+            self.other,
+            self.desc,
+            {k:v.id for k,v in self.relations.items()}
+         )
+
     def rchildren(self, level=-1, intermediate=True):
         """Create a recursive list of children.
 
@@ -97,25 +110,7 @@ class Term(object):
 
         return TermList(set(rchildren))
 
-    @property    
-    def __deref__(self):
-        """A dereferenced 
-
-        Relations dictionary only contains other Terms id to avoid 
-        circular references when 
-        """
-        jsondict = {
-            'id':        self.id , 
-            'name':      self.name,
-            'other':     self.other,
-            'desc':      self.desc,
-            'relations': {k:v.id for k,v in self.relations.items()}
-         }
-
-        return jsondict
-
-
-class TermList(object):
+class TermList(list):
     """A list of Terms.
 
     TermList behaves exactly like a list, except it contains shortcuts to 
@@ -128,8 +123,7 @@ class TermList(object):
     >>> type(nmr['NMR:1000031'].children)
     <class 'pronto.term.TermList'>
 
-    Use a shortcut:
-    >>> nmr['NMR:1000031'].children.id
+    >>> nmr['NMR:1000031'].children.id  
     ['NMR:1000122', 'NMR:1000156', 'NMR:1000157', 'NMR:1000489']
     >>> nmr['NMR:1400014'].relations['is_a']
     [<NMR:1400011: cardinal part of NMR instrument>]
@@ -137,6 +131,10 @@ class TermList(object):
     """
 
     def __init__(self, *elements):
+        list.__init__(self, *elements)
+        self._check_content()
+
+        """
         if not elements:
             self.terms = []
         elif len(elements)==1:
@@ -147,27 +145,28 @@ class TermList(object):
         else:
             self.terms = [term for term in elements]
         self._check_content()
+        """
 
     def _check_content(self):
-        for term in self.terms:
+        for term in self:
             if not isinstance(term, Term):
                 raise TypeError('TermList can only contain Terms.')
 
-    def __repr__(self):
-        return self.terms.__repr__()
+    #def __repr__(self):
+    #    return self.terms.__repr__()
 
-    def __iter__(self):
-        return self.terms.__iter__()
+    #def __iter__(self):
+    #    return self.terms.__iter__()
 
     def __getattr__(self, attr):
         if attr in ['children', 'parents']:
-            return TermList( [ y for x in self.terms for y in getattr(x, attr)] )
+            return TermList( [ y for x in self for y in getattr(x, attr)] )
         elif attr in ['id', 'name', 'desc', 'other']:
-            return [getattr(x, attr) for x in self.terms]
+            return [getattr(x, attr) for x in self]
         else:
-            return getattr(self.terms, attr)
+            getattr(list, attr)
 
-    def __getitem__(self, item):
-        return self.terms[item]
+    #def __getitem__(self, item):
+    #    return self.terms[item]
 
 

@@ -5,8 +5,9 @@ try:
 except ImportError:
     import urllib2 as error
 
-import pronto.ontology
+
 import pronto.term
+import pronto.ontology 
 
 from pronto.relationship import RSHIPS, RSHIP_INVERSE
 

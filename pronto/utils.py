@@ -2,7 +2,7 @@ import functools
 import re
 
 
-
+"""
 def memoize(obj):
     cache = obj.cache = {}
 
@@ -13,6 +13,7 @@ def memoize(obj):
         return cache[args]
     
     return memoizer
+"""
 
 def explicit_namespace(attr, nsmap):
 	prefix, term = attr.split(':', 1)

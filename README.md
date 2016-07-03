@@ -68,6 +68,7 @@ print(ont['RF:XXXXXXX'].children.children)
 ```
 
 #### TODO
+* redefine OwlXML and Obo as Parsers in pronto.parser, and always use Ontology to open an ontology file.
 * properly define Import Warnings whenever an import fails. 
 * write a proper documentation
 * create a proper relationship class

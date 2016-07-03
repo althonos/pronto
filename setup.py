@@ -19,7 +19,10 @@ setup(
     description="Python for Rife ONTOlogies - an unified frontend for different ontology formats.",
     long_description=open('README.md').read(),
     
-    install_requires=['lxml'],
+    install_requires=open('requirements.txt').read().splitlines(),
+    extras_require = {
+        'doc':  ['Sphinx', 'sphinx-rtd-theme']
+    }
 
     include_package_data=True,
 

@@ -12,9 +12,9 @@ Pronto - Python frontend to ontologies
    :target: https://travis-ci.org/althonos/pronto
 .. image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=3600
    :target: https://codacy.com/app/althonos/pronto
-.. image:: https://img.shields.io/travis/althonos/pronto.svg?maxAge=2592000?style=flat&maxAge=3600
+.. image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat&maxAge=3600
    :target: https://travis-ci.org/althonos/pronto
-.. image:: https://img.shields.io/pypi/l/pronto.svg?maxAge=2592000&maxAge=3600
+.. image:: https://img.shields.io/pypi/l/pronto.svg?maxAge=3600
    :target: https://www.gnu.org/licenses/gpl-3.0.html
 
 

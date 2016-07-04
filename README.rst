@@ -111,17 +111,17 @@ TODO
 
 
 
-.. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat
+.. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat&maxAge=3600
    :target: https://travis-ci.org/althonos/pronto
 
-.. |Py versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat
+.. |Py versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat&maxAge=3600
    :target: https://pypi.python.org/pypi/pronto/
 
-.. |Version| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat
+.. |Version| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat&maxAge=3600
 
-.. |License| image:: https://img.shields.io/pypi/l/pronto.svg   
+.. |License| image:: https://img.shields.io/pypi/l/pronto.svg&maxAge=3600
    :target: https://www.gnu.org/licenses/gpl-3.0.html
 
-.. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat 
+.. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=3600
    :target: https://codacy.com/app/althonos/pronto
    

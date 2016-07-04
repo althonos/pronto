@@ -2,35 +2,43 @@
 import json
 import os
 import collections
+import warnings
 
-from multiprocessing.dummy import Pool
+import multiprocessing.dummy
 
 try:
-    import urllib.request as rq 
-except:
+    import urllib.request as rq
+    from urllib.error import URLError, HTTPError
+except ImportError:
     import urllib2 as rq
+    from urllib2 import URLError, HTTPError
 
 
 import pronto.term
+import pronto.parser
 from pronto.relationship import RSHIPS, RSHIP_INVERSE
+import pronto.utils
 
 
 class Ontology(object):
     """The base class for an ontology.
 
     Ontologies inheriting from this class will be able to use the same API as
-    providing they generated the expected structure in the :func:`_parse` 
+    providing they generated the expected structure in the :func:`_parse`
     method.
     """
-    
-    def __init__(self, path=None, imports=True):
+
+    def __init__(self, path=None, imports=True, import_depth=-1):
+
+        self.pool = multiprocessing.dummy.Pool()
 
         self.path = path
         self.terms = {}
         self.meta = {}
 
         if path is not None:
-            self.pool = Pool(16)
+
+            mode = os.path.splitext(path)[1]
 
             if path.startswith('http') or path.startswith('ftp'):
                 handle = rq.urlopen(path)
@@ -40,30 +48,20 @@ class Ontology(object):
                 else:
                     handle = open(path, 'r')
 
-            self._parse(handle)
-
-            self.pool.close()
+            self.parse(handle, mode)
 
             self.adopt()
 
-            if imports:
-                self._import()
+            if imports and import_depth:
+                self.resolve_imports(import_depth)
 
             self.reference()
 
-                            
-            
-            self.pool.join()
-            del self.pool
 
     @property
     def json(self):
         """Returns the ontology serialized in json format.
-    
-        :Example:
-        
-
-        """        
+        """
         return json.dumps(self.terms, indent=4, sort_keys=True,
                           default=lambda o: o.__deref__.__dict__)
 
@@ -84,10 +82,24 @@ class Ontology(object):
         for termkey,termval in self.terms.items():
             for relkey, relval in termval.relations.items():
 
-                relvalref = [self.terms[x] if x in self.terms.keys() 
+                relvalref = [self.terms[x] if x in self.terms.keys()
                              else pronto.term.Term(x, '','') if not isinstance(x, pronto.term.Term)
                              else x for x in relval]
                 self.terms[termkey].relations[relkey] = pronto.term.TermList(relvalref)
+
+    def parse(self, handle, mode):
+
+        if mode=='.obo':
+            parser = pronto.parser.OboParser()
+            self.meta, self.terms, self.imports = parser.parse(handle, self.pool)
+        elif mode=='.owl':
+            parser = pronto.parser.OwlXMLParser()
+            self.meta, self.terms, self.imports = parser.parse(handle, self.pool)
+        else:
+            self.meta, self.terms, self.imports = {}, {}, {}
+
+
+
 
     def __getitem__(self, item):
         return self.terms[item]
@@ -103,7 +115,7 @@ class Ontology(object):
     def __iter__(self):
         self._terms_accessions = sorted(self.terms.keys())
         return (self.terms[i] for i in self._terms_accessions)
-    
+
     def __len__(self):
         return len(self.terms)
 
@@ -127,12 +139,12 @@ class Ontology(object):
                     relationships.append( (parent, 'part_of', term.id ) )
 
         for parent, rel, child in relationships:
-            
+
             if parent in self:
                 if not rel in self[parent].relations.keys():
-                
+
                     self[parent].relations[rel] = pronto.term.TermList()
-                
+
                 self[parent].relations[rel].append(child)
 
     def include(self, *terms):
@@ -141,17 +153,17 @@ class Ontology(object):
         :raise TypeError
 
 
-        .. note:: 
-            This will also recursively include terms in the term's relations 
-            dictionnary, but it is considered bad practice to do so. If you 
-            want to create your own ontology, you should only add an ID (such 
+        .. note::
+            This will also recursively include terms in the term's relations
+            dictionnary, but it is considered bad practice to do so. If you
+            want to create your own ontology, you should only add an ID (such
             as 'ONT:001') to your terms relations, and let the Ontology link
             terms with each other.
 
         :Example:
 
         Create a new ontology from scratch:
-        
+
         >>> from pronto import Term, Ontology
         >>> t1 = Term('ONT:001','my 1st term',
         ...           'this is my first term')
@@ -168,7 +180,7 @@ class Ontology(object):
 
         """
         ref_needed = False
-        for term in terms:    
+        for term in terms:
             if isinstance(term, pronto.term.TermList):
                 ref_needed = ref_needed or self._include_term_list(term)
             elif isinstance(term, pronto.term.Term):
@@ -178,8 +190,24 @@ class Ontology(object):
 
         self.adopt()
         self.reference()
-        
-        
+
+    def resolve_imports(self, import_depth):
+        """Imports required ontologies."""
+        for i in self.imports:
+            try:
+
+                if os.path.exists(i) or i.startswith('http') or i.startswith('ftp'):
+                    self.merge(Ontology(i, import_depth=import_depth-1))
+
+
+                else: # try to look at neighbouring ontologies
+                    self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
+                                         import_depth=import_depth-1))
+
+            except (FileNotFoundError, URLError, HTTPError) as e:
+                warnings.warn("{} occured when importing "
+                              "{}".format(type(e).__name__, i),
+                              pronto.utils.ProntoWarning)
 
     def _include_term_list(self, termlist):
         """Add terms from a TermList to the ontology.
@@ -187,7 +215,7 @@ class Ontology(object):
         ref_needed = False
         for term in termlist:
             ref_needed = ref_needed or self._include_term(term)
-        return reference_needed                
+        return reference_needed
 
     def _include_term(self, term):
         """Add a single term to the current ontology
@@ -199,12 +227,12 @@ class Ontology(object):
         will be applied to every other term related to that term).
         """
         ref_needed = False
-        
+
         if term.relations:
-            
+
             for k,v in term.relations.items():
                 for i,t in enumerate(v):
-                    
+
                     if isinstance(t, pronto.term.Term):
 
                         if not t.id in self:
@@ -212,20 +240,19 @@ class Ontology(object):
 
                         term.relations[k][i] = t.id
 
-                    ref_needed = True         
-        
+                    ref_needed = True
+
         self.terms[term.id] = term
         return ref_needed
-
 
     def merge(self, other):
         """Merges another ontology into the current one.
 
         :Example:
 
-        >>> from pronto import OwlXML, Obo
-        >>> nmr = OwlXML('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
-        >>> ms = Obo('http://purl.obolibrary.org/obo/ms.obo', False)
+        >>> from pronto import Ontology
+        >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
+        >>> ms = Ontology('http://purl.obolibrary.org/obo/ms.obo', False)
         >>> 'NMR:1000271' in nmr
         True
         >>> 'NMR:1000271' in ms
@@ -240,7 +267,4 @@ class Ontology(object):
             self.reference()
         else:
             raise TypeError("'merge' requires an Ontology as argument, not {}".format(type(other)))
-        
-
-
 

@@ -1,37 +1,33 @@
-import os
-
-try:
-    import urllib.error
-except ImportError:
-    import urllib2 as error
-
+import multiprocessing.pool
 
 import pronto.term
-import pronto.ontology 
-
-from pronto.relationship import RSHIPS, RSHIP_INVERSE
+from pronto.relationship import RSHIPS
 
 
-class Obo(pronto.ontology.Ontology):
+
+class OboParser(object):
     """An ontology parsed from an obo file.
     """
 
-    def _parse(self, handle):
-        self._read(handle)
-        self._makeTree()
-        self._metanalyze()
-        self._manage_imports()
+    def __init__(self):
+        self.pool = multiprocessing.pool.Pool(8)
 
-        del self._meta
-        del self._rawterms
-        del self._typedef
+    def parse(self, handle, pool):
 
-    def _read(self, handle):
+        self.read(handle)
+        self.makeTree(pool)
+        self.metanalyze()
+        self.manage_imports()
+
+        return self.meta, self.terms, self.imports
+
+
+    def read(self, handle):
 
         self._meta = {}
         self._rawterms = []
         self._typedef = []
-        
+
         IN = 'meta'
 
         i = 0
@@ -58,7 +54,7 @@ class Obo(pronto.ontology.Ontology):
                 if IN=='meta':
                     to_update = self._meta
                 elif IN=='terms':
-                    to_update = self._rawterms[-1]                
+                    to_update = self._rawterms[-1]
                 elif IN=='typedef':
                     to_update = self._typedef[-1]
 
@@ -69,10 +65,13 @@ class Obo(pronto.ontology.Ontology):
                         to_update[k] = [to_update[k]]
                     to_update[k].append(v)
 
-    def _makeTree(self):
-        
-        for t in self.pool.map(self._classify, self._rawterms):
+    def makeTree(self, pool):
+        #pool = multiprocessing.pool.Pool(8)
+        self.terms = {}
+        for t in pool.map(self._classify, self._rawterms):
             self.terms.update(t)
+        #pool.close()
+        #pool.join()
 
     def _classify(self, term):
 
@@ -106,12 +105,11 @@ class Obo(pronto.ontology.Ontology):
                         relations[rship] = [ x.split(' !')[0] for x in term[rship] ]
                     else:
                         relations[rship] = [ term[rship].split(' !')[0]]
-                    
+
                     del term[rship]
 
-            
             if 'def' in term.keys():
-                desc = term['def'] 
+                desc = term['def']
                 del term['def']
             else:
                 desc = ''
@@ -127,7 +125,9 @@ class Obo(pronto.ontology.Ontology):
 
             return {tid: pronto.term.Term(tid, name, desc, relations, term)}
 
-    def _metanalyze(self):
+
+
+    def metanalyze(self):
 
         self.meta = {}
 
@@ -146,7 +146,7 @@ class Obo(pronto.ontology.Ontology):
                 for remark in value:
                     if ': ' in remark:
                         key_remark, value_remark = remark.split(': ', 1)
-                        
+
                         if not key_remark in self.meta:
                             self.meta[key_remark] = []
 
@@ -157,24 +157,7 @@ class Obo(pronto.ontology.Ontology):
                             self.meta['remark'] = []
                         self.meta['remark'].append(remark)
 
-    def _manage_imports(self):
+    def manage_imports(self):
         self.imports = self.meta['import'] \
                        if 'import' in self.meta.keys() \
                        else []
-
-    def _import(self):
-        if 'import' in self.meta.keys():
-            for path in self.imports:
-                
-                try:
-
-                    if 'http' in path or 'ftp' in path:
-                        self.merge(Obo(path))
-
-                    else:
-                        dirname = os.path.dirname(self.path)
-                        self.merge(Obo(os.path.join(dirname, path)))
-
-                except:
-                    print("Error importing {}".format(path))
-

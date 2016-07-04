@@ -6,10 +6,16 @@
 Pronto - Python frontend to ontologies
 =======================================
 
-.. image:: https://img.shields.io/pypi/v/pronto.svg?style=flat
-.. image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat
-.. image:: https://img.shields.io/travis/althonos/pronto.svg?maxAge=2592000?style=flat
-.. image:: https://img.shields.io/pypi/l/pronto.svg?maxAge=2592000   :target: https://www.gnu.org/licenses/gpl-3.0.html
+.. image:: https://img.shields.io/pypi/v/pronto.svg?style=flat&maxAge=3600
+   :target: https://pypi.python.org/pypi/pronto
+.. image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat&maxAge=3600
+   :target: https://travis-ci.org/althonos/pronto
+.. image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=3600
+   :target: https://codacy.com/app/althonos/pronto
+.. image:: https://img.shields.io/travis/althonos/pronto.svg?maxAge=2592000?style=flat&maxAge=3600
+   :target: https://travis-ci.org/althonos/pronto
+.. image:: https://img.shields.io/pypi/l/pronto.svg?maxAge=2592000&maxAge=3600
+   :target: https://www.gnu.org/licenses/gpl-3.0.html
 
 
 Pronto is a Python agnostic library designed to work with ontologies. At the moment,
@@ -17,13 +23,22 @@ it can parse obo and owlXML formats, open ontologies on the local host or from a
 network location, and export ontologies to obo format.
 
 
+Installation:
+-------------
+
+Run ``pip install pronto`` in a shell to download pronto latest release and all its dependencies
+from PyPi, or have a look at the :doc:`Installation page <install>` to find other ways to install pronto.
+
+
 Contents:
 ---------
 
 .. toctree::
    :maxdepth: 1
-   
-   Documentation <pronto>
+
+   Installation <install>
+   Examples <examples>
+   Api Reference <api/pronto>
 
 
 

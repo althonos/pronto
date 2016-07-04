@@ -1,5 +1,6 @@
 import functools
 import re
+import warnings
 
 
 """
@@ -11,9 +12,14 @@ def memoize(obj):
         if args not in cache:
             cache[args] = obj(*args, **kwargs)
         return cache[args]
-    
+
     return memoizer
 """
+
+
+class ProntoWarning(Warning):
+    pass
+
 
 def explicit_namespace(attr, nsmap):
 	prefix, term = attr.split(':', 1)
@@ -27,7 +33,7 @@ def parse_comment(comment):
     parsed = {}
 
     for (index, line) in enumerate(commentlines):
-        
+
         line = line.strip()
 
         if line.startswith('Functional form:'):
@@ -63,12 +69,13 @@ def parse_comment(comment):
 
     return parsed
 
-def format_accession(accession, nsmap={}):
+def format_accession(accession, nsmap=None):
     """Formats an accession URI/string to the YY:XXXXXXX token format."""
-    for v in nsmap.values():
-        accession = accession.replace(v, '')
 
-    #accession = accession.replace(obo, '')
+    if nsmap is not None:
+        for v in nsmap.values():
+            accession = accession.replace(v, '')
+
     if not accession.startswith('_'):
         accession = accession.replace('_', ':')
 

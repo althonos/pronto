@@ -20,7 +20,7 @@ for filename in os.listdir(pronto_dir):
 
     filepath = os.path.realpath(os.path.join(pronto_dir, filename))
 
-    if filename.endswith('.py') and not filename.startswith('_'):
+    if filename.endswith('.py'):
         print("Testing:  {}".format(filepath))
         doctest.testfile(filepath, module_relative=False)
 

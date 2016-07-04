@@ -10,12 +10,12 @@ class Term(object):
     """ An ontology term.
     """
 
-    def __init__(self, tid, name, desc='', relations = {} , other={}):
+    def __init__(self, tid, name, desc='', relations=None, other=None):
         self.id = tid
         self.name = name
         self.desc = desc
-        self.relations = relations
-        self.other = other
+        self.relations = relations or {}
+        self.other = other or {}
 
     def __repr__(self):
         return "<{}: {}>".format(self.id, self.name)
@@ -44,15 +44,15 @@ class Term(object):
         obo =  '[Term]' + '\n'
         obo += 'id: {}'.format(self.id) + '\n'
         obo += 'name: {}'.format(self.name) + '\n'
-        
-        if self.desc: 
+
+        if self.desc:
             obo += 'def: {}'.format(self.desc) + '\n'
-        
+
         # add more bits of information
         for k,v in self.other.items():
             if isinstance(v, list):
                 for x in v:
-                    obo += '{}: {}'.format(k,x) + '\n'        
+                    obo += '{}: {}'.format(k,x) + '\n'
             else:
                 obo += '{}: {}'.format(k,v) + '\n'
 
@@ -65,7 +65,7 @@ class Term(object):
                     if relation != 'is_a':
                         obo += 'relationship: '
                     obo += '{}: '.format(relation)
-                    
+
                     if isinstance(companion, Term):
                         obo += '{} ! {}'.format(companion.id, companion.name) + '\n'
                     else:
@@ -74,9 +74,9 @@ class Term(object):
 
         return obo
 
-    @property    
+    @property
     def __deref__(self):
-        """A dereferenced relations dictionary only contains other Terms id 
+        """A dereferenced relations dictionary only contains other Terms id
         to avoid circular references when creating a json.
         """
         return Term(
@@ -90,9 +90,9 @@ class Term(object):
     def rchildren(self, level=-1, intermediate=True):
         """Create a recursive list of children.
 
-        Note that the :param:`intermediate` can be used to include every 
+        Note that the :param:`intermediate` can be used to include every
         child to the returned list, not only the most nested ones.
-        
+
         """
         rchildren = []
 
@@ -100,12 +100,12 @@ class Term(object):
             return []
 
         if self.children:
-            
+
             if intermediate or level==1:
                 rchildren.extend(self.children)
 
             for child in self.children:
-                rchildren.extend(child.rchildren(level=level-1, 
+                rchildren.extend(child.rchildren(level=level-1,
                                                  intermediate=intermediate))
 
         return TermList(set(rchildren))
@@ -113,17 +113,17 @@ class Term(object):
 class TermList(list):
     """A list of Terms.
 
-    TermList behaves exactly like a list, except it contains shortcuts to 
+    TermList behaves exactly like a list, except it contains shortcuts to
     generate lists of terms' attributes.
 
     :Example:
 
-    >>> from pronto import OwlXML
-    >>> nmr = OwlXML('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
+    >>> from pronto import Ontology
+    >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
     >>> type(nmr['NMR:1000031'].children)
     <class 'pronto.term.TermList'>
 
-    >>> nmr['NMR:1000031'].children.id  
+    >>> nmr['NMR:1000031'].children.id
     ['NMR:1000122', 'NMR:1000156', 'NMR:1000157', 'NMR:1000489']
     >>> nmr['NMR:1400014'].relations['is_a']
     [<NMR:1400011: cardinal part of NMR instrument>]
@@ -134,29 +134,10 @@ class TermList(list):
         list.__init__(self, *elements)
         self._check_content()
 
-        """
-        if not elements:
-            self.terms = []
-        elif len(elements)==1:
-            if isinstance(elements[0], list):
-                self.terms = copy.copy(elements[0])
-            elif isinstance(elements[0], set):
-                self.terms = list(copy.copy(elements[0]))
-        else:
-            self.terms = [term for term in elements]
-        self._check_content()
-        """
-
     def _check_content(self):
         for term in self:
             if not isinstance(term, Term):
                 raise TypeError('TermList can only contain Terms.')
-
-    #def __repr__(self):
-    #    return self.terms.__repr__()
-
-    #def __iter__(self):
-    #    return self.terms.__iter__()
 
     def __getattr__(self, attr):
         if attr in ['children', 'parents']:

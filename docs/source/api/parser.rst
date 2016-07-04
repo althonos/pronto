@@ -1,8 +1,8 @@
-Pronto
+Parser
 ==============
 
 .. toctree::
    :maxdepth: 1
    
+   Obo <obo>
    OwlXML <owlxml>
-   Ontology <ontology>

@@ -24,6 +24,10 @@ install:
   - pip install Sphinx sphinx-rtd-theme #needed for the doc but not the actual package
   - pip install .
 
+before_script:
+  # check if documentation can be build by Sphinx with current python version.
+  - export DOC=$(python -c "import sys; x = float(sys.version[0:3]) > 3.4 if sys.version[0]=='3' else float(sys.version[0:3])>2.6; sys.exit(x)") 
+
 script:
-  - python -m pronto.test
-  - cd docs && make html
+  - python tests/doctests.py
+  - if [ $DOC -eq 1 ]; then cd docs && make html; fi

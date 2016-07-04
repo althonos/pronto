@@ -104,13 +104,13 @@ TODO
 -  add other owl serialized formats
 -  (maybe) add serialization to owl
 
-.. |Build Status| image:: https://travis-ci.org/althonos/pronto.svg?branch=master&style=flat
+.. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat
    :target: https://travis-ci.org/althonos/pronto
 
 .. |Py versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat
    :target: https://pypi.python.org/pypi/pronto/
 
-.. |Version| image:: https://img.shields.io/pypi/version/pronto.svg?style=flat
+.. |Version| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat
 
 .. |License| image:: https://img.shields.io/pypi/l/pronto.svg   
    :target: https://www.gnu.org/licenses/gpl-3.0.html

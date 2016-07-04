@@ -21,7 +21,7 @@ def explicit_namespace(attr, nsmap):
 
 def parse_comment(comment):
     if comment is None:
-        return
+        return {}
 
     commentlines = comment.split('\n')
     parsed = {}

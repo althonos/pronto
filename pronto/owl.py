@@ -38,8 +38,13 @@ class OwlXML(pronto.ontology.Ontology):
 
         nspaced = partial(pronto.utils.explicit_namespace, nsmap=self._ns)
         accession = partial(pronto.utils.format_accession, nsmap=self._ns)
+	
+        if not term.attrib:
+           return {}
 
+        
         tid = accession(term.get(nspaced('rdf:about')))
+        
         term_dict = {'name':'', 'relations': {}, 'desc': ''}
 
         translator = [
@@ -49,8 +54,9 @@ class OwlXML(pronto.ontology.Ontology):
              'action': 'store'
             },
             {
-             'hook': lambda c: c.tag == nspaced('rdfs:subClassOf'),
-             'callback': lambda c: accession(c.get(nspaced('rdf:resource'))),
+             'hook': lambda c: c.tag == nspaced('rdfs:subClassOf') \
+                               and nspaced('rdf:resource') in c.attrib.keys(),
+             'callback': lambda c: accession(c.get(nspaced('rdf:resource')) or c.get(nspaced('rdf:about'))),
              'dest': 'relations',
              'action': 'list',
              'list_to': 'is_a'
@@ -74,7 +80,9 @@ class OwlXML(pronto.ontology.Ontology):
                         
                         if not term_dict[rule['dest']]: 
                             term_dict[rule['dest']][rule['list_to']] = []
-                        term_dict[rule['dest']][rule['list_to']].append(rule['callback'](child))
+
+                        term_dict[rule['dest']][rule['list_to']].append(rule['callback'](child)) 
+
 
                     elif rule['action'] == 'update':
                         term_dict.update(rule['callback'](child))

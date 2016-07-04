@@ -158,7 +158,9 @@ class Obo(pronto.ontology.Ontology):
                         self.meta['remark'].append(remark)
 
     def _manage_imports(self):
-        self.imports = self.meta['import']
+        self.imports = self.meta['import'] \
+                       if 'import' in self.meta.keys() \
+                       else []
 
     def _import(self):
         if 'import' in self.meta.keys():

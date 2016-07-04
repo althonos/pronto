@@ -1,5 +1,5 @@
 OwlXML
 =======
 
-.. autoclass::pronto.parser.OwlXML
-   :members:
+.. automodule:: pronto.parser
+   :members: OwlXMLParser

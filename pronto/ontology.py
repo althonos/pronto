@@ -1,3 +1,10 @@
+"""
+pronto.ontology
+===============
+
+This submodule contains the definition of the Ontology class.
+"""
+
 
 import json
 import os
@@ -111,8 +118,8 @@ class Ontology(object):
             raise TypeError("'in <ontology>' requires string or Term as left operand, not {}".format(type(item)))
 
     def __iter__(self):
-        self._terms_accessions = sorted(self.terms.keys())
-        return (self.terms[i] for i in self._terms_accessions)
+        terms_accessions = sorted(self.terms.keys())
+        return (self.terms[i] for i in terms_accessions)
 
     def __len__(self):
         return len(self.terms)
@@ -250,13 +257,13 @@ class Ontology(object):
 
         >>> from pronto import Ontology
         >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
-        >>> ms = Ontology('http://purl.obolibrary.org/obo/ms.obo', False)
+        >>> po = Ontology('https://raw.githubusercontent.com/Planteome/plant-ontology/master/po.obo', False)
         >>> 'NMR:1000271' in nmr
         True
-        >>> 'NMR:1000271' in ms
+        >>> 'NMR:1000271' in po
         False
-        >>> ms.merge(nmr)
-        >>> 'NMR:1000271' in ms
+        >>> po.merge(nmr)
+        >>> 'NMR:1000271' in po
         True
 
         """

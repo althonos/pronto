@@ -1,5 +1,5 @@
 Obo
 ====
 
-.. autoclass::pronto.parser.Obo
-   :members:
+.. automodule:: pronto.parser
+   :members: OboParser

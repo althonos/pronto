@@ -8,22 +8,21 @@ import pronto
 setup(
     name='pronto',
     version=pronto.__version__,
-    
+
     packages=find_packages(),
-    
+
     py_modules=['pronto'],
-    
+
     author= pronto.__author__,
     author_email= pronto.__author_email__,
 
     description="Python frontend to ontologies - a library to parse, create, browse and export ontologies.",
     long_description=open('README.rst').read(),
-    
-    install_requires=open('requirements.txt').read().splitlines(),
-    extras_require = {
-        'doc':  ['Sphinx', 'sphinx-rtd-theme']
-    },
 
+    install_requires=open('requirements.txt').read().splitlines(),
+    extras_require = { extra:open('requirements-{}.txt'.format(extra)).read().splitlines()
+                        for extra in ['doc'] },
+                        
     include_package_data=True,
 
     url='http://github.com/althonos/pronto',

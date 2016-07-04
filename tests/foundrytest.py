@@ -27,14 +27,14 @@ catalog = json.loads(content.decode('utf-8'))
 
 for ontology in catalog["ontologies"]:
     ontid = ontology["id"]
-    
+
     print('Testing: {}'.format(ontid))
 
     for product in ontology["products"]:
         print('    file: {}'.format(product["id"]))
 
         signal.alarm(60)
-         
+
         try:
             if product["ontology_purl"].endswith('obo'):
                 ont = pronto.obo.Obo(product["ontology_purl"])
@@ -44,7 +44,7 @@ for ontology in catalog["ontologies"]:
                 print('Unknown ontology format.')
                 continue
             print("      {} terms extracted.".format(len(ont)))
-         
+
             signal.alarm(0)
 
         except IOError as e:

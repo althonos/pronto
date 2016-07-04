@@ -6,4 +6,4 @@ from pronto.ontology import Ontology
 from pronto.term import Term, TermList
 from pronto.relationship import Relationship
 
-__all__ = ["Ontology", "Term", "TermList", "Relationship"]
+__all__ = ["Ontology", "Term", "TermList", "Relationship", "Parser"]

@@ -9,3 +9,4 @@ Pronto
    Relationship <relationship>
    Ontology <ontology>
    Parsers <parser>
+      :members:

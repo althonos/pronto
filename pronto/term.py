@@ -1,3 +1,10 @@
+"""
+pronto.term
+===========
+
+This module defines the classes Term and TermList.
+"""
+
 #import functools
 
 #from pronto import utils
@@ -156,7 +163,7 @@ class TermList(list):
 
         :Example:
 
-        >>> nmr['NMR:1000031'].rchildren(3).rparents(3, False).id
+        >>> nmr['NMR:1000031'].rchildren(3, False).rparents(3, False).id
         ['NMR:1000031']
 
     """
@@ -179,7 +186,7 @@ class TermList(list):
             #: (this actually behaves as is you mapped the method
             #: on all terms of the TermList)
             def mapped(level=-1, intermediate=True):
-                t = TermList(set([ y for x in self 
+                t = TermList(set([ y for x in self
                         for y in getattr(x, attr)(level, intermediate) ]))
                 return t
             return mapped

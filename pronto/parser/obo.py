@@ -1,5 +1,3 @@
-import multiprocessing.pool
-
 import pronto.term
 from pronto.relationship import RSHIPS
 
@@ -8,9 +6,6 @@ from pronto.relationship import RSHIPS
 class OboParser(object):
     """An ontology parsed from an obo file.
     """
-
-    def __init__(self):
-        self.pool = multiprocessing.pool.Pool(8)
 
     def parse(self, handle, pool):
 
@@ -66,12 +61,9 @@ class OboParser(object):
                     to_update[k].append(v)
 
     def makeTree(self, pool):
-        #pool = multiprocessing.pool.Pool(8)
         self.terms = {}
         for t in pool.map(self._classify, self._rawterms):
             self.terms.update(t)
-        #pool.close()
-        #pool.join()
 
     def _classify(self, term):
 

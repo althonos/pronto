@@ -1,6 +1,3 @@
-
-
-import multiprocessing.pool
 import lxml.etree as etree
 import functools
 

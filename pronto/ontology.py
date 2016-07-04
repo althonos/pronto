@@ -1,7 +1,6 @@
 
 import json
 import os
-import collections
 import warnings
 
 import multiprocessing.dummy
@@ -16,7 +15,6 @@ except ImportError:
 
 import pronto.term
 import pronto.parser
-from pronto.relationship import RSHIPS, RSHIP_INVERSE
 import pronto.utils
 
 

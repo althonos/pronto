@@ -1,8 +1,6 @@
-import json
-import functools
-import copy
+#import functools
 
-from pronto import utils
+#from pronto import utils
 from pronto.relationship import RSHIPS
 
 
@@ -110,6 +108,29 @@ class Term(object):
 
         return TermList(set(rchildren))
 
+    def rparents(self, level=-1, intermediate=True):
+        """Create a recursive list of parents.
+
+        Note that the :param:`intermediate` can be used to include every
+        parent to the returned list, not only the top ones.
+
+        """
+        rparents = []
+
+        if level==0:
+            return []
+
+        if self.parents:
+
+            if intermediate or level==1:
+                rparents.extend(self.parents)
+
+            for parent in self.parents:
+                rparents.extend(parent.rparents(level=level-1,
+                                                 intermediate=intermediate))
+
+        return TermList(set(rparents))
+
 class TermList(list):
     """A list of Terms.
 
@@ -128,6 +149,16 @@ class TermList(list):
     >>> nmr['NMR:1400014'].relations['is_a']
     [<NMR:1400011: cardinal part of NMR instrument>]
 
+
+    .. note::
+        It is also possible to call Term methods on a TermList to
+        create a set of terms !
+
+        :Example:
+
+        >>> nmr['NMR:1000031'].rchildren(3).rparents(3, False).id
+        ['NMR:1000031']
+
     """
 
     def __init__(self, *elements):
@@ -139,15 +170,22 @@ class TermList(list):
             if not isinstance(term, Term):
                 raise TypeError('TermList can only contain Terms.')
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr, *args, **kwargs):
         if attr in ['children', 'parents']:
             return TermList( [ y for x in self for y in getattr(x, attr)] )
+        elif attr in ['rparents', 'rchildren']:
+            #: we create a new method to allow the user
+            #: to use, for instance, ``x.rchildren(3).rparents(2)``
+            #: (this actually behaves as is you mapped the method
+            #: on all terms of the TermList)
+            def mapped(level=-1, intermediate=True):
+                t = TermList(set([ y for x in self 
+                        for y in getattr(x, attr)(level, intermediate) ]))
+                return t
+            return mapped
         elif attr in ['id', 'name', 'desc', 'other']:
             return [getattr(x, attr) for x in self]
         else:
             getattr(list, attr)
-
-    #def __getitem__(self, item):
-    #    return self.terms[item]
 
 

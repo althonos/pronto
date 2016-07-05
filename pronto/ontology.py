@@ -10,6 +10,7 @@ This submodule contains the definition of the Ontology class.
 import json
 import os
 import warnings
+import signal
 
 import multiprocessing.dummy
 
@@ -19,6 +20,7 @@ try:
 except ImportError:
     import urllib2 as rq
     from urllib2 import URLError, HTTPError
+    from pronto.utils import TimeoutError
 
 
 import pronto.term
@@ -46,9 +48,10 @@ class Ontology(object):
 
         - Export an ontology with its dependencies embedded:
 
+            >>> import os
             >>> cl = Ontology("resources/cl.ont")
             >>> with open('run/cl.obo', 'w') as f:
-            ...     f.write(cl.obo) > 0
+            ...     f.write(cl.obo) >= 0
             True
 
     Todo:
@@ -57,9 +60,6 @@ class Ontology(object):
 
     def __init__(self, path=None, imports=True, import_depth=-1):
         """
-
-        Todo:
-
         """
 
         self.pool = multiprocessing.dummy.Pool()
@@ -79,6 +79,7 @@ class Ontology(object):
                     raise OSError('Ontology file {} could not be found'.format(path))
                 else:
                     handle = open(path, 'r')
+
 
             self.parse(handle)
 
@@ -103,7 +104,7 @@ class Ontology(object):
             Example:
 
                 Save:
-                    >>> open('run/go.json', 'w').write(go.json) > 0
+                    >>> open('run/go.json', 'w').write(go.json) >= 0
                     True
 
                 Load:
@@ -141,8 +142,14 @@ class Ontology(object):
     def parse(self, stream):
         for parser in pronto.parser.Parser.instances.values():
             if parser.hook(stream=stream, path=self.path):
-                self.meta, self.terms, self.imports = parser.parse(stream, self.pool)
-                break
+                try:
+                    self.meta, self.terms, self.imports = parser.parse(stream, self.pool)
+                    return
+                except TimeoutError as e:
+                    warnings.warn("Parsing of {} timed out".format(self.path),
+                                   pronto.utils.ProntoWarning)
+
+
 
     def __getitem__(self, item):
         return self.terms[item]

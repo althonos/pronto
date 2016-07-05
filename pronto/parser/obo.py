@@ -182,3 +182,5 @@ def _extract_name_and_id(term):
         del term['id']
         return tid, name
 
+
+OboParser()

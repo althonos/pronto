@@ -132,3 +132,6 @@ class OwlXMLParser(Parser):
             * Implement that method !
         """
         pass
+
+
+OwlXMLParser()

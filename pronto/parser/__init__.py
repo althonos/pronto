@@ -1,5 +1,7 @@
 import weakref
 
+import pronto.utils
+
 __all__ = ["Parser", "OboParser", "OwlXMLParser"]
 
 class Parser(object):
@@ -17,6 +19,7 @@ class Parser(object):
         self.imports = list()
         self.instances[type(self).__name__] = self
 
+    @pronto.utils.timeout(500)
     def parse(self, stream, pool):
         """
         Parse the ontology file.
@@ -61,6 +64,3 @@ class Parser(object):
 
 from pronto.parser.obo import OboParser
 from pronto.parser.owl import OwlXMLParser
-
-OboParser()
-OwlXMLParser()

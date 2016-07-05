@@ -17,7 +17,9 @@ elif not os.getcwd().endswith('tests'):
 
 pronto_dir = '../pronto'
 sys.path.insert(0, os.path.abspath('..'))
-os.mkdir('run')
+
+if not os.path.isdir('run'):
+    os.mkdir('run')
 
 for filename in os.listdir(pronto_dir):
 

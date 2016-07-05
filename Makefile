@@ -1,15 +1,25 @@
 TOKEN=`cat ./.codacy.token`
+PROFILE_FUNC="import pstats as p; f=open('profile.txt', 'w'); p.Stats('p.tmp',stream=f).print_stats()"
+
 
 .PHONY: test
 test:
-	python3 tests/doctests.py -v
+	python tests/doctests.py -v
+
+.PHONY: profile
+profile:
+	@python -m cProfile -o '../p.tmp' -s 'cumulative' tests/doctests.py
+	@echo "Converting profile..."
+	@python -c ${PROFILE_FUNC}
+	@echo "Cleaning..."
+	@rm ./p.tmp
 
 .PHONY: cover
 .SILENT: cover
 cover:
 	coverage run tests/doctests.py --source pronto
-	coverage xml
-	export CODACY_PROJECT_TOKEN=${TOKEN} && python-codacy-coverage -r coverage.xml --source pronto
+	coverage xml --include pronto/*
+	export CODACY_PROJECT_TOKEN=${TOKEN} && python-codacy-coverage -r coverage.xml
 
 .PHONY: install
 install:
@@ -31,9 +41,10 @@ clean:
 	if [ -d pronto.egg-info ]; then rm -rf pronto.egg-info/; fi
 	rm -f ./*.whl
 	if [ -f coverage.xml ]; then rm coverage.xml; fi
+	if [ -f profile.txt ]; then rm profile.txt; fi
 	echo "Done cleaning."
 
 .PHONY: upload
 upload:
-	@python3 setup.py sdist upload
-	@python3 setup.py bdist_wheel upload
+	@python setup.py sdist upload
+	@python setup.py bdist_wheel upload

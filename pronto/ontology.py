@@ -103,8 +103,8 @@ class Ontology(object):
             Example:
 
                 Save:
-                    >>> open('run/go.json', 'w').write(go.json)
-                    45029748
+                    >>> open('run/go.json', 'w').write(go.json) > 0
+                    True
 
                 Load:
                     >>> import json

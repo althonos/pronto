@@ -12,7 +12,7 @@ class Relationship(object):
     A Relationship object.
 
     The Relationship class actually behaves as a factory, creating new
-    relationships via the default Python syntax only if no factories
+    relationships via the default Python syntax only if no relationship
     of the same name are present in the class py:attribute:: _instances
     (a dictionnary containing memoized relationships).
 

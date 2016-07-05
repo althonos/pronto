@@ -38,7 +38,7 @@ class Relationship(object):
 
         """
 
-	
+
         self.obo_name = obo_name
 
         self.symmetry = symmetry

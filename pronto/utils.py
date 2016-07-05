@@ -2,7 +2,7 @@
 pronto.utils
 ============
 
-This module contains some functions that are used in different parts 
+This module contains some functions that are used in different parts
 of the pronto library, as well as the definition of ProntoWarning.
 
 Todo:
@@ -56,14 +56,14 @@ def explicit_namespace(attr, nsmap):
 def parse_comment(comment):
     """Parse an rdfs:comment to extract information.
 
-    Owl contains comment which can contain additional metadata (specially 
-    when the Owl file was converted from Obo to Owl). This function parses 
+    Owl contains comment which can contain additional metadata (specially
+    when the Owl file was converted from Obo to Owl). This function parses
     the comment to try to extract those metadata.
 
     Arguments:
-        - comment (str): if containing different sections (such as 'def:', 
+        - comment (str): if containing different sections (such as 'def:',
             'functional form' or 'altdef:'), the value of those sections will
-            be returned in a dictionnary. If there are not sections, the 
+            be returned in a dictionnary. If there are not sections, the
             comment is interpreted as a description
 
     Todo:
@@ -128,7 +128,7 @@ def format_accession(accession, nsmap=None):
         >>> ns = {'obo':'http://purl.obolibrary.org/obo/'}
         >>> format_accession('http://purl.obolibrary.org/obo/IAO_0000601', ns)
         'IAO:0000601'
-        
+
     """
 
     if nsmap is not None:

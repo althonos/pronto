@@ -38,8 +38,9 @@ class Ontology(object):
         self.pool = multiprocessing.dummy.Pool()
 
         self.path = path
-        self.terms = {}
         self.meta = {}
+        self.terms = {}
+        self.imports = []
 
         if path is not None:
 
@@ -92,16 +93,20 @@ class Ontology(object):
                              else x for x in relval]
                 self.terms[termkey].relations[relkey] = pronto.term.TermList(relvalref)
 
-    def parse(self, handle, mode):
+    def parse(self, stream, extension):
+        for parser in pronto.parser.Parser.instances.values():
+            if parser.hook(stream=stream, extension=extension):
+                self.meta, self.terms, self.imports = parser.parse(stream, self.pool)
+                break
 
-        if mode=='.obo':
-            parser = pronto.parser.OboParser()
-            self.meta, self.terms, self.imports = parser.parse(handle, self.pool)
-        elif mode=='.owl':
-            parser = pronto.parser.OwlXMLParser()
-            self.meta, self.terms, self.imports = parser.parse(handle, self.pool)
-        else:
-            self.meta, self.terms, self.imports = {}, {}, {}
+        # if mode=='.obo':
+        #     parser = pronto.parser.OboParser()
+        #     self.meta, self.terms, self.imports = parser.parse(handle, self.pool)
+        # elif mode=='.owl':
+        #     parser = pronto.parser.OwlXMLParser()
+        #     self.meta, self.terms, self.imports = parser.parse(handle, self.pool)
+        # else:
+        #     self.meta, self.terms, self.imports = {}, {}, {}
 
 
 

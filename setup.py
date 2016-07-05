@@ -22,7 +22,7 @@ setup(
     install_requires=open('requirements.txt').read().splitlines(),
     extras_require = { extra:open('requirements-{}.txt'.format(extra)).read().splitlines()
                         for extra in ['doc'] },
-                        
+
     include_package_data=True,
 
     url='http://github.com/althonos/pronto',

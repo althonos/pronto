@@ -5,5 +5,6 @@ __author_email__ = 'martin.larralde@ens-cachan.fr'
 from pronto.ontology import Ontology
 from pronto.term import Term, TermList
 from pronto.relationship import Relationship
+from pronto.parser import Parser #, OboParser, OwlXMLParser
 
 __all__ = ["Ontology", "Term", "TermList", "Relationship", "Parser"]

@@ -45,6 +45,7 @@ def explicit_namespace(attr, nsmap):
 
     Example:
 
+        >>> from pronto.utils import explicit_namespace
         >>> ns = {'owl':'http://www.w3.org/2002/07/owl#'}
         >>> explicit_namespace('owl:Class', ns)
         '{http://www.w3.org/2002/07/owl#}Class'
@@ -123,6 +124,7 @@ def format_accession(accession, nsmap=None):
 
     Example:
 
+        >>> from pronto.utils import format_accession
         >>> format_accession('UO_1000003')
         'UO:1000003'
         >>> ns = {'obo':'http://purl.obolibrary.org/obo/'}

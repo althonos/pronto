@@ -3,15 +3,19 @@ import weakref
 __all__ = ["Parser", "OboParser", "OwlXMLParser"]
 
 class Parser(object):
-    """A basic parser object."""
+    """A basic parser object.
+
+
+    The following functions need to
+    """
 
     instances = {}
 
     def __init__(self):
-        self.terms = {}
-        self.meta = {}
-        self.imports = []
-        self.instances[type(self).__name__] = self#weakref.proxy(self)
+        self.terms = dict()
+        self.meta = dict()
+        self.imports = list()
+        self.instances[type(self).__name__] = self
 
     def parse(self, stream, pool):
         """
@@ -20,10 +24,14 @@ class Parser(object):
         :param stream: A stream of the ontology file.
         :type stream: io.StringIO
         """
+
+        self.terms, self.meta, self.imports = dict(), dict(), list()
+
         self.read(stream)
         self.makeTree(pool)
         self.metanalyze()
         self.manage_imports()
+
         return self.meta, self.terms, self.imports
 
     def hook(self, path):

@@ -1,5 +1,6 @@
 
 import functools
+import os
 import lxml.etree as etree
 
 from pronto.parser import Parser
@@ -14,24 +15,12 @@ class OwlXMLParser(Parser):
         super(OwlXMLParser, self).__init__()
         self._tree = None
         self._ns = {}
+        self.extensions = ('.owl', '.xml', '.ont')
 
     def hook(self, *args, **kwargs):
         """Returns True if the file is an Owl file (extension is .owl)"""
-        if 'extension' in kwargs:
-            return kwargs['extension'] in ('.owl', '.xml', '.ont')
-
-    def parse(self, stream, pool):
-        """
-        Parse the ontology file.
-        :param stream: A stream of the ontology file.
-        :type stream: io.StringIO
-        """
-        self.read(stream)
-        self.makeTree(pool)
-        self.metanalyze()
-        self.manage_imports()
-        return self.meta, self.terms, self.imports
-
+        if 'path' in kwargs:
+            return os.path.splitext(kwargs['path'])[1] in self.extensions
 
     def read(self, stream):
         """
@@ -44,11 +33,31 @@ class OwlXMLParser(Parser):
             del self._ns[None]
 
     def makeTree(self, pool):
+        """
+        Maps :function:_classify to each term of the file via a ThreadPool.
+
+        Once all the raw terms are all classified, the :attrib:terms dictionnary
+        gets updated.
+
+        Arguments:
+            pool (Pool): a pool of workers that is used to map the _classify
+                function on the terms.
+        """
         terms_elements = self._tree.findall('./owl:Class', self._ns)
         for t in pool.map(self._classify, terms_elements):
             self.terms.update(t)
 
     def _classify(self, term):
+        """
+        Map raw information extracted from each owl Class.
+
+        The raw data (in an etree.Element object) is extracted to a proper
+        dictionnary containing a Term referenced by its id, which is then
+        used to update :attribute:terms
+
+        Todo:
+            * Split into smaller methods to lower code complexity.
+        """
 
         nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=self._ns)
         accession = functools.partial(pronto.utils.format_accession, nsmap=self._ns)
@@ -116,4 +125,10 @@ class OwlXMLParser(Parser):
                 self.imports.append(path)
 
     def metanalyze(self):
+        """
+        Extract metadata from the headers of the owl file.
+
+        Todo:
+            * Implement that method !
+        """
         pass

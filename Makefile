@@ -1,12 +1,15 @@
-#SPHINX_INSTALLED=$(shell pip list | grep "Sphinx" -c)
-#RTD_INSTALLED=$(shell pip list | grep "sphinx-rtd-theme" -c)
-#@while read DEP; do echo if [ ! $( eval $(shell pip list | grep ${DEP} -c)) -eq 1 ]; then pip install ${DEP}; fi; end < requirements-doc.txt
-
-INSTALLED = $(eval pip list | grep $$DEP -c | echo $$DEP)
+TOKEN=`cat ./.codacy.token`
 
 .PHONY: test
 test:
-	python tests/doctests.py -v
+	python3 -v tests/doctests.py
+
+.PHONY: cover
+.SILENT: cover
+cover:
+	coverage run tests/doctests.py --source pronto
+	coverage xml
+	export CODACY_PROJECT_TOKEN=${TOKEN} && python-codacy-coverage -r coverage.xml
 
 .PHONY: install
 install:
@@ -26,7 +29,8 @@ clean:
 	if [ -d dist ]; then rm -rd dist; fi
 	rm -rf docs/build/*
 	if [ -d pronto.egg-info ]; then rm -rf pronto.egg-info/; fi
-	rm ./*.whl
+	rm -f ./*.whl
+	if [ -f coverage.xml ]; then rm coverage.xml; fi
 	echo "Done cleaning."
 
 .PHONY: upload

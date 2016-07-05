@@ -31,30 +31,55 @@ class Ontology(object):
     Ontologies inheriting from this class will be able to use the same API as
     providing they generated the expected structure in the :func:`_parse`
     method.
+
+    Examples:
+        - Import an ontology from the Obo Foundry:
+
+            >>> from pronto import Ontology
+            >>> go = Ontology("http://geneontology.org/ontology/go-basic.obo")
+
+        - Merge two local ontologies and export the merge:
+
+            >>> uo = Ontology("resources/uo.owl", False)
+            >>> cl = Ontology("resources/cl.ont", False)
+
+        - Export an ontology with its dependencies embedded:
+
+            >>> cl = Ontology("resources/cl.ont")
+            >>> with open('run/cl.obo', 'w') as f:
+            ...     f.write(cl.obo)
+            347421
+
+    Todo:
+        * Add a __repr__ method
     """
 
     def __init__(self, path=None, imports=True, import_depth=-1):
+        """
+
+        Todo:
+
+        """
 
         self.pool = multiprocessing.dummy.Pool()
 
         self.path = path
-        self.meta = {}
-        self.terms = {}
-        self.imports = []
+        self.meta = dict()
+        self.terms = dict()
+        self.imports = list()
 
         if path is not None:
 
-            mode = os.path.splitext(path)[1]
 
             if path.startswith('http') or path.startswith('ftp'):
                 handle = rq.urlopen(path)
             else:
                 if not os.path.exists(path):
-                    raise FileNotFoundError('Ontology file {} could not be found'.format(path))
+                    raise OSError('Ontology file {} could not be found'.format(path))
                 else:
                     handle = open(path, 'r')
 
-            self.parse(handle, mode)
+            self.parse(handle)
 
             self.adopt()
 
@@ -67,6 +92,25 @@ class Ontology(object):
     @property
     def json(self):
         """Returns the ontology serialized in json format.
+
+        Note:
+            It is possible to save and load an ontology to and from
+            json format, although it is cleaner to save and load
+            an ontology in Obo format (as the json export doesn't store
+            metadata, only terms).
+
+            Example:
+
+                Save:
+                    >>> open('run/go.json', 'w').write(go.json)
+                    45029748
+
+                Load:
+                    >>> import json
+                    >>> go = Ontology()
+                    >>> go.terms = json.loads(open('run/go.json').read())
+
+
         """
         return json.dumps(self.terms, indent=4, sort_keys=True,
                           default=lambda o: o.__deref__.__dict__)
@@ -93,23 +137,11 @@ class Ontology(object):
                              else x for x in relval]
                 self.terms[termkey].relations[relkey] = pronto.term.TermList(relvalref)
 
-    def parse(self, stream, extension):
+    def parse(self, stream):
         for parser in pronto.parser.Parser.instances.values():
-            if parser.hook(stream=stream, extension=extension):
+            if parser.hook(stream=stream, path=self.path):
                 self.meta, self.terms, self.imports = parser.parse(stream, self.pool)
                 break
-
-        # if mode=='.obo':
-        #     parser = pronto.parser.OboParser()
-        #     self.meta, self.terms, self.imports = parser.parse(handle, self.pool)
-        # elif mode=='.owl':
-        #     parser = pronto.parser.OwlXMLParser()
-        #     self.meta, self.terms, self.imports = parser.parse(handle, self.pool)
-        # else:
-        #     self.meta, self.terms, self.imports = {}, {}, {}
-
-
-
 
     def __getitem__(self, item):
         return self.terms[item]
@@ -149,7 +181,8 @@ class Ontology(object):
                     relationships.append( (parent, 'part_of', term.id ) )
 
         for parent, rel, child in relationships:
-
+            if isinstance(parent, pronto.term.Term):
+                parent = parent.id
             if parent in self:
                 if not rel in self[parent].relations.keys():
 
@@ -174,7 +207,7 @@ class Ontology(object):
 
         Create a new ontology from scratch:
 
-        >>> from pronto import Term, Ontology
+        >>> from pronto import Term
         >>> t1 = Term('ONT:001','my 1st term',
         ...           'this is my first term')
         >>> t2 = Term('ONT:002', 'my 2nd term',
@@ -203,19 +236,20 @@ class Ontology(object):
 
     def resolve_imports(self, import_depth):
         """Imports required ontologies."""
-        for i in self.imports:
+        for i in set(self.imports):
             try:
 
                 if os.path.exists(i) or i.startswith('http') or i.startswith('ftp'):
-                    self.merge(Ontology(i, import_depth=import_depth-1))
-
+                    #self.merge(Ontology(i, import_depth=import_depth-1))
+                    ont = Ontology(i, import_depth=import_depth-1)
 
                 else: # try to look at neighbouring ontologies
-                    self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
-                                         import_depth=import_depth-1))
+                    #self.merge(
+                    ont = Ontology( os.path.join(os.path.dirname(self.path), i),
+                                         import_depth=import_depth-1)
 
-            except (FileNotFoundError, URLError, HTTPError) as e:
-                warnings.warn("{} occured when importing "
+            except (IOError, OSError, URLError, HTTPError, RecursionError) as e:
+                warnings.warn("{} occured when during import of "
                               "{}".format(type(e).__name__, i),
                               pronto.utils.ProntoWarning)
 

@@ -2,4 +2,4 @@ Relationship
 =============
 
 .. automodule:: pronto.relationship
-   :members:
+   :members: Relationship

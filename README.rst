@@ -1,12 +1,12 @@
 **pronto** : Python frontend to Ontologies
 ==========================================
 
-|Version| |Build Status| |Py versions| |Codacy grade| |License|
+|Version| |Py versions| |Build Status| |Dev repo| |Codacy grade| |License|
 
 Overview
 ^^^^^^^^
 
-pronto is a python module to parse, create, browse and export ontologies
+Pronto is a python module to parse, create, browse and export ontologies
 from some popular formats. For now, **obo** and **owl/xml** were added,
 but more formats are to be added in the future (you can even add your
 own to work with the current API).
@@ -111,17 +111,20 @@ TODO
 
 
 
-.. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat&maxAge=3600
+.. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat&maxAge=2592000
    :target: https://travis-ci.org/althonos/pronto
 
-.. |Py versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat&maxAge=3600
+.. |Py versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat&maxAge=2592000
    :target: https://pypi.python.org/pypi/pronto/
 
-.. |Version| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat&maxAge=3600
+.. |Version| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat&maxAge=2592000
+   :target: https://pypi.python.org/pypi/pronto
 
-.. |License| image:: https://img.shields.io/pypi/l/pronto.svg&maxAge=3600
+.. |Dev repo| image:: https://img.shields.io/badge/repository-GitHub-blue.svg?style=flat&maxAge=2592000
+   :target: https://github.com/althonos/pronto
+
+.. |License| image:: https://img.shields.io/pypi/l/pronto.svg?style=flat&maxAge=2592000
    :target: https://www.gnu.org/licenses/gpl-3.0.html
 
-.. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=3600
+.. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=2592000
    :target: https://codacy.com/app/althonos/pronto
-   

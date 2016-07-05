@@ -18,17 +18,18 @@ class OboParser(Parser):
     def __init__(self):
         super(OboParser, self).__init__()
         self.extension = '.obo'
-        self._rawterms = []
-        self._typedef = []
-        self._meta = {}
+        self._rawterms = list()
+        self._typedef = list()
+        self._meta = dict()
 
     def hook(self, *args, **kwargs):
         """Returns True if the file is an Obo file (extension is .obo)"""
-        if 'extension' in kwargs:
-            return kwargs['extension'].endswith(self.extension)
+        if 'path' in kwargs:
+            return kwargs['path'].endswith(self.extension)
 
     def read(self, stream):
         """Read the stream and extract information in a 'raw' format."""
+        self._rawterms, self._typedef, self._meta = list(), list(), dict()
         IN = 'meta'
         for line in stream:
             line = line.strip().decode('utf-8') \
@@ -45,6 +46,7 @@ class OboParser(Parser):
 
     def metanalyze(self):
         """Analyze metadatas extracted from the beginning of the file."""
+
         for key,value in self._meta.items():
             if key != 'remark':
                 self._parse_statement(key, value)
@@ -56,6 +58,8 @@ class OboParser(Parser):
         """Get metadatas concerning imports."""
         if 'import' in self.meta.keys():
             self.imports = self.meta['import']
+        self.imports = list(set(self.imports))
+
 
     def _parse_remark(self, remark):
         """Parse a remark and add results to self.meta."""
@@ -76,6 +80,7 @@ class OboParser(Parser):
         if not key in self.meta.keys():
             self.meta[key] = []
         self.meta[key].extend(value)
+
 
     def _get_dict_to_update(self, IN):
         """Returns the right dictionnary to use"""
@@ -121,7 +126,11 @@ def _classify(term):
 
     tid, name = _extract_name_and_id(term)
 
+    if not tid:
+        return {}
+
     return {tid: pronto.term.Term(tid, name, desc, relations, term)}
+
 
 def _process_relationship(term):
 
@@ -160,6 +169,8 @@ def _extract_description(term):
         return ''
 
 def _extract_name_and_id(term):
+    if 'id' not in term.keys():
+        return '', ''
     if 'name' in term.keys():
         tid, name = term['id'], term['name']
         del term['name']

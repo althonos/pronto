@@ -10,7 +10,6 @@ This submodule contains the definition of the Ontology class.
 import json
 import os
 import warnings
-import signal
 
 import multiprocessing.dummy
 
@@ -36,23 +35,25 @@ class Ontology(object):
     method.
 
     Examples:
-        - Import an ontology from the Obo Foundry:
+        Import an ontology from a remote location:
 
             >>> from pronto import Ontology
-            >>> go = Ontology("http://geneontology.org/ontology/go-basic.obo")
+            >>> envo = Ontology("https://raw.githubusercontent.com/"
+            ... "EnvironmentOntology/envo/master/src/envo/envo.obo")
 
-        - Merge two local ontologies and export the merge:
+        Merge two local ontologies and export the merge:
 
             >>> uo = Ontology("resources/uo.owl", False)
             >>> cl = Ontology("resources/cl.ont", False)
 
-        - Export an ontology with its dependencies embedded:
+        Export an ontology with its dependencies embedded:
 
             >>> import os
             >>> cl = Ontology("resources/cl.ont")
             >>> with open('run/cl.obo', 'w') as f:
-            ...     f.write(cl.obo) >= 0
+            ...     f.write(cl.obo) is not None
             True
+
 
     Todo:
         * Add a __repr__ method
@@ -101,13 +102,15 @@ class Ontology(object):
             an ontology in Obo format (as the json export doesn't store
             metadata, only terms).
 
-            Example:
+            Examples:
 
                 Save:
-                    >>> open('run/go.json', 'w').write(go.json) >= 0
+
+                    >>> open('run/go.json', 'w').write(go.json) is not None
                     True
 
                 Load:
+
                     >>> import json
                     >>> go = Ontology()
                     >>> go.terms = json.loads(open('run/go.json').read())
@@ -145,7 +148,7 @@ class Ontology(object):
                 try:
                     self.meta, self.terms, self.imports = parser.parse(stream, self.pool)
                     return
-                except TimeoutError as e:
+                except TimeoutError:
                     warnings.warn("Parsing of {} timed out".format(self.path),
                                    pronto.utils.ProntoWarning)
 

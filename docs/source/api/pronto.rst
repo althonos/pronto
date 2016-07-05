@@ -1,5 +1,7 @@
-Pronto
+API Reference
 ==============
+
+The following classes are imported when running ``from pronto import *``:
 
 .. toctree::
    :maxdepth: 1

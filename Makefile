@@ -4,9 +4,14 @@
 TOKEN=`cat ./.codacy.token`
 PROFILE_FUNC="import pstats as p; f=open('profile.txt', 'w'); p.Stats('p.tmp',stream=f).print_stats()"
 
+ifndef TEST_SUITE
+TEST_SUITE="doctest"
+endif
+
 .PHONY: test
+.SILENT: test
 test:
-	python tests/doctests.py -v
+	if [ $(TEST_SUITE) == "sphinx" ]; then make doc doctest; else python tests/$(TEST_SUITE).py -v; fi
 
 .PHONY: profile
 .SILENT: profile
@@ -55,6 +60,7 @@ clean:
 	if [ -d pronto.egg-info ]; then rm -rf pronto.egg-info/; fi
 	rm -f ./*.whl
 	if [ -f coverage.xml ]; then rm coverage.xml; fi
+	if [ -f .coverage ]; then rm .coverage; fi
 	if [ -f profile.txt ]; then rm profile.txt; fi
 	echo "Done cleaning."
 

@@ -145,27 +145,25 @@ class TermList(list):
     TermList behaves exactly like a list, except it contains shortcuts to
     generate lists of terms' attributes.
 
-    :Example:
+    Example:
 
-    >>> from pronto import Ontology
-    >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
-    >>> type(nmr['NMR:1000031'].children)
-    <class 'pronto.term.TermList'>
+        >>> from pronto import Ontology
+        >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
+        >>> type(nmr['NMR:1000031'].children)
+        <class 'pronto.term.TermList'>
 
-    >>> nmr['NMR:1000031'].children.id
-    ['NMR:1000122', 'NMR:1000156', 'NMR:1000157', 'NMR:1000489']
-    >>> nmr['NMR:1400014'].relations['is_a']
-    [<NMR:1400011: cardinal part of NMR instrument>]
+        >>> nmr['NMR:1000031'].children.id
+        ['NMR:1000122', 'NMR:1000156', 'NMR:1000157', 'NMR:1000489']
+        >>> nmr['NMR:1400014'].relations['is_a']
+        [<NMR:1400011: cardinal part of NMR instrument>]
 
 
     .. note::
         It is also possible to call Term methods on a TermList to
-        create a set of terms !
+        create a set of terms::
 
-        :Example:
-
-        >>> nmr['NMR:1000031'].rchildren(3, False).rparents(3, False).id
-        ['NMR:1000031']
+            >>> nmr['NMR:1000031'].rchildren(3, False).rparents(3, False).id
+            ['NMR:1000031']
 
     """
 
@@ -184,7 +182,7 @@ class TermList(list):
         elif attr in ['rparents', 'rchildren']:
             #: we create a new method to allow the user
             #: to use, for instance, ``x.rchildren(3).rparents(2)``
-            #: (this actually behaves as is you mapped the method
+            #: (this actually behaves as if you mapped the method
             #: on all terms of the TermList)
             def mapped(level=-1, intermediate=True):
                 t = TermList(set([ y for x in self

@@ -1,8 +1,16 @@
 Parser
 ==============
 
-.. toctree::
-   :maxdepth: 1
+.. automodule:: pronto.parser
+   :members: Parser
 
-   Obo <obo>
-   OwlXML <owlxml>
+
+.. note::
+
+   The following parsers inherit from the base class :py:class::`Parser`
+
+   .. toctree::
+      :maxdepth: 1
+
+      OboParser <obo>
+      OwlXMLParser <owlxml>

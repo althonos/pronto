@@ -35,16 +35,14 @@ def task(ontology):
 
         print('    file: {}'.format(product["id"]))
         signal.alarm(300)
-        try:
-            t = time.time()
-            ont = pronto.Ontology(product["ontology_purl"])
-            print("      {} terms extracted in {}s.".format(len(ont)), round(t-time.time(), 1))
-            signal.alarm(0)
-            del ont
-            return
-        except IOError as e:
-            print(e)
-            return
+
+        t = time.time()
+        ont = pronto.Ontology(product["ontology_purl"])
+        print("      {} terms extracted in {}s.".format(len(ont), round(t-time.time(), 1)))
+        signal.alarm(0)
+        del ont
+        return
+
 
 signal.signal(signal.SIGALRM, timer)
 

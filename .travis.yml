@@ -11,8 +11,9 @@ python:
   - "pypy3"
 
 env:
-  - TEST=doctests.py
-  - TEST=foundrytest.py
+  - TEST_SUITE="doctests"
+  - TEST_SUITE="foundrytest"
+  - TEST_SUITE="sphinx"
 
 matrix:
   allow_failures:
@@ -22,7 +23,8 @@ matrix:
     - python: "3.4"
     - python: "pypy"
     - python: "pypy3"
-    - env: TEST=foundrytest.py # Probably times out
+    - env: TEST_SUITE="foundrytest" # Probably times out
+    - env: TEST_SUITE="sphinx"
 
 before_install:
   # check if documentation can be build by Sphinx with current python version.
@@ -30,6 +32,7 @@ before_install:
 
 install:
   - if [ $DOC -eq 1 ]; then pip install -r requirements-doc.txt; else pip install -r requirements.txt; fi
+  - if [ $TESTSUITE == "sphinx" ]; then pip install -r requirements-doc.txt; fi
   - pip install .
 
 script:

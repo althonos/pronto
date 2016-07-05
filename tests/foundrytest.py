@@ -1,3 +1,4 @@
+# coding: utf-8
 """
 Test lots of ontologies from the OBO Foundry.
 """

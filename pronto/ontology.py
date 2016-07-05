@@ -1,3 +1,4 @@
+# coding: utf-8
 """
 pronto.ontology
 ===============
@@ -47,8 +48,8 @@ class Ontology(object):
 
             >>> cl = Ontology("resources/cl.ont")
             >>> with open('run/cl.obo', 'w') as f:
-            ...     f.write(cl.obo)
-            347421
+            ...     f.write(cl.obo) > 0
+            True
 
     Todo:
         * Add a __repr__ method
@@ -240,13 +241,12 @@ class Ontology(object):
             try:
 
                 if os.path.exists(i) or i.startswith('http') or i.startswith('ftp'):
-                    #self.merge(Ontology(i, import_depth=import_depth-1))
-                    ont = Ontology(i, import_depth=import_depth-1)
+                    self.merge(Ontology(i, import_depth=import_depth-1))
+
 
                 else: # try to look at neighbouring ontologies
-                    #self.merge(
-                    ont = Ontology( os.path.join(os.path.dirname(self.path), i),
-                                         import_depth=import_depth-1)
+                    self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
+                                         import_depth=import_depth-1))
 
             except (IOError, OSError, URLError, HTTPError, RecursionError) as e:
                 warnings.warn("{} occured when during import of "

@@ -2,14 +2,14 @@ TOKEN=`cat ./.codacy.token`
 
 .PHONY: test
 test:
-	python3 -v tests/doctests.py
+	python3 tests/doctests.py -v
 
 .PHONY: cover
 .SILENT: cover
 cover:
 	coverage run tests/doctests.py --source pronto
 	coverage xml
-	export CODACY_PROJECT_TOKEN=${TOKEN} && python-codacy-coverage -r coverage.xml
+	export CODACY_PROJECT_TOKEN=${TOKEN} && python-codacy-coverage -r coverage.xml --source pronto
 
 .PHONY: install
 install:

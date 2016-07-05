@@ -1,3 +1,4 @@
+# coding: utf-8
 """
 **pronto**: a Python frontend to ontologies
 ===========================================
@@ -6,7 +7,7 @@
 
 
 
-__version__='0.1.6'
+__version__='0.1.7'
 __author__='Martin Larralde'
 __author_email__ = 'martin.larralde@ens-cachan.fr'
 

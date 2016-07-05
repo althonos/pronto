@@ -1,3 +1,4 @@
+# coding: utf-8
 """
 Test doctest contained tests in every file of the module.
 """
@@ -24,9 +25,15 @@ for filename in os.listdir(pronto_dir):
 
     if filename.endswith('.py'):
         print("Testing:  {}".format(filepath))
-        testresults = doctest.testfile(filepath, module_relative=False)
+
+        try:
+            testresults = doctest.testfile(filepath, module_relative=False)
+        except KeyboardInterrupt:
+            shutil.rmtree('run')
+            sys.exit(1)
         if testresults.failed:
             print('↳ Test failed !')
+            shutil.rmtree('run')
             sys.exit(1)
 
 print('All tests succeeded !')

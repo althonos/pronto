@@ -35,3 +35,6 @@ install:
 script:
   - python tests/${TEST}
   - if [ $DOC -eq 1 ]; then make doc; fi
+
+after_script:
+  - if [ $(python -c "import sys; print(sys.version[0:3])") == "3.5" ]; then make cover; fi

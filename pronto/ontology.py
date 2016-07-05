@@ -248,7 +248,7 @@ class Ontology(object):
                     self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
                                          import_depth=import_depth-1))
 
-            except (IOError, OSError, URLError, HTTPError, RecursionError) as e:
+            except (IOError, OSError, URLError, HTTPError) as e:
                 warnings.warn("{} occured when during import of "
                               "{}".format(type(e).__name__, i),
                               pronto.utils.ProntoWarning)

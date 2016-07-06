@@ -52,7 +52,7 @@ class Ontology(object):
             >>> cl = Ontology("resources/cl.ont")
             >>> with open('run/cl.obo', 'w') as f:
             ...     lines_count = f.write(cl.obo)
-            
+
 
     Todo:
         * Add a __repr__ method
@@ -96,7 +96,7 @@ class Ontology(object):
         """Returns the ontology serialized in json format.
 
         Example:
-            >>> j = uo.json 
+            >>> j = uo.json
             >>> all(term.id in j for term in uo)
             True
 

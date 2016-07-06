@@ -7,7 +7,7 @@ This module contains some functions that are used in different parts
 of the pronto library, as well as the definition of ProntoWarning.
 
 Todo:
-    * Maye add a ProntoError class ?
+    * Maybe add a ProntoError class ?
 """
 
 
@@ -30,7 +30,6 @@ import os
 import signal
 
 
-
 class TimeoutError(IOError):
     pass
 
@@ -44,8 +43,12 @@ def timeout(seconds=60, error_message=os.strerror(errno.ETIME)):
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            signal.signal(signal.SIGALRM, _handle_timeout)
-            signal.alarm(seconds)
+
+            try:
+                signal.signal(signal.SIGALRM, _handle_timeout)
+                signal.alarm(seconds)
+            except ValueError:
+                pass
             try:
                 result = func(*args, **kwargs)
             finally:

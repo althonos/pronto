@@ -1,5 +1,3 @@
-import weakref
-
 import pronto.utils
 
 __all__ = ["Parser", "OboParser", "OwlXMLParser"]
@@ -13,7 +11,7 @@ class Parser(object):
 
     instances = {}
 
-    def __init__(self):
+    def __init__(self, timeout=None):
         self.terms = dict()
         self.meta = dict()
         self.imports = list()

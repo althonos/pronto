@@ -28,7 +28,7 @@ matrix:
 
 before_install:
   # check if documentation can be build by Sphinx with current python version.
-  - export DOC=$(python -c "import sys; x = float(sys.version[0:3]) > 3.4 if sys.version[0]=='3' else float(sys.version[0:3])>2.6; sys.exit(x)") 
+  - export DOC=$(python -c "import sys; x = float(sys.version[0:3]) > 3.4 if sys.version[0]=='3' else float(sys.version[0:3])>2.6; sys.exit(x)")
 
 install:
   - if [ $DOC -eq 1 ]; then pip install -r requirements-doc.txt; else pip install -r requirements.txt; fi
@@ -37,7 +37,7 @@ install:
 
 script:
   - make test
-  - if [ $DOC -eq 1 ]; then make doc html; fi
+  - if [ $(python -c "import sys; print(sys.version[0:3])") >= "3.2" ]; then make doc html; fi
 
 after_script:
   - if [ $(python -c "import sys; print(sys.version[0:3])") == "3.5" ]; then make cover; fi

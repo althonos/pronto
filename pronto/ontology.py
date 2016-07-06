@@ -51,9 +51,8 @@ class Ontology(object):
             >>> import os
             >>> cl = Ontology("resources/cl.ont")
             >>> with open('run/cl.obo', 'w') as f:
-            ...     f.write(cl.obo) is not None
-            True
-
+            ...     lines_count = f.write(cl.obo)
+            
 
     Todo:
         * Add a __repr__ method
@@ -96,25 +95,16 @@ class Ontology(object):
     def json(self):
         """Returns the ontology serialized in json format.
 
+        Example:
+            >>> j = uo.json 
+            >>> all(term.id in j for term in uo)
+            True
+
         Note:
             It is possible to save and load an ontology to and from
             json format, although it is cleaner to save and load
             an ontology in Obo format (as the json export doesn't store
             metadata, only terms).
-
-            Examples:
-
-                Save:
-
-                    >>> open('run/go.json', 'w').write(go.json) is not None
-                    True
-
-                Load:
-
-                    >>> import json
-                    >>> go = Ontology()
-                    >>> go.terms = json.loads(open('run/go.json').read())
-
 
         """
         return json.dumps(self.terms, indent=4, sort_keys=True,
@@ -204,10 +194,11 @@ class Ontology(object):
     def include(self, *terms):
         """Add new terms to the current ontology.
 
-        :raise TypeError
+        Raises:
+            TypeError: when the object(s) passed to the function is (are)
+                not either a TermList or a Term.
 
-
-        .. note::
+        Note:
             This will also recursively include terms in the term's relations
             dictionnary, but it is considered bad practice to do so. If you
             want to create your own ontology, you should only add an ID (such
@@ -306,7 +297,8 @@ class Ontology(object):
 
         >>> from pronto import Ontology
         >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
-        >>> po = Ontology('https://raw.githubusercontent.com/Planteome/plant-ontology/master/po.obo', False)
+        >>> po = Ontology('https://raw.githubusercontent.com/Planteome'
+        ... '/plant-ontology/master/po.obo', False)
         >>> 'NMR:1000271' in nmr
         True
         >>> 'NMR:1000271' in po

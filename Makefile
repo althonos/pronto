@@ -5,7 +5,7 @@ TOKEN=`cat ./.codacy.token`
 PROFILE_FUNC="import pstats as p; f=open('profile.txt', 'w'); p.Stats('p.tmp',stream=f).print_stats()"
 
 ifndef TEST_SUITE
-TEST_SUITE="doctest"
+TEST_SUITE="doctests"
 endif
 
 .PHONY: test

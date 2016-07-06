@@ -28,6 +28,10 @@ def timer(signum, frame):
 def task(ontology):
     ontid = ontology["id"]
     print('Testing: {}'.format(ontid))
+
+    if not 'products' in ontology.keys():
+        return
+
     for product in ontology["products"]:
 
         if product['id'] in BLOCKLIST:

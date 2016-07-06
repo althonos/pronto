@@ -194,4 +194,10 @@ class TermList(list):
         else:
             getattr(list, attr)
 
+    def __contains__(self, term):
+        """
+        Todo: write doc & test
+        """
+        return term in self.id or any(t for t in self if t==term)
+
 

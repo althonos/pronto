@@ -90,6 +90,9 @@ class Ontology(object):
 
             self.reference()
 
+        self.pool.close()
+        self.pool.join()
+        del self.pool
 
     @property
     def json(self):

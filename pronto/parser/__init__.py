@@ -1,3 +1,5 @@
+import warnings
+
 import pronto.utils
 
 __all__ = ["Parser", "OboParser", "OwlXMLParser"]
@@ -61,4 +63,9 @@ class Parser(object):
 
 
 from pronto.parser.obo import OboParser
-from pronto.parser.owl import OwlXMLParser
+
+try:
+   from pronto.parser.owl import OwlXMLParser
+except ImportError:
+   warnings.warn("You don't seem to have lxml installed on your machine, "
+                 ".owl parsing will be disabled", pronto.utils.ProntoWarning)

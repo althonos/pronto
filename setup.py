@@ -2,6 +2,9 @@
 # released under the GNU General Public License version 3.0 (GPLv3)
 
 from setuptools import setup, find_packages
+import warnings
+
+warnings.simplefilter("ignore")
 import pronto
 
 ## SETUPTOOLS VERSION

@@ -22,17 +22,17 @@ class Term(object):
         self.desc = desc
         self.relations = relations or dict()
         self.other = other or dict()
-        self._rchildren = dict()
-        self._rparents = dict()
+        self._rchildren, self._rparents = dict(), dict()
+        self._children, self._parents = None, None
 
     def __repr__(self):
         return "<{}: {}>".format(self.id, self.name)
 
     @property
     def parents(self):
-        try:
+        if self._parents is None:
             return self._parents
-        except AttributeError:
+        else:
             self._parents = TermList()
             for parental_rship in ('is_a', 'is_part', 'part_of'):
                 if parental_rship in self.relations.keys():
@@ -41,9 +41,9 @@ class Term(object):
 
     @property
     def children(self):
-        try:
+        if self._children is None:
             return self._children
-        except AttributeError:
+        else:
             self._children = TermList()
             for children_rship in ('has_part', 'can_be'):
                 if children_rship in self.relations.keys():
@@ -100,19 +100,8 @@ class Term(object):
          )
 
     def _empty_cache(self):
-
-        try:
-            del self._parents
-        except AttributeError:
-            pass
-
-        try:
-            del self._children
-        except AttributeError:
-            pass
-
-        self._rparents = dict()
-        self._rchildren = dict()
+        self._children, self._parents = None, None
+        self._rchildren, self._rparents = dict(), dict()
 
     def rchildren(self, level=-1, intermediate=True):
         """Create a recursive list of children.

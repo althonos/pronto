@@ -37,6 +37,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinxcontrib.napoleon',
+    'sphinx.ext.autosummary',
 #    'sphinx.ext.imgmath',
 #    'sphinx.ext.ifconfig',
 #    'sphinx.ext.viewcode',

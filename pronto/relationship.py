@@ -3,7 +3,10 @@
 #RSHIPS = ('has_regexp', 'has_order', 'has_units', 'has_domain', 'is_a', 'part_of', 'is_part')
 #RSHIP_INVERSE = {'is_a': 'can_be', 'is_part':'has_part', 'part_of': 'has_part'}
 
+import multiprocessing
+
 import pronto.utils
+
 
 class Relationship(object):
     """
@@ -17,6 +20,7 @@ class Relationship(object):
     """
 
     _instances = {}
+    _lock = multiprocessing.Lock()
 
     def __init__(self, obo_name, symmetry=None, transitivity=None,
                  reflexivity=None, complementary=None, prefix=None,
@@ -116,6 +120,9 @@ class Relationship(object):
     def bottomup(self):
         return (r for r in self._instances.values() if r.direction=='bottomup')
 
+    @pronto.utils.classproperty
+    def lock(self):
+        return self._lock
 
 
 Relationship('is_a', symmetry=False, transitivity=True,

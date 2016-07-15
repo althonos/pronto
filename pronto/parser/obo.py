@@ -6,9 +6,9 @@ Parser can be derived to provide additional parsers to ontology files.
 """
 
 import pronto.term
-
+import pronto.relationship
 from pronto.parser import Parser
-from pronto.relationship import Relationship
+
 
 
 class OboParser(Parser):
@@ -117,18 +117,24 @@ def _classify(term):
     relations = {}
 
     if 'relationship' in term:
-        _process_relationship(term)
-
-    while True:
+        pronto.relationship.Relationship.lock.acquire()
         try:
-            for rship in Relationship._instances.values():
-                relations = _extract_relationship(term, rship, relations)
-            break
-        except:
-            continue
+            _process_relationship(term)
+        finally:
+            pronto.relationship.Relationship.lock.release()
 
 
-    #relations = {Relationship(k):v for k,v in relations.items()}
+    # New relations may be created when extracting relationship,
+    # this need to be investigated to come with a less 'hacky' solution
+    #while True:
+    pronto.relationship.Relationship.lock.acquire()
+    try:
+        for rship in pronto.relationship.Relationship._instances.values():
+            relations = _extract_relationship(term, rship, relations)
+    finally:
+        pronto.relationship.Relationship.lock.release()
+
+
 
     desc = _extract_description(term)
 
@@ -142,28 +148,28 @@ def _classify(term):
 
 def _process_relationship(term):
 
+    # If term is a str
     try:
 
         name, value = term['relationship'].split(' ', 1)
 
-        name = Relationship(name)
+        name = pronto.relationship.Relationship(name)
 
         if name not in term.keys():
             term[name] = []
         term[name].append(value)
 
+    # If term is a list
     except AttributeError:
 
         for r in term['relationship']:
             name, value = r.split(' ', 1)
 
-            name = Relationship(name)
+            name = pronto.relationship.Relationship(name)
 
             if name not in term.keys():
                 term[name] = []
             term[name].append(value)
-
-
 
     del term['relationship']
 

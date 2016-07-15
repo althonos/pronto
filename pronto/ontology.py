@@ -137,7 +137,7 @@ class Ontology(object):
                 self.terms[termkey].relations[relkey] = pronto.term.TermList(relvalref)
 
     def parse(self, stream):
-        for parser in pronto.parser.Parser.instances.values():
+        for parser in pronto.parser.Parser._instances.values():
             if parser.hook(stream=stream, path=self.path):
                 try:
                     self.meta, self.terms, self.imports = parser.parse(stream, self.pool)

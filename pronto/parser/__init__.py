@@ -11,13 +11,13 @@ class Parser(object):
     The following functions need to
     """
 
-    instances = {}
+    _instances = {}
 
     def __init__(self, timeout=None):
         self.terms = dict()
         self.meta = dict()
         self.imports = list()
-        self.instances[type(self).__name__] = self
+        self._instances[type(self).__name__] = self
 
     @pronto.utils.timeout(500)
     def parse(self, stream, pool):

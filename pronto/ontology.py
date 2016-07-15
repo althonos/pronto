@@ -145,8 +145,6 @@ class Ontology(object):
                     warnings.warn("Parsing of {} timed out".format(self.path),
                                    pronto.utils.ProntoWarning)
 
-
-
     def __getitem__(self, item):
         return self.terms[item]
 
@@ -313,7 +311,18 @@ class Ontology(object):
         """
         if isinstance(other, Ontology):
             self.terms.update(other.terms)
+            self._empty_cache()
             self.reference()
         else:
             raise TypeError("'merge' requires an Ontology as argument, not {}".format(type(other)))
 
+    def _empty_cache(self, termlist=None):
+        if termlist is None:
+            for term in self.terms.values():
+                term._empty_cache()
+        else:
+            for term in termlist:
+                try:
+                    self.terms[term.id]._empty_cache()
+                except AttributeError:
+                    self.terms[term]._empty_cache()

@@ -20,29 +20,35 @@ class Term(object):
         self.id = tid
         self.name = name
         self.desc = desc
-        self.relations = relations or {}
-        self.other = other or {}
+        self.relations = relations or dict()
+        self.other = other or dict()
+        self._rchildren = dict()
+        self._rparents = dict()
 
     def __repr__(self):
         return "<{}: {}>".format(self.id, self.name)
 
     @property
-    #@functools.lru_cache(None)
     def parents(self):
-        parents = TermList()
-        for parental_rship in ('is_a', 'is_part', 'part_of'):
-            if parental_rship in self.relations.keys():
-                parents.extend(self.relations[parental_rship])
-        return parents
+        try:
+            return self._parents
+        except AttributeError:
+            self._parents = TermList()
+            for parental_rship in ('is_a', 'is_part', 'part_of'):
+                if parental_rship in self.relations.keys():
+                    self._parents.extend(self.relations[parental_rship])
+            return self._parents
 
     @property
-    #@utils.memoize
     def children(self):
-        children = TermList()
-        for children_rship in ('has_part', 'can_be'):
-            if children_rship in self.relations.keys():
-                children.extend(self.relations[children_rship])
-        return children
+        try:
+            return self._children
+        except AttributeError:
+            self._children = TermList()
+            for children_rship in ('has_part', 'can_be'):
+                if children_rship in self.relations.keys():
+                    self._children.extend(self.relations[children_rship])
+            return self._children
 
     @property
     def obo(self):
@@ -93,6 +99,21 @@ class Term(object):
             {k:v.id for k,v in self.relations.items()}
          )
 
+    def _empty_cache(self):
+
+        try:
+            del self._parents
+        except AttributeError:
+            pass
+
+        try:
+            del self._children
+        except AttributeError:
+            pass
+
+        self._rparents = dict()
+        self._rchildren = dict()
+
     def rchildren(self, level=-1, intermediate=True):
         """Create a recursive list of children.
 
@@ -100,21 +121,25 @@ class Term(object):
         child to the returned list, not only the most nested ones.
 
         """
-        rchildren = []
+        try:
+            return self._rchildren[(level, intermediate)]
 
-        if level==0:
-            return []
+        except KeyError:
 
-        if self.children:
+            rchildren = []
 
-            if intermediate or level==1:
-                rchildren.extend(self.children)
+            if self.children and level:
 
-            for child in self.children:
-                rchildren.extend(child.rchildren(level=level-1,
-                                                 intermediate=intermediate))
+                if intermediate or level==1:
+                    rchildren.extend(self.children)
 
-        return TermList(set(rchildren))
+                for child in self.children:
+                    rchildren.extend(child.rchildren(level=level-1,
+                                                     intermediate=intermediate))
+
+            rchildren = TermList(set(rchildren))
+            self._rchildren[(level, intermediate)] = rchildren
+            return rchildren
 
     def rparents(self, level=-1, intermediate=True):
         """Create a recursive list of parents.
@@ -123,21 +148,25 @@ class Term(object):
         parent to the returned list, not only the top ones.
 
         """
-        rparents = []
+        try:
+            return self._rparents[(level, intermediate)]
 
-        if level==0:
-            return []
+        except KeyError:
 
-        if self.parents:
+            rparents = []
 
-            if intermediate or level==1:
-                rparents.extend(self.parents)
+            if self.parents and level:
 
-            for parent in self.parents:
-                rparents.extend(parent.rparents(level=level-1,
-                                                 intermediate=intermediate))
+                if intermediate or level==1:
+                    rparents.extend(self.parents)
 
-        return TermList(set(rparents))
+                for parent in self.parents:
+                    rparents.extend(parent.rparents(level=level-1,
+                                                     intermediate=intermediate))
+
+            rparents = TermList(set(rparents))
+            self._rparents[(level, intermediate)] = rparents
+            return rparents
 
 class TermList(list):
     """A list of Terms.

@@ -58,6 +58,17 @@ def timeout(seconds=60, error_message=os.strerror(errno.ETIME)):
 
     return decorator
 
+class classproperty(object):
+    """
+    A decorator that allows to set properties on class level.
+
+    """
+
+    def __init__(self, fget):
+        self.fget = fget
+
+    def __get__(self, owner_self, owner_cls):
+        return self.fget(owner_cls)
 
 class ProntoWarning(Warning):
     """A warning raised by pronto.
@@ -74,7 +85,6 @@ class ProntoWarning(Warning):
 
     """
     pass
-
 
 def explicit_namespace(attr, nsmap):
     """Explicits the namespace in an attribute name.

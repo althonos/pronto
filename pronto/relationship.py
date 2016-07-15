@@ -1,8 +1,9 @@
 # coding: utf-8
 
-RSHIPS = ('has_regexp', 'has_order', 'has_units', 'has_domain', 'is_a', 'part_of', 'is_part')
-RSHIP_INVERSE = {'is_a': 'can_be', 'is_part':'has_part', 'part_of': 'has_part'}
+#RSHIPS = ('has_regexp', 'has_order', 'has_units', 'has_domain', 'is_a', 'part_of', 'is_part')
+#RSHIP_INVERSE = {'is_a': 'can_be', 'is_part':'has_part', 'part_of': 'has_part'}
 
+import pronto.utils
 
 class Relationship(object):
     """
@@ -107,6 +108,13 @@ class Relationship(object):
         else:
             return super(Relationship, cls).__new__(cls)
 
+    @pronto.utils.classproperty
+    def topdown(self):
+        return (r for r in self._instances.values() if r.direction=='topdown')
+
+    @pronto.utils.classproperty
+    def bottomup(self):
+        return (r for r in self._instances.values() if r.direction=='bottomup')
 
 
 

@@ -8,7 +8,7 @@ Parser can be derived to provide additional parsers to ontology files.
 import pronto.term
 
 from pronto.parser import Parser
-from pronto.relationship import RSHIPS
+from pronto.relationship import Relationship
 
 
 class OboParser(Parser):
@@ -119,8 +119,16 @@ def _classify(term):
     if 'relationship' in term:
         _process_relationship(term)
 
-    for rship in RSHIPS:
-        relations = _extract_relationship(term, rship, relations)
+    while True:
+        try:
+            for rship in Relationship._instances.values():
+                relations = _extract_relationship(term, rship, relations)
+            break
+        except:
+            continue
+
+
+    #relations = {Relationship(k):v for k,v in relations.items()}
 
     desc = _extract_description(term)
 
@@ -134,30 +142,38 @@ def _classify(term):
 
 def _process_relationship(term):
 
-    if isinstance(term['relationship'], list):
-        for r in term['relationship']:
-            name, value = r.split(' ', 1)
+    try:
 
-            if name not in term.keys():
-                term[name] = []
-            term[name].append(value)
-
-    else:
         name, value = term['relationship'].split(' ', 1)
+
+        name = Relationship(name)
 
         if name not in term.keys():
             term[name] = []
         term[name].append(value)
 
+    except AttributeError:
+
+        for r in term['relationship']:
+            name, value = r.split(' ', 1)
+
+            name = Relationship(name)
+
+            if name not in term.keys():
+                term[name] = []
+            term[name].append(value)
+
+
+
     del term['relationship']
 
 def _extract_relationship(term, rship, relations):
-    if rship in term.keys():
-        if isinstance(term[rship], list):
-            relations[rship] = [ x.split(' !')[0] for x in term[rship] ]
+    if rship.obo_name in term.keys():
+        if isinstance(term[rship.obo_name], list):
+            relations[rship] = [ x.split(' !')[0] for x in term[rship.obo_name] ]
         else:
-            relations[rship] = [ term[rship].split(' !')[0]]
-        del term[rship]
+            relations[rship] = [ term[rship.obo_name].split(' !')[0]]
+        del term[rship.obo_name]
     return relations
 
 def _extract_description(term):

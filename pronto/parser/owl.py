@@ -4,7 +4,9 @@ import os
 import lxml.etree as etree
 
 from pronto.parser import Parser
+from pronto.relationship import Relationship
 import pronto.utils
+
 
 
 class OwlXMLParser(Parser):
@@ -31,6 +33,7 @@ class OwlXMLParser(Parser):
         if None in self._ns.keys():
             self._ns['base'] = self._ns[None]
             del self._ns[None]
+        self._ns['obo'] = 'http://purl.obolibrary.org/obo/'
 
     def makeTree(self, pool):
         """
@@ -81,7 +84,7 @@ class OwlXMLParser(Parser):
              'callback': lambda c: accession(c.get(nspaced('rdf:resource')) or c.get(nspaced('rdf:about'))),
              'dest': 'relations',
              'action': 'list',
-             'list_to': 'is_a'
+             'list_to': Relationship('is_a'),
             },
             {'hook': lambda c: c.tag == nspaced('rdfs:comment'),
              'callback': lambda c: pronto.utils.parse_comment(c.text),

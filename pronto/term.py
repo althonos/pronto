@@ -9,7 +9,7 @@ This module defines the classes Term and TermList.
 #import functools
 
 #from pronto import utils
-from pronto.relationship import RSHIPS
+from pronto.relationship import Relationship
 
 
 class Term(object):
@@ -30,24 +30,24 @@ class Term(object):
 
     @property
     def parents(self):
-        if self._parents is None:
+        if self._parents is not None:
             return self._parents
         else:
             self._parents = TermList()
-            for parental_rship in ('is_a', 'is_part', 'part_of'):
-                if parental_rship in self.relations.keys():
-                    self._parents.extend(self.relations[parental_rship])
+            for rship in Relationship.bottomup:
+                if rship in self.relations.keys():
+                    self._parents.extend(self.relations[rship])
             return self._parents
 
     @property
     def children(self):
-        if self._children is None:
+        if self._children is not None:
             return self._children
         else:
             self._children = TermList()
-            for children_rship in ('has_part', 'can_be'):
-                if children_rship in self.relations.keys():
-                    self._children.extend(self.relations[children_rship])
+            for rship in Relationship.topdown:
+                if rship in self.relations.keys():
+                    self._children.extend(self.relations[rship])
             return self._children
 
     @property
@@ -69,20 +69,23 @@ class Term(object):
                 obo += '{}: {}'.format(k,v) + '\n'
 
         # add relationships (only bottom up ones)
-        for relation,companions in self.relations.items():
-            if relation in RSHIPS:
 
-                for companion in companions:
+        for relation in Relationship.bottomup:
+            try:
+                for companion in self.relations[relation]:
 
-                    if relation != 'is_a':
+                    if relation is not Relationship('is_a'):
                         obo += 'relationship: '
-                    obo += '{}: '.format(relation)
+                    obo += '{}: '.format(relation.obo_name)
 
                     if isinstance(companion, Term):
                         obo += '{} ! {}'.format(companion.id, companion.name) + '\n'
                     else:
                         obo += '{}'.format(companion)
                         obo += '\n'
+
+            except KeyError:
+                continue
 
         return obo
 
@@ -96,7 +99,7 @@ class Term(object):
             self.name,
             self.other,
             self.desc,
-            {k:v.id for k,v in self.relations.items()}
+            {k.obo_name:v.id for k,v in self.relations.items()}
          )
 
     def _empty_cache(self):
@@ -165,14 +168,14 @@ class TermList(list):
 
     Example:
 
-        >>> from pronto import Ontology
+        >>> from pronto import Ontology, Relationship
         >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
         >>> type(nmr['NMR:1000031'].children)
         <class 'pronto.term.TermList'>
 
         >>> nmr['NMR:1000031'].children.id
         ['NMR:1000122', 'NMR:1000156', 'NMR:1000157', 'NMR:1000489']
-        >>> nmr['NMR:1400014'].relations['is_a']
+        >>> nmr['NMR:1400014'].relations[Relationship('is_a')]
         [<NMR:1400011: cardinal part of NMR instrument>]
 
 

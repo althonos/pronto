@@ -110,7 +110,8 @@ class Ontology(object):
             metadata, only terms).
 
         """
-        return json.dumps(self.terms, indent=4, sort_keys=True,
+
+        return json.dumps( self.terms, indent=4, sort_keys=True,
                           default=lambda o: o.__deref__.__dict__)
 
     @property
@@ -170,17 +171,23 @@ class Ontology(object):
 
         for term in self:
 
-            if 'is_a' in term.relations.keys():
-                for parent in term.relations['is_a']:
-                    relationships.append( (parent, 'can_be', term.id ) )
+            for relation in term.relations.keys():
 
-            if 'part_of' in term.relations.keys():
-                for parent in term.relations['part_of']:
-                    relationships.append( (parent, 'has_part', term.id ) )
+                if relation.complement() is not None and relation.direction=="bottomup":
+                    for parent in term.relations[relation]:
+                        relationships.append( (parent, relation.complement(), term.id) )
 
-            if 'is_part' in term.relations.keys():
-                for parent in term.relations['is_part']:
-                    relationships.append( (parent, 'part_of', term.id ) )
+            #if 'is_a' in term.relations.keys():
+            #    for parent in term.relations['is_a']:
+            #        relationships.append( (parent, 'can_be', term.id ) )
+
+            #if 'part_of' in term.relations.keys():
+            #    for parent in term.relations['part_of']:
+            #        relationships.append( (parent, 'has_part', term.id ) )
+
+            #if 'is_part' in term.relations.keys():
+            #    for parent in term.relations['is_part']:
+            #        relationships.append( (parent, 'part_of', term.id ) )
 
         for parent, rel, child in relationships:
             if isinstance(parent, pronto.term.Term):
@@ -210,12 +217,12 @@ class Ontology(object):
 
         Create a new ontology from scratch:
 
-        >>> from pronto import Term
+        >>> from pronto import Term, Relationship
         >>> t1 = Term('ONT:001','my 1st term',
         ...           'this is my first term')
         >>> t2 = Term('ONT:002', 'my 2nd term',
         ...           'this is my second term',
-        ...           {'part_of': ['ONT:001']})
+        ...           {Relationship('part_of'): ['ONT:001']})
         >>> ont = Ontology()
         >>> ont.include(t1, t2)
 
@@ -226,7 +233,9 @@ class Ontology(object):
 
         """
         ref_needed = False
+
         for term in terms:
+
             if isinstance(term, pronto.term.TermList):
                 ref_needed = ref_needed or self._include_term_list(term)
             elif isinstance(term, pronto.term.Term):
@@ -261,7 +270,7 @@ class Ontology(object):
         ref_needed = False
         for term in termlist:
             ref_needed = ref_needed or self._include_term(term)
-        return reference_needed
+        return ref_needed
 
     def _include_term(self, term):
         """Add a single term to the current ontology

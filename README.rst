@@ -1,7 +1,7 @@
 **pronto** : Python frontend to Ontologies
 ==========================================
 
-|Version| |Py versions| |Build Status| |Dev repo| |Codacy grade| |License|
+|Version| |Py versions| |Build Status| |Dev repo| |Codacy grade| |License| |DOI|
 
 Overview
 ^^^^^^^^
@@ -98,7 +98,13 @@ TODO
 -  (maybe) add serialization to owl
 
 
+Reference
+^^^^^^^^^
 
+If you wish to use this library in a scientific publication,
+please cite it (see the `Zenodo record <https://zenodo.org/badge/latestdoi/23304/althonos/pronto>`__).
+
+Author: Martin Larralde
 
 
 .. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat&maxAge=2592000
@@ -118,3 +124,6 @@ TODO
 
 .. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=2592000
    :target: https://codacy.com/app/althonos/pronto
+
+.. |DOI| image:: https://zenodo.org/badge/23304/althonos/pronto.svg
+   :target: https://zenodo.org/badge/latestdoi/23304/althonos/pronto

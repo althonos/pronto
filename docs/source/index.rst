@@ -6,7 +6,7 @@
 Pronto - Python frontend to ontologies
 =======================================
 
-|Version| |Py versions| |Codacy grade| |Dev repo| |Build status| |License| |DOI|
+|Version| |Py versions| |Codacy grade| |Dev repo| |Build status| |License| |DOI| |coverage|
 
 
 Pronto is a Python agnostic library designed to work with ontologies. At the moment,
@@ -55,3 +55,5 @@ Indices and tables
    :target: https://github.com/althonos/pronto
 .. |DOI| image:: https://zenodo.org/badge/23304/althonos/pronto.svg
    :target: https://zenodo.org/badge/latestdoi/23304/althonos/pronto
+.. |coverage| image:: https://img.shields.io/codacy/coverage/157b5fd24e5648ea80580f28399e79a4.svg?maxAge=2592000   
+   :target: https://www.codacy.com/app/althonos/pronto/dashboard

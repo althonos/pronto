@@ -5,25 +5,25 @@ PyPi
 ^^^^
 
 Pronto is hosted on GitHub, but the easiest way to install it is to download the
-latest release from PyPi. It will install all dependencies of Pronto and then
-install the pronto module.
+latest release from its `PyPi repository <https://pypi.python.org/pypi/pronto>`__.
+It will install all dependencies of Pronto and then install the pronto module.
 
 .. code:: bash
 
-	pip install pronto 
+	pip install pronto
 
 
 GitHub + ``pip``
 ^^^^^^^^^^^^^^^^
 
 If, for any reason, you prefer to download the library from GitHub, you can clone
-the repository and install the repository either by running (with the admin rights):
+the repository and install the repository by running (with the admin rights):
 
 .. code:: bash
-	
-	git clone https://github.com/althonos/pronto
-	cd pronto
-	make install 
+
+	pip install git+git://github.com/althonos/pronto
+
+
 
 
 GitHub + ``setuptools``
@@ -34,7 +34,7 @@ and then install pronto), you can do the following (after having properly instal
 all the dependencies):
 
 .. code:: bash
-	
+
 	git clone https://github.com/althonos/pronto
 	cd pronto
-	python setup.py install 
+	python setup.py install

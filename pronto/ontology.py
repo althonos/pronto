@@ -48,7 +48,6 @@ class Ontology(object):
 
         Export an ontology with its dependencies embedded:
 
-            >>> import os
             >>> cl = Ontology("resources/cl.ont")
             >>> with open('run/cl.obo', 'w') as f:
             ...     lines_count = f.write(cl.obo)
@@ -112,7 +111,7 @@ class Ontology(object):
         """
 
         return json.dumps( self.terms, indent=4, sort_keys=True,
-                          default=lambda o: o.__deref__.__dict__)
+                          default=lambda o: o.__deref__)
 
     @property
     def obo(self):
@@ -260,7 +259,7 @@ class Ontology(object):
                                          import_depth=import_depth-1))
 
             except (IOError, OSError, URLError, HTTPError) as e:
-                warnings.warn("{} occured when during import of "
+                warnings.warn("{} occured during import of "
                               "{}".format(type(e).__name__, i),
                               pronto.utils.ProntoWarning)
 

@@ -5,10 +5,7 @@ import pronto.utils
 __all__ = ["Parser", "OboParser", "OwlXMLParser"]
 
 class Parser(object):
-    """A basic parser object.
-
-
-    The following functions need to
+    """An abstract parser object.
     """
 
     _instances = {}
@@ -19,13 +16,13 @@ class Parser(object):
         self.imports = list()
         self._instances[type(self).__name__] = self
 
-    @pronto.utils.timeout(500)
+    @pronto.utils.timeout(0)
     def parse(self, stream, pool):
         """
         Parse the ontology file.
 
-        :param stream: A stream of the ontology file.
-        :type stream: io.StringIO
+        Parameters
+            stream (io.StringIO): A stream of the ontology file.
         """
 
         self.terms, self.meta, self.imports = dict(), dict(), list()
@@ -37,7 +34,7 @@ class Parser(object):
 
         return self.meta, self.terms, self.imports
 
-    def hook(self, path):
+    def hook(self, *args, **kwargs):
         """Defines when the parser is used
 
         For Obo and Owl, based on file extension (altough that may need to

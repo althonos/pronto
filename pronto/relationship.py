@@ -1,9 +1,8 @@
 # coding: utf-8
 
-#RSHIPS = ('has_regexp', 'has_order', 'has_units', 'has_domain', 'is_a', 'part_of', 'is_part')
-#RSHIP_INVERSE = {'is_a': 'can_be', 'is_part':'has_part', 'part_of': 'has_part'}
-
 import multiprocessing
+import threading
+import collections
 
 import pronto.utils
 
@@ -19,8 +18,9 @@ class Relationship(object):
 
     """
 
-    _instances = {}
+    _instances = collections.OrderedDict()
     _lock = multiprocessing.Lock()
+    _tlock = threading.Lock()
 
     def __init__(self, obo_name, symmetry=None, transitivity=None,
                  reflexivity=None, complementary=None, prefix=None,
@@ -40,8 +40,20 @@ class Relationship(object):
                 A relationship with a direction set as 'topdown' will be
                 counted as _childhooding_ when using the Term.children
                 property.
+            comment (string or None): comments about the Relationship
+            aliases (list or None): a list of names that are synonyms to
+                this Relationship obo_name
+
+        .. note::
+            For :param:`symetry`, :param:`transitivity`, :param:`reflexivity`,
+            the allowed values are the following:
+                - True for reflexive, transitive, symmetric
+                - False for areflexive, atransitive, asymmetric
+                - None for non-reflexive, non-transitive, non-symmetric
+
+
         """
-        if obo_name not in self._instances.keys():
+        if obo_name not in self._instances:
             self.obo_name = obo_name
             self.symmetry = symmetry
             self.transitivity = reflexivity
@@ -50,7 +62,7 @@ class Relationship(object):
             self.prefix = prefix or ''
             self.direction = direction or ''
             self.comment = comment or ''
-            self.aliases = aliases or []
+            self.aliases = aliases or list()
             self._instances[obo_name] = self
             for alias in self.aliases:
                 self._instances[alias] = self
@@ -107,22 +119,65 @@ class Relationship(object):
               allow instatiation of file-defined relationships).
 
         """
-        if obo_name in cls._instances:
+        if obo_name in cls._instances.keys():
             return cls._instances[obo_name]
         else:
             return super(Relationship, cls).__new__(cls)
 
     @pronto.utils.classproperty
     def topdown(self):
+        """An iterator over all "topdown" direction Relationships object
+
+        Example:
+
+            >>> from pronto import Relationship
+            >>> for r in Relationship.topdown:
+            ...    print(r)
+            Relationship(can_be)
+            Relationship(has_part)
+
+        """
         return (r for r in self._instances.values() if r.direction=='topdown')
 
     @pronto.utils.classproperty
     def bottomup(self):
-        return (r for r in self._instances.values() if r.direction=='bottomup')
+        """An iterator over all "bottomup" direction Relationships object
+
+        Example:
+
+            >>> from pronto import Relationship
+            >>> for r in Relationship.bottomup:
+            ...    print(r)
+            Relationship(is_a)
+            Relationship(part_of)
+
+        """
+
+        return pronto.utils.unique_everseen(r for r in self._instances.values() if r.direction=='bottomup')
 
     @pronto.utils.classproperty
     def lock(self):
+        """A multiprocessing.Lock provided at a class level
+
+        This allows to use pronto's Relationship objects in a multiprocessed
+        environment.
+
+        Todo:
+            * Use the lock within Relationship.__init__ method and Relationship.topdown
+              and Relationship.bottomup
+            * Write a classmethod Relationship.instances that wraps the process of acquiring
+              the lock during iteration to avoid data races within iteration if other Relationship
+              if created (! may end in a deadlock)
+
+        """
         return self._lock
+
+    @pronto.utils.classproperty
+    def tlock(self):
+        """A threading.Lock provided at a class level
+        """
+        return self._tlock
+
 
 
 Relationship('is_a', symmetry=False, transitivity=True,
@@ -142,6 +197,8 @@ Relationship('part_of', symmetry=False, transitivity=True,
                         direction='bottomup', aliases=['is_part'])
 
 Relationship('has_units', symmetry=False, transitivity=False,
-                         reflexivity=None)
+                          reflexivity=None)
 
 
+Relationship('has_domain', symmetry=False, transitivity=False,
+                           reflexivity=None)

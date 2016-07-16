@@ -123,21 +123,28 @@ def _classify(term):
         finally:
             pronto.relationship.Relationship.lock.release()
 
+    if 'is_a' in term.keys():
+        term[pronto.relationship.Relationship('is_a')] = term['is_a']
+        del term['is_a']
 
     # New relations may be created when extracting relationship,
     # this need to be investigated to come with a less 'hacky' solution
     #while True:
-    pronto.relationship.Relationship.lock.acquire()
-    try:
-        for rship in pronto.relationship.Relationship._instances.values():
-            relations = _extract_relationship(term, rship, relations)
-    finally:
-        pronto.relationship.Relationship.lock.release()
+
+    #pronto.relationship.Relationship.lock.acquire()
+    #try:
+    for key in list(term.keys()):
+        if isinstance(key, pronto.relationship.Relationship):
+            relations = _extract_relationship(term, key, relations)
+
+    #term = {k:v for k,v in term.items() if not isinstance(k, pronto.relationship.Relationship)}
+
+    #finally:
+    #    pronto.relationship.Relationship.lock.release()
 
 
 
     desc = _extract_description(term)
-
     tid, name = _extract_name_and_id(term)
 
     if not tid:
@@ -174,12 +181,14 @@ def _process_relationship(term):
     del term['relationship']
 
 def _extract_relationship(term, rship, relations):
-    if rship.obo_name in term.keys():
-        if isinstance(term[rship.obo_name], list):
-            relations[rship] = [ x.split(' !')[0] for x in term[rship.obo_name] ]
-        else:
-            relations[rship] = [ term[rship.obo_name].split(' !')[0]]
-        del term[rship.obo_name]
+
+    #if rship.obo_name in term.keys():
+    if isinstance(term[rship], list):
+        relations[rship] = [ x.split(' !')[0] for x in term[rship] ]
+    else:
+        relations[rship] = [ term[rship].split(' !')[0]]
+    del term[rship]
+
     return relations
 
 def _extract_description(term):

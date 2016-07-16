@@ -25,6 +25,7 @@ Todo:
 
 
 import functools
+import itertools
 import errno
 import os
 import signal
@@ -78,16 +79,25 @@ class ProntoWarning(Warning):
         >>> from pronto import Ontology
         >>> import warnings
         >>> with warnings.catch_warnings(record=True) as w:
-        ...    # the following ontology always has import issues (no URI)
+        ...    # the following ontology always has import issues (no URI in imports)
         ...    ims = Ontology('https://raw.githubusercontent.com/beny/imzml/master/data/imagingMS.obo')
         >>> print(w[-1].category)
         <class 'pronto.utils.ProntoWarning'>
 
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+
+        super(ProntoWarning, self).__init__(*args, **kwargs)
+        #self.__suppress_context__ = True
+
 
 def explicit_namespace(attr, nsmap):
     """Explicits the namespace in an attribute name.
+
+    Parameters
+        attr (str): the attribute with its abbreviated namespace
+        nsmap (dict): the namespace map
 
     Example:
 
@@ -98,7 +108,7 @@ def explicit_namespace(attr, nsmap):
 
     """
     prefix, term = attr.split(':', 1)
-    return '{'+nsmap[prefix]+'}'+term
+    return "".join(['{', nsmap[prefix], '}', term])
 
 def parse_comment(comment):
     """Parse an rdfs:comment to extract information.
@@ -107,8 +117,8 @@ def parse_comment(comment):
     when the Owl file was converted from Obo to Owl). This function parses
     the comment to try to extract those metadata.
 
-    Arguments:
-        - comment (str): if containing different sections (such as 'def:',
+    Parameters:
+        comment (str): if containing different sections (such as 'def:',
             'functional form' or 'altdef:'), the value of those sections will
             be returned in a dictionnary. If there are not sections, the
             comment is interpreted as a description
@@ -163,9 +173,9 @@ def parse_comment(comment):
 def format_accession(accession, nsmap=None):
     """Formats an accession URI/string to the YY:XXXXXXX token format.
 
-    Arguments:
-        - accession (str): the URI to be formatted
-        - nsmap (dict): namespaces that can be found at the beginning of the
+    Parameters:
+        accession (str): the URI to be formatted
+        nsmap (dict): namespaces that can be found at the beginning of the
             accession that we want to get rid of.
 
     Example:
@@ -189,5 +199,20 @@ def format_accession(accession, nsmap=None):
     return accession
 
 
-
+def unique_everseen(iterable, key=None):
+    """List unique elements, preserving order. Remember all elements ever seen."""
+    # unique_everseen('AAAABBBCCDAABBB') --> A B C D
+    # unique_everseen('ABBCcAD', str.lower) --> A B C D
+    seen = set()
+    seen_add = seen.add
+    if key is None:
+        for element in itertools.filterfalse(seen.__contains__, iterable):
+            seen_add(element)
+            yield element
+    else:
+        for element in iterable:
+            k = key(element)
+            if k not in seen:
+                seen_add(k)
+                yield element
 

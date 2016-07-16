@@ -6,9 +6,6 @@ pronto.term
 This module defines the classes Term and TermList.
 """
 
-#import functools
-
-#from pronto import utils
 from pronto.relationship import Relationship
 
 
@@ -17,6 +14,25 @@ class Term(object):
     """
 
     def __init__(self, tid, name, desc='', relations=None, other=None):
+        """Instantiate a new term.
+
+        Parameters
+            tid (str): the Term id (e.g. MS:1000031)
+            name (str): the name of the Term in human language
+            desc (str): a description of the Term
+            relations (dict): a dictionary containing the other
+                terms the Term is in a relationship with.
+            other (dict): other information about the term
+
+        Example
+
+            >>> from pronto import Term, Relationship
+            >>> new_term = Term('TR:001', 'new term', 'a new term')
+            >>> linked_term = Term('TR:002', 'other new', 'another term',
+            ...                    { Relationship('is_a'): 'TR:001'})
+
+
+        """
         self.id = tid
         self.name = name
         self.desc = desc
@@ -30,6 +46,14 @@ class Term(object):
 
     @property
     def parents(self):
+        """The parents of the Term.
+
+        Returns
+            parents (pronto.term.TermList): a TermList containing all parents
+                of the Term (other terms with which this Term has a "bottomup"
+                relationship)
+        """
+
         if self._parents is not None:
             return self._parents
         else:
@@ -41,6 +65,13 @@ class Term(object):
 
     @property
     def children(self):
+        """The children of the Term.
+
+        Returns
+            children (pronto.term.TermList): a TermList containing all parents
+                of the Term (other terms with which this Term has a "topdown"
+                relationship)
+        """
         if self._children is not None:
             return self._children
         else:
@@ -94,15 +125,18 @@ class Term(object):
         """A dereferenced relations dictionary only contains other Terms id
         to avoid circular references when creating a json.
         """
-        return Term(
-            self.id,
-            self.name,
-            self.other,
-            self.desc,
-            {k.obo_name:v.id for k,v in self.relations.items()}
-         )
+        return {
+            'id': self.id,
+            'name': self.name,
+            'other': self.other,
+            'desc': self.desc,
+            'relations': {k.obo_name:v.id for k,v in self.relations.items()}
+         }
 
     def _empty_cache(self):
+        """
+        Empties the cache of the Term's memoized functions.
+        """
         self._children, self._parents = None, None
         self._rchildren, self._rparents = dict(), dict()
 
@@ -111,6 +145,16 @@ class Term(object):
 
         Note that the :param:`intermediate` can be used to include every
         child to the returned list, not only the most nested ones.
+
+        Parameters
+            level (int): The depth level to continue fetching children from
+                (default is -1, to get children to the utter depths)
+            intermediate (bool): Also include the intermediate children
+                (default is True)
+
+        Returns
+            rchildren (pronto.term.TermList): The recursive children
+                of the Term following the parameters
 
         """
         try:
@@ -134,10 +178,20 @@ class Term(object):
             return rchildren
 
     def rparents(self, level=-1, intermediate=True):
-        """Create a recursive list of parents.
+        """Create a recursive list of children.
 
         Note that the :param:`intermediate` can be used to include every
-        parent to the returned list, not only the top ones.
+        parents to the returned list, not only the most nested ones.
+
+        Parameters
+            level (int): The depth level to continue fetching parents from
+                (default is -1, to get parents to the utter depths)
+            intermediate (bool): Also include the intermediate parents
+                (default is True)
+
+        Returns
+            rchildren (pronto.term.TermList): The recursive children
+                of the Term following the parameters
 
         """
         try:
@@ -159,6 +213,7 @@ class Term(object):
             rparents = TermList(set(rparents))
             self._rparents[(level, intermediate)] = rparents
             return rparents
+
 
 class TermList(list):
     """A list of Terms.

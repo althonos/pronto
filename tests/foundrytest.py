@@ -38,24 +38,23 @@ def task(ontology):
             continue
 
         print('    file: {}'.format(product["id"]))
-        signal.alarm(300)
 
         t = time.time()
-        ont = pronto.Ontology(product["ontology_purl"])
-        print("      {} terms extracted in {}s.".format(len(ont), round(t-time.time(), 1)))
-        signal.alarm(0)
-        del ont
-        return
+        try:
+           ont = pronto.Ontology(product["ontology_purl"])
+           print("      {} terms extracted in {}s.".format(len(ont), round(time.time()-t, 1)))
+        except OSError:
+           continue
 
-
-signal.signal(signal.SIGALRM, timer)
+#signal.signal(signal.SIGALRM, timer)
 
 content = rq.urlopen(OBO_CATALOG).read()
 catalog = json.loads(content.decode('utf-8'))
 
-pool = multiprocessing.pool.Pool(multiprocessing.cpu_count() * 4)
+#pool = multiprocessing.pool.Pool(multiprocessing.cpu_count() * 4)
 
-pool.map(task, catalog["ontologies"])
+#pool.
+list(map(task, catalog["ontologies"]))
 
 
 

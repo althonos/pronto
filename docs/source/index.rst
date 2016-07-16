@@ -31,7 +31,7 @@ Contents:
    Examples <examples>
    Api Reference <api/pronto>
    To-do <todo>
-
+   About <about>
 
 
 Indices and tables

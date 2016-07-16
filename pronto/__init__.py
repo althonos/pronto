@@ -7,7 +7,7 @@
 
 
 
-__version__='0.1.12'
+__version__='0.2.0'
 __author__='Martin Larralde'
 __author_email__ = 'martin.larralde@ens-cachan.fr'
 

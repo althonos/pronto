@@ -34,18 +34,17 @@ repository and install it with the setup script (still requires
 Usage
 ^^^^^
 
-Currently there are 2 classes which both inherit from Ontology: **Obo**
-and **OwlXML**. To parse the right kind of file you have to use the
-right class, although that will probably change to the future to provide
-an unique **Ontology** class. Right now though you can still use the
-Ontology class as a base to merge other ontologies into.
+The class Ontology is likely the one you'll use the most
+if all you want is to browse ontologies. It can be used to import 
+ontologies in .owl (sometimes seen as .ont) and .obo formats,
+merge, and export ontologies to a rudimentary obo file.
 
 Instantiate an obo ontology and getting a term by accession number:
 
 .. code:: python
 
     import pronto
-    ont = pronto.Obo('path/to/file.obo')
+    ont = pronto.Ontology('path/to/file.obo')
     term = ont['REF:ACCESSION']
 
 Display an ontology in obo format and in json format:
@@ -53,7 +52,7 @@ Display an ontology in obo format and in json format:
 .. code:: python
 
     import pronto
-    ont = pronto.OwlXML('https://net.path.should/work/too.owl')
+    ont = pronto.Ontology('https://net.path.should/work/too.owl')
     print(ont.obo)
     print(ont.json)
 
@@ -62,10 +61,10 @@ Merge two ontologies:
 .. code:: python
 
     import pronto
-    nmr = pronto.OwlXML('https://raw.githubusercontent.com/nmrML/nmrML/'
-                        'master/ontologies/nmrCV.owl')
-    ms  =    pronto.Obo('http://psidev.cvs.sourceforge.net/viewvc/psidev/psi'
-                        '/psi-ms/mzML/controlledVocabulary/psi-ms.obo')
+    nmr = pronto.Ontology('https://raw.githubusercontent.com/nmrML/nmrML/'
+                          'master/ontologies/nmrCV.owl')
+    ms  = pronto.Ontology('http://psidev.cvs.sourceforge.net/viewvc/psidev/psi'
+                          '/psi-ms/mzML/controlledVocabulary/psi-ms.obo')
 
     ms.merge(nmr) # MS ontology keeps its metadata but now contains NMR terms
                   # as well.
@@ -77,7 +76,7 @@ Explore every term of an ontology and print those with children:
 .. code:: python
 
     import pronto
-    ont = pronto.Obo('path/to/file.obo')
+    ont = pronto.Ontology('path/to/file.obo')
     for term in ont:
         if term.children:
             print(term)
@@ -87,17 +86,13 @@ Get grandchildrens of an ontology term:
 .. code:: python
 
     import pronto
-    ont = pronto.Obo('path/to/file.obo')
+    ont = pronto.Ontology('path/to/file.obo')
     print(ont['RF:XXXXXXX'].children.children)
 
 TODO
 ^^^^
 
--  redefine OwlXML and Obo as Parsers in pronto.parser, and always use
-   Ontology to open an ontology file.
--  properly define Import Warnings whenever an import fails.
 -  write a proper documentation
--  create a proper relationship class
 -  test with many different ontologies
 -  extract data from OwlXML where attributes are ontologic terms
 -  extract metadatas from OwlXML

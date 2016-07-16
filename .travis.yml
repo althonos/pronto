@@ -35,13 +35,10 @@ install:
 - if [ $TEST_SUITE == "sphinx" ]; then pip install -r requirements-doc.txt; fi
 - pip install .
 
-script:
-- make test
-- if [ "$(python -c 'import sys; print(sys.version[0:3])')" = "3.5" ]; then make doc html; fi
+script: make test
 
-after_script:
-- if [ "$(python -c 'import sys; print(sys.version[0:3])')" = "3.5" ]; then make cover;
-  fi
+after_success: 
+  - if [ "$(python -V)" \> "Python 3.5" ]; then pip install coverage codacy-coverage; make cover; fi
 
 before_deploy: python setup.py sdist --formats zip,gztar bdist_wheel
 

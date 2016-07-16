@@ -7,7 +7,7 @@ Overview
 ^^^^^^^^
 
 Pronto is a python module to parse, create, browse and export ontologies
-from some popular formats. For now, **obo** and **owl/xml** were added,
+from some popular formats. For now, **obo** and **owl/xml** are available,
 but more formats are to be added in the future (you can even add your
 own to work with the current API).
 
@@ -91,16 +91,11 @@ Get grandchildrens of an ontology term:
 
 TODO
 ^^^^
-
--  write a proper documentation
 -  test with many different ontologies
 -  extract data from OwlXML where attributes are ontologic terms
 -  extract metadatas from OwlXML
 -  add other owl serialized formats
 -  (maybe) add serialization to owl
-
-
-
 
 
 

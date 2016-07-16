@@ -28,7 +28,13 @@ import functools
 import itertools
 import errno
 import os
+import sys
 import signal
+
+try:
+    itertools.filterfalse = itertools.ifilterfalse
+except AttributeError:
+    pass
 
 
 class TimeoutError(IOError):
@@ -66,6 +72,7 @@ class classproperty(object):
     """
 
     def __init__(self, fget):
+        self.__doc__ = fget.__doc__
         self.fget = fget
 
     def __get__(self, owner_self, owner_cls):
@@ -75,7 +82,6 @@ class ProntoWarning(Warning):
     """A warning raised by pronto.
 
     Example:
-
         >>> from pronto import Ontology
         >>> import warnings
         >>> with warnings.catch_warnings(record=True) as w:
@@ -91,7 +97,6 @@ class ProntoWarning(Warning):
         super(ProntoWarning, self).__init__(*args, **kwargs)
         #self.__suppress_context__ = True
 
-
 def explicit_namespace(attr, nsmap):
     """Explicits the namespace in an attribute name.
 
@@ -100,7 +105,6 @@ def explicit_namespace(attr, nsmap):
         nsmap (dict): the namespace map
 
     Example:
-
         >>> from pronto.utils import explicit_namespace
         >>> ns = {'owl':'http://www.w3.org/2002/07/owl#'}
         >>> explicit_namespace('owl:Class', ns)
@@ -179,7 +183,6 @@ def format_accession(accession, nsmap=None):
             accession that we want to get rid of.
 
     Example:
-
         >>> from pronto.utils import format_accession
         >>> format_accession('UO_1000003')
         'UO:1000003'
@@ -198,7 +201,6 @@ def format_accession(accession, nsmap=None):
 
     return accession
 
-
 def unique_everseen(iterable, key=None):
     """List unique elements, preserving order. Remember all elements ever seen."""
     # unique_everseen('AAAABBBCCDAABBB') --> A B C D
@@ -215,4 +217,3 @@ def unique_everseen(iterable, key=None):
             if k not in seen:
                 seen_add(k)
                 yield element
-

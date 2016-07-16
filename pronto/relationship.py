@@ -2,6 +2,7 @@
 
 import multiprocessing
 import threading
+import functools
 import collections
 
 import pronto.utils
@@ -45,8 +46,8 @@ class Relationship(object):
                 this Relationship obo_name
 
         .. note::
-            For :param:`symetry`, :param:`transitivity`, :param:`reflexivity`,
-            the allowed values are the following:
+            For :symetry, transitivity, reflexivity, the allowed values are
+            the following:
                 - True for reflexive, transitive, symmetric
                 - False for areflexive, atransitive, asymmetric
                 - None for non-reflexive, non-transitive, non-symmetric
@@ -98,10 +99,11 @@ class Relationship(object):
             return None
 
     def __repr__(self):
+        """Overloaded :obj:`object.__repr__`"""
         return "Relationship({})".format(self.obo_name)
 
     def __new__(cls, obo_name, *args, **kwargs):
-        """Overloaded py:method::__new__ method that _memoizes_ the objects.
+        """Overloaded :obj:`object.__new__` method that __memoizes__ the objects.
 
         This allows to do the following (which is frecking cool):
 
@@ -124,35 +126,39 @@ class Relationship(object):
         else:
             return super(Relationship, cls).__new__(cls)
 
-    @pronto.utils.classproperty
-    def topdown(self):
-        """An iterator over all "topdown" direction Relationships object
+    #@pronto.utils.classproperty
+    @classmethod
+    def topdown(cls):
+        """Get all topdown Relationship instances
+
+        Returns:
+            :obj:`generator`
 
         Example:
 
             >>> from pronto import Relationship
-            >>> for r in Relationship.topdown:
+            >>> for r in Relationship.topdown():
             ...    print(r)
             Relationship(can_be)
             Relationship(has_part)
 
         """
-        return (r for r in self._instances.values() if r.direction=='topdown')
+        return (r for r in cls._instances.values() if r.direction=='topdown')
 
-    @pronto.utils.classproperty
+    #@pronto.utils.classproperty
+    @classmethod
     def bottomup(self):
-        """An iterator over all "bottomup" direction Relationships object
+        """Get all bottomup Relationship instances
 
         Example:
 
             >>> from pronto import Relationship
-            >>> for r in Relationship.bottomup:
+            >>> for r in Relationship.bottomup():
             ...    print(r)
             Relationship(is_a)
             Relationship(part_of)
 
         """
-
         return pronto.utils.unique_everseen(r for r in self._instances.values() if r.direction=='bottomup')
 
     @pronto.utils.classproperty

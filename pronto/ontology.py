@@ -28,7 +28,7 @@ import pronto.utils
 
 
 class Ontology(object):
-    """The base class for an ontology.
+    """An ontology.
 
     Ontologies inheriting from this class will be able to use the same API as
     providing they generated the expected structure in the :func:`_parse`
@@ -202,8 +202,7 @@ class Ontology(object):
         """Add new terms to the current ontology.
 
         Raises:
-            TypeError: when the object(s) passed to the function is (are)
-                not either a TermList or a Term.
+            TypeError: when the arguments is (are) neither a TermList nor a Term.
 
         Note:
             This will also recursively include terms in the term's relations
@@ -212,23 +211,22 @@ class Ontology(object):
             as 'ONT:001') to your terms relations, and let the Ontology link
             terms with each other.
 
-        :Example:
+        Examples:
+            Create a new ontology from scratch
 
-        Create a new ontology from scratch:
+            >>> from pronto import Term, Relationship
+            >>> t1 = Term('ONT:001','my 1st term',
+            ...           'this is my first term')
+            >>> t2 = Term('ONT:002', 'my 2nd term',
+            ...           'this is my second term',
+            ...           {Relationship('part_of'): ['ONT:001']})
+            >>> ont = Ontology()
+            >>> ont.include(t1, t2)
 
-        >>> from pronto import Term, Relationship
-        >>> t1 = Term('ONT:001','my 1st term',
-        ...           'this is my first term')
-        >>> t2 = Term('ONT:002', 'my 2nd term',
-        ...           'this is my second term',
-        ...           {Relationship('part_of'): ['ONT:001']})
-        >>> ont = Ontology()
-        >>> ont.include(t1, t2)
-
-        >>> 'ONT:002' in ont
-        True
-        >>> ont['ONT:001'].children
-        [<ONT:002: my 2nd term>]
+            >>> 'ONT:002' in ont
+            True
+            >>> ont['ONT:001'].children
+            [<ONT:002: my 2nd term>]
 
         """
         ref_needed = False
@@ -302,19 +300,18 @@ class Ontology(object):
     def merge(self, other):
         """Merges another ontology into the current one.
 
-        :Example:
-
-        >>> from pronto import Ontology
-        >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
-        >>> po = Ontology('https://raw.githubusercontent.com/Planteome'
-        ... '/plant-ontology/master/po.obo', False)
-        >>> 'NMR:1000271' in nmr
-        True
-        >>> 'NMR:1000271' in po
-        False
-        >>> po.merge(nmr)
-        >>> 'NMR:1000271' in po
-        True
+        Example:
+            >>> from pronto import Ontology
+            >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
+            >>> po = Ontology('https://raw.githubusercontent.com/Planteome'
+            ... '/plant-ontology/master/po.obo', False)
+            >>> 'NMR:1000271' in nmr
+            True
+            >>> 'NMR:1000271' in po
+            False
+            >>> po.merge(nmr)
+            >>> 'NMR:1000271' in po
+            True
 
         """
         if isinstance(other, Ontology):

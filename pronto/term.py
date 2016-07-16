@@ -11,26 +11,27 @@ from pronto.relationship import Relationship
 
 class Term(object):
     """ An ontology term.
+
+    Example:
+
+        >>> from pronto import Term, Relationship
+        >>> new_term = Term('TR:001', 'new term', 'a new term')
+        >>> linked_term = Term('TR:002', 'other new', 'another term',
+        ...                    { Relationship('is_a'): 'TR:001'})
+
+
     """
 
     def __init__(self, tid, name, desc='', relations=None, other=None):
-        """Instantiate a new term.
+        """
 
-        Parameters
+        Parameters:
             tid (str): the Term id (e.g. MS:1000031)
             name (str): the name of the Term in human language
             desc (str): a description of the Term
             relations (dict): a dictionary containing the other
                 terms the Term is in a relationship with.
             other (dict): other information about the term
-
-        Example
-
-            >>> from pronto import Term, Relationship
-            >>> new_term = Term('TR:001', 'new term', 'a new term')
-            >>> linked_term = Term('TR:002', 'other new', 'another term',
-            ...                    { Relationship('is_a'): 'TR:001'})
-
 
         """
         self.id = tid
@@ -48,17 +49,18 @@ class Term(object):
     def parents(self):
         """The parents of the Term.
 
-        Returns
-            parents (pronto.term.TermList): a TermList containing all parents
-                of the Term (other terms with which this Term has a "bottomup"
-                relationship)
+        Returns:
+            :obj:`pronto.TermList`:
+            a TermList containing all parents of the Term
+            (other terms with which this Term has a "bottomup"
+            relationship)
         """
 
         if self._parents is not None:
             return self._parents
         else:
             self._parents = TermList()
-            for rship in Relationship.bottomup:
+            for rship in Relationship.bottomup():
                 if rship in self.relations.keys():
                     self._parents.extend(self.relations[rship])
             return self._parents
@@ -67,16 +69,18 @@ class Term(object):
     def children(self):
         """The children of the Term.
 
-        Returns
-            children (pronto.term.TermList): a TermList containing all parents
-                of the Term (other terms with which this Term has a "topdown"
-                relationship)
+        Returns:
+            :obj:`pronto.TermList`:
+
+            a TermList containing all parents of the Term
+            (other terms with which this Term has a "topdown"
+            relationship)
         """
         if self._children is not None:
             return self._children
         else:
             self._children = TermList()
-            for rship in Relationship.topdown:
+            for rship in Relationship.topdown():
                 if rship in self.relations.keys():
                     self._children.extend(self.relations[rship])
             return self._children
@@ -101,7 +105,7 @@ class Term(object):
 
         # add relationships (only bottom up ones)
 
-        for relation in Relationship.bottomup:
+        for relation in Relationship.bottomup():
             try:
                 for companion in self.relations[relation]:
 
@@ -146,15 +150,15 @@ class Term(object):
         Note that the :param:`intermediate` can be used to include every
         child to the returned list, not only the most nested ones.
 
-        Parameters
+        Parameters:
             level (int): The depth level to continue fetching children from
                 (default is -1, to get children to the utter depths)
             intermediate (bool): Also include the intermediate children
                 (default is True)
 
-        Returns
-            rchildren (pronto.term.TermList): The recursive children
-                of the Term following the parameters
+        Returns:
+            :obj:`pronto.TermList`:
+            The recursive children of the Term following the parameters
 
         """
         try:
@@ -183,15 +187,15 @@ class Term(object):
         Note that the :param:`intermediate` can be used to include every
         parents to the returned list, not only the most nested ones.
 
-        Parameters
+        Parameters:
             level (int): The depth level to continue fetching parents from
                 (default is -1, to get parents to the utter depths)
             intermediate (bool): Also include the intermediate parents
                 (default is True)
 
-        Returns
-            rchildren (pronto.term.TermList): The recursive children
-                of the Term following the parameters
+        Returns:
+            :obj:`pronto.TermList`:
+            The recursive children of the Term following the parameters
 
         """
         try:
@@ -222,7 +226,6 @@ class TermList(list):
     generate lists of terms' attributes.
 
     Example:
-
         >>> from pronto import Ontology, Relationship
         >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
         >>> type(nmr['NMR:1000031'].children)
@@ -234,7 +237,7 @@ class TermList(list):
         [<NMR:1400011: cardinal part of NMR instrument>]
 
 
-    .. note::
+    .. tip::
         It is also possible to call Term methods on a TermList to
         create a set of terms::
 
@@ -244,6 +247,8 @@ class TermList(list):
     """
 
     def __init__(self, *elements):
+        """
+        """
         list.__init__(self, *elements)
         self._check_content()
 
@@ -272,7 +277,8 @@ class TermList(list):
 
     def __contains__(self, term):
         """
-        Todo: write doc & test
+        Todo:
+            write doc & test
         """
         return term in self.id or any(t for t in self if t==term)
 

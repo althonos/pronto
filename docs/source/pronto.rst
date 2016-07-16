@@ -7,13 +7,16 @@ The following classes are imported when running ``from pronto import *``:
 
 .. autosummary::
    :nosignatures:
-   :toctree:
+   :template: summary.rst
+   :toctree: pronto/
 
-   Term
-   TermList
-   Relationship
-   Ontology
-   Parser
+   pronto.Ontology
+   pronto.Parser
+   pronto.Relationship
+   pronto.Term
+   pronto.TermList
 
 
-   
+
+
+

@@ -29,7 +29,7 @@ Contents:
 
    Installation <install>
    Examples <examples>
-   Api Reference <api/pronto>
+   Api Reference <pronto>
    To-do <todo>
    About <about>
 

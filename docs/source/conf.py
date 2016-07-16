@@ -43,6 +43,8 @@ extensions = [
 #    'sphinx.ext.viewcode',
 ]
 
+autosummary_generate = ['pronto']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -312,7 +314,7 @@ latex_documents = [
 autodoc_member_order = 'groupwise'
 
 # Add __init__ docstring to the Class documentation
-autoclass_content = 'both'
+autoclass_content = 'class'
 
 
 
@@ -359,4 +361,7 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+#intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'python': ('https://docs.python.org/3.5', None)}
+
+#napoleon_use_admonition_for_examples = True

@@ -13,11 +13,6 @@ class Parser(object):
 
     _instances = {}
 
-    _rawterms = multiprocessing.Queue()
-    _terms = multiprocessing.Queue()
-    processes =  []
-
-
     def __init__(self, timeout=None):
         self.terms = dict()
         self.meta = dict()
@@ -64,6 +59,28 @@ class Parser(object):
     def manage_imports(self):
         raise NotImplementedError
 
+    def init_workers(self, ParserProcess, nsmap=None, *args, **kwargs):
+        self._rawterms = multiprocessing.Queue()
+        self._terms = multiprocessing.Queue()
+        self._processes = list()
+
+        for _ in range(multiprocessing.cpu_count() * 2):
+            self._processes.append(ParserProcess(self._rawterms, self._terms, nsmap))
+
+        for p in self._processes:
+            p.start()
+
+    def shut_workers(self):
+        self._rawterms.close()
+        self._terms.close()
+
+        for p in self._processes:
+            p.terminate()
+
+        for p in self._processes:
+            p.join()
+
+
     @classmethod
     def __del__(cls):
 
@@ -79,7 +96,6 @@ class Parser(object):
 
         except AttributeError:
             pass
-
 
 
 

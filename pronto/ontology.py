@@ -77,7 +77,7 @@ class Ontology(object):
                 if not os.path.exists(path):
                     raise OSError('Ontology file {} could not be found'.format(path))
                 else:
-                    handle = open(path, 'r')
+                    handle = open(path, 'rb')
 
 
             self.parse(handle)

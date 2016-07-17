@@ -112,7 +112,7 @@ def explicit_namespace(attr, nsmap):
 
     """
     prefix, term = attr.split(':', 1)
-    return "".join(['{', nsmap[prefix], '}', term])
+    return '{{{}}}{}'.format(nsmap[prefix], term)
 
 def parse_comment(comment):
     """Parse an rdfs:comment to extract information.
@@ -132,10 +132,10 @@ def parse_comment(comment):
 
     """
     if comment is None:
-        return {}
+        return dict()
 
     commentlines = comment.split('\n')
-    parsed = {}
+    parsed = dict()
 
     for (index, line) in enumerate(commentlines):
 
@@ -143,7 +143,7 @@ def parse_comment(comment):
 
         if line.startswith('Functional form:'):
             if not 'other' in parsed.keys():
-                parsed['other'] = {}
+                parsed['other'] = dict()
             parsed['other']['functional form'] = "\n".join(commentlines[index:])
             break
 

@@ -16,7 +16,7 @@ from pronto.parser import Parser
 
 class _OboClassifier(multiprocessing.Process):
 
-    def __init__(self, queue, results):
+    def __init__(self, queue, results, *args, **kwargs):
 
         super(_OboClassifier, self).__init__()
 
@@ -90,22 +90,6 @@ class OboParser(Parser):
     def __init__(self):
         super(OboParser, self).__init__()
         self.extension = '.obo'
-        #self._rawterms = list()
-
-        #self._rawterms = multiprocessing.JoinableQueue()
-        #self._terms = multiprocessing.Queue()
-
-        for k in range(multiprocessing.cpu_count()):
-            self.processes.append(_OboClassifier(self._rawterms, self._terms))
-
-        for p in self.processes:
-            p.start()
-
-        #for k in range(12):
-        #    p = _OboClassifier(self._rawterms, self._terms)
-            #p = multiprocessing.Process(target=_classify, args=(self._rawterms, self._terms))
-            #p.start()
-        #    self.processes.append(p)
 
         self._tempterm = dict()
         self._typedef = list()
@@ -113,6 +97,7 @@ class OboParser(Parser):
 
     def hook(self, *args, **kwargs):
         """Returns True if the file is an Obo file (extension is .obo)"""
+
         if 'path' in kwargs:
             return kwargs['path'].endswith(self.extension)
 
@@ -121,13 +106,8 @@ class OboParser(Parser):
         #self._rawterms, = multiprocessing.JoinableQueue()
         self._typedef, self._meta = list(), dict()
 
-        #self._rawterms = multiprocessing.JoinableQueue()
-        #self._terms = multiprocessing.Queue()
+        self.init_workers(_OboClassifier)
 
-        #self.processes = [_OboClassifier(self._rawterms, self._terms) for k in range(12)]
-
-        #for p in self.processes:
-        #    p.start()
 
         IN = 'meta'
         for line in stream:
@@ -142,24 +122,15 @@ class OboParser(Parser):
         self._rawterms.put(self._tempterm)
 
 
+    def makeTree(self, pool):
+        """Create the proper ontology Tree from raw terms"""
+
         while self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
             d = self._terms.get()
             self.terms[d[0]] = pronto.term.Term(
                 d[0], d[1], d[2], {pronto.relationship.Relationship(k):v for k,v in d[3].items()}, d[4]
             )
 
-        #for p in self.processes:
-        #    p.terminate()
-
-        #self._rawterms.close()
-        #self._terms.close()
-            #self._rawterms.put(None)
-
-    def makeTree(self, pool):
-        """Create the proper ontology Tree from raw terms"""
-        pass
-        #for t in pool.map(_classify, self._rawterms):
-        #    self.terms.update(t)
 
     def metanalyze(self):
         """Analyze metadatas extracted from the beginning of the file."""

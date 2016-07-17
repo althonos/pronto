@@ -1,6 +1,7 @@
 
 import functools
 import os
+import multiprocessing
 import lxml.etree as etree
 
 from pronto.parser import Parser
@@ -8,48 +9,57 @@ from pronto.relationship import Relationship
 import pronto.utils
 
 
+"""
+NS = {xmlns:"http://purl.obolibrary.org/obo/uo.owl#"
+      xml:base="http://purl.obolibrary.org/obo/uo.owl"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:owl="http://www.w3.org/2002/07/owl#"
+      xmlns:oboInOwl="http://www.geneontology.org/formats/oboInOwl#"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+      xmlns:uo="http://purl.obolibrary.org/obo/uo#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:obo="http://purl.obolibrary.org/obo/"}
+"""
 
-class OwlXMLParser(Parser):
-    """A parser for the owl xml format.
-    """
+"""
+{'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+ 'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
+  None: 'http://purl.obolibrary.org/obo/doid.owl#',
+  'xsd': 'http://www.w3.org/2001/XMLSchema#',
+  'obo': 'http://purl.obolibrary.org/obo/',
+  'doid': 'http://purl.obolibrary.org/obo/doid#',
+  'oboInOwl': 'http://www.geneontology.org/formats/oboInOwl#',
+  'owl': 'http://www.w3.org/2002/07/owl#'}
+"""
 
-    def __init__(self):
-        super(OwlXMLParser, self).__init__()
-        self._tree = None
-        self._ns = {}
-        self.extensions = ('.owl', '.xml', '.ont')
 
-    def hook(self, *args, **kwargs):
-        """Returns True if the file is an Owl file (extension is .owl)"""
-        if 'path' in kwargs:
-            return os.path.splitext(kwargs['path'])[1] in self.extensions
 
-    def read(self, stream):
-        """
-        Parse the content of the stream
-        """
-        self._parser = etree.XMLParser(huge_tree=True)
-        self._tree = etree.parse(stream, self._parser)
-        self._ns = self._tree.find('.').nsmap
-        if None in self._ns.keys():
-            self._ns['base'] = self._ns[None]
-            del self._ns[None]
-        self._ns['obo'] = 'http://purl.obolibrary.org/obo/'
+class _OwlXMLClassifier(multiprocessing.Process):
 
-    def makeTree(self, pool):
-        """
-        Maps :function:_classify to each term of the file via a ThreadPool.
+    def __init__(self, queue, results, nsmap):
 
-        Once all the raw terms are all classified, the :attrib:terms dictionnary
-        gets updated.
+        super(_OwlXMLClassifier, self).__init__()
 
-        Arguments:
-            pool (Pool): a pool of workers that is used to map the _classify
-                function on the terms.
-        """
-        terms_elements = self._tree.iterfind('./owl:Class', self._ns)
-        for t in pool.map(self._classify, terms_elements):
-            self.terms.update(t)
+        self.queue = queue
+        self.results = results
+        self.nsmap = {'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+                      'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
+
+    def run(self):
+
+        while True:
+
+            term = self.queue.get()
+
+
+            if term is None:
+                #self.queue.task_done()
+                break
+
+            classified_term = self._classify(etree.fromstring(term))
+
+            if classified_term:
+                self.results.put(classified_term)
 
     def _classify(self, term):
         """
@@ -63,8 +73,8 @@ class OwlXMLParser(Parser):
             * Split into smaller methods to lower code complexity.
         """
 
-        nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=self._ns)
-        accession = functools.partial(pronto.utils.format_accession, nsmap=self._ns)
+        nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=self.nsmap)
+        accession = functools.partial(pronto.utils.format_accession, nsmap=self.nsmap)
 
         if not term.attrib:
            return {}
@@ -85,7 +95,7 @@ class OwlXMLParser(Parser):
              'callback': lambda c: accession(c.get(nspaced('rdf:resource')) or c.get(nspaced('rdf:about'))),
              'dest': 'relations',
              'action': 'list',
-             'list_to': Relationship('is_a'),
+             'list_to': 'is_a',
             },
             {'hook': lambda c: c.tag == nspaced('rdfs:comment'),
              'callback': lambda c: pronto.utils.parse_comment(c.text),
@@ -117,16 +127,86 @@ class OwlXMLParser(Parser):
                     break
 
         #if ':' in tid: #remove administrative classes
-        return {tid: pronto.term.Term(tid, **term_dict)}
+        return (tid, term_dict)#{tid: pronto.term.Term(tid, **term_dict)}
         #else:
         #    return {}
 
+
+
+
+
+
+class OwlXMLParser(Parser):
+    """A parser for the owl xml format.
+    """
+
+    def __init__(self):
+        super(OwlXMLParser, self).__init__()
+        self._tree = None
+        self._ns = {}
+        self.extensions = ('.owl', '.xml', '.ont')
+
+    def hook(self, *args, **kwargs):
+        """Returns True if the file is an Owl file (extension is .owl)"""
+        if 'path' in kwargs:
+            return os.path.splitext(kwargs['path'])[1] in self.extensions
+
+    def read(self, stream):
+        """
+        Parse the content of the stream
+        """
+
+        self.init_workers(_OwlXMLClassifier, self._ns)
+
+        events = ("start", "end", "start-ns")
+
+        for event, element in etree.iterparse(stream, huge_tree=True, events=events):
+
+            if element is None:
+                break
+
+            if event == "start-ns":
+                self._ns.update({element[0]:element[1]})
+
+            elif element.tag==pronto.utils.explicit_namespace('owl:imports', self._ns) and event=='end':
+                self.imports.append(element.attrib[pronto.utils.explicit_namespace('rdf:resource', self._ns)])
+
+            elif element.tag==pronto.utils.explicit_namespace('owl:Class', self._ns) and event=='end':
+                self._rawterms.put(etree.tostring(element))
+
+
+
+
+    def makeTree(self, pool):
+        """
+        Maps :function:_classify to each term of the file via a ThreadPool.
+
+        Once all the raw terms are all classified, the :attrib:terms dictionnary
+        gets updated.
+
+        Arguments:
+            pool (Pool): a pool of workers that is used to map the _classify
+                function on the terms.
+        """
+        #terms_elements = self._tree.iterfind('./owl:Class', self._ns)
+        #for t in pool.map(self._classify, self._elements):
+        #    self.terms.update(t)
+
+        while self._terms.qsize() > 0: #or self._rawterms.qsize() > 0:
+            tid, d = self._terms.get()
+            d['relations'] = { Relationship(k):v for k,v in d.items() }
+
+            self.terms[tid] = pronto.term.Term(tid, **d)
+
+        #self.shut_workers()
+
     def manage_imports(self):
-        nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=self._ns)
-        for imp in self._tree.iterfind('./owl:Ontology/owl:imports', self._ns):
-            path = imp.attrib[nspaced('rdf:resource')]
-            if path.endswith('.owl'):
-                self.imports.append(path)
+        pass
+        #nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=self._ns)
+        #for imp in self._tree.iterfind('./owl:Ontology/owl:imports', self._ns):
+        #    path = imp.attrib[nspaced('rdf:resource')]
+        #    if path.endswith('.owl'):
+        #        self.imports.append(path)
 
     def metanalyze(self):
         """

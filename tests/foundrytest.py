@@ -5,15 +5,20 @@ Test lots of ontologies from the OBO Foundry.
 
 OBO_CATALOG = 'http://www.obofoundry.org/registry/ontologies.jsonld'
 
-BLOCKLIST = ('chebi.owl')
+BLOCKLIST = ('chebi.owl', 'pr.owl')
 
 import json
-import pronto
 import signal
 import time
 import multiprocessing
 import multiprocessing.pool
+import sys
+import os
 
+sys.path.append(os.getcwd())
+#print(sys.path)
+
+import pronto
 
 try:
     import urllib.request as rq

@@ -46,7 +46,7 @@ class OwlXMLParser(Parser):
             pool (Pool): a pool of workers that is used to map the _classify
                 function on the terms.
         """
-        terms_elements = self._tree.findall('./owl:Class', self._ns)
+        terms_elements = self._tree.iterfind('./owl:Class', self._ns)
         for t in pool.map(self._classify, terms_elements):
             self.terms.update(t)
 

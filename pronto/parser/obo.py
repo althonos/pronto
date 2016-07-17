@@ -33,7 +33,7 @@ class _OboClassifier(multiprocessing.Process):
             term = self.queue.get()
 
             if term is None:
-                self.queue.task_done()
+                #self.queue.task_done()
                 break
 
             relations = {}
@@ -72,7 +72,7 @@ class _OboClassifier(multiprocessing.Process):
             #if not tid:
             #    return {}
 
-            self.queue.task_done()
+            #self.queue.task_done()
 
             self.results.put((tid, name, desc, relations, term))
 

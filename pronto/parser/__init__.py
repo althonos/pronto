@@ -13,7 +13,7 @@ class Parser(object):
 
     _instances = {}
 
-    _rawterms = multiprocessing.JoinableQueue()
+    _rawterms = multiprocessing.Queue()
     _terms = multiprocessing.Queue()
     processes =  []
 

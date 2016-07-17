@@ -42,9 +42,12 @@ class _OwlXMLClassifier(multiprocessing.Process):
 
         self.queue = queue
         self.results = results
-        self.nsmap = {'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-                      'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
+        nsmap = {'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+                 'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
         #self.nsmap = nsmap
+
+        self.nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=nsmap)
+        self.accession = functools.partial(pronto.utils.format_accession, nsmap=nsmap)
 
 
     def run(self):
@@ -74,31 +77,28 @@ class _OwlXMLClassifier(multiprocessing.Process):
             * Split into smaller methods to lower code complexity.
         """
 
-        nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=self.nsmap)
-        accession = functools.partial(pronto.utils.format_accession, nsmap=self.nsmap)
-
         if not term.attrib:
            return {}
 
-        tid = accession(term.get(nspaced('rdf:about')))
+        tid = self.accession(term.get(self.nspaced('rdf:about')))
 
         term_dict = {'name':'', 'relations': {}, 'desc': ''}
 
         translator = [
-            {'hook': lambda c: c.tag == nspaced('rdfs:label'),
+            {'hook': lambda c: c.tag == self.nspaced('rdfs:label'),
              'callback': lambda c: c.text,
              'dest': 'name',
              'action': 'store'
             },
             {
-             'hook': lambda c: c.tag == nspaced('rdfs:subClassOf') \
-                               and nspaced('rdf:resource') in c.attrib.keys(),
-             'callback': lambda c: accession(c.get(nspaced('rdf:resource')) or c.get(nspaced('rdf:about'))),
+             'hook': lambda c: c.tag == self.nspaced('rdfs:subClassOf') \
+                               and self.nspaced('rdf:resource') in c.attrib.keys(),
+             'callback': lambda c: self.accession(c.get(self.nspaced('rdf:resource')) or c.get(self.nspaced('rdf:about'))),
              'dest': 'relations',
              'action': 'list',
              'list_to': 'is_a',
             },
-            {'hook': lambda c: c.tag == nspaced('rdfs:comment'),
+            {'hook': lambda c: c.tag == self.nspaced('rdfs:comment'),
              'callback': lambda c: pronto.utils.parse_comment(c.text),
              'action': 'update'
             }

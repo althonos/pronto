@@ -62,7 +62,7 @@ clean:
 	rm -f ./*.whl
 	if [ -f coverage.xml ]; then rm coverage.xml; fi
 	if [ -f .coverage ]; then rm .coverage; fi
-	if [ -f profile.txt ]; then rm profile.txt; fi
+	if [ -f profile.cprof ]; then rm profile.cprof; fi
 	echo "Done cleaning."
 
 .PHONY: upload

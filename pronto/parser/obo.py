@@ -25,7 +25,7 @@ class _OboClassifier(multiprocessing.Process):
 
     def run(self):
 
-        #def _classify(queue, results):
+
 
         while True:
 
@@ -36,50 +36,37 @@ class _OboClassifier(multiprocessing.Process):
                 #self.queue.task_done()
                 break
 
-            relations = {}
 
-            if 'relationship' in term:
-                pronto.relationship.Relationship.lock.acquire()
-                try:
-                    _process_relationship(term)
-                finally:
-                    pronto.relationship.Relationship.lock.release()
-
-            if 'is_a' in term.keys():
-                term[pronto.relationship.Relationship('is_a')] = term['is_a']
-                del term['is_a']
-
-            # New relations may be created when extracting relationship,
-            # this need to be investigated to come with a less 'hacky' solution
-            #while True:
-
-            #pronto.relationship.Relationship.lock.acquire()
-            #try:
-            for key in list(term.keys()):
-                if isinstance(key, pronto.relationship.Relationship):
-                    relations = _extract_relationship(term, key, relations)
-
-            #term = {k:v for k,v in term.items() if not isinstance(k, pronto.relationship.Relationship)}
-
-            #finally:
-            #    pronto.relationship.Relationship.lock.release()
-
-
-
-            desc = _extract_description(term)
-            tid, name = _extract_name_and_id(term)
-
-            #if not tid:
-            #    return {}
-
-            #self.queue.task_done()
-
-            self.results.put((tid, name, desc, relations, term))
+            self.results.put(self._classify(term))
 
         #return {tid: pronto.term.Term(tid, name, desc, relations, term)}
 
+    @staticmethod
+    def _classify(term):
+
+        relations = {}
+
+        if 'relationship' in term:
+            pronto.relationship.Relationship.lock.acquire()
+            try:
+                _process_relationship(term)
+            finally:
+                pronto.relationship.Relationship.lock.release()
+
+        if 'is_a' in term.keys():
+            term[pronto.relationship.Relationship('is_a')] = term['is_a']
+            del term['is_a']
 
 
+        for key in list(term.keys()):
+            if isinstance(key, pronto.relationship.Relationship):
+                relations = _extract_relationship(term, key, relations)
+
+
+        desc = _extract_description(term)
+        tid, name = _extract_name_and_id(term)
+
+        return (tid, name, desc, relations, term)
 
 
 
@@ -122,7 +109,7 @@ class OboParser(Parser):
         self._rawterms.put(self._tempterm)
 
 
-    def makeTree(self, pool):
+    def makeTree(self):
         """Create the proper ontology Tree from raw terms"""
 
         while self._terms.qsize() > 0 or self._rawterms.qsize() > 0:

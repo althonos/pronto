@@ -28,7 +28,6 @@ import functools
 import itertools
 import errno
 import os
-import sys
 import signal
 
 try:
@@ -39,7 +38,6 @@ except AttributeError:
 
 class TimeoutError(IOError):
     pass
-
 
 def timeout(seconds=60, error_message=os.strerror(errno.ETIME)):
 
@@ -97,6 +95,7 @@ class ProntoWarning(Warning):
         super(ProntoWarning, self).__init__(*args, **kwargs)
         #self.__suppress_context__ = True
 
+#@functools.lru_cache(256)
 def explicit_namespace(attr, nsmap):
     """Explicits the namespace in an attribute name.
 
@@ -112,7 +111,7 @@ def explicit_namespace(attr, nsmap):
 
     """
     prefix, term = attr.split(':', 1)
-    return '{{{}}}{}'.format(nsmap[prefix], term)
+    return "".join(['{', nsmap[prefix], '}', term])
 
 def parse_comment(comment):
     """Parse an rdfs:comment to extract information.
@@ -201,19 +200,13 @@ def format_accession(accession, nsmap=None):
 
     return accession
 
-def unique_everseen(iterable, key=None):
+def unique_everseen(iterable):
     """List unique elements, preserving order. Remember all elements ever seen."""
     # unique_everseen('AAAABBBCCDAABBB') --> A B C D
     # unique_everseen('ABBCcAD', str.lower) --> A B C D
     seen = set()
     seen_add = seen.add
-    if key is None:
-        for element in itertools.filterfalse(seen.__contains__, iterable):
-            seen_add(element)
-            yield element
-    else:
-        for element in iterable:
-            k = key(element)
-            if k not in seen:
-                seen_add(k)
-                yield element
+
+    for element in itertools.filterfalse(seen.__contains__, iterable):
+        seen_add(element)
+        yield element

@@ -6,6 +6,7 @@ Test lots of ontologies from the OBO Foundry.
 OBO_CATALOG = 'http://www.obofoundry.org/registry/ontologies.jsonld'
 
 BLOCKLIST = ('chebi.owl', 'pr.owl')
+#BLOCKLIST=[]
 
 import json
 import signal

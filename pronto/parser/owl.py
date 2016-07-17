@@ -160,6 +160,10 @@ class OwlXMLParser(Parser):
 
         events = ("start", "end", "start-ns")
 
+        owl_imports, owl_class, rdf_resource = "", "", ""
+
+
+
         for event, element in etree.iterparse(stream, huge_tree=True, events=events):
 
             if element is None:
@@ -168,16 +172,23 @@ class OwlXMLParser(Parser):
             if event == "start-ns":
                 self._ns.update({element[0]:element[1]})
 
-            elif element.tag==pronto.utils.explicit_namespace('owl:imports', self._ns) and event=='end':
-                self.imports.append(element.attrib[pronto.utils.explicit_namespace('rdf:resource', self._ns)])
+                if element[0]== 'owl':
+                    owl_imports = "".join(["{", element[1], "}", "imports"])
+                    owl_class = "".join(["{", element[1], "}", "Class"])
+                elif element[0] == 'rdf':
+                    rdf_resource = "".join(["{", element[1], "}", "resource"])
 
-            elif element.tag==pronto.utils.explicit_namespace('owl:Class', self._ns) and event=='end':
+            elif element.tag==owl_imports and event=='end':
+                self.imports.append(element.attrib[rdf_resource])
+                element.clear()
+
+            elif element.tag==owl_class and event=='end':
                 self._rawterms.put(etree.tostring(element))
+                element.clear()
 
 
 
-
-    def makeTree(self, pool):
+    def makeTree(self):
         """
         Maps :function:_classify to each term of the file via a ThreadPool.
 
@@ -194,7 +205,7 @@ class OwlXMLParser(Parser):
 
         accession = functools.partial(pronto.utils.format_accession, nsmap=self._ns)
 
-        while self._terms.qsize() > 0: #or self._rawterms.qsize() > 0:
+        while self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
 
 
             tid, d = self._terms.get()

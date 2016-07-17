@@ -18,9 +18,10 @@ class Parser(object):
         self.meta = dict()
         self.imports = list()
         self._instances[type(self).__name__] = self
+        self._rawterms, self._terms, self._processes= None, None, None
 
-    @pronto.utils.timeout(0)
-    def parse(self, stream, pool):
+    #@pronto.utils.timeout(0)
+    def parse(self, stream):
         """
         Parse the ontology file.
 
@@ -31,7 +32,7 @@ class Parser(object):
         self.terms, self.meta, self.imports = dict(), dict(), list()
 
         self.read(stream)
-        self.makeTree(pool)
+        self.makeTree()
         self.metanalyze()
         self.manage_imports()
 
@@ -50,7 +51,7 @@ class Parser(object):
         """
         raise NotImplementedError
 
-    def makeTree(self, pool):
+    def makeTree(self):
         raise NotImplementedError
 
     def metanalyze(self):
@@ -74,7 +75,8 @@ class Parser(object):
         self._rawterms.close()
         self._terms.close()
 
-        for p in self._processes:
+        while self._processes:
+            p = self._processes.pop()
             p.terminate()
 
         #for p in self._processes:

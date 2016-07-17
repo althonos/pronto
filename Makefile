@@ -2,7 +2,7 @@
 #coverage xml --include 'pronto/*'
 
 TOKEN=`cat ./.codacy.token`
-PROFILE_FUNC="import pstats as p; f=open('profile.txt', 'w'); p.Stats('p.tmp',stream=f).print_stats()"
+PROFILE_FUNC="import pstats as p; f=open('profile.cprof', 'w'); p.Stats('p.tmp',stream=f).print_stats()"
 
 ifndef TEST_SUITE
 TEST_SUITE="doctests"
@@ -16,11 +16,12 @@ test:
 .PHONY: profile
 .SILENT: profile
 profile:
-	python -m cProfile -o '../p.tmp' -s 'cumulative' tests/doctests.py
-	echo "Converting profile..."
-	python -c ${PROFILE_FUNC}
-	echo "Cleaning..."
-	rm ./p.tmp
+	python -m cProfile -o '../profile.cprof' tests/doctests.py
+	#echo "Converting profile..."
+	#python -c ${PROFILE_FUNC}
+	#echo "Cleaning..."
+	#rm ./p.tmp
+	pyprof2calltree -k -i profile.cprof
 
 
 .PHONY: cover

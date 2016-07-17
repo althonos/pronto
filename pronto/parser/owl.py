@@ -36,7 +36,7 @@ NS = {xmlns:"http://purl.obolibrary.org/obo/uo.owl#"
 
 class _OwlXMLClassifier(multiprocessing.Process):
 
-    def __init__(self, queue, results, nsmap):
+    def __init__(self, queue, results):
 
         super(_OwlXMLClassifier, self).__init__()
 
@@ -44,13 +44,14 @@ class _OwlXMLClassifier(multiprocessing.Process):
         self.results = results
         self.nsmap = {'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
                       'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
+        #self.nsmap = nsmap
+
 
     def run(self):
 
         while True:
 
             term = self.queue.get()
-
 
             if term is None:
                 #self.queue.task_done()
@@ -135,7 +136,6 @@ class _OwlXMLClassifier(multiprocessing.Process):
 
 
 
-
 class OwlXMLParser(Parser):
     """A parser for the owl xml format.
     """
@@ -143,7 +143,7 @@ class OwlXMLParser(Parser):
     def __init__(self):
         super(OwlXMLParser, self).__init__()
         self._tree = None
-        self._ns = {}
+        self._ns = dict()
         self.extensions = ('.owl', '.xml', '.ont')
 
     def hook(self, *args, **kwargs):
@@ -156,7 +156,7 @@ class OwlXMLParser(Parser):
         Parse the content of the stream
         """
 
-        self.init_workers(_OwlXMLClassifier, self._ns)
+        self.init_workers(_OwlXMLClassifier)
 
         events = ("start", "end", "start-ns")
 
@@ -192,13 +192,20 @@ class OwlXMLParser(Parser):
         #for t in pool.map(self._classify, self._elements):
         #    self.terms.update(t)
 
+        accession = functools.partial(pronto.utils.format_accession, nsmap=self._ns)
+
         while self._terms.qsize() > 0: #or self._rawterms.qsize() > 0:
+
+
             tid, d = self._terms.get()
-            d['relations'] = { Relationship(k):v for k,v in d.items() }
+
+            tid = pronto.utils.format_accession(tid, self._ns)
+
+            d['relations'] = { Relationship(k):[accession(x) for x in v] for k,v in d['relations'].items() }
 
             self.terms[tid] = pronto.term.Term(tid, **d)
 
-        #self.shut_workers()
+        self.shut_workers()
 
     def manage_imports(self):
         pass

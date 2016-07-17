@@ -59,13 +59,13 @@ class Parser(object):
     def manage_imports(self):
         raise NotImplementedError
 
-    def init_workers(self, ParserProcess, nsmap=None, *args, **kwargs):
+    def init_workers(self, ParserProcess, *args, **kwargs):
         self._rawterms = multiprocessing.Queue()
         self._terms = multiprocessing.Queue()
         self._processes = list()
 
         for _ in range(multiprocessing.cpu_count() * 2):
-            self._processes.append(ParserProcess(self._rawterms, self._terms, nsmap))
+            self._processes.append(ParserProcess(self._rawterms, self._terms))
 
         for p in self._processes:
             p.start()
@@ -77,8 +77,8 @@ class Parser(object):
         for p in self._processes:
             p.terminate()
 
-        for p in self._processes:
-            p.join()
+        #for p in self._processes:
+        #    p.join()
 
 
     @classmethod
@@ -99,7 +99,7 @@ class Parser(object):
 
 
 
-atexit.register(Parser.__del__)
+#atexit.register(Parser.__del__)
 
 
 from pronto.parser.obo import OboParser

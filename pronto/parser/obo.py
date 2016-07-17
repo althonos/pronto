@@ -131,6 +131,8 @@ class OboParser(Parser):
                 d[0], d[1], d[2], {pronto.relationship.Relationship(k):v for k,v in d[3].items()}, d[4]
             )
 
+        self.shut_workers()
+
 
     def metanalyze(self):
         """Analyze metadatas extracted from the beginning of the file."""

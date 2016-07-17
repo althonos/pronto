@@ -6,7 +6,6 @@ Parser can be derived to provide additional parsers to ontology files.
 """
 
 import multiprocessing
-import queue
 import atexit
 
 import pronto.term

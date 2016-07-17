@@ -28,7 +28,8 @@ class OwlXMLParser(Parser):
         """
         Parse the content of the stream
         """
-        self._tree = etree.parse(stream)
+        self._parser = etree.XMLParser(huge_tree=True)
+        self._tree = etree.parse(stream, self._parser)
         self._ns = self._tree.find('.').nsmap
         if None in self._ns.keys():
             self._ns['base'] = self._ns[None]

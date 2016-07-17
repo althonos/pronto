@@ -1,4 +1,7 @@
 import warnings
+import weakref
+import multiprocessing
+import atexit
 
 import pronto.utils
 
@@ -9,6 +12,11 @@ class Parser(object):
     """
 
     _instances = {}
+
+    _rawterms = multiprocessing.JoinableQueue()
+    _terms = multiprocessing.Queue()
+    processes =  []
+
 
     def __init__(self, timeout=None):
         self.terms = dict()
@@ -56,7 +64,26 @@ class Parser(object):
     def manage_imports(self):
         raise NotImplementedError
 
+    @classmethod
+    def __del__(cls):
 
+        try:
+            for p in cls.processes:
+                p.terminate()
+
+            cls._rawterms.close()
+            cls._terms.close()
+            del cls._terms
+            del cls._rawterms
+            del cls.processes
+
+        except AttributeError:
+            pass
+
+
+
+
+atexit.register(Parser.__del__)
 
 
 from pronto.parser.obo import OboParser

@@ -11,8 +11,6 @@ import json
 import os
 import warnings
 
-import multiprocessing.dummy
-
 try:
     import urllib.request as rq
     from urllib.error import URLError, HTTPError
@@ -60,9 +58,6 @@ class Ontology(object):
     def __init__(self, path=None, imports=True, import_depth=-1):
         """
         """
-
-        self.pool = multiprocessing.dummy.Pool()
-
         self.path = path
         self.meta = dict()
         self.terms = dict()
@@ -88,10 +83,6 @@ class Ontology(object):
                 self.resolve_imports(import_depth)
 
             self.reference()
-
-        self.pool.close()
-        self.pool.join()
-        del self.pool
 
     @property
     def json(self):
@@ -139,7 +130,7 @@ class Ontology(object):
         for parser in pronto.parser.Parser._instances.values():
             if parser.hook(stream=stream, path=self.path):
                 try:
-                    self.meta, self.terms, self.imports = parser.parse(stream, self.pool)
+                    self.meta, self.terms, self.imports = parser.parse(stream)
                     return
                 except TimeoutError:
                     warnings.warn("Parsing of {} timed out".format(self.path),

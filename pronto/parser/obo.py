@@ -95,7 +95,7 @@ class OboParser(Parser):
         #self._rawterms = multiprocessing.JoinableQueue()
         #self._terms = multiprocessing.Queue()
 
-        for k in range(12):
+        for k in range(multiprocessing.cpu_count()):
             self.processes.append(_OboClassifier(self._rawterms, self._terms))
 
         for p in self.processes:

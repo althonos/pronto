@@ -52,15 +52,20 @@ class _OboClassifier(multiprocessing.Process):
             finally:
                 pronto.relationship.Relationship.lock.release()
 
-        if 'is_a' in term:
+        #if 'is_a' in term:
+        try:
+            term[pronto.relationship.Relationship('is_a')] = term['is_a'].format()
+        except AttributeError:
             term[pronto.relationship.Relationship('is_a')] = term['is_a']
             del term['is_a']
+        except KeyError:
+            pass
+            #term[pronto.relationship.Relationship('is_a')] = term['is_a'] if isinstance(term['is_a'])
+            #del term['is_a']
 
-
-        for key in list(term.keys()):
+        for key in tuple(term.keys()):
             if isinstance(key, pronto.relationship.Relationship):
                 relations = _extract_relationship(term, key, relations)
-
 
         desc = _extract_description(term)
         tid, name = _extract_name_and_id(term)
@@ -120,7 +125,6 @@ class OboParser(Parser):
 
         self.shut_workers()
 
-
     def metanalyze(self):
         """Analyze metadatas extracted from the beginning of the file."""
 
@@ -133,9 +137,12 @@ class OboParser(Parser):
 
     def manage_imports(self):
         """Get metadatas concerning imports."""
-        if 'import' in self.meta: #.keys():
-            self.imports = self.meta['import']
-        self.imports = list(set(self.imports))
+        try:
+        #if 'import' in self.meta: #.keys():
+            self.imports = tuple(set(self.meta['import']))
+
+        except KeyError:
+            self.imports = tuple()
 
     def _parse_remark(self, remark):
         """Parse a remark and add results to self.meta."""
@@ -152,7 +159,6 @@ class OboParser(Parser):
             except KeyError:
                 self.meta['remark'] = list(remark)
 
-
     def _parse_statement(self, key, value):
         """Parse a ``key: value`` statement in the ontology file."""
 
@@ -165,7 +171,6 @@ class OboParser(Parser):
                 self.meta[key] = list(value)
             except TypeError:
                 self.meta[key] = [value]
-
 
     def _get_dict_to_update(self, IN):
         """Returns the right dictionnary to use"""
@@ -185,7 +190,7 @@ class OboParser(Parser):
             return 'term'
 
         elif '[Typedef]' in line:
-            self._typedef.append({})
+            self._typedef.append(dict())
             return 'typedef'
 
     def _parse_line_statement(self, line, IN):
@@ -240,6 +245,9 @@ def _extract_relationship(term, rship, relations):
         relations[rship.obo_name] = [ x.split(' !')[0] for x in term[rship] ]
     except AttributeError:
         relations[rship.obo_name] = [ term[rship].split(' !')[0]]
+
+
+
     del term[rship]
 
     return relations

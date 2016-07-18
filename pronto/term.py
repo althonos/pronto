@@ -56,14 +56,20 @@ class Term(object):
             relationship)
         """
 
-        if self._parents is not None:
-            return self._parents
-        else:
+        if self._parents is None:
+            bottomups = tuple(Relationship.bottomup())
+
             self._parents = TermList()
-            for rship in Relationship.bottomup():
-                if rship in self.relations:
-                    self._parents.extend(self.relations[rship])
-            return self._parents
+            self._parents.extend(
+                [ other
+                    for rship,others in self.relations.items()
+                        for other in others
+                            if rship in bottomups
+                ]
+
+            )
+
+        return self._parents
 
     @property
     def children(self):
@@ -76,32 +82,48 @@ class Term(object):
             (other terms with which this Term has a "topdown"
             relationship)
         """
-        if self._children is not None:
-            return self._children
-        else:
+
+        if self._children is None:
+            topdowns = tuple(Relationship.topdown())
             self._children = TermList()
-            for rship in Relationship.topdown():
-                if rship in self.relations:
-                    self._children.extend(self.relations[rship])
-            return self._children
+            self._children.extend(
+                [ other
+                    for rship,others in self.relations.items()
+                        for other in others
+                            if rship in topdowns
+                ]
+
+            )
+
+        return self._children
+
+
+
+            #for rship in Relationship.topdown():
+            #    if rship in self.relations:
+            #        self._children.extend(self.relations[rship])
+        #return self._children
 
     @property
     def obo(self):
 
-        obo =  '[Term]' + '\n'
-        obo += 'id: {}'.format(self.id) + '\n'
-        obo += 'name: {}'.format(self.name) + '\n'
+        obo =  "".join([ '[Term]', '\n',
+        #obo +=
+                         'id: ', self.id, '\n',
+
+        #obo +=
+                         'name: ', self.name, '\n'])
 
         if self.desc:
-            obo += 'def: {}'.format(self.desc) + '\n'
+            obo = "".join([obo, 'def: ', self.desc, '\n'])
 
         # add more bits of information
         for k,v in self.other.items():
             if isinstance(v, list):
                 for x in v:
-                    obo += '{}: {}'.format(k,x) + '\n'
+                    obo = "".join([obo, k, ': ', x, '\n'])
             else:
-                obo += '{}: {}'.format(k,v) + '\n'
+                obo = "".join([obo,k, ': ', v, '\n'])
 
         # add relationships (only bottom up ones)
 
@@ -110,14 +132,13 @@ class Term(object):
                 for companion in self.relations[relation]:
 
                     if relation is not Relationship('is_a'):
-                        obo += 'relationship: '
-                    obo += '{}: '.format(relation.obo_name)
+                        obo = "".join([obo, 'relationship: '])
+                    obo = "".join([obo, relation.obo_name, ': '])
 
-                    if isinstance(companion, Term):
-                        obo += '{} ! {}'.format(companion.id, companion.name) + '\n'
-                    else:
-                        obo += '{}'.format(companion)
-                        obo += '\n'
+                    try:
+                        obo = "".join([obo, companion.id, ' ! ', companion.name, '\n'])
+                    except AttributeError:
+                        obo = "".join([obo,companion, '\n'])
 
             except KeyError:
                 continue
@@ -253,24 +274,31 @@ class TermList(list):
         self._check_content()
 
     def _check_content(self):
-        for term in self:
-            if not isinstance(term, Term):
-                raise TypeError('TermList can only contain Terms.')
+        try:
+            [ term.id for term in self ]
+        except AttributeError:
+            raise TypeError('TermList can only contain Terms.')
+
+        #for term in self:
+        #    if not isinstance(term, Term):
+        #        raise TypeError('TermList can only contain Terms.')
 
     def __getattr__(self, attr, *args, **kwargs):
-        if attr in ['children', 'parents']:
+        if attr in ('children', 'parents'):
             return TermList( [ y for x in self for y in getattr(x, attr)] )
-        elif attr in ['rparents', 'rchildren']:
+        elif attr in ('rparents', 'rchildren'):
             #: we create a new method to allow the user
             #: to use, for instance, ``x.rchildren(3).rparents(2)``
             #: (this actually behaves as if you mapped the method
             #: on all terms of the TermList)
+
             def mapped(level=-1, intermediate=True):
                 t = TermList(set([ y for x in self
                         for y in getattr(x, attr)(level, intermediate) ]))
                 return t
             return mapped
-        elif attr in ['id', 'name', 'desc', 'other']:
+
+        elif attr in ('id', 'name', 'desc', 'other', 'obo'):
             return [getattr(x, attr) for x in self]
         else:
             getattr(list, attr)

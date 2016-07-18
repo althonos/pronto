@@ -179,16 +179,16 @@ class Ontology(object):
                 for term in self
                     for relation in term.relations
                         for parent in term.relations[relation]
-                            if relation.direction=="bottomup" and relation.complement() is not None
+                            if relation.complement() is not None and relation.direction=="bottomup"
         ]
 
-        #for term in self:
+        # for term in self:
 
-        #    for relation in term.relations:
+        #     for relation in term.relations.keys():
 
-        #        if relation.complement() is not None and relation.direction=="bottomup":
-        #            for parent in term.relations[relation]:
-        #                relationships.append( (parent, relation.complement(), term.id) )
+        #         if relation.complement() is not None and relation.direction=="bottomup":
+        #             for parent in term.relations[relation]:
+        #                 relationships.append( (parent, relation.complement(), term.id) )
 
             #if 'is_a' in term.relations.keys():
             #    for parent in term.relations['is_a']:
@@ -210,12 +210,11 @@ class Ontology(object):
                 pass
 
             if parent in self:
-                if not rel in self[parent].relations:
+                if not rel in self[parent].relations.keys():
+
                     self[parent].relations[rel] = pronto.term.TermList()
-                #try:
+
                 self[parent].relations[rel].append(child)
-                #except KeyError:
-                #    self[parent].relations[rel] = pronto.term.TermList(child)
 
 
     def include(self, *terms):

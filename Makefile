@@ -8,6 +8,11 @@ ifndef TEST_SUITE
 TEST_SUITE="doctests"
 endif
 
+.PHONY: all
+all:
+	nuitka pronto --module --nofreeze-stdlib --recurse-all --recurse-stdlib --enhanced --clang --lto --verbose
+
+
 .PHONY: test
 .SILENT: test
 test:

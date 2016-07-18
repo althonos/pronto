@@ -12,12 +12,17 @@ from pronto.relationship import Relationship
 class Term(object):
     """ An ontology term.
 
-    Example:
+    Examples:
 
-        >>> from pronto import Term, Relationship
+        >>> from pronto import *
         >>> new_term = Term('TR:001', 'new term', 'a new term')
         >>> linked_term = Term('TR:002', 'other new', 'another term',
         ...                    { Relationship('is_a'): 'TR:001'})
+
+        >>> ms = Ontology('https://raw.githubusercontent.com/'
+        ...               'HUPO-PSI/psi-ms-CV/master/psi-ms.obo')
+        >>> type(ms['MS:1000015'])
+        <class 'pronto.term.Term'>
 
 
     """
@@ -56,6 +61,15 @@ class Term(object):
             a TermList containing all parents of the Term
             (other terms with which this Term has a "bottomup"
             relationship)
+
+        Example:
+
+            >>> for p in ms['MS:1000532'].parents: print(p.desc)
+            "Thermo Finnigan software for data acquisition and analysis." [PSI:MS]
+            "Acquisition software." [PSI:MS]
+            "Analysis software." [PSI:MS]
+            "Data processing software." [PSI:MS]
+
         """
 
         if self._parents is None:
@@ -83,9 +97,16 @@ class Term(object):
             a TermList containing all parents of the Term
             (other terms with which this Term has a "topdown"
             relationship)
+
+        Example:
+
+            >>> ms['MS:1000452'].children
+            [<MS:1000530: file format conversion>, <MS:1000543: data processing action>]
+
         """
 
         if self._children is None:
+
             topdowns = tuple(Relationship.topdown())
             self._children = TermList()
             self._children.extend(
@@ -108,6 +129,21 @@ class Term(object):
 
     @property
     def obo(self):
+        """Displays the term as an obo Term entry
+
+        Example:
+
+            >>> print(ms['MS:1000031'].obo)  # doctest: +ELLIPSIS
+            [Term]
+            id: MS:1000031
+            name: instrument model
+            def: "Instrument model name not including the vendor's name." [PSI:MS]
+            relationship: part_of: MS:1000463 ! instrument
+            ...
+
+        """
+
+
 
         obo =  "".join([ '[Term]', '\n',
         #obo +=
@@ -249,7 +285,7 @@ class TermList(list):
     generate lists of terms' attributes.
 
     Example:
-        >>> from pronto import Ontology, Relationship
+        >>> from pronto import *
         >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
         >>> type(nmr['NMR:1000031'].children)
         <class 'pronto.term.TermList'>
@@ -294,16 +330,29 @@ class TermList(list):
             #: (this actually behaves as if you mapped the method
             #: on all terms of the TermList)
 
-            def mapped(level=-1, intermediate=True):
-                t = TermList(set([ y for x in self
-                        for y in getattr(x, attr)(level, intermediate) ]))
-                return t
-            return mapped
+            #def mapped(level=-1, intermediate=True):
+            #    t = TermList(set([ y for x in self
+            #            for y in getattr(x, attr)(level, intermediate) ]))
+            #    return t
+            #return mapped
+
+            return self.__dict__[attr]
 
         elif attr in ('id', 'name', 'desc', 'other', 'obo'):
             return [getattr(x, attr) for x in self]
         else:
             getattr(list, attr)
+
+    def rparents(self, level=-1, intermediate=True):
+        return TermList(set(
+            [y for x in self for y in x.rparents(level, intermediate)]
+        ))
+
+    def rchildren(self, level=-1, intermediate=True):
+        return TermList(set(
+            [y for x in self for y in x.rchildren(level, intermediate)]
+        ))
+
 
     def __contains__(self, term):
         """

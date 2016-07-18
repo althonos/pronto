@@ -2,7 +2,8 @@
 import functools
 import os
 import multiprocessing
-import lxml.etree as etree
+#import lxml.etree as etree
+import xml.etree.cElementTree as etree
 
 from pronto.parser import Parser
 from pronto.relationship import Relationship
@@ -79,7 +80,7 @@ class _OwlXMLClassifier(multiprocessing.Process):
             }
         ]
 
-        for child in term.iterchildren():
+        for child in term.iter():#term.iterchildren():
 
             for rule in translator:
 
@@ -139,7 +140,8 @@ class OwlXMLParser(Parser):
 
 
 
-        for event, element in etree.iterparse(stream, huge_tree=True, events=events):
+        for event, element in etree.iterparse(stream, #huge_tree=True, 
+                                              events=events):
 
             if element is None:
                 break

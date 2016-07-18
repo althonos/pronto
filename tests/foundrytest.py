@@ -5,8 +5,10 @@ Test lots of ontologies from the OBO Foundry.
 
 OBO_CATALOG = 'http://www.obofoundry.org/registry/ontologies.jsonld'
 
-BLOCKLIST = ('chebi.owl', 'chebi.obo', 'pr.owl')
-#BLOCKLIST=[]
+	     #lag         #lag         #lag
+BLOCKLIST = ('chebi.owl', 'chebi.obo', 'pr.owl',
+             #HTTPError
+             'agro.owl')
 
 import json
 import signal

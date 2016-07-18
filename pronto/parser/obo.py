@@ -46,15 +46,16 @@ class _OboClassifier(multiprocessing.Process):
         relations = {}
 
         if 'relationship' in term:
-            pronto.relationship.Relationship.lock.acquire()
-            try:
-                _process_relationship(term)
-            finally:
-                pronto.relationship.Relationship.lock.release()
+            #pronto.relationship.Relationship.lock.acquire()
+            #try:
+            _OboClassifier._process_relationship(term)
+            #finally:
+            #    pronto.relationship.Relationship.lock.release()
 
         #if 'is_a' in term:
         try:
-            term[pronto.relationship.Relationship('is_a')] = term['is_a'].format()
+            term[pronto.relationship.Relationship('is_a')] = [ term['is_a'].format() ]
+            del term['is_a']
         except AttributeError:
             term[pronto.relationship.Relationship('is_a')] = term['is_a']
             del term['is_a']
@@ -65,12 +66,84 @@ class _OboClassifier(multiprocessing.Process):
 
         for key in tuple(term.keys()):
             if isinstance(key, pronto.relationship.Relationship):
-                relations = _extract_relationship(term, key, relations)
+                relations = _OboClassifier._extract_relationship(term, key, relations)
 
-        desc = _extract_description(term)
-        tid, name = _extract_name_and_id(term)
+        desc = _OboClassifier._extract_description(term)
+        tid, name = _OboClassifier._extract_name_and_id(term)
 
         return (tid, name, desc, relations, term)
+
+    @staticmethod
+    def _process_relationship(term):
+
+        # If term is a str
+        try:
+
+            name, value = term['relationship'].split(' ', 1)
+
+            name = pronto.relationship.Relationship(name)
+
+            try:
+                term[name].append(value)
+            except KeyError:
+                term[name] = [value]
+
+        # If term is a list
+        except AttributeError:
+
+            for r in term['relationship']:
+                name, value = r.split(' ', 1)
+
+                name = pronto.relationship.Relationship(name)
+
+                try:
+                    term[name].append(value)
+                except KeyError:
+                    term[name] = [value]
+
+        del term['relationship']
+
+    @staticmethod
+    def _extract_relationship(term, rship, relations):
+
+        #if rship.obo_name in term.keys():
+        #if isinstance(term[rship], list):
+        try:
+            relations[rship.obo_name] = [ x.split(' !')[0] for x in term[rship] ]
+        except AttributeError:
+            relations[rship.obo_name] = [ term[rship].split(' !')[0]]
+
+
+
+        del term[rship]
+
+        return relations
+
+    @staticmethod
+    def _extract_description(term):
+        try:
+        #if 'def' in term.keys():
+            desc = term['def']
+            del term['def']
+            return desc
+        except KeyError:
+            return ''
+
+    @staticmethod
+    def _extract_name_and_id(term):
+        if 'id' not in term.keys():
+            return '', ''
+        if 'name' in term.keys():
+            tid, name = term['id'], term['name']
+            del term['name']
+            del term['id']
+            return tid, name
+        else:
+            tid = term['id'][0]
+            name = ''
+            del term['id']
+            return tid, name
+
 
 
 
@@ -207,73 +280,6 @@ class OboParser(Parser):
 
 
 
-
-def _process_relationship(term):
-
-    # If term is a str
-    try:
-
-        name, value = term['relationship'].split(' ', 1)
-
-        name = pronto.relationship.Relationship(name)
-
-        try:
-            term[name].append(value)
-        except KeyError:
-            term[name] = [value]
-
-    # If term is a list
-    except AttributeError:
-
-        for r in term['relationship']:
-            name, value = r.split(' ', 1)
-
-            name = pronto.relationship.Relationship(name)
-
-            try:
-                term[name].append(value)
-            except KeyError:
-                term[name] = [value]
-
-    del term['relationship']
-
-def _extract_relationship(term, rship, relations):
-
-    #if rship.obo_name in term.keys():
-    #if isinstance(term[rship], list):
-    try:
-        relations[rship.obo_name] = [ x.split(' !')[0] for x in term[rship] ]
-    except AttributeError:
-        relations[rship.obo_name] = [ term[rship].split(' !')[0]]
-
-
-
-    del term[rship]
-
-    return relations
-
-def _extract_description(term):
-    try:
-    #if 'def' in term.keys():
-        desc = term['def']
-        del term['def']
-        return desc
-    except KeyError:
-        return ''
-
-def _extract_name_and_id(term):
-    if 'id' not in term.keys():
-        return '', ''
-    if 'name' in term.keys():
-        tid, name = term['id'], term['name']
-        del term['name']
-        del term['id']
-        return tid, name
-    else:
-        tid = term['id'][0]
-        name = ''
-        del term['id']
-        return tid, name
 
 
 OboParser()

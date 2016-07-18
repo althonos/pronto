@@ -10,7 +10,7 @@ endif
 
 .PHONY: all
 all:
-	nuitka pronto --module --nofreeze-stdlib --recurse-all --recurse-stdlib --enhanced --lto --verbose
+	nuitka pronto --module --nofreeze-stdlib --recurse-to=pronto --recurse-stdlib --enhanced --lto --verbose
 
 
 .PHONY: test

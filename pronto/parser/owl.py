@@ -3,11 +3,15 @@ import functools
 import os
 import json
 import multiprocessing
+import platform
 
-try:
-    import lxml.etree as etree
-except ImportError:
-    import xml.etree.ElementTree as etree
+if platform.python_implementation()=="PyPy":
+    import xml.etree.cElementTree as etree
+else:
+    try:
+        import lxml.etree as etree
+    except ImportError:
+        import xml.etree.ElementTree as etree
 
 from pronto.parser import Parser
 from pronto.relationship import Relationship

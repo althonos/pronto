@@ -116,15 +116,31 @@ class Ontology(object):
 
         return obo
 
-    def reference(self):
-        """Make relationships point to classes of ontology instead of ontology id"""
-        for termkey,termval in self.terms.items():
-            for relkey, relval in termval.relations.items():
+    # def reference(self):
+    #     """Make relationships point to classes of ontology instead of ontology id"""
+    #     for termkey,termval in self.terms.items():
+    #         for relkey, relval in termval.relations.items():
 
-                relvalref = [self.terms[x] if x in self.terms
-                             else pronto.term.Term(x, '','') if not isinstance(x, pronto.term.Term)
-                             else x for x in relval]
-                self.terms[termkey].relations[relkey] = pronto.term.TermList(relvalref)
+    #             relvalref = [self.terms[x] if x in self.terms
+    #                          else pronto.term.Term(x, '','') if not isinstance(x, pronto.term.Term)
+    #                          else x for x in relval]
+
+    #             self.terms[termkey].relations[relkey] = pronto.term.TermList(relvalref)
+
+    def reference(self):
+
+       for termkey,termval in self.terms.items():
+
+           relvalref = { relkey: pronto.term.TermList(
+                                    [self.terms[x] if x in self.terms
+                                        else pronto.term.Term(x, '', '')
+                                            if not isinstance(x, pronto.term.Term)
+                                        else x for x in relval]
+                               )
+                        for relkey, relval in termval.relations.items() }
+
+
+           self.terms[termkey].relations.update(relvalref)
 
     def parse(self, stream):
         for parser in pronto.parser.Parser._instances.values():
@@ -158,15 +174,21 @@ class Ontology(object):
     def adopt(self):
         """Make terms aware of their children via 'can_be' and 'has_part' relationships"""
 
-        relationships = []
+        relationships = [
+            (parent, relation.complement(), term.id)
+                for term in self
+                    for relation in term.relations
+                        for parent in term.relations[relation]
+                            if relation.direction=="bottomup" and relation.complement() is not None
+        ]
 
-        for term in self:
+        #for term in self:
 
-            for relation in term.relations:
+        #    for relation in term.relations:
 
-                if relation.complement() is not None and relation.direction=="bottomup":
-                    for parent in term.relations[relation]:
-                        relationships.append( (parent, relation.complement(), term.id) )
+        #        if relation.complement() is not None and relation.direction=="bottomup":
+        #            for parent in term.relations[relation]:
+        #                relationships.append( (parent, relation.complement(), term.id) )
 
             #if 'is_a' in term.relations.keys():
             #    for parent in term.relations['is_a']:

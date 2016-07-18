@@ -2,8 +2,11 @@
 import functools
 import os
 import multiprocessing
-#import lxml.etree as etree
-import xml.etree.cElementTree as etree
+
+try:
+    import lxml.etree as etree
+except ImportError:
+    import xml.etree.ElementTree as etree
 
 from pronto.parser import Parser
 from pronto.relationship import Relationship
@@ -160,7 +163,8 @@ class OwlXMLParser(Parser):
                 element.clear()
 
             elif element.tag==owl_class and event=='end':
-                self._rawterms.put(etree.tostring(element))
+                if element.attrib:
+                    self._rawterms.put(etree.tostring(element))
                 element.clear()
 
 

@@ -102,6 +102,7 @@ class OboParser(Parser):
                 line = line.strip().decode('utf-8')
             except AttributeError:
                 line = line.strip()
+
             IN = self._check_section(line) or IN
             if ': ' in line:
                 self._parse_line_statement(line, IN)
@@ -139,23 +140,33 @@ class OboParser(Parser):
 
     def _parse_remark(self, remark):
         """Parse a remark and add results to self.meta."""
-        if ': ' in remark:
+        try:
             key_remark, value_remark = remark.split(': ', 1)
-            if not key_remark in self.meta:
-                self.meta[key_remark] = []
-            self.meta[key_remark].append(value_remark)
-        else:
-            if 'remark' not in self.meta:
-                self.meta['remark'] = []
-            self.meta['remark'].append(remark)
+            try:
+                self.meta[key_remark].append(value_remark)
+            except KeyError:
+                self.meta[key_remark] = list(value_remark)
+
+        except ValueError:
+            try:
+                self.meta['remark'].append(remark)
+            except KeyError:
+                self.meta['remark'] = list(remark)
+
 
     def _parse_statement(self, key, value):
         """Parse a ``key: value`` statement in the ontology file."""
-        if not isinstance(value, list):
-            value = [value]
-        if not key in self.meta.keys():
-            self.meta[key] = []
-        self.meta[key].extend(value)
+
+        try:
+            self.meta[key].extend(value)
+        except TypeError:
+            self.meta[key].append(value)
+        except KeyError:
+            try:
+                self.meta[key] = list(value)
+            except TypeError:
+                self.meta[key] = [value]
+
 
     def _get_dict_to_update(self, IN):
         """Returns the right dictionnary to use"""
@@ -171,9 +182,9 @@ class OboParser(Parser):
         if '[Term]' in line:
             if self._tempterm:
                 self._rawterms.put(self._tempterm)
-            #self._rawterms.append({})
             self._tempterm = dict()
             return 'term'
+
         elif '[Typedef]' in line:
             self._typedef.append({})
             return 'typedef'
@@ -181,12 +192,13 @@ class OboParser(Parser):
     def _parse_line_statement(self, line, IN):
         k, v = line.split(': ', 1)
         to_update = self._get_dict_to_update(IN)
-        if k not in to_update.keys():
-            to_update[k] = v
-        else:
-            if not isinstance(to_update[k], list):
-                to_update[k] = [to_update[k]]
+
+        try:
             to_update[k].append(v)
+        except AttributeError:
+            to_update[k] = [to_update[k], v]
+        except KeyError:
+            to_update[k] = v
 
 
 
@@ -201,9 +213,10 @@ def _process_relationship(term):
 
         name = pronto.relationship.Relationship(name)
 
-        if name not in term.keys():
-            term[name] = []
-        term[name].append(value)
+        try:
+            term[name].append(value)
+        except KeyError:
+            term[name] = [value]
 
     # If term is a list
     except AttributeError:
@@ -213,29 +226,32 @@ def _process_relationship(term):
 
             name = pronto.relationship.Relationship(name)
 
-            if name not in term.keys():
-                term[name] = []
-            term[name].append(value)
+            try:
+                term[name].append(value)
+            except KeyError:
+                term[name] = [value]
 
     del term['relationship']
 
 def _extract_relationship(term, rship, relations):
 
     #if rship.obo_name in term.keys():
-    if isinstance(term[rship], list):
+    #if isinstance(term[rship], list):
+    try:
         relations[rship.obo_name] = [ x.split(' !')[0] for x in term[rship] ]
-    else:
+    except AttributeError:
         relations[rship.obo_name] = [ term[rship].split(' !')[0]]
     del term[rship]
 
     return relations
 
 def _extract_description(term):
-    if 'def' in term.keys():
+    try:
+    #if 'def' in term.keys():
         desc = term['def']
         del term['def']
         return desc
-    else:
+    except KeyError:
         return ''
 
 def _extract_name_and_id(term):

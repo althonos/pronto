@@ -140,10 +140,11 @@ class Ontology(object):
         return self.terms[item]
 
     def __contains__(self, item):
-        if isinstance(item, pronto.term.Term):
-            return item.id in self.terms.keys()
-        elif isinstance(item, str) or isinstance(item, unicode):
+
+        if isinstance(item, str) or isinstance(item, unicode):
             return item in self.terms.keys()
+        elif isinstance(item, pronto.term.Term):
+            return item.id in self.terms.keys()
         else:
             raise TypeError("'in <ontology>' requires string or Term as left operand, not {}".format(type(item)))
 
@@ -180,8 +181,12 @@ class Ontology(object):
             #        relationships.append( (parent, 'part_of', term.id ) )
 
         for parent, rel, child in relationships:
-            if isinstance(parent, pronto.term.Term):
+            #if isinstance(parent, pronto.term.Term):
+            try:
                 parent = parent.id
+            except AttributeError:
+                pass
+
             if parent in self:
                 if not rel in self[parent].relations.keys():
 
@@ -276,12 +281,16 @@ class Ontology(object):
             for k,v in term.relations.items():
                 for i,t in enumerate(v):
 
-                    if isinstance(t, pronto.term.Term):
+                    #if isinstance(t, pronto.term.Term):
+                    try:
 
                         if not t.id in self:
                             self._include_term(t)
 
                         term.relations[k][i] = t.id
+
+                    except AttributeError:
+                        pass
 
                     ref_needed = True
 

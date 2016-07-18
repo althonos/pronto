@@ -90,9 +90,10 @@ class Relationship(object):
 
         if self.complementary:
 
-            if self.complementary in self._instances.keys():
+            #if self.complementary in self._instances.keys():
+            try:
                 return self._instances[self.complementary]
-            else:
+            except KeyError:
                 raise ValueError('{} has a complementary but it was not defined !')
 
         else:

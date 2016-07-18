@@ -141,21 +141,36 @@ def parse_comment(comment):
         line = line.strip()
 
         if line.startswith('Functional form:'):
-            if not 'other' in parsed.keys():
-                parsed['other'] = dict()
-            parsed['other']['functional form'] = "\n".join(commentlines[index:])
+            #if not 'other' in parsed.keys():
+            #    parsed['other'] = dict()
+
+            try:
+                parsed['other']['functional form'] = "\n".join(commentlines[index:])
+            except KeyError:
+                parsed['other'] = {'functional form': "\n".join(commentlines[index:])}
+
             break
 
         if line.startswith('def:'):
             parsed['desc'] = line.split('def:')[-1].strip()
 
         elif ': ' in line:
-            ref, value = line.split(': ', 1)
-            if not 'other' in parsed.keys():
-                parsed['other'] = {}
-            if not ref in parsed['other']:
-                parsed['other'][ref.strip()] = []
-            parsed['other'][ref.strip()].append(value)
+            ref, value = [x.strip() for x in line.split(': ', 1)]
+
+            try:
+                parsed['other'][ref].append(value)
+            except KeyError:
+                try:
+                    parsed['other'][ref] = [value]
+                except KeyError:
+                    parsed['other'] = {ref: [value] }
+
+
+            #if not 'other' in parsed.keys():
+            #    parsed['other'] = {}
+            #if not ref in parsed['other']:
+            #    parsed['other'][ref] = []
+            #parsed['other'][ref].append(value)
 
         else:
             if not 'desc' in parsed.keys():
@@ -163,12 +178,19 @@ def parse_comment(comment):
                 break
 
     if not 'desc' in parsed.keys() and 'other' in parsed.keys():
-        if 'tempdef' in parsed['other'].keys():
+        #if 'tempdef' in parsed['other'].keys():
+        try:
             parsed['desc'] = parsed['other']['tempdef']
             del parsed['other']['tempdef']
-        if 'altdef' in parsed['other'].keys():
+        except KeyError:
+            pass
+
+        #if 'altdef' in parsed['other'].keys():
+        try:
             parsed['desc'] = parsed['other']['altdef']
             del parsed['other']['altdef']
+        except KeyError:
+            pass
 
 
     return parsed

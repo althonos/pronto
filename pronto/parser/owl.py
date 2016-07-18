@@ -115,10 +115,10 @@ class _OwlXMLClassifier(multiprocessing.Process):
 
                     elif rule['action'] == 'list':
 
-                        if not term_dict[rule['dest']]:
-                            term_dict[rule['dest']][rule['list_to']] = []
-
-                        term_dict[rule['dest']][rule['list_to']].append(rule['callback'](child))
+                        try:
+                            term_dict[rule['dest']][rule['list_to']].append(rule['callback'](child))
+                        except KeyError:
+                            term_dict[rule['dest']][rule['list_to']] = [rule['callback'](child)]
 
 
                     elif rule['action'] == 'update':

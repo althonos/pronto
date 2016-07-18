@@ -9,31 +9,6 @@ from pronto.relationship import Relationship
 import pronto.utils
 
 
-"""
-NS = {xmlns:"http://purl.obolibrary.org/obo/uo.owl#"
-      xml:base="http://purl.obolibrary.org/obo/uo.owl"
-      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-      xmlns:owl="http://www.w3.org/2002/07/owl#"
-      xmlns:oboInOwl="http://www.geneontology.org/formats/oboInOwl#"
-      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-      xmlns:uo="http://purl.obolibrary.org/obo/uo#"
-      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-      xmlns:obo="http://purl.obolibrary.org/obo/"}
-"""
-
-"""
-{'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
- 'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
-  None: 'http://purl.obolibrary.org/obo/doid.owl#',
-  'xsd': 'http://www.w3.org/2001/XMLSchema#',
-  'obo': 'http://purl.obolibrary.org/obo/',
-  'doid': 'http://purl.obolibrary.org/obo/doid#',
-  'oboInOwl': 'http://www.geneontology.org/formats/oboInOwl#',
-  'owl': 'http://www.w3.org/2002/07/owl#'}
-"""
-
-
-
 class _OwlXMLClassifier(multiprocessing.Process):
 
     def __init__(self, queue, results):

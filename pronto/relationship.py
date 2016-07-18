@@ -2,7 +2,6 @@
 
 import multiprocessing
 import threading
-import functools
 import collections
 
 import pronto.utils

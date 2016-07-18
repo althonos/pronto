@@ -1,7 +1,7 @@
 import warnings
 import weakref
 import multiprocessing
-import atexit
+#import atexit
 
 import pronto.utils
 

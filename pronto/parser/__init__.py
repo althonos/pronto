@@ -14,9 +14,9 @@ class Parser(object):
     _instances = {}
 
     def __init__(self, timeout=None):
-        self.terms = dict()
-        self.meta = dict()
-        self.imports = list()
+        self.terms = {}
+        self.meta = {}
+        self.imports = []
         self._instances[type(self).__name__] = self
         self._rawterms, self._terms, self._processes= None, None, None
 
@@ -29,7 +29,7 @@ class Parser(object):
             stream (io.StringIO): A stream of the ontology file.
         """
 
-        self.terms, self.meta, self.imports = dict(), dict(), list()
+        self.terms, self.meta, self.imports = {}, {}, []
 
         self.read(stream)
         self.makeTree()
@@ -63,7 +63,7 @@ class Parser(object):
     def init_workers(self, ParserProcess, *args, **kwargs):
         self._rawterms = multiprocessing.Queue()
         self._terms = multiprocessing.Queue()
-        self._processes = list()
+        self._processes = []
 
         for _ in range(multiprocessing.cpu_count() * 2):
             self._processes.append(ParserProcess(self._rawterms, self._terms))

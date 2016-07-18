@@ -82,9 +82,9 @@ class OboParser(Parser):
         super(OboParser, self).__init__()
         self.extension = '.obo'
 
-        self._tempterm = dict()
-        self._typedef = list()
-        self._meta = dict()
+        self._tempterm = {}
+        self._typedef = []
+        self._meta = {}
 
     def hook(self, *args, **kwargs):
         """Returns True if the file is an Obo file (extension is .obo)"""
@@ -95,7 +95,7 @@ class OboParser(Parser):
     def read(self, stream):
         """Read the stream and extract information in a 'raw' format."""
         #self._rawterms, = multiprocessing.JoinableQueue()
-        self._typedef, self._meta = list(), dict()
+        self._typedef, self._meta = [], {}
 
         self.init_workers(_OboClassifier)
 
@@ -151,13 +151,13 @@ class OboParser(Parser):
             try:
                 self.meta[key_remark].append(value_remark)
             except KeyError:
-                self.meta[key_remark] = list(value_remark)
+                self.meta[key_remark] = [value_remark]
 
         except ValueError:
             try:
                 self.meta['remark'].append(remark)
             except KeyError:
-                self.meta['remark'] = list(remark)
+                self.meta['remark'] = [remark]
 
     def _parse_statement(self, key, value):
         """Parse a ``key: value`` statement in the ontology file."""
@@ -186,11 +186,11 @@ class OboParser(Parser):
         if '[Term]' in line:
             if self._tempterm:
                 self._rawterms.put(self._tempterm)
-            self._tempterm = dict()
+            self._tempterm = {}
             return 'term'
 
         elif '[Typedef]' in line:
-            self._typedef.append(dict())
+            self._typedef.append({})
             return 'typedef'
 
     def _parse_line_statement(self, line, IN):

@@ -59,9 +59,9 @@ class Ontology(object):
         """
         """
         self.path = path
-        self.meta = dict()
-        self.terms = dict()
-        self.imports = list()
+        self.meta = {}
+        self.terms = {}
+        self.imports = []
 
         if path is not None:
 

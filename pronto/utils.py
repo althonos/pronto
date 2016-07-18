@@ -131,10 +131,10 @@ def parse_comment(comment):
 
     """
     if comment is None:
-        return dict()
+        return {}
 
     commentlines = comment.split('\n')
-    parsed = dict()
+    parsed = {}
 
     for (index, line) in enumerate(commentlines):
 

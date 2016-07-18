@@ -37,10 +37,12 @@ class Term(object):
         self.id = tid
         self.name = name
         self.desc = desc
-        self.relations = relations or dict()
-        self.other = other or dict()
-        self._rchildren, self._rparents = dict(), dict()
-        self._children, self._parents = None, None
+        self.relations = relations or {}
+        self.other = other or {}
+        self._rchildren  = {}
+        self._rparents = {}
+        self._children = None
+        self._parents = None
 
     def __repr__(self):
         return "<{}: {}>".format(self.id, self.name)
@@ -163,7 +165,7 @@ class Term(object):
         Empties the cache of the Term's memoized functions.
         """
         self._children, self._parents = None, None
-        self._rchildren, self._rparents = dict(), dict()
+        self._rchildren, self._rparents = {}, {}
 
     def rchildren(self, level=-1, intermediate=True):
         """Create a recursive list of children.

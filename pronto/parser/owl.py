@@ -127,7 +127,7 @@ class OwlXMLParser(Parser):
     def __init__(self):
         super(OwlXMLParser, self).__init__()
         self._tree = None
-        self._ns = dict()
+        self._ns = {}
         self.extensions = ('.owl', '.xml', '.ont')
 
     def hook(self, *args, **kwargs):

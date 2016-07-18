@@ -11,7 +11,7 @@ endif
 .PHONY: test
 .SILENT: test
 test:
-	if [ "${TEST_SUITE}" = "sphinx" ]; then make doc doctest; else python tests/$(TEST_SUITE).py -v; fi
+	python tests/$(TEST_SUITE).py -v
 
 .PHONY: profile
 .SILENT: profile

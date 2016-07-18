@@ -32,7 +32,6 @@ class _OwlXMLClassifier(multiprocessing.Process):
         self.nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=nsmap)
         self.accession = functools.partial(pronto.utils.format_accession, nsmap=nsmap)
 
-
     def run(self):
 
         while True:
@@ -81,7 +80,7 @@ class _OwlXMLClassifier(multiprocessing.Process):
              'list_to': 'is_a',
             },
             {'hook': lambda c: c.tag == self.nspaced('rdfs:comment'),
-             'callback': lambda c: pronto.utils.parse_comment(c.text),
+             'callback': lambda c: self.parse_comment(c.text),
              'action': 'update'
             }
         ]
@@ -114,6 +113,88 @@ class _OwlXMLClassifier(multiprocessing.Process):
         #else:
         #    return {}
 
+    @staticmethod
+    def parse_comment(comment):
+        """Parse an rdfs:comment to extract information.
+
+        Owl contains comment which can contain additional metadata (specially
+        when the Owl file was converted from Obo to Owl). This function parses
+        the comment to try to extract those metadata.
+
+        Parameters:
+            comment (str): if containing different sections (such as 'def:',
+                'functional form' or 'altdef:'), the value of those sections will
+                be returned in a dictionnary. If there are not sections, the
+                comment is interpreted as a description
+
+        Todo:
+            * Add more parsing special cases
+
+        """
+        if comment is None:
+            return {}
+
+        commentlines = comment.split('\n')
+        parsed = {}
+
+        for (index, line) in enumerate(commentlines):
+
+            line = line.strip()
+
+            if line.startswith('Functional form:'):
+                #if not 'other' in parsed.keys():
+                #    parsed['other'] = dict()
+
+                try:
+                    parsed['other']['functional form'] = "\n".join(commentlines[index:])
+                except KeyError:
+                    parsed['other'] = {'functional form': "\n".join(commentlines[index:])}
+
+                break
+
+            if line.startswith('def:'):
+                parsed['desc'] = line.split('def:')[-1].strip()
+
+            elif ': ' in line:
+                ref, value = [x.strip() for x in line.split(': ', 1)]
+
+                try:
+                    parsed['other'][ref].append(value)
+                except KeyError:
+                    try:
+                        parsed['other'][ref] = [value]
+                    except KeyError:
+                        parsed['other'] = {ref: [value] }
+
+
+                #if not 'other' in parsed.keys():
+                #    parsed['other'] = {}
+                #if not ref in parsed['other']:
+                #    parsed['other'][ref] = []
+                #parsed['other'][ref].append(value)
+
+            else:
+                if not 'desc' in parsed:
+                    parsed['desc'] = "\n".join(commentlines[index:])
+                    break
+
+        if not 'desc' in parsed and 'other' in parsed:
+            #if 'tempdef' in parsed['other'].keys():
+            try:
+                parsed['desc'] = parsed['other']['tempdef']
+                del parsed['other']['tempdef']
+            except KeyError:
+                pass
+
+            #if 'altdef' in parsed['other'].keys():
+            try:
+                parsed['desc'] = parsed['other']['altdef']
+                del parsed['other']['altdef']
+            except KeyError:
+                pass
+
+
+        return parsed
 
 
 

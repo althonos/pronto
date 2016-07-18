@@ -39,29 +39,29 @@ except AttributeError:
 class TimeoutError(IOError):
     pass
 
-def timeout(seconds=60, error_message=os.strerror(errno.ETIME)):
+# def timeout(seconds=60, error_message=os.strerror(errno.ETIME)):
 
-    def decorator(func):
+#     def decorator(func):
 
-        def _handle_timeout(signum, frame):
-            raise TimeoutError(error_message)
+#         def _handle_timeout(signum, frame):
+#             raise TimeoutError(error_message)
 
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+#         @functools.wraps(func)
+#         def wrapper(*args, **kwargs):
 
-            try:
-                signal.signal(signal.SIGALRM, _handle_timeout)
-                signal.alarm(seconds)
-            except ValueError:
-                pass
-            try:
-                result = func(*args, **kwargs)
-            finally:
-                signal.alarm(0)
-            return result
-        return wrapper
+#             try:
+#                 signal.signal(signal.SIGALRM, _handle_timeout)
+#                 signal.alarm(seconds)
+#             except ValueError:
+#                 pass
+#             try:
+#                 result = func(*args, **kwargs)
+#             finally:
+#                 signal.alarm(0)
+#             return result
+#         return wrapper
 
-    return decorator
+#     return decorator
 
 class classproperty(object):
     """
@@ -112,88 +112,6 @@ def explicit_namespace(attr, nsmap):
     """
     prefix, term = attr.split(':', 1)
     return "".join(['{', nsmap[prefix], '}', term])
-
-def parse_comment(comment):
-    """Parse an rdfs:comment to extract information.
-
-    Owl contains comment which can contain additional metadata (specially
-    when the Owl file was converted from Obo to Owl). This function parses
-    the comment to try to extract those metadata.
-
-    Parameters:
-        comment (str): if containing different sections (such as 'def:',
-            'functional form' or 'altdef:'), the value of those sections will
-            be returned in a dictionnary. If there are not sections, the
-            comment is interpreted as a description
-
-    Todo:
-        * Add more parsing special cases
-
-    """
-    if comment is None:
-        return {}
-
-    commentlines = comment.split('\n')
-    parsed = {}
-
-    for (index, line) in enumerate(commentlines):
-
-        line = line.strip()
-
-        if line.startswith('Functional form:'):
-            #if not 'other' in parsed.keys():
-            #    parsed['other'] = dict()
-
-            try:
-                parsed['other']['functional form'] = "\n".join(commentlines[index:])
-            except KeyError:
-                parsed['other'] = {'functional form': "\n".join(commentlines[index:])}
-
-            break
-
-        if line.startswith('def:'):
-            parsed['desc'] = line.split('def:')[-1].strip()
-
-        elif ': ' in line:
-            ref, value = [x.strip() for x in line.split(': ', 1)]
-
-            try:
-                parsed['other'][ref].append(value)
-            except KeyError:
-                try:
-                    parsed['other'][ref] = [value]
-                except KeyError:
-                    parsed['other'] = {ref: [value] }
-
-
-            #if not 'other' in parsed.keys():
-            #    parsed['other'] = {}
-            #if not ref in parsed['other']:
-            #    parsed['other'][ref] = []
-            #parsed['other'][ref].append(value)
-
-        else:
-            if not 'desc' in parsed:
-                parsed['desc'] = "\n".join(commentlines[index:])
-                break
-
-    if not 'desc' in parsed and 'other' in parsed:
-        #if 'tempdef' in parsed['other'].keys():
-        try:
-            parsed['desc'] = parsed['other']['tempdef']
-            del parsed['other']['tempdef']
-        except KeyError:
-            pass
-
-        #if 'altdef' in parsed['other'].keys():
-        try:
-            parsed['desc'] = parsed['other']['altdef']
-            del parsed['other']['altdef']
-        except KeyError:
-            pass
-
-
-    return parsed
 
 def format_accession(accession, nsmap=None):
     """Formats an accession URI/string to the YY:XXXXXXX token format.

@@ -5,12 +5,12 @@ import json
 import multiprocessing
 import platform
 
-if platform.python_implementation()=="PyPy":
+if platform.python_implementation()=="PyPy": # pragma: no cover
     import xml.etree.cElementTree as etree
 else:
     try:
         import lxml.etree as etree
-    except ImportError:
+    except ImportError: # pragma: no cover
         import xml.etree.ElementTree as etree
 
 from pronto.parser import Parser
@@ -28,7 +28,6 @@ class _OwlXMLClassifier(multiprocessing.Process):
         self.results = results
         nsmap = {'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
                  'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
-        #self.nsmap = nsmap
 
         self.nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=nsmap)
         self.accession = functools.partial(pronto.utils.format_accession, nsmap=nsmap)
@@ -41,7 +40,6 @@ class _OwlXMLClassifier(multiprocessing.Process):
             term = self.queue.get()
 
             if term is None:
-                #self.queue.task_done()
                 break
 
             classified_term = self._classify(etree.fromstring(term))

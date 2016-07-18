@@ -61,7 +61,7 @@ class Term(object):
         else:
             self._parents = TermList()
             for rship in Relationship.bottomup():
-                if rship in self.relations.keys():
+                if rship in self.relations:
                     self._parents.extend(self.relations[rship])
             return self._parents
 
@@ -81,7 +81,7 @@ class Term(object):
         else:
             self._children = TermList()
             for rship in Relationship.topdown():
-                if rship in self.relations.keys():
+                if rship in self.relations:
                     self._children.extend(self.relations[rship])
             return self._children
 

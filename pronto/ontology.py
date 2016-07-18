@@ -121,7 +121,7 @@ class Ontology(object):
         for termkey,termval in self.terms.items():
             for relkey, relval in termval.relations.items():
 
-                relvalref = [self.terms[x] if x in self.terms.keys()
+                relvalref = [self.terms[x] if x in self.terms
                              else pronto.term.Term(x, '','') if not isinstance(x, pronto.term.Term)
                              else x for x in relval]
                 self.terms[termkey].relations[relkey] = pronto.term.TermList(relvalref)
@@ -142,9 +142,9 @@ class Ontology(object):
     def __contains__(self, item):
 
         if isinstance(item, str) or isinstance(item, unicode):
-            return item in self.terms.keys()
+            return item in self.terms
         elif isinstance(item, pronto.term.Term):
-            return item.id in self.terms.keys()
+            return item.id in self.terms
         else:
             raise TypeError("'in <ontology>' requires string or Term as left operand, not {}".format(type(item)))
 
@@ -162,7 +162,7 @@ class Ontology(object):
 
         for term in self:
 
-            for relation in term.relations.keys():
+            for relation in term.relations:
 
                 if relation.complement() is not None and relation.direction=="bottomup":
                     for parent in term.relations[relation]:
@@ -188,11 +188,13 @@ class Ontology(object):
                 pass
 
             if parent in self:
-                if not rel in self[parent].relations.keys():
-
+                if not rel in self[parent].relations:
                     self[parent].relations[rel] = pronto.term.TermList()
-
+                #try:
                 self[parent].relations[rel].append(child)
+                #except KeyError:
+                #    self[parent].relations[rel] = pronto.term.TermList(child)
+
 
     def include(self, *terms):
         """Add new terms to the current ontology.

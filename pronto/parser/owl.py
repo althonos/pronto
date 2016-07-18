@@ -68,7 +68,7 @@ class _OwlXMLClassifier(multiprocessing.Process):
             },
             {
              'hook': lambda c: c.tag == self.nspaced('rdfs:subClassOf') \
-                               and self.nspaced('rdf:resource') in c.attrib.keys(),
+                               and self.nspaced('rdf:resource') in c.attrib,
              'callback': lambda c: self.accession(c.get(self.nspaced('rdf:resource')) or c.get(self.nspaced('rdf:about'))),
              'dest': 'relations',
              'action': 'list',
@@ -140,7 +140,7 @@ class OwlXMLParser(Parser):
 
 
 
-        for event, element in etree.iterparse(stream, #huge_tree=True, 
+        for event, element in etree.iterparse(stream, #huge_tree=True,
                                               events=events):
 
             if element is None:

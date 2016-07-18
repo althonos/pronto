@@ -173,11 +173,11 @@ def parse_comment(comment):
             #parsed['other'][ref].append(value)
 
         else:
-            if not 'desc' in parsed.keys():
+            if not 'desc' in parsed:
                 parsed['desc'] = "\n".join(commentlines[index:])
                 break
 
-    if not 'desc' in parsed.keys() and 'other' in parsed.keys():
+    if not 'desc' in parsed and 'other' in parsed:
         #if 'tempdef' in parsed['other'].keys():
         try:
             parsed['desc'] = parsed['other']['tempdef']

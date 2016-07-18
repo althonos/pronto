@@ -52,7 +52,7 @@ class _OboClassifier(multiprocessing.Process):
             finally:
                 pronto.relationship.Relationship.lock.release()
 
-        if 'is_a' in term.keys():
+        if 'is_a' in term:
             term[pronto.relationship.Relationship('is_a')] = term['is_a']
             del term['is_a']
 
@@ -133,7 +133,7 @@ class OboParser(Parser):
 
     def manage_imports(self):
         """Get metadatas concerning imports."""
-        if 'import' in self.meta.keys():
+        if 'import' in self.meta: #.keys():
             self.imports = self.meta['import']
         self.imports = list(set(self.imports))
 

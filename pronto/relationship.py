@@ -121,7 +121,7 @@ class Relationship(object):
               allow instatiation of file-defined relationships).
 
         """
-        if obo_name in cls._instances.keys():
+        if obo_name in cls._instances:
             return cls._instances[obo_name]
         else:
             return super(Relationship, cls).__new__(cls)

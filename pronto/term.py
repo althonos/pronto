@@ -321,27 +321,27 @@ class TermList(list):
         #    if not isinstance(term, Term):
         #        raise TypeError('TermList can only contain Terms.')
 
-    def __getattr__(self, attr, *args, **kwargs):
-        if attr in ('children', 'parents'):
-            return TermList( [ y for x in self for y in getattr(x, attr)] )
-        elif attr in ('rparents', 'rchildren'):
-            #: we create a new method to allow the user
-            #: to use, for instance, ``x.rchildren(3).rparents(2)``
-            #: (this actually behaves as if you mapped the method
-            #: on all terms of the TermList)
+    # def __getattr__(self, attr, *args, **kwargs):
+    #     if attr in ('children', 'parents'):
+    #         return TermList( [ y for x in self for y in getattr(x, attr)] )
+    #     elif attr in ('rparents', 'rchildren'):
+    #         #: we create a new method to allow the user
+    #         #: to use, for instance, ``x.rchildren(3).rparents(2)``
+    #         #: (this actually behaves as if you mapped the method
+    #         #: on all terms of the TermList)
 
-            #def mapped(level=-1, intermediate=True):
-            #    t = TermList(set([ y for x in self
-            #            for y in getattr(x, attr)(level, intermediate) ]))
-            #    return t
-            #return mapped
+    #         #def mapped(level=-1, intermediate=True):
+    #         #    t = TermList(set([ y for x in self
+    #         #            for y in getattr(x, attr)(level, intermediate) ]))
+    #         #    return t
+    #         #return mapped
 
-            return self.__dict__[attr]
+    #         return self.__dict__[attr]
 
-        elif attr in ('id', 'name', 'desc', 'other', 'obo'):
-            return [getattr(x, attr) for x in self]
-        else:
-            getattr(list, attr)
+    #     elif attr in ('id', 'name', 'desc', 'other', 'obo'):
+    #         return [getattr(x, attr) for x in self]
+    #     else:
+    #         getattr(list, attr)
 
     def rparents(self, level=-1, intermediate=True):
         return TermList(set(
@@ -352,6 +352,39 @@ class TermList(list):
         return TermList(set(
             [y for x in self for y in x.rchildren(level, intermediate)]
         ))
+
+    @property
+    def children(self):
+        return TermList( [ y for x in self for y in x.children] )
+
+    @property
+    def parents(self):
+        return TermList( [ y for x in self for y in x.parents] )
+
+    #elif attr in ('id', 'name', 'desc', 'other', 'obo'):
+    #         return [getattr(x, attr) for x in self]
+
+    @property
+    def id(self):
+        return [x.id for x in self]
+
+    @property
+    def name(self):
+        return [x.name for x in self]
+
+    @property
+    def desc(self):
+        return [x.desc for x in self]
+
+    @property
+    def other(self):
+        return [x.other for x in self]
+
+    @property
+    def obo(self):
+        return [x.obo for x in self]
+
+
 
 
     def __contains__(self, term):

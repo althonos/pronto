@@ -131,7 +131,7 @@ class Relationship(object):
         return "Relationship({})".format(self.obo_name)
 
 #    @classmethod
-    @staticmethod
+#    @staticmethod
     def __new__(cls, obo_name, *args, **kwargs):
         """Overloaded :obj:`object.__new__` method that __memoizes__ the objects.
 

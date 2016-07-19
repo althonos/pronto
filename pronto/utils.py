@@ -95,7 +95,6 @@ class ProntoWarning(Warning):
         super(ProntoWarning, self).__init__(*args, **kwargs)
         #self.__suppress_context__ = True
 
-#@functools.lru_cache(256)
 def explicit_namespace(attr, nsmap):
     """Explicits the namespace in an attribute name.
 
@@ -150,3 +149,64 @@ def unique_everseen(iterable):
     for element in itertools.filterfalse(seen.__contains__, iterable):
         seen_add(element)
         yield element
+
+
+
+
+import multiprocessing
+# We must import this explicitly, it is not imported by the top-level
+# multiprocessing module.
+import multiprocessing.pool
+import time
+
+from random import randint
+
+
+class _NoDaemonProcess(multiprocessing.Process):
+    # make 'daemon' attribute always return False
+    def _get_daemon(self):
+        return False
+    def _set_daemon(self, value):
+        pass
+    daemon = property(_get_daemon, _set_daemon)
+
+class ProntoPool(multiprocessing.pool.Pool):
+    """A non-daemonized pool provided for convenience.
+
+    Allows to perform ontology parsing through a pool of non-daemonized
+    pool of workers while inheriting all methods and attributes of
+    multiprocessing.pool.Pool.
+
+    Example:
+
+        >>> from pronto import Ontology
+        >>> from pronto.utils import ProntoPool
+        >>> enm = [ #ontologies from the eNanoMapper project
+        ... http://purl.enanomapper.net/onto/external/chebi-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/bao-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/bfo-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/ccont-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/cheminf-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/chmo-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/efo-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/envo-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/go-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/hupson-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/iao-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/ncit-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/npo-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/oae-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/obcs-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/obi-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/ontology-metadata-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/pato-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/sio-slim.owl,
+        ... http://purl.enanomapper.org/onto/external/uo-slim.owl]
+        >>> pool = ProntoPool()
+        >>> enm_onto = pool.map(Ontology, enm)
+
+
+    """
+
+
+    Process = _NoDaemonProcess

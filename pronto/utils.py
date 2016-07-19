@@ -29,6 +29,7 @@ import itertools
 import errno
 import os
 import signal
+import atexit
 
 try:
     itertools.filterfalse = itertools.ifilterfalse
@@ -154,12 +155,8 @@ def unique_everseen(iterable):
 
 
 import multiprocessing
-# We must import this explicitly, it is not imported by the top-level
-# multiprocessing module.
 import multiprocessing.pool
-import time
-
-from random import randint
+import atexit
 
 
 class _NoDaemonProcess(multiprocessing.Process):
@@ -182,31 +179,45 @@ class ProntoPool(multiprocessing.pool.Pool):
         >>> from pronto import Ontology
         >>> from pronto.utils import ProntoPool
         >>> enm = [ #ontologies from the eNanoMapper project
-        ... http://purl.enanomapper.net/onto/external/chebi-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/bao-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/bfo-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/ccont-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/cheminf-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/chmo-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/efo-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/envo-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/go-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/hupson-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/iao-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/ncit-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/npo-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/oae-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/obcs-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/obi-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/ontology-metadata-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/pato-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/sio-slim.owl,
-        ... http://purl.enanomapper.org/onto/external/uo-slim.owl]
+        ... "http://purl.enanomapper.net/onto/external/chebi-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/bao-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/bfo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/ccont-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/cheminf-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/chmo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/efo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/envo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/go-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/hupson-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/iao-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/ncit-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/npo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/oae-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/obcs-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/obi-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/pato-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/sio-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/uo-slim.owl"]
         >>> pool = ProntoPool()
         >>> enm_onto = pool.map(Ontology, enm)
+        >>> pool.close()
+
 
 
     """
-
-
+    _instances = []
     Process = _NoDaemonProcess
+
+    def __init__(self, *args, **kwargs):
+        super(ProntoPool, self).__init__(*args, **kwargs)
+        self._instances.append(self)
+
+    @classmethod
+    def _close_all(cls):
+        for pool in cls._instances:
+            pool.close()
+
+        for pool in cls._instances:
+            pool.join()
+
+atexit.register(ProntoPool._close_all)

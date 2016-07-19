@@ -20,7 +20,8 @@ class Relationship(object):
     .. note::
 
        Relationships are pickable and always refer to the same adress even
-       after being pickled and unpickled.
+       after being pickled and unpickled, but that requires to use at least
+       pickle protocol 2 (which is not default on Python 2, so take care !)
 
        .. example::
 
@@ -28,7 +29,7 @@ class Relationship(object):
           >>> import io, pickle
           >>>
           >>> src = io.BytesIO()
-          >>> p = pickle.Pickler(src)
+          >>> p = pickle.Pickler(src, pickle.HIGHEST_PROTOCOL)
           >>>
           >>> isa = pronto.Relationship('is_a')
           >>> isa_id = id(isa)
@@ -129,6 +130,8 @@ class Relationship(object):
         """Overloaded :obj:`object.__repr__`"""
         return "Relationship({})".format(self.obo_name)
 
+#    @classmethod
+    @staticmethod
     def __new__(cls, obo_name, *args, **kwargs):
         """Overloaded :obj:`object.__new__` method that __memoizes__ the objects.
 

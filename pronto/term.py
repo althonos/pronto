@@ -196,6 +196,24 @@ class Term(object):
             'relations': {k.obo_name:v.id for k,v in self.relations.items()}
          }
 
+    def __getstate__(self):
+
+        return (
+            self.id,
+            self.name,
+            tuple((k,v) for k,v in self.other.items()),
+            self.desc,
+            tuple((k.obo_name,v.id) for k,v in self.relations.items()),
+        )
+
+    def __setstate__(self, state):
+
+        self.id = state[0]
+        self.name = state[1]
+        self.other = {k:v for (k,v) in state[2]}
+        self.desc = state[3]
+        self.relations = {Relationship(k):v for k,v in state[4]}
+
     def _empty_cache(self):
         """
         Empties the cache of the Term's memoized functions.
@@ -384,8 +402,11 @@ class TermList(list):
     def obo(self):
         return [x.obo for x in self]
 
+    def __getstate__(self):
+        return (x for x in self)
 
-
+    def __setstate__(self, state):
+        self.extend(state)
 
     def __contains__(self, term):
         """

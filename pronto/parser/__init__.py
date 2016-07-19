@@ -29,7 +29,7 @@ class Parser(object):
             stream (io.StringIO): A stream of the ontology file.
         """
 
-        self.terms, self.meta, self.imports = {}, {}, []
+        self.terms, self.meta, self.imports = {}, {}, set()
 
         self.read(stream)
         self.makeTree()

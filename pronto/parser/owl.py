@@ -252,7 +252,7 @@ class OwlXMLParser(Parser):
                 continue
 
             elif element.tag==owl_imports:
-                self.imports.append(element.attrib[rdf_resource])
+                self.imports.add(element.attrib[rdf_resource])
 
 
             elif element.tag==owl_class:

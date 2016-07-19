@@ -60,7 +60,7 @@ class Ontology(object):
 
 
     Todo:
-        * Add a __repr__ method
+        * Add a __repr__ method to Ontology
     """
 
     def __init__(self, path=None, imports=True, import_depth=-1):
@@ -69,7 +69,7 @@ class Ontology(object):
         self.path = path
         self.meta = {}
         self.terms = {}
-        self.imports = []
+        self.imports = ()
 
         if path is not None:
 
@@ -124,22 +124,12 @@ class Ontology(object):
 
         return obo
 
-    # def reference(self):
-    #     """Make relationships point to classes of ontology instead of ontology id"""
-    #     for termkey,termval in self.terms.items():
-    #         for relkey, relval in termval.relations.items():
-
-    #             relvalref = [self.terms[x] if x in self.terms
-    #                          else pronto.term.Term(x, '','') if not isinstance(x, pronto.term.Term)
-    #                          else x for x in relval]
-
-    #             self.terms[termkey].relations[relkey] = pronto.term.TermList(relvalref)
-
     def reference(self):
+        """Make relationships point to classes of ontology instead of ontology id"""
 
-       for termkey,termval in self.terms.items():
+        for termkey,termval in self.terms.items():
 
-           relvalref = { relkey: pronto.term.TermList(
+            relvalref = { relkey: pronto.term.TermList(
                                     [self.terms[x] if x in self.terms
                                         else pronto.term.Term(x, '', '')
                                             if not isinstance(x, pronto.term.Term)
@@ -148,7 +138,7 @@ class Ontology(object):
                         for relkey, relval in termval.relations.items() }
 
 
-           self.terms[termkey].relations.update(relvalref)
+            self.terms[termkey].relations.update(relvalref)
 
     def parse(self, stream):
         for parser in pronto.parser.Parser._instances.values():
@@ -224,7 +214,6 @@ class Ontology(object):
 
                 self[parent].relations[rel].append(child)
 
-
     def include(self, *terms):
         """Add new terms to the current ontology.
 
@@ -272,7 +261,7 @@ class Ontology(object):
 
     def resolve_imports(self, import_depth):
         """Imports required ontologies."""
-        for i in set(self.imports):
+        for i in self.imports:
             try:
 
                 if os.path.exists(i) or i.startswith('http') or i.startswith('ftp'):
@@ -362,3 +351,25 @@ class Ontology(object):
                     self.terms[term.id]._empty_cache()
                 except AttributeError:
                     self.terms[term]._empty_cache()
+
+    def __getstate__(self):
+
+        meta = frozenset( (k, frozenset(v)) for k,v in self.meta.items() )
+        imports = self.imports
+        path = self.path
+
+        terms = frozenset(term for term in self)
+
+        return (meta, imports, path, terms)
+
+    def __setstate__(self, state):
+
+        self.meta = {k:list(v) for (k,v) in state[0] }
+
+        self.imports = state[1]
+
+        self.path = state[2]
+
+        self.terms = {t.id:t for t in state[3]}
+
+        self.reference()

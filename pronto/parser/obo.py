@@ -212,10 +212,10 @@ class OboParser(Parser):
         """Get metadatas concerning imports."""
         try:
         #if 'import' in self.meta: #.keys():
-            self.imports = tuple(set(self.meta['import']))
+            self.imports = set(self.meta['import'])
 
         except KeyError:
-            self.imports = tuple()
+            pass #self.imports = set()
 
     def _parse_remark(self, remark):
         """Parse a remark and add results to self.meta."""
@@ -241,9 +241,9 @@ class OboParser(Parser):
             self.meta[key].append(value)
         except KeyError:
             try:
-                self.meta[key] = list(value)
-            except TypeError:
-                self.meta[key] = [value]
+                self.meta[key] = [ value.format() ]
+            except AttributeError:
+                self.meta[key] = value
 
     def _get_dict_to_update(self, IN):
         """Returns the right dictionnary to use"""

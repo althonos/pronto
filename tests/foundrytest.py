@@ -18,7 +18,7 @@ import multiprocessing.pool
 import sys
 import os
 
-from memory_profiler import profile
+#from memory_profiler import profile
 
 sys.path.append(os.getcwd())
 #print(sys.path)

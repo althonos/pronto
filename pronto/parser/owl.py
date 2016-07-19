@@ -37,6 +37,7 @@ class _OwlXMLClassifier(multiprocessing.Process):
 
             term = self.queue.get()
 
+
             if term is None:
                 break
 
@@ -71,8 +72,8 @@ class _OwlXMLClassifier(multiprocessing.Process):
              'action': 'store'
             },
             {
-             'hook': lambda c: c.tag == self.nspaced('rdfs:subClassOf') \
-                               and self.nspaced('rdf:resource') in c.attrib,
+             'hook': lambda c: (c.tag == self.nspaced('rdfs:subClassOf')) \
+                               and (self.nspaced('rdf:resource') in c.attrib),
              'callback': lambda c: self.accession(c.get(self.nspaced('rdf:resource')) or c.get(self.nspaced('rdf:about'))),
              'dest': 'relations',
              'action': 'list',
@@ -105,7 +106,7 @@ class _OwlXMLClassifier(multiprocessing.Process):
                         term_dict.update(rule['callback'](child))
 
 
-                    break
+                    #break
 
         #if ':' in tid: #remove administrative classes
         return (tid, term_dict)#{tid: pronto.term.Term(tid, **term_dict)}
@@ -248,20 +249,26 @@ class OwlXMLParser(Parser):
             elif element.tag==owl_imports:
                 self.imports.append(element.attrib[rdf_resource])
 
+
             elif element.tag==owl_class:
                 if element.attrib:
                     self._rawterms.put(etree.tostring(element))
 
+            else:
+                continue
+
             element.clear()
 
-            for ancestor in element.xpath('ancestor-or-self::*'):
-                while ancestor.getprevious() is not None:
-                    del ancestor.getparent()[0]
+            try:
+                for ancestor in element.xpath('ancestor-or-self::*'):
+                    while ancestor.getprevious() is not None:
+                        del ancestor.getparent()[0]
+            except AttributeError:
+                pass
 
             del element
 
         del context
-
 
     def makeTree(self):
         """

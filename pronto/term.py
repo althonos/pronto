@@ -150,7 +150,7 @@ class Term(object):
                          'id: ', self.id, '\n',
 
         #obo +=
-                         'name: ', self.name, '\n'])
+                         'name: ', self.name if self.name is not None else '', '\n'])
 
         if self.desc:
             obo = "".join([obo, 'def: ', self.desc, '\n'])

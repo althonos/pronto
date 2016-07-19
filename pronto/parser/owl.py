@@ -10,8 +10,10 @@ if platform.python_implementation()=="PyPy": # pragma: no cover
 else:
     try:
         import lxml.etree as etree
+        from lxml.etree import XMLSyntaxError
     except ImportError: # pragma: no cover
         import xml.etree.ElementTree as etree
+        from xml.etree.ElementTree import ParseError
 
 from pronto.parser import Parser
 from pronto.relationship import Relationship
@@ -35,13 +37,19 @@ class _OwlXMLClassifier(multiprocessing.Process):
 
         while True:
 
+
             term = self.queue.get()
 
 
             if term is None:
                 break
 
-            classified_term = self._classify(etree.fromstring(term))
+            try:
+                classified_term = self._classify(etree.fromstring(term))
+            except (ParseError, XMLSyntaxError):
+                self.results.put((None, None))
+                break
+
 
             if classified_term:
                 self.results.put(classified_term)
@@ -196,14 +204,11 @@ class _OwlXMLClassifier(multiprocessing.Process):
 
         return parsed
 
-
-
-
 class OwlXMLParser(Parser):
     """A parser for the owl xml format.
     """
 
-    def __init__(self):
+    def __init__(self, daemon=False):
         super(OwlXMLParser, self).__init__()
         self._tree = None
         self._ns = {}
@@ -292,13 +297,24 @@ class OwlXMLParser(Parser):
 
             tid, d = self._terms.get()
 
+            if tid is None and d is None:
+                break
+
             tid = pronto.utils.format_accession(tid, self._ns)
 
             d['relations'] = { Relationship(k):[accession(x) for x in v] for k,v in d['relations'].items() }
 
             self.terms[tid] = pronto.term.Term(tid, **d)
 
+
+        # if 'tid' in locals() and locals()['tid'] is None:
+        #     for p in self._processes:
+        #         self._rawterms.put(None)
+        #     self.shut_workers()
+        #     #return ParseError
+        # else:
         self.shut_workers()
+
 
     def manage_imports(self):
         pass

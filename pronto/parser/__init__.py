@@ -75,8 +75,9 @@ class Parser(object):
         self._rawterms.close()
         self._terms.close()
 
-        while self._processes:
-            p = self._processes.pop()
+        #while self._processes:
+        for p in multiprocessing.active_children():
+            #p = self._processes.pop()
             p.terminate()
 
         #for p in self._processes:

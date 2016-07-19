@@ -19,6 +19,14 @@ except ImportError:
     from urllib2 import URLError, HTTPError
     from pronto.utils import TimeoutError
 
+try:
+    from lxml.etree import XMLSyntaxError
+except ImportError:
+    class XMLSyntaxError(Error):
+        pass
+finally:
+    from xml.etree.ElementTree import ParseError
+
 
 import pronto.term
 import pronto.parser
@@ -275,7 +283,7 @@ class Ontology(object):
                     self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
                                          import_depth=import_depth-1))
 
-            except (IOError, OSError, URLError, HTTPError) as e:
+            except (IOError, OSError, URLError, HTTPError, XMLSyntaxError, ParseError) as e:
                 warnings.warn("{} occured during import of "
                               "{}".format(type(e).__name__, i),
                               pronto.utils.ProntoWarning)

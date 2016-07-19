@@ -17,7 +17,6 @@ from pronto.parser import Parser
 from pronto.relationship import Relationship
 import pronto.utils
 
-
 class _OwlXMLClassifier(multiprocessing.Process):
 
     def __init__(self, queue, results):
@@ -221,14 +220,14 @@ class OwlXMLParser(Parser):
 
         self.init_workers(_OwlXMLClassifier)
 
-        events = ("start", "end", "start-ns")
+        events = ("end", "start-ns")
 
         owl_imports, owl_class, rdf_resource = "", "", ""
 
+        context = etree.iterparse(stream, events=events)
 
-
-        for event, element in etree.iterparse(stream, #huge_tree=True,
-                                              events=events):
+        for event, element in context: #etree.iterparse(stream, #huge_tree=True,
+                                       #                events=events):
 
             if element is None:
                 break
@@ -242,15 +241,26 @@ class OwlXMLParser(Parser):
                 elif element[0] == 'rdf':
                     rdf_resource = "".join(["{", element[1], "}", "resource"])
 
-            elif element.tag==owl_imports and event=='end':
-                self.imports.append(element.attrib[rdf_resource])
-                element.clear()
+                del event
+                del element
+                continue
 
-            elif element.tag==owl_class and event=='end':
+            elif element.tag==owl_imports:
+                self.imports.append(element.attrib[rdf_resource])
+
+            elif element.tag==owl_class:
                 if element.attrib:
                     self._rawterms.put(etree.tostring(element))
-                element.clear()
 
+            element.clear()
+
+            for ancestor in element.xpath('ancestor-or-self::*'):
+                while ancestor.getprevious() is not None:
+                    del ancestor.getparent()[0]
+
+            del element
+
+        del context
 
 
     def makeTree(self):

@@ -16,6 +16,33 @@ class Relationship(object):
     of the same name are present in the class py:attribute:: _instances
     (a dictionnary containing memoized relationships).
 
+
+    .. note::
+
+       Relationships are pickable and always refer to the same adress even
+       after being pickled and unpickled.
+
+       .. example::
+
+          >>> import pronto
+          >>> import io, pickle
+          >>>
+          >>> src = io.BytesIO()
+          >>> p = pickle.Pickler(src)
+          >>>
+          >>> isa = pronto.Relationship('is_a')
+          >>> isa_id = id(isa)
+          >>>
+          >>> p.dump(isa)
+          >>> dst = io.BytesIO(src.getvalue())
+          >>>
+          >>> u = pickle.Unpickler(dst)
+          >>> new_isa = u.load()
+          >>>
+          >>> id(new_isa) == isa_id
+          True
+          >>> # what's that black magic ?!
+
     """
 
     _instances = collections.OrderedDict()
@@ -143,11 +170,11 @@ class Relationship(object):
             Relationship(has_part)
 
         """
-        return (r for r in cls._instances.values() if r.direction=='topdown')
+        return tuple(pronto.utils.unique_everseen(r for r in cls._instances.values() if r.direction=='topdown'))
 
     #@pronto.utils.classproperty
     @classmethod
-    def bottomup(self):
+    def bottomup(cls):
         """Get all bottomup Relationship instances
 
         Example:
@@ -159,7 +186,7 @@ class Relationship(object):
             Relationship(part_of)
 
         """
-        return pronto.utils.unique_everseen(r for r in self._instances.values() if r.direction=='bottomup')
+        return tuple(pronto.utils.unique_everseen(r for r in cls._instances.values() if r.direction=='bottomup'))
 
     @pronto.utils.classproperty
     def lock(self):
@@ -184,6 +211,14 @@ class Relationship(object):
         """
         return self._tlock
 
+    def __getstate__(self):
+        pass
+
+    def __getnewargs__(self):
+        return (self.obo_name,)
+
+    def __setstate__(self, *args, **kwargs):
+        pass
 
 
 Relationship('is_a', symmetry=False, transitivity=True,
@@ -204,7 +239,6 @@ Relationship('part_of', symmetry=False, transitivity=True,
 
 Relationship('has_units', symmetry=False, transitivity=False,
                           reflexivity=None)
-
 
 Relationship('has_domain', symmetry=False, transitivity=False,
                            reflexivity=None)

@@ -4,6 +4,18 @@ pronto.ontology
 ===============
 
 This submodule contains the definition of the Ontology class.
+
+
+Multiprocessing
+---------------
+
+Ontology parsing relies on multiprocessing, which means it
+isn't possible to use Ontology parsing within daemons. Still,
+once the parsing is done, it is possible to use Ontologies
+within processes or threads as all object implemented in pronto
+are pickable.
+
+
 """
 
 
@@ -20,11 +32,8 @@ except ImportError:
     from pronto.utils import TimeoutError
 
 try:
-    from lxml.etree import XMLSyntaxError
+    from lxml.etree import XMLSyntaxError as ParseError
 except ImportError:
-    class XMLSyntaxError(Error):
-        pass
-finally:
     from xml.etree.ElementTree import ParseError
 
 

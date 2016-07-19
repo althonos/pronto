@@ -5,15 +5,21 @@ import json
 import multiprocessing
 import platform
 
-if platform.python_implementation()=="PyPy": # pragma: no cover
-    import xml.etree.cElementTree as etree
-else:
+# if platform.python_implementation()=="PyPy": # pragma: no cover
+#     import xml.etree.cElementTree as etree
+#     from xml.etree.ElementTree import ParseError
+# else:
+try:
+    import lxml.etree as etree
+    from lxml.etree import XMLSyntaxError as ParseError
+except ImportError: # pragma: no cover
     try:
-        import lxml.etree as etree
-        from lxml.etree import XMLSyntaxError
-    except ImportError: # pragma: no cover
+        import xml.etree.cElementTree as etree
+        from xml.etree.cElementTree import ParseError
+    except ImportError:
         import xml.etree.ElementTree as etree
         from xml.etree.ElementTree import ParseError
+
 
 from pronto.parser import Parser
 from pronto.relationship import Relationship
@@ -46,7 +52,7 @@ class _OwlXMLClassifier(multiprocessing.Process):
 
             try:
                 classified_term = self._classify(etree.fromstring(term))
-            except (ParseError, XMLSyntaxError):
+            except ParseError:
                 self.results.put((None, None))
                 break
 

@@ -33,7 +33,7 @@ profile:
 .SILENT: cover
 ifndef CODACY_PROJECT_TOKEN
 cover:
-	coverage run tests/doctests.py --source pronto
+	coverage run tests/doctests.py -v --source pronto
 	coverage xml --include 'pronto/*'
 	export CODACY_PROJECT_TOKEN=${TOKEN} && python-codacy-coverage -r coverage.xml
 else

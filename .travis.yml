@@ -17,6 +17,8 @@ env:
 matrix:
   allow_failures:
   - python: '2.6'
+  - python: 'pypy'
+  - python: 'pypy3'
   - env: TEST_SUITE="foundrytest"
 
 before_install:
@@ -29,8 +31,8 @@ install:
 
 script: make test
 
-after_success: 
-  - if [ "$(python -V)" \> "Python 3.5" ]; then pip install coverage codacy-coverage; make cover; fi
+#after_success:
+#  - if [ "$(python -V)" \> "Python 3.5" ]; then pip install coverage codacy-coverage; make cover; fi
 
 before_deploy: python setup.py sdist --formats zip,gztar bdist_wheel
 

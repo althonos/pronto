@@ -13,8 +13,7 @@ BLOCKLIST = ('chebi.owl', 'chebi.obo', 'pr.owl',
 import json
 import signal
 import time
-import multiprocessing
-import multiprocessing.pool
+
 import sys
 import os
 
@@ -31,9 +30,9 @@ except ImportError:
     import urllib2 as rq
 
 
-def timer(signum, frame):
-    #print('Quitter called with signal', signum)
-    raise IOError("        Couldn't parse ontology within time limit !")
+# def timer(signum, frame):
+#     #print('Quitter called with signal', signum)
+#     raise IOError("        Couldn't parse ontology within time limit !")
 
 #@profile
 def task(ontology):
@@ -57,7 +56,7 @@ def task(ontology):
            del ont
         except OSError:
            continue
-    
+
     del ontid
     del ontology
 
@@ -66,9 +65,6 @@ def task(ontology):
 content = rq.urlopen(OBO_CATALOG).read()
 catalog = json.loads(content.decode('utf-8'))
 
-#pool = multiprocessing.pool.Pool(multiprocessing.cpu_count() * 4)
-
-#pool.
 for x in catalog["ontologies"]:
     y = task(x)
     del y

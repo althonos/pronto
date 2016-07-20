@@ -11,24 +11,14 @@ Todo:
 """
 
 
-#def memoize(obj):
-#    cache = obj.cache = {}
-#
-#    @functools.wraps(obj)
-#    def memoizer(*args, **kwargs):
-#        if args not in cache:
-#            cache[args] = obj(*args, **kwargs)
-#        return cache[args]
-#
-#    return memoizer
 
 
 
-import functools
+#import functools
+#import errno
+#import os
+#import signal
 import itertools
-import errno
-import os
-import signal
 import atexit
 
 import multiprocessing
@@ -39,7 +29,6 @@ import multiprocessing.pool
 try:
     from urllib.error import URLError, HTTPError
 except ImportError:
-    import urllib2 as rq
     from urllib2 import URLError, HTTPError
     itertools.filterfalse = itertools.ifilterfalse
 
@@ -53,6 +42,20 @@ except ImportError:
 
 class TimeoutError(IOError):
     pass
+
+
+
+#def memoize(obj):
+#    cache = obj.cache = {}
+#
+#    @functools.wraps(obj)
+#    def memoizer(*args, **kwargs):
+#        if args not in cache:
+#            cache[args] = obj(*args, **kwargs)
+#        return cache[args]
+#
+#    return memoizer
+
 
 # def timeout(seconds=60, error_message=os.strerror(errno.ETIME)):
 
@@ -99,7 +102,8 @@ class ProntoWarning(Warning):
         >>> import warnings
         >>> with warnings.catch_warnings(record=True) as w:
         ...    # the following ontology always has import issues (no URI in imports)
-        ...    ims = Ontology('https://raw.githubusercontent.com/beny/imzml/master/data/imagingMS.obo')
+        ...    ims = Ontology('https://raw.githubusercontent.com/beny/imzml'
+        ...                   '/master/data/imagingMS.obo')
         >>> print(w[-1].category)
         <class 'pronto.utils.ProntoWarning'>
 
@@ -168,18 +172,27 @@ def unique_everseen(iterable):
 
 class _NoDaemonProcess(multiprocessing.Process):
     # make 'daemon' attribute always return False
-    def _get_daemon(self):
+
+    @property
+    def daemon(self):
         return False
-    def _set_daemon(self, value):
+
+    @daemon.setter
+    def daemon(self, value):
         pass
-    daemon = property(_get_daemon, _set_daemon)
+
+#    def _get_daemon(self):
+#        return False
+
+#    def _set_daemon(self, value):
+#        pass
+#    daemon = property(_get_daemon, _set_daemon)
 
 class ProntoPool(multiprocessing.pool.Pool):
     """A non-daemonized pool provided for convenience.
 
     Allows to perform ontology parsing through a pool of non-daemonized
-    pool of workers while inheriting all methods and attributes of
-    multiprocessing.pool.Pool.
+    workers while inheriting all methods and attributes of multiprocessing.pool.Pool.
 
     Example:
 

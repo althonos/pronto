@@ -22,7 +22,7 @@ are pickable.
 import json
 import os
 import warnings
-import functools
+#import functools
 
 try:
     import urllib.request as rq
@@ -30,7 +30,7 @@ try:
 except ImportError:
     import urllib2 as rq
     from urllib2 import URLError, HTTPError
-    from pronto.utils import TimeoutError
+    #from pronto.utils import TimeoutError
 
 try:
     from lxml.etree import XMLSyntaxError as ParseError

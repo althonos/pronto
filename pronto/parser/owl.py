@@ -1,10 +1,9 @@
 
 import functools
 import os
-import json
 import multiprocessing
-import platform
 
+#import platform
 # if platform.python_implementation()=="PyPy": # pragma: no cover
 #     import xml.etree.cElementTree as etree
 #     from xml.etree.ElementTree import ParseError

@@ -43,6 +43,8 @@ import pronto.parser
 import pronto.utils
 
 
+
+
 class Ontology(object):
     """An ontology.
 
@@ -126,13 +128,13 @@ class Ontology(object):
     def obo(self):
         """Returns the ontology serialized in obo format.
         """
-        obo = ""
+        # obo = ""
 
-        for accession in sorted(self.terms.keys()):
-            obo += '\n'
-            obo += self.terms[accession].obo
+        # for accession in sorted(self.terms.keys()):
+        #     obo += '\n'
+        #     obo += self.terms[accession].obo
 
-        return obo
+        return "\n\n".join([t.obo for t in self])
 
     def reference(self):
         """Make relationships point to classes of ontology instead of ontology id"""
@@ -153,12 +155,12 @@ class Ontology(object):
     def parse(self, stream):
         for parser in pronto.parser.Parser._instances.values():
             if parser.hook(stream=stream, path=self.path):
-                try:
-                    self.meta, self.terms, self.imports = parser.parse(stream)
-                    return
-                except TimeoutError:
-                    warnings.warn("Parsing of {} timed out".format(self.path),
-                                   pronto.utils.ProntoWarning)
+                # try:
+                self.meta, self.terms, self.imports = parser.parse(stream)
+                return
+                # except TimeoutError:
+                #     warnings.warn("Parsing of {} timed out".format(self.path),
+                #                    pronto.utils.ProntoWarning)
 
     def __getitem__(self, item):
         return self.terms[item]
@@ -269,50 +271,37 @@ class Ontology(object):
         self.adopt()
         self.reference()
 
-    @staticmethod
-    def ontologize(x):
-        path, import_depth = x
-        try:
-            return Ontology(path, import_depth=import_depth-1)
-        except (IOError, OSError, URLError, HTTPError, ParseError) as e:
-            return ("{} occured during import of {}".format(type(e).__name__, path),
-                    pronto.utils.ProntoWarning)
-
-
-
     def resolve_imports(self, import_depth):
         """Imports required ontologies."""
 
-        pool = pronto.utils.ProntoPool()
+        # pool = pronto.utils.ProntoPool()
+        # cls = type(self)
+        # #ontologize = functools.partial(Ontology, import_depth=import_depth-1)
 
-
-
-        #ontologize = functools.partial(Ontology, import_depth=import_depth-1)
-
-        for x in pool.map(self.ontologize, ((x,import_depth) for x in self.imports)):
-            #if x is not None:
-            try:
-                self.merge(x)
-            except TypeError:
-                warnings.warn(*x)
-
-        pool.close()
-
-        # for i in self.imports:
+        # for x in pool.map(pronto.utils._ontologize, ((cls,x,import_depth) for x in self.imports)):
+        #     #if x is not None:
         #     try:
+        #         self.merge(x)
+        #     except TypeError:
+        #         warnings.warn(*x)
 
-        #         if os.path.exists(i) or i.startswith('http') or i.startswith('ftp'):
-        #             self.merge(Ontology(i, import_depth=import_depth-1))
+        # pool.close()
+
+        for i in self.imports:
+            try:
+
+                if os.path.exists(i) or i.startswith('http') or i.startswith('ftp'):
+                    self.merge(Ontology(i, import_depth=import_depth-1))
 
 
-        #         else: # try to look at neighbouring ontologies
-        #             self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
-        #                                  import_depth=import_depth-1))
+                else: # try to look at neighbouring ontologies
+                    self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
+                                         import_depth=import_depth-1))
 
-        #     except (IOError, OSError, URLError, HTTPError, ParseError) as e:
-        #         warnings.warn("{} occured during import of "
-        #                       "{}".format(type(e).__name__, i),
-        #                       pronto.utils.ProntoWarning)
+            except (IOError, OSError, URLError, HTTPError, ParseError) as e:
+                warnings.warn("{} occured during import of "
+                              "{}".format(type(e).__name__, i),
+                              pronto.utils.ProntoWarning)
 
     def _include_term_list(self, termlist):
         """Add terms from a TermList to the ontology.
@@ -410,3 +399,6 @@ class Ontology(object):
         self.terms = {t.id:t for t in state[3]}
 
         self.reference()
+
+
+

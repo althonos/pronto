@@ -133,13 +133,12 @@ class Term(object):
 
         Example:
 
-            >>> print(ms['MS:1000031'].obo)  # doctest: +ELLIPSIS
+            >>> print(ms['MS:1000031'].obo)
             [Term]
             id: MS:1000031
             name: instrument model
             def: "Instrument model name not including the vendor's name." [PSI:MS]
             relationship: part_of: MS:1000463 ! instrument
-            ...
 
         """
 
@@ -181,7 +180,7 @@ class Term(object):
             except KeyError:
                 continue
 
-        return obo
+        return obo.rstrip()
 
     @property
     def __deref__(self):

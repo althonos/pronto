@@ -31,10 +31,24 @@ import os
 import signal
 import atexit
 
+import multiprocessing
+import multiprocessing.pool
+
+
+
 try:
+    from urllib.error import URLError, HTTPError
+except ImportError:
+    import urllib2 as rq
+    from urllib2 import URLError, HTTPError
     itertools.filterfalse = itertools.ifilterfalse
-except AttributeError:
-    pass
+
+try:
+    from lxml.etree import XMLSyntaxError as ParseError
+except ImportError:
+    from xml.etree.ElementTree import ParseError
+
+
 
 
 class TimeoutError(IOError):
@@ -152,13 +166,6 @@ def unique_everseen(iterable):
         yield element
 
 
-
-
-import multiprocessing
-import multiprocessing.pool
-import atexit
-
-
 class _NoDaemonProcess(multiprocessing.Process):
     # make 'daemon' attribute always return False
     def _get_daemon(self):
@@ -221,3 +228,14 @@ class ProntoPool(multiprocessing.pool.Pool):
             pool.join()
 
 atexit.register(ProntoPool._close_all)
+
+
+
+
+def _ontologize(x):
+    Ontology, path, import_depth = x
+    try:
+        return Ontology(path, import_depth=import_depth-1)
+    except (IOError, OSError, URLError, HTTPError, ParseError) as e:
+        return ("{} occured during import of {}".format(type(e).__name__, path),
+                ProntoWarning)

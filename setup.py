@@ -3,9 +3,12 @@
 
 from setuptools import setup, find_packages
 import warnings
+import platform
 
 warnings.simplefilter("ignore")
 import pronto
+
+PYPY = platform.python_implementation()=='PyPy'
 
 ## SETUPTOOLS VERSION
 setup(
@@ -22,7 +25,7 @@ setup(
     description="Python frontend to ontologies - a library to parse, create, browse and export ontologies.",
     long_description=open('README.rst').read(),
 
-    install_requires=open('requirements.txt').read().splitlines(),
+    install_requires=open('requirements.txt').read().splitlines() if not PYPY else [],
     extras_require = { extra:open('requirements-{}.txt'.format(extra)).read().splitlines()
                         for extra in ['doc'] },
 

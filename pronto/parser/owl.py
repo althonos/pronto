@@ -24,7 +24,7 @@ from pronto.parser import Parser
 from pronto.relationship import Relationship
 import pronto.utils
 
-class _OwlXMLClassifier(multiprocessing.Process):
+class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
     def __init__(self, queue, results):
 

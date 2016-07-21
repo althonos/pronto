@@ -11,5 +11,6 @@ exclude_lines =
 
 [run]
 concurrency=multiprocessing
-
+parallel=True
+branch=True
 

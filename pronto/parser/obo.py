@@ -13,7 +13,7 @@ from pronto.parser import Parser
 
 
 
-class _OboClassifier(multiprocessing.Process):
+class _OboClassifier(multiprocessing.Process): # pragma: no cover
 
     def __init__(self, queue, results, *args, **kwargs):
 

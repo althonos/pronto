@@ -170,7 +170,7 @@ def unique_everseen(iterable):
         yield element
 
 
-class _NoDaemonProcess(multiprocessing.Process):
+class _NoDaemonProcess(multiprocessing.Process): # pragma: no cover
     # make 'daemon' attribute always return False
 
     @property
@@ -188,7 +188,7 @@ class _NoDaemonProcess(multiprocessing.Process):
 #        pass
 #    daemon = property(_get_daemon, _set_daemon)
 
-class ProntoPool(multiprocessing.pool.Pool):
+class ProntoPool(multiprocessing.pool.Pool): # pragma: no cover
     """A non-daemonized pool provided for convenience.
 
     Allows to perform ontology parsing through a pool of non-daemonized

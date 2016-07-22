@@ -219,10 +219,10 @@ class ProntoPool(multiprocessing.pool.Pool): # pragma: no cover
         ... "http://purl.enanomapper.org/onto/external/sio-slim.owl",
         ... "http://purl.enanomapper.org/onto/external/uo-slim.owl"]
         >>> pool = ProntoPool()
-        >>> enm_onto = pool.map(Ontology, enm)
+
+        >>> from functools import partial
+        >>> enm_onto = pool.map(partial(Ontology, timeout=None), enm)
         >>> pool.close()
-
-
 
     """
     _instances = []

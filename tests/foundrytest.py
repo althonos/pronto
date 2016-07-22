@@ -17,7 +17,6 @@ import time
 import sys
 import os
 
-#from memory_profiler import profile
 
 sys.path.append(os.getcwd())
 #print(sys.path)
@@ -30,11 +29,6 @@ except ImportError:
     import urllib2 as rq
 
 
-# def timer(signum, frame):
-#     #print('Quitter called with signal', signum)
-#     raise IOError("        Couldn't parse ontology within time limit !")
-
-#@profile
 def task(ontology):
     ontid = ontology["id"]
     print('Testing: {}'.format(ontid))
@@ -54,13 +48,13 @@ def task(ontology):
            ont = pronto.Ontology(product["ontology_purl"])
            print("      {} terms extracted in {}s.".format(len(ont), round(time.time()-t, 1)))
            del ont
-        except OSError:
+        except (KeyboardInterrupt, SystemExit):
+           raise
+        except:
            continue
 
     del ontid
     del ontology
-
-#signal.signal(signal.SIGALRM, timer)
 
 content = rq.urlopen(OBO_CATALOG).read()
 catalog = json.loads(content.decode('utf-8'))

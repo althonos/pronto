@@ -75,7 +75,7 @@ class Ontology(object):
         * Add a __repr__ method to Ontology
     """
 
-    def __init__(self, path=None, imports=True, import_depth=-1):
+    def __init__(self, path=None, imports=True, import_depth=-1, timeout=2):
         """
         """
         self.path = path
@@ -87,7 +87,7 @@ class Ontology(object):
 
 
             if path.startswith('http') or path.startswith('ftp'):
-                handle = rq.urlopen(path)
+                handle = rq.urlopen(path, timeout=timeout)
             else:
                 if not os.path.exists(path):
                     raise OSError('Ontology file {} could not be found'.format(path))

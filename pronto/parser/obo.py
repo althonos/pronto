@@ -6,6 +6,7 @@ Parser can be derived to provide additional parsers to ontology files.
 """
 
 import multiprocessing
+import six
 
 import pronto.term
 import pronto.relationship
@@ -193,7 +194,7 @@ class OboParser(Parser):
         while self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
             d = self._terms.get()
             self.terms[d[0]] = pronto.term.Term(
-                d[0], d[1], d[2], {pronto.relationship.Relationship(k):v for k,v in d[3].items()}, d[4]
+                d[0], d[1], d[2], {pronto.relationship.Relationship(k):v for k,v in six.iteritems(d[3])}, d[4]
             )
 
         self.shut_workers()
@@ -201,7 +202,7 @@ class OboParser(Parser):
     def metanalyze(self):
         """Analyze metadatas extracted from the beginning of the file."""
 
-        for key,value in self._meta.items():
+        for key,value in six.iteritems(self._meta):
             if key != 'remark':
                 self._parse_statement(key, value)
             else:

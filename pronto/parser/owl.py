@@ -2,12 +2,8 @@
 import functools
 import os
 import multiprocessing
-
-#import platform
-# if platform.python_implementation()=="PyPy": # pragma: no cover
-#     import xml.etree.cElementTree as etree
-#     from xml.etree.ElementTree import ParseError
-# else:
+import six
+""
 try:
     import lxml.etree as etree
     from lxml.etree import XMLSyntaxError as ParseError
@@ -307,7 +303,7 @@ class OwlXMLParser(Parser):
 
             tid = pronto.utils.format_accession(tid, self._ns)
 
-            d['relations'] = { Relationship(k):[accession(x) for x in v] for k,v in d['relations'].items() }
+            d['relations'] = { Relationship(k):[accession(x) for x in v] for k,v in six.iteritems(d['relations']) }
 
             self.terms[tid] = pronto.term.Term(tid, **d)
 

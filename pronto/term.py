@@ -6,6 +6,8 @@ pronto.term
 This module defines the classes Term and TermList.
 """
 
+import six
+
 from pronto.relationship import Relationship
 
 
@@ -78,7 +80,7 @@ class Term(object):
             self._parents = TermList()
             self._parents.extend(
                 [ other
-                    for rship,others in self.relations.items()
+                    for rship,others in six.iteritems(self.relations)
                         for other in others
                             if rship in bottomups
                 ]
@@ -111,7 +113,7 @@ class Term(object):
             self._children = TermList()
             self._children.extend(
                 [ other
-                    for rship,others in self.relations.items()
+                    for rship,others in six.iteritems(self.relations)
                         for other in others
                             if rship in topdowns
                 ]
@@ -155,7 +157,7 @@ class Term(object):
             obo = "".join([obo, 'def: ', self.desc, '\n'])
 
         # add more bits of information
-        for k,v in self.other.items():
+        for k,v in six.iteritems(self.other):
             if isinstance(v, list):
                 for x in v:
                     obo = "".join([obo, k, ': ', x, '\n'])
@@ -192,7 +194,7 @@ class Term(object):
             'name': self.name,
             'other': self.other,
             'desc': self.desc,
-            'relations': {k.obo_name:v.id for k,v in self.relations.items()}
+            'relations': {k.obo_name:v.id for k,v in six.iteritems(self.relations)}
          }
 
     def __getstate__(self):
@@ -200,9 +202,9 @@ class Term(object):
         return (
             self.id,
             self.name,
-            tuple((k,v) for k,v in self.other.items()),
+            tuple((k,v) for k,v in six.iteritems(self.other)),
             self.desc,
-            tuple((k.obo_name,v.id) for k,v in self.relations.items()),
+            tuple((k.obo_name,v.id) for k,v in six.iteritems(self.relations)),
         )
 
     def __setstate__(self, state):

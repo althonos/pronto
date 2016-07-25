@@ -22,15 +22,20 @@ are pickable.
 import json
 import os
 import warnings
+import six
 #import functools
 
-try:
-    import urllib.request as rq
-    from urllib.error import URLError, HTTPError
-except ImportError:
-    import urllib2 as rq
-    from urllib2 import URLError, HTTPError
-    #from pronto.utils import TimeoutError
+# try:
+#     import urllib.request as rq
+#     from urllib.error import URLError, HTTPError
+# except ImportError:
+#     import urllib2 as rq
+#     from urllib2 import URLError, HTTPError
+#     #from pronto.utils import TimeoutError
+
+import six.moves.urllib.request as rq
+from six.moves.urllib.error import URLError, HTTPError
+
 
 try:
     from lxml.etree import XMLSyntaxError as ParseError
@@ -139,7 +144,7 @@ class Ontology(object):
     def reference(self):
         """Make relationships point to classes of ontology instead of ontology id"""
 
-        for termkey,termval in self.terms.items():
+        for termkey,termval in six.iteritems(self.terms):
 
             relvalref = { relkey: pronto.term.TermList(
                                     [self.terms[x] if x in self.terms
@@ -147,7 +152,7 @@ class Ontology(object):
                                             if not isinstance(x, pronto.term.Term)
                                         else x for x in relval]
                                )
-                        for relkey, relval in termval.relations.items() }
+                        for relkey, relval in six.iteritems(termval.relations) }
 
 
             self.terms[termkey].relations.update(relvalref)
@@ -324,7 +329,7 @@ class Ontology(object):
 
         if term.relations:
 
-            for k,v in term.relations.items():
+            for k,v in six.iteritems(term.relations):
                 for i,t in enumerate(v):
 
                     #if isinstance(t, pronto.term.Term):
@@ -380,7 +385,7 @@ class Ontology(object):
 
     def __getstate__(self):
 
-        meta = frozenset( (k, frozenset(v)) for k,v in self.meta.items() )
+        meta = frozenset( (k, frozenset(v)) for k,v in six.iteritems(self.meta) )
         imports = self.imports
         path = self.path
 

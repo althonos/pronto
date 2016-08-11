@@ -23,6 +23,7 @@ import atexit
 
 import multiprocessing
 import multiprocessing.pool
+import multiprocessing.queues
 
 
 
@@ -94,6 +95,7 @@ class classproperty(object):
     def __get__(self, owner_self, owner_cls):
         return self.fget(owner_cls)
 
+
 class ProntoWarning(Warning):
     """A warning raised by pronto.
 
@@ -113,6 +115,163 @@ class ProntoWarning(Warning):
 
         super(ProntoWarning, self).__init__(*args, **kwargs)
         #self.__suppress_context__ = True
+
+
+class _NoDaemonProcess(multiprocessing.Process): # pragma: no cover
+    # make 'daemon' attribute always return False
+
+    @property
+    def daemon(self):
+        return False
+
+    @daemon.setter
+    def daemon(self, value):
+        pass
+
+
+class ProntoPool(multiprocessing.pool.Pool): # pragma: no cover
+    """A non-daemonized pool provided for convenience.
+
+    Allows to perform ontology parsing through a pool of non-daemonized
+    workers while inheriting all methods and attributes of multiprocessing.pool.Pool.
+
+    Example:
+
+        >>> from pronto import Ontology
+        >>> from pronto.utils import ProntoPool
+        >>> enm = [ #ontologies from the eNanoMapper project
+        ... "http://purl.enanomapper.net/onto/external/chebi-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/bao-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/bfo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/ccont-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/cheminf-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/chmo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/efo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/envo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/go-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/hupson-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/iao-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/ncit-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/npo-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/oae-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/obcs-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/obi-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/pato-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/sio-slim.owl",
+        ... "http://purl.enanomapper.org/onto/external/uo-slim.owl"]
+        >>> pool = ProntoPool()
+
+        >>> from functools import partial
+        >>> enm_onto = pool.map(partial(Ontology, timeout=None), enm)
+        >>> pool.close()
+
+    """
+    _instances = []
+    Process = _NoDaemonProcess
+
+    def __init__(self, *args, **kwargs):
+        super(ProntoPool, self).__init__(*args, **kwargs)
+        self._instances.append(self)
+
+    @classmethod
+    def _close_all(cls):
+        for pool in cls._instances:
+            pool.close()
+
+        for pool in cls._instances:
+            pool.join()
+atexit.register(ProntoPool._close_all)
+
+
+class SharedCounter(object):
+    """ A synchronized shared counter.
+
+    The locking done by multiprocessing.Value ensures that only a single
+    process or thread may read or write the in-memory ctypes object. However,
+    in order to do n += 1, Python performs a read followed by a write, so a
+    second process may read the old value before the new one is written by
+    the first process. The solution is to use a multiprocessing.Lock to
+    guarantee the atomicity of the modifications to Value.
+
+    This class comes almost entirely from Eli Bendersky's blog:
+    http://eli.thegreenplace.net/2012/01/04/shared-counter-with-
+        pythons-multiprocessing/
+
+    --------------------------------------------------------------------------
+
+    Solution of issue:
+        https://github.com/vterron/lemon/issues/11
+    implemented in:
+        https://github.com/vterron/lemon/commit/9ca6b4b1212228dbd4f69b88aaf88b12952d7d6f
+
+    """
+
+    def __init__(self, n = 0):
+        self.count = multiprocessing.Value('i', n)
+
+    def increment(self, n = 1):
+        """ Increment the counter by n (default = 1) """
+        with self.count.get_lock():
+            self.count.value += n
+
+    @property
+    def value(self):
+        """ Return the value of the counter """
+        return self.count.value
+
+
+class Queue(multiprocessing.queues.Queue):
+    """ A portable implementation of multiprocessing.Queue.
+
+    Because of multithreading / multiprocessing semantics, Queue.qsize() may
+    raise the NotImplementedError exception on Unix platforms like Mac OS X
+    where sem_getvalue() is not implemented. This subclass addresses this
+    problem by using a synchronized shared counter (initialized to zero) and
+    increasing / decreasing its value every time the put() and get() methods
+    are called, respectively. This not only prevents NotImplementedError from
+    being raised, but also allows us to implement a reliable version of both
+    qsize() and empty().
+
+    --------------------------------------------------------------------------
+
+    Solution of issue:
+        https://github.com/vterron/lemon/issues/11
+    implemented in:
+        https://github.com/vterron/lemon/commit/9ca6b4b1212228dbd4f69b88aaf88b12952d7d6f
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(Queue, self).__init__(*args, ctx=multiprocessing.get_context(), **kwargs)
+        self.size =  SharedCounter(0)
+
+    def put(self, *args, **kwargs):
+        super(Queue, self).put(*args, **kwargs)
+        self.size.increment(1)
+
+    def get(self, *args, **kwargs):
+        x = super(Queue, self).get(*args, **kwargs)
+        self.size.increment(-1)
+        return x
+
+    def qsize(self):
+        """ Reliable implementation of multiprocessing.Queue.qsize() """
+        return self.size.value
+
+    def empty(self):
+        """ Reliable implementation of multiprocessing.Queue.empty() """
+        return not self.qsize() > 0
+
+
+
+
+def _ontologize(x):
+    Ontology, path, import_depth = x
+    try:
+        return Ontology(path, import_depth=import_depth-1)
+    except (IOError, OSError, URLError, HTTPError, ParseError) as e:
+        return ("{} occured during import of {}".format(type(e).__name__, path),
+                ProntoWarning)
 
 def explicit_namespace(attr, nsmap):
     """Explicits the namespace in an attribute name.
@@ -169,86 +328,3 @@ def unique_everseen(iterable):
         seen_add(element)
         yield element
 
-
-class _NoDaemonProcess(multiprocessing.Process): # pragma: no cover
-    # make 'daemon' attribute always return False
-
-    @property
-    def daemon(self):
-        return False
-
-    @daemon.setter
-    def daemon(self, value):
-        pass
-
-#    def _get_daemon(self):
-#        return False
-
-#    def _set_daemon(self, value):
-#        pass
-#    daemon = property(_get_daemon, _set_daemon)
-
-class ProntoPool(multiprocessing.pool.Pool): # pragma: no cover
-    """A non-daemonized pool provided for convenience.
-
-    Allows to perform ontology parsing through a pool of non-daemonized
-    workers while inheriting all methods and attributes of multiprocessing.pool.Pool.
-
-    Example:
-
-        >>> from pronto import Ontology
-        >>> from pronto.utils import ProntoPool
-        >>> enm = [ #ontologies from the eNanoMapper project
-        ... "http://purl.enanomapper.net/onto/external/chebi-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/bao-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/bfo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/ccont-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/cheminf-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/chmo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/efo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/envo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/go-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/hupson-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/iao-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/ncit-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/npo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/oae-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/obcs-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/obi-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/pato-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/sio-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/uo-slim.owl"]
-        >>> pool = ProntoPool()
-
-        >>> from functools import partial
-        >>> enm_onto = pool.map(partial(Ontology, timeout=None), enm)
-        >>> pool.close()
-
-    """
-    _instances = []
-    Process = _NoDaemonProcess
-
-    def __init__(self, *args, **kwargs):
-        super(ProntoPool, self).__init__(*args, **kwargs)
-        self._instances.append(self)
-
-    @classmethod
-    def _close_all(cls):
-        for pool in cls._instances:
-            pool.close()
-
-        for pool in cls._instances:
-            pool.join()
-
-atexit.register(ProntoPool._close_all)
-
-
-
-
-def _ontologize(x):
-    Ontology, path, import_depth = x
-    try:
-        return Ontology(path, import_depth=import_depth-1)
-    except (IOError, OSError, URLError, HTTPError, ParseError) as e:
-        return ("{} occured during import of {}".format(type(e).__name__, path),
-                ProntoWarning)

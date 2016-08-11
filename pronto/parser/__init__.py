@@ -7,6 +7,8 @@ import pronto.utils
 
 __all__ = ["Parser", "OboParser", "OwlXMLParser"]
 
+
+
 class Parser(object):
     """An abstract parser object.
     """
@@ -61,8 +63,8 @@ class Parser(object):
         raise NotImplementedError
 
     def init_workers(self, ParserProcess, *args, **kwargs):
-        self._rawterms = multiprocessing.Queue()
-        self._terms = multiprocessing.Queue()
+        self._rawterms = pronto.utils.Queue()#multiprocessing.Queue()
+        self._terms = pronto.utils.Queue()#multiprocessing.Queue()
         self._processes = []
 
         for _ in range(multiprocessing.cpu_count() * 2):

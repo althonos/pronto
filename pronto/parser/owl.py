@@ -293,8 +293,7 @@ class OwlXMLParser(Parser):
 
         accession = functools.partial(pronto.utils.format_accession, nsmap=self._ns)
 
-        while self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
-
+        while not self._terms.empty() or not self._rawterms.empty(): #self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
 
             tid, d = self._terms.get()
 

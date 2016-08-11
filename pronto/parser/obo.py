@@ -191,7 +191,7 @@ class OboParser(Parser):
     def makeTree(self):
         """Create the proper ontology Tree from raw terms"""
 
-        while self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
+        while not self._terms.empty() or not self._rawterms.empty(): #self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
             d = self._terms.get()
             self.terms[d[0]] = pronto.term.Term(
                 d[0], d[1], d[2], {pronto.relationship.Relationship(k):v for k,v in six.iteritems(d[3])}, d[4]

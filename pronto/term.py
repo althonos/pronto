@@ -14,7 +14,7 @@ from pronto.relationship import Relationship
 class Term(object):
     """ An ontology term.
 
-    Examples:
+    Example:
 
         >>> from pronto import *
         >>> new_term = Term('TR:001', 'new term', 'a new term')
@@ -184,8 +184,10 @@ class Term(object):
 
     @property
     def __deref__(self):
-        """A dereferenced relations dictionary only contains other Terms id
-        to avoid circular references when creating a json.
+        """A dereferenced relations dictionary 
+
+        It only contains other Terms id to avoid circular references when 
+        creating a json.
         """
         return {
             'id': self.id,
@@ -222,9 +224,6 @@ class Term(object):
 
     def rchildren(self, level=-1, intermediate=True):
         """Create a recursive list of children.
-
-        Note that the :param:`intermediate` can be used to include every
-        child to the returned list, not only the most nested ones.
 
         Parameters:
             level (int): The depth level to continue fetching children from
@@ -413,7 +412,8 @@ class TermList(list):
         The method allows to check for the presence of a Term in a
         TermList based on a Term object or on a term accession number.
 
-        Example::
+        Example:
+
             >>> from pronto import *
             >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
             >>> 'NMR:1000122' in nmr['NMR:1000031'].children

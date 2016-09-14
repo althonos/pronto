@@ -23,8 +23,6 @@ class Relationship(object):
        after being pickled and unpickled, but that requires to use at least
        pickle protocol 2 (which is not default on Python 2, so take care !)
 
-       .. example::
-
           >>> import pronto
           >>> import io, pickle
           >>>
@@ -133,7 +131,7 @@ class Relationship(object):
 #    @classmethod
 #    @staticmethod
     def __new__(cls, obo_name, *args, **kwargs):
-        """Overloaded :obj:`object.__new__` method that __memoizes__ the objects.
+        """Overloaded :obj:`object.__new__` method that `memoizes` the objects.
 
         This allows to do the following (which is frecking cool):
 
@@ -193,7 +191,7 @@ class Relationship(object):
 
     @pronto.utils.classproperty
     def lock(self):
-        """A multiprocessing.Lock provided at a class level
+        """A :obj:`multiprocessing.Lock` provided at a class level
 
         This allows to use pronto's Relationship objects in a multiprocessed
         environment.
@@ -210,7 +208,7 @@ class Relationship(object):
 
     @pronto.utils.classproperty
     def tlock(self):
-        """A threading.Lock provided at a class level
+        """A :obj:`threading.Lock` provided at a class level
         """
         return self._tlock
 

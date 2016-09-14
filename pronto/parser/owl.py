@@ -3,7 +3,7 @@ import functools
 import os
 import multiprocessing
 import six
-""
+
 try:
     import lxml.etree as etree
     from lxml.etree import XMLSyntaxError as ParseError

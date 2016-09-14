@@ -147,22 +147,20 @@ class Term(object):
 
 
         obo =  "".join([ '[Term]', '\n',
-        #obo +=
                          'id: ', self.id, '\n',
-
-        #obo +=
                          'name: ', self.name if self.name is not None else '', '\n'])
-
         if self.desc:
             obo = "".join([obo, 'def: ', self.desc, '\n'])
 
         # add more bits of information
         for k,v in six.iteritems(self.other):
             if isinstance(v, list):
-                for x in v:
-                    obo = "".join([obo, k, ': ', x, '\n'])
+                obo = "".join( [obo] + ["{}: {}\n".format(k, x) for x in v] )
+            #    for x in v:
+            #        obo = "".join([obo, k, ': ', x, '\n'])
             else:
                 obo = "".join([obo,k, ': ', v, '\n'])
+            #obo = "".join( [obo] + ["{}: {}\n".format(k, x) for x in v] )
 
         # add relationships (only bottom up ones)
 

@@ -317,7 +317,7 @@ class TermList(list):
 
     .. tip::
         It is also possible to call Term methods on a TermList to
-        create a set of terms::
+        create another TermList::
 
             >>> nmr['NMR:1000031'].rchildren(3, False).rparents(3, False).id
             ['NMR:1000031']
@@ -410,9 +410,19 @@ class TermList(list):
         self.extend(state)
 
     def __contains__(self, term):
-        """
-        Todo:
-            write doc & test
+        """Check if the TermList contains a term.
+
+        The method allows to check for the presence of a Term in a
+        TermList based on a Term object or on a term accession number.
+
+        Example::
+            >>> from pronto import *
+            >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
+            >>> 'NMR:1000122' in nmr['NMR:1000031'].children
+            True
+            >>> nmr['NMR:1000122'] in nmr['NMR:1000031'].children
+            True
+
         """
         return term in self.id or any(t for t in self if t==term)
 

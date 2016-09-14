@@ -205,6 +205,7 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
         return parsed
 
+
 class OwlXMLParser(Parser):
     """A parser for the owl xml format.
     """
@@ -213,6 +214,7 @@ class OwlXMLParser(Parser):
         super(OwlXMLParser, self).__init__()
         self._tree = None
         self._ns = {}
+        self._meta = {}
         self.extensions = ('.owl', '.xml', '.ont')
 
     def hook(self, *args, **kwargs):
@@ -229,7 +231,8 @@ class OwlXMLParser(Parser):
 
         events = ("end", "start-ns")
 
-        owl_imports, owl_class, rdf_resource = "", "", ""
+        owl_imports, owl_class, rdf_resource, obo_in_owl = "", "", "", ""
+        l_obo_in_owl = 0
 
         context = etree.iterparse(stream, events=events)
 
@@ -247,6 +250,9 @@ class OwlXMLParser(Parser):
                     owl_class = "".join(["{", element[1], "}", "Class"])
                 elif element[0] == 'rdf':
                     rdf_resource = "".join(["{", element[1], "}", "resource"])
+                elif element[0] == "oboInOwl":
+                    obo_in_owl = "".join(["{", element[1], "}"])
+                    l_obo_in_owl = len(obo_in_owl)
 
                 del event
                 del element
@@ -255,10 +261,18 @@ class OwlXMLParser(Parser):
             elif element.tag==owl_imports:
                 self.imports.add(element.attrib[rdf_resource])
 
-
             elif element.tag==owl_class:
                 if element.attrib:
                     self._rawterms.put(etree.tostring(element))
+
+            elif obo_in_owl and element.tag.startswith(obo_in_owl):
+                try:
+                    self._meta[element.tag[l_obo_in_owl:]].append(element)
+                except KeyError:
+                    self._meta[element.tag[l_obo_in_owl:]] = [element]
+
+                del element
+                continue
 
             else:
                 continue
@@ -328,10 +342,28 @@ class OwlXMLParser(Parser):
         """
         Extract metadata from the headers of the owl file.
 
-        Todo:
-            * Implement that method !
+
         """
-        pass
+
+        obomap = { "created_by":      "creator",
+                   "hasOBONamespace": "namespace",
+                   "hasOBOFormatVersion": "format-version",
+
+                   }
+
+        exclusion = {"hasOBONamespace", "id", "hasExactSynonym", "hasDbXref", "hasBroadSynonym"}
+
+        self.meta = dict([
+            (obomap[k],[x.text for x in v]) if k in obomap else (k,[x.text for x in v])
+                for k,v in six.iteritems(self._meta)
+                    if k not in exclusion
+
+        ])
+
+        self.meta["namespace"] = list(set([ x.text for x in self._meta["hasOBONamespace"]]))
+
+
+
 
 
 OwlXMLParser()

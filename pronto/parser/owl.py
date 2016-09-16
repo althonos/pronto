@@ -189,14 +189,14 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
         if not 'desc' in parsed and 'other' in parsed:
             #if 'tempdef' in parsed['other'].keys():
             try:
-                parsed['desc'] = parsed['other']['tempdef']
+                parsed['desc'] = next(iter(parsed['other']['tempdef']), "")
                 del parsed['other']['tempdef']
             except KeyError:
                 pass
 
             #if 'altdef' in parsed['other'].keys():
             try:
-                parsed['desc'] = parsed['other']['altdef']
+                parsed['desc'] = next(iter(parsed['other']['altdef']), "")
                 del parsed['other']['altdef']
             except KeyError:
                 pass

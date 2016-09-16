@@ -63,8 +63,8 @@ class Parser(object):
         raise NotImplementedError
 
     def init_workers(self, ParserProcess, *args, **kwargs):
-        self._rawterms = pronto.utils.Queue()#multiprocessing.Queue()
-        self._terms = pronto.utils.Queue()#multiprocessing.Queue()
+        self._rawterms = pronto.utils.JoinableQueue()#multiprocessing.Queue()
+        self._terms = pronto.utils.JoinableQueue()#multiprocessing.Queue()
         self._processes = []
 
         for _ in range(multiprocessing.cpu_count() * 2):

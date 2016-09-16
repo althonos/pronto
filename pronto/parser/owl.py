@@ -43,6 +43,7 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
 
             if term is None:
+                self.queue.task_done()
                 break
 
             try:
@@ -54,6 +55,8 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
             if classified_term:
                 self.results.put(classified_term)
+
+            self.queue.task_done()
 
     def _classify(self, term):
         """
@@ -319,6 +322,8 @@ class OwlXMLParser(Parser):
             d['relations'] = { Relationship(k):[accession(x) for x in v] for k,v in six.iteritems(d['relations']) }
 
             self.terms[tid] = pronto.term.Term(tid, **d)
+
+            self._terms.task_done()
 
 
         # if 'tid' in locals() and locals()['tid'] is None:

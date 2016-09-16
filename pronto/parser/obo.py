@@ -33,11 +33,11 @@ class _OboClassifier(multiprocessing.Process): # pragma: no cover
             term = self.queue.get()
 
             if term is None:
-                #self.queue.task_done()
+                self.queue.task_done()
                 break
 
-
             self.results.put(self._classify(term))
+            self.queue.task_done()
 
         #return {tid: pronto.term.Term(tid, name, desc, relations, term)}
 
@@ -176,6 +176,7 @@ class OboParser(Parser):
 
         IN = 'meta'
         for line in stream:
+
             try:
                 line = line.strip().decode('utf-8')
             except AttributeError:
@@ -191,11 +192,17 @@ class OboParser(Parser):
     def makeTree(self):
         """Create the proper ontology Tree from raw terms"""
 
+        i = 0
+
         while not self._terms.empty() or not self._rawterms.empty(): #self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
             d = self._terms.get()
             self.terms[d[0]] = pronto.term.Term(
                 d[0], d[1], d[2], {pronto.relationship.Relationship(k):v for k,v in six.iteritems(d[3])}, d[4]
             )
+
+            #i += 1
+            #print(i)
+            self._terms.task_done()
 
         self.shut_workers()
 

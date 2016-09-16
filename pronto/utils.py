@@ -220,8 +220,8 @@ class SharedCounter(object):
         return self.count.value
 
 
-class Queue(multiprocessing.queues.Queue):
-    """ A portable implementation of multiprocessing.Queue.
+class JoinableQueue(multiprocessing.queues.Queue):
+    """ A portable implementation of multiprocessing.JoinableQueue.
 
     Because of multithreading / multiprocessing semantics, Queue.qsize() may
     raise the NotImplementedError exception on Unix platforms like Mac OS X
@@ -243,19 +243,23 @@ class Queue(multiprocessing.queues.Queue):
 
     def __init__(self, *args, **kwargs):
         try:
-            super(Queue, self).__init__(*args,**kwargs)
+            super(JoinableQueue, self).__init__(*args,**kwargs)
         except TypeError:
-            super(Queue, self).__init__(*args, ctx=multiprocessing.get_context(), **kwargs)
+            super(JoinableQueue, self).__init__(*args, ctx=multiprocessing.get_context(), **kwargs)
         self.size =  SharedCounter(0)
 
     def put(self, *args, **kwargs):
-        super(Queue, self).put(*args, **kwargs)
+        super(JoinableQueue, self).put(*args, **kwargs)
         self.size.increment(1)
 
     def get(self, *args, **kwargs):
-        x = super(Queue, self).get(*args, **kwargs)
-        self.size.increment(-1)
+        x = super(JoinableQueue, self).get(*args, **kwargs)
+        #self.size.increment(-1)
         return x
+
+    def task_done(self, *args, **kwargs):
+        self.size.increment(-1)
+        return
 
     def qsize(self):
         """ Reliable implementation of multiprocessing.Queue.qsize() """

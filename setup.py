@@ -25,7 +25,7 @@ setup(
     description="Python frontend to ontologies - a library to parse, create, browse and export ontologies.",
     long_description=open('README.rst').read(),
 
-    install_requires=open('requirements.txt').read().splitlines() if not PYPY else [],
+    install_requires=open('requirements.txt').read().splitlines() if not PYPY else ["six"],
     extras_require = { extra:open('requirements-{}.txt'.format(extra)).read().splitlines()
                         for extra in ['doc'] },
 

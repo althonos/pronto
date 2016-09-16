@@ -41,9 +41,7 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
             term = self.queue.get()
 
-
             if term is None:
-                self.queue.task_done()
                 break
 
             try:
@@ -52,11 +50,9 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
                 self.results.put((None, None))
                 break
 
-
             if classified_term:
                 self.results.put(classified_term)
 
-            self.queue.task_done()
 
     def _classify(self, term):
         """
@@ -220,6 +216,9 @@ class OwlXMLParser(Parser):
         self._meta = {}
         self.extensions = ('.owl', '.xml', '.ont')
 
+        self._number_of_terms = 0
+
+
     def hook(self, *args, **kwargs):
         """Returns True if the file is an Owl file (extension is .owl)"""
         if 'path' in kwargs:
@@ -231,6 +230,7 @@ class OwlXMLParser(Parser):
         """
 
         self.init_workers(_OwlXMLClassifier)
+        self._number_of_terms = 0
 
         events = ("end", "start-ns")
 
@@ -267,6 +267,7 @@ class OwlXMLParser(Parser):
             elif element.tag==owl_class:
                 if element.attrib:
                     self._rawterms.put(etree.tostring(element))
+                    self._number_of_terms += 1
 
             elif obo_in_owl and element.tag.startswith(obo_in_owl):
                 try:
@@ -310,7 +311,9 @@ class OwlXMLParser(Parser):
 
         accession = functools.partial(pronto.utils.format_accession, nsmap=self._ns)
 
-        while not self._terms.empty() or not self._rawterms.empty(): #self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
+        number_extracted = 0
+
+        while len(self.terms) < self._number_of_terms: #not self._terms.empty() or not self._rawterms.empty(): #self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
 
             tid, d = self._terms.get()
 
@@ -321,10 +324,8 @@ class OwlXMLParser(Parser):
 
             d['relations'] = { Relationship(k):[accession(x) for x in v] for k,v in six.iteritems(d['relations']) }
 
-            self.terms[tid] = pronto.term.Term(tid, **d)
-
-            self._terms.task_done()
-
+            if not tid in self.terms:
+                self.terms[tid] = pronto.term.Term(tid, **d)
 
         # if 'tid' in locals() and locals()['tid'] is None:
         #     for p in self._processes:

@@ -25,19 +25,14 @@ class _OboClassifier(multiprocessing.Process): # pragma: no cover
 
     def run(self):
 
-
-
         while True:
-
 
             term = self.queue.get()
 
             if term is None:
-                self.queue.task_done()
                 break
 
             self.results.put(self._classify(term))
-            self.queue.task_done()
 
         #return {tid: pronto.term.Term(tid, name, desc, relations, term)}
 
@@ -160,6 +155,8 @@ class OboParser(Parser):
         self._typedef = []
         self._meta = {}
 
+        self._number_of_terms = 0
+
     def hook(self, *args, **kwargs):
         """Returns True if the file is an Obo file (extension is .obo)"""
 
@@ -172,10 +169,13 @@ class OboParser(Parser):
         self._typedef, self._meta = [], {}
 
         self.init_workers(_OboClassifier)
-
+        self._number_of_terms = 0
 
         IN = 'meta'
         for line in stream:
+
+            if b"[Term]" in line:
+                self._number_of_terms += 1
 
             try:
                 line = line.strip().decode('utf-8')
@@ -192,17 +192,16 @@ class OboParser(Parser):
     def makeTree(self):
         """Create the proper ontology Tree from raw terms"""
 
-        i = 0
-
-        while not self._terms.empty() or not self._rawterms.empty(): #self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
+        while len(self.terms) < self._number_of_terms: #not self._terms.empty() or not self._rawterms.empty(): #self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
             d = self._terms.get()
-            self.terms[d[0]] = pronto.term.Term(
-                d[0], d[1], d[2], {pronto.relationship.Relationship(k):v for k,v in six.iteritems(d[3])}, d[4]
-            )
 
-            #i += 1
-            #print(i)
-            self._terms.task_done()
+            if d[0] not in self.terms:
+                self.terms[d[0]] = pronto.term.Term(
+                    d[0], d[1], d[2], {pronto.relationship.Relationship(k):v for k,v in six.iteritems(d[3])}, d[4]
+                )
+
+            del d
+            #print("{} / {} terms extracted".format(len(self.terms), self._number_of_terms))
 
         self.shut_workers()
 

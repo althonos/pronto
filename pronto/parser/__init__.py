@@ -1,6 +1,7 @@
 import warnings
 import weakref
 import multiprocessing
+import time
 #import atexit
 
 import pronto.utils
@@ -63,8 +64,11 @@ class Parser(object):
         raise NotImplementedError
 
     def init_workers(self, ParserProcess, *args, **kwargs):
-        self._rawterms = pronto.utils.JoinableQueue()#multiprocessing.Queue()
-        self._terms = pronto.utils.JoinableQueue()#multiprocessing.Queue()
+
+        #self._rawterms = pronto.utils.Queue()#multiprocessing.Queue()
+        #self._terms = pronto.utils.Queue()#multiprocessing.Queue()
+        self._rawterms = multiprocessing.Queue()
+        self._terms = multiprocessing.Queue()
         self._processes = []
 
         for _ in range(multiprocessing.cpu_count() * 2):
@@ -74,6 +78,10 @@ class Parser(object):
             p.start()
 
     def shut_workers(self):
+
+        #self._terms._empty_queue()
+        #self._rawterms._empty_queue()
+
         self._rawterms.close()
         self._terms.close()
 

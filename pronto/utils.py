@@ -220,7 +220,7 @@ class SharedCounter(object):
         return self.count.value
 
 
-class JoinableQueue(multiprocessing.queues.Queue):
+class Queue(multiprocessing.queues.Queue):
     """ A portable implementation of multiprocessing.JoinableQueue.
 
     Because of multithreading / multiprocessing semantics, Queue.qsize() may
@@ -243,23 +243,31 @@ class JoinableQueue(multiprocessing.queues.Queue):
 
     def __init__(self, *args, **kwargs):
         try:
-            super(JoinableQueue, self).__init__(*args,**kwargs)
+            super(Queue, self).__init__(*args,**kwargs)
         except TypeError:
-            super(JoinableQueue, self).__init__(*args, ctx=multiprocessing.get_context(), **kwargs)
+            super(Queue, self).__init__(*args, ctx=multiprocessing.get_context(), **kwargs)
         self.size =  SharedCounter(0)
 
     def put(self, *args, **kwargs):
-        super(JoinableQueue, self).put(*args, **kwargs)
-        self.size.increment(1)
+        super(Queue, self).put(*args, **kwargs)
+        #self.size.increment(1)
 
     def get(self, *args, **kwargs):
-        x = super(JoinableQueue, self).get(*args, **kwargs)
+        x = super(Queue, self).get(*args, **kwargs)
         #self.size.increment(-1)
         return x
 
-    def task_done(self, *args, **kwargs):
-        self.size.increment(-1)
-        return
+    #def task_done(self, *args, **kwargs):
+    #    self.size.increment(-1)
+    #    return
+
+    @staticmethod
+    def _feed(self, *args, **kwargs):
+        """Avoid making a fuss if the Queue was closed with elements in it"""
+        try:
+            super(Queue, self)._feed(*args, **kwargs)
+        except BrokenPipeError:
+            pass
 
     def qsize(self):
         """ Reliable implementation of multiprocessing.Queue.qsize() """
@@ -268,6 +276,10 @@ class JoinableQueue(multiprocessing.queues.Queue):
     def empty(self):
         """ Reliable implementation of multiprocessing.Queue.empty() """
         return not self.qsize() > 0
+
+    def _empty_queue(self):
+        while not super(Queue, self).empty():
+            self.get()
 
 
 

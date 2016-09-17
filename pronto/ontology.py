@@ -133,13 +133,52 @@ class Ontology(object):
     def obo(self):
         """Returns the ontology serialized in obo format.
         """
-        # obo = ""
 
         # for accession in sorted(self.terms.keys()):
         #     obo += '\n'
         #     obo += self.terms[accession].obo
 
-        return "\n\n".join([t.obo for t in self])
+        return "\n\n".join( [self._obo_meta()] + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
+
+    def _obo_meta(self):
+        """Generates the obo metadata header
+
+        Generated following specs of the official format guide:
+        ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
+        """
+
+        metatags = ["format-version", "data-version", "date", "saved-by", "auto-generated-by",
+                "import", "subsetdef", "synonymtypedef", "default-namespace", "namespace-id-rule",
+                "idspace", "treat-xrefs-as-equivalent", "treat-xrefs-as-genus-differentia",
+                "treat-xrefs-as-is_a", "remark", "ontology"]
+
+        obo_meta = "\n".join(
+
+            [ # official obo tags
+                "{}: {}".format(k, x)
+                    for k in metatags[:-1]
+                        if k in self.meta
+                            for x in self.meta[k]
+            ] + [ # eventual other metadata added to remarks
+                "remark: {}: {}".format(k, x)
+                    for k,v in sorted(six.iteritems(self.meta), key=lambda x: x[0])
+                        for x in v
+                            if k not in metatags
+            ] + [ # last header: ontology
+                "ontology: {}".format(x)
+                    for x in self.meta["ontology"]
+                        if "ontology" in self.meta
+            ] if "ontology" in self.meta else ["ontology: {}".format(self.meta["namespace"][0].lower())]
+
+        )
+
+        return obo_meta
+
+        #'format-version', meta['format-version'])
+        #for k,v in six.iteritems(meta):
+        #    if k != 'format-version':
+        #        yield k,v
+
 
     def reference(self):
         """Make relationships point to classes of ontology instead of ontology id"""

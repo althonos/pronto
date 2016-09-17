@@ -351,11 +351,10 @@ class OwlXMLParser(Parser):
 
         """
 
-        obomap = { "created_by":      "creator",
+        obomap = {    #"created_by":      "creator",
                    "hasOBONamespace": "namespace",
                    "hasOBOFormatVersion": "format-version",
-
-                   }
+                 }
 
         exclusion = {"hasOBONamespace", "id", "hasExactSynonym", "hasDbXref", "hasBroadSynonym"}
 

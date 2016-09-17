@@ -142,51 +142,126 @@ class Term(object):
             def: "Instrument model name not including the vendor's name." [PSI:MS]
             relationship: part_of: MS:1000463 ! instrument
 
+
+        .. note::
+            The following specification was used:
+            ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
+
+
         """
 
 
 
-        obo =  "".join([ '[Term]', '\n',
-                         'id: ', self.id, '\n',
-                         'name: ', self.name if self.name is not None else '', '\n'])
-        if self.desc:
-            obo = "".join([obo, 'def: ', self.desc, '\n'])
+        metatags = ["id", "is_anonymous", "name", "namespace","alt_id", "def","comment",
+                    "subset","synonym","xref","builtin","property_value","is_a",
+                    "intersection_of","union_of","equivalent_to","disjoint_from",
+                    "relationship","created_by","creation_date","is_obsolete",
+                    "replaced_by", "consider"]
 
-        # add more bits of information
-        for k,v in six.iteritems(self.other):
-            if isinstance(v, list):
-                obo = "".join( [obo] + ["{}: {}\n".format(k, x) for x in v] )
-            #    for x in v:
-            #        obo = "".join([obo, k, ': ', x, '\n'])
-            else:
-                obo = "".join([obo,k, ': ', v, '\n'])
-            #obo = "".join( [obo] + ["{}: {}\n".format(k, x) for x in v] )
+        obo = "\n".join(
+            [
 
-        # add relationships (only bottom up ones)
+                "[Term]\nid: {}\nname: {}".format(self.id, self.name if self.name is not None else "")
 
-        for relation in Relationship.bottomup():
-            try:
-                for companion in self.relations[relation]:
+            ] + [ #metatags from namespace to property_value
 
-                    if relation is not Relationship('is_a'):
-                        obo = "".join([obo, 'relationship: '])
-                    obo = "".join([obo, relation.obo_name, ': '])
+                "{}: {}".format(k, self.other[k])
+                    for k in metatags[3:6]
+                        if k in self.other
 
-                    try:
-                        obo = "".join([obo, companion.id, ' ! ', companion.name, '\n'])
-                    except AttributeError:
-                        obo = "".join([obo,companion, '\n'])
+            ] + [
 
-            except KeyError:
-                continue
+                "def: {}".format(self.desc)
 
-        return obo.rstrip()
+            ] if self.desc else []
+
+              + [
+
+                  "{}: {}".format(k, self.other[k])
+                        for k in metatags[7:12]
+                            if k in self.other
+
+            ]
+
+              + [ #is_a Relationships
+
+                "is_a: {} ! {}".format(companion.id, companion.name)
+                    for relation in self.relations
+                        if relation is Relationship('is_a')
+                            for companion in self.relations[Relationship('is_a')]
+
+
+            ] + [ #metatags from intersection_of to disjoint_from
+
+                "{}: {}".format(k, self.other[k])
+                    for k in metatags[13:17]
+                        if k in self.other
+
+            ] + [ #relationships
+
+                "relationship: {} {} ! {}".format(relation.obo_name, companion.id, companion.name)
+                    for relation in Relationship.bottomup()
+                        if relation in self.relations and relation is not Relationship('is_a')
+                            for companion in self.relations[relation]
+
+            ] + [ #metatags from created_by to consider
+
+                "{}: {}".format(k, self.other[k])
+                    for k in metatags[18:]
+                        if k in self.other
+
+            ]
+
+
+        )
+
+        return obo
+
+
+
+
+        # obo =  "".join([ '[Term]', '\n',
+        #                  'id: ', self.id, '\n',
+        #                  'name: ', self.name if self.name is not None else '', '\n'])
+        # if self.desc:
+        #     obo = "".join([obo, 'def: ', self.desc, '\n'])
+
+        # # add more bits of information
+        # for k,v in six.iteritems(self.other):
+        #     if isinstance(v, list):
+        #         obo = "".join( [obo] + ["{}: {}\n".format(k, x) for x in v] )
+        #     #    for x in v:
+        #     #        obo = "".join([obo, k, ': ', x, '\n'])
+        #     else:
+        #         obo = "".join([obo,k, ': ', v, '\n'])
+        #     #obo = "".join( [obo] + ["{}: {}\n".format(k, x) for x in v] )
+
+        # # add relationships (only bottom up ones)
+
+        # for relation in Relationship.bottomup():
+        #     try:
+        #         for companion in self.relations[relation]:
+
+        #             if relation is not Relationship('is_a'):
+        #                 obo = "".join([obo, 'relationship: '])
+        #             obo = "".join([obo, relation.obo_name, ': '])
+
+        #             try:
+        #                 obo = "".join([obo, companion.id, ' ! ', companion.name, '\n'])
+        #             except AttributeError:
+        #                 obo = "".join([obo,companion, '\n'])
+
+        #     except KeyError:
+        #         continue
+
+        # return obo.rstrip()
+
 
     @property
     def __deref__(self):
-        """A dereferenced relations dictionary 
+        """A dereferenced relations dictionary
 
-        It only contains other Terms id to avoid circular references when 
+        It only contains other Terms id to avoid circular references when
         creating a json.
         """
         return {

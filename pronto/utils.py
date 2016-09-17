@@ -14,9 +14,9 @@ Todo:
 #import errno
 #import os
 #import signal
-import itertools
+#import itertools
+#import six
 import atexit
-import six
 
 import multiprocessing
 import multiprocessing.pool

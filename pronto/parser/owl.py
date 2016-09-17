@@ -316,8 +316,6 @@ class OwlXMLParser(Parser):
 
         accession = functools.partial(format_accession, nsmap=self._ns)
 
-        number_extracted = 0
-
         while len(self.terms) < self._number_of_terms: #not self._terms.empty() or not self._rawterms.empty(): #self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
 
             tid, d = self._terms.get()

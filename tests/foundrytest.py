@@ -11,7 +11,7 @@ BLOCKLIST = ('chebi.owl', 'chebi.obo', 'pr.owl',
              'agro.owl', 'dinto.owl', 'envo.obo')
 
 import json
-import signal
+#import signal
 import time
 
 import sys

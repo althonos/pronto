@@ -140,7 +140,7 @@ class Term(object):
             id: MS:1000031
             name: instrument model
             def: "Instrument model name not including the vendor's name." [PSI:MS]
-            relationship: part_of: MS:1000463 ! instrument
+            relationship: part_of MS:1000463 ! instrument
 
 
         .. note::
@@ -163,27 +163,23 @@ class Term(object):
 
                 "[Term]\nid: {}\nname: {}".format(self.id, self.name if self.name is not None else "")
 
-            ] + [ #metatags from namespace to property_value
+            ] + [ #metatags from namespace to alt_id
 
                 "{}: {}".format(k, self.other[k])
                     for k in metatags[3:6]
                         if k in self.other
 
-            ] + [
+            ] + [ #def
 
-                "def: {}".format(self.desc)
+                " ".join(["def:", self.desc] if self.desc else [] )
 
-            ] if self.desc else []
-
-              + [
+            ] + [ # metatags from comment to property_value
 
                   "{}: {}".format(k, self.other[k])
                         for k in metatags[7:12]
                             if k in self.other
 
-            ]
-
-              + [ #is_a Relationships
+            ] + [ #is_a
 
                 "is_a: {} ! {}".format(companion.id, companion.name)
                     for relation in self.relations

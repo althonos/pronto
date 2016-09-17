@@ -3,12 +3,12 @@
 pronto.term
 ===========
 
-This module defines the classes Term and TermList.
+This module defines the Term and TermList classes.
 """
 
 import six
 
-from pronto.relationship import Relationship
+from .relationship import Relationship
 
 
 class Term(object):
@@ -252,7 +252,6 @@ class Term(object):
 
         # return obo.rstrip()
 
-
     @property
     def __deref__(self):
         """A dereferenced relations dictionary
@@ -408,28 +407,6 @@ class TermList(list):
         #    if not isinstance(term, Term):
         #        raise TypeError('TermList can only contain Terms.')
 
-    # def __getattr__(self, attr, *args, **kwargs):
-    #     if attr in ('children', 'parents'):
-    #         return TermList( [ y for x in self for y in getattr(x, attr)] )
-    #     elif attr in ('rparents', 'rchildren'):
-    #         #: we create a new method to allow the user
-    #         #: to use, for instance, ``x.rchildren(3).rparents(2)``
-    #         #: (this actually behaves as if you mapped the method
-    #         #: on all terms of the TermList)
-
-    #         #def mapped(level=-1, intermediate=True):
-    #         #    t = TermList(set([ y for x in self
-    #         #            for y in getattr(x, attr)(level, intermediate) ]))
-    #         #    return t
-    #         #return mapped
-
-    #         return self.__dict__[attr]
-
-    #     elif attr in ('id', 'name', 'desc', 'other', 'obo'):
-    #         return [getattr(x, attr) for x in self]
-    #     else:
-    #         getattr(list, attr)
-
     def rparents(self, level=-1, intermediate=True):
         return TermList(set(
             [y for x in self for y in x.rparents(level, intermediate)]
@@ -447,9 +424,6 @@ class TermList(list):
     @property
     def parents(self):
         return TermList( [ y for x in self for y in x.parents] )
-
-    #elif attr in ('id', 'name', 'desc', 'other', 'obo'):
-    #         return [getattr(x, attr) for x in self]
 
     @property
     def id(self):
@@ -494,5 +468,3 @@ class TermList(list):
 
         """
         return term in self.id or any(t for t in self if t==term)
-
-

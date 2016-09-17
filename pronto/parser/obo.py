@@ -1,17 +1,16 @@
 """
-pronto.parser
+pronto.parser.obo
+=================
 
-This module contains all the parsers used to parse an ontology. The base class
-Parser can be derived to provide additional parsers to ontology files.
+This module defines the Obo parsing method.
 """
 
 import multiprocessing
 import six
 
-import pronto.term
-import pronto.relationship
-from pronto.parser import Parser
-
+from .              import Parser
+from ..relationship import Relationship
+from ..term         import Term
 
 
 class _OboClassifier(multiprocessing.Process): # pragma: no cover
@@ -34,7 +33,7 @@ class _OboClassifier(multiprocessing.Process): # pragma: no cover
 
             self.results.put(self._classify(term))
 
-        #return {tid: pronto.term.Term(tid, name, desc, relations, term)}
+        #return {tid: Term(tid, name, desc, relations, term)}
 
     @staticmethod
     def _classify(term):
@@ -42,26 +41,26 @@ class _OboClassifier(multiprocessing.Process): # pragma: no cover
         relations = {}
 
         if 'relationship' in term:
-            #pronto.relationship.Relationship.lock.acquire()
+            #Relationship.lock.acquire()
             #try:
             _OboClassifier._process_relationship(term)
             #finally:
-            #    pronto.relationship.Relationship.lock.release()
+            #    Relationship.lock.release()
 
         #if 'is_a' in term:
         try:
-            term[pronto.relationship.Relationship('is_a')] = [ term['is_a'].format() ]
+            term[Relationship('is_a')] = [ term['is_a'].format() ]
             del term['is_a']
         except AttributeError:
-            term[pronto.relationship.Relationship('is_a')] = term['is_a']
+            term[Relationship('is_a')] = term['is_a']
             del term['is_a']
         except KeyError:
             pass
-            #term[pronto.relationship.Relationship('is_a')] = term['is_a'] if isinstance(term['is_a'])
+            #term[Relationship('is_a')] = term['is_a'] if isinstance(term['is_a'])
             #del term['is_a']
 
         for key in tuple(term.keys()):
-            if isinstance(key, pronto.relationship.Relationship):
+            if isinstance(key, Relationship):
                 relations = _OboClassifier._extract_relationship(term, key, relations)
 
         desc = _OboClassifier._extract_description(term)
@@ -77,7 +76,7 @@ class _OboClassifier(multiprocessing.Process): # pragma: no cover
 
             name, value = term['relationship'].split(' ', 1)
 
-            name = pronto.relationship.Relationship(name)
+            name = Relationship(name)
 
             try:
                 term[name].append(value)
@@ -90,7 +89,7 @@ class _OboClassifier(multiprocessing.Process): # pragma: no cover
             for r in term['relationship']:
                 name, value = r.split(' ', 1)
 
-                name = pronto.relationship.Relationship(name)
+                name = Relationship(name)
 
                 try:
                     term[name].append(value)
@@ -141,8 +140,6 @@ class _OboClassifier(multiprocessing.Process): # pragma: no cover
             return tid, name
 
 
-
-
 class OboParser(Parser):
     """A parser for the Obo format.
     """
@@ -188,7 +185,6 @@ class OboParser(Parser):
 
         self._rawterms.put(self._tempterm)
 
-
     def makeTree(self):
         """Create the proper ontology Tree from raw terms"""
 
@@ -196,8 +192,8 @@ class OboParser(Parser):
             d = self._terms.get()
 
             if d[0] not in self.terms:
-                self.terms[d[0]] = pronto.term.Term(
-                    d[0], d[1], d[2], {pronto.relationship.Relationship(k):v for k,v in six.iteritems(d[3])}, d[4]
+                self.terms[d[0]] = Term(
+                    d[0], d[1], d[2], {Relationship(k):v for k,v in six.iteritems(d[3])}, d[4]
                 )
 
             del d
@@ -283,10 +279,6 @@ class OboParser(Parser):
             to_update[k] = [to_update[k], v]
         except KeyError:
             to_update[k] = v
-
-
-
-
 
 
 OboParser()

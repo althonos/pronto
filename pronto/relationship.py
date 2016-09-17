@@ -1,10 +1,16 @@
 # coding: utf-8
+"""
+pronto.relationship
+===================
+
+This submodule contains the definition of the Relationship class.
+"""
 
 import multiprocessing
 import threading
 import collections
 
-import pronto.utils
+from .utils import unique_everseen, classproperty
 
 
 class Relationship(object):
@@ -154,7 +160,7 @@ class Relationship(object):
         else:
             return super(Relationship, cls).__new__(cls)
 
-    #@pronto.utils.classproperty
+    #@classproperty
     @classmethod
     def topdown(cls):
         """Get all topdown Relationship instances
@@ -171,9 +177,9 @@ class Relationship(object):
             Relationship(has_part)
 
         """
-        return tuple(pronto.utils.unique_everseen(r for r in cls._instances.values() if r.direction=='topdown'))
+        return tuple(unique_everseen(r for r in cls._instances.values() if r.direction=='topdown'))
 
-    #@pronto.utils.classproperty
+    #@classproperty
     @classmethod
     def bottomup(cls):
         """Get all bottomup Relationship instances
@@ -187,9 +193,9 @@ class Relationship(object):
             Relationship(part_of)
 
         """
-        return tuple(pronto.utils.unique_everseen(r for r in cls._instances.values() if r.direction=='bottomup'))
+        return tuple(unique_everseen(r for r in cls._instances.values() if r.direction=='bottomup'))
 
-    @pronto.utils.classproperty
+    @classproperty
     def lock(self):
         """A :obj:`multiprocessing.Lock` provided at a class level
 
@@ -206,7 +212,7 @@ class Relationship(object):
         """
         return self._lock
 
-    @pronto.utils.classproperty
+    @classproperty
     def tlock(self):
         """A :obj:`threading.Lock` provided at a class level
         """

@@ -18,36 +18,23 @@ are pickable.
 
 """
 
-
 import json
 import os
 import warnings
 import six
 #import functools
 
-# try:
-#     import urllib.request as rq
-#     from urllib.error import URLError, HTTPError
-# except ImportError:
-#     import urllib2 as rq
-#     from urllib2 import URLError, HTTPError
-#     #from pronto.utils import TimeoutError
-
 import six.moves.urllib.request as rq
 from six.moves.urllib.error import URLError, HTTPError
-
 
 try:
     from lxml.etree import XMLSyntaxError as ParseError
 except ImportError:
     from xml.etree.ElementTree import ParseError
 
-
-import pronto.term
-import pronto.parser
-import pronto.utils
-
-
+from .term   import Term, TermList
+from .parser import Parser
+from .utils  import ProntoWarning
 
 
 class Ontology(object):
@@ -179,16 +166,15 @@ class Ontology(object):
         #    if k != 'format-version':
         #        yield k,v
 
-
     def reference(self):
         """Make relationships point to classes of ontology instead of ontology id"""
 
         for termkey,termval in six.iteritems(self.terms):
 
-            relvalref = { relkey: pronto.term.TermList(
+            relvalref = { relkey: TermList(
                                     [self.terms[x] if x in self.terms
-                                        else pronto.term.Term(x, '', '')
-                                            if not isinstance(x, pronto.term.Term)
+                                        else Term(x, '', '')
+                                            if not isinstance(x, Term)
                                         else x for x in relval]
                                )
                         for relkey, relval in six.iteritems(termval.relations) }
@@ -197,7 +183,7 @@ class Ontology(object):
             self.terms[termkey].relations.update(relvalref)
 
     def parse(self, stream):
-        for parser in pronto.parser.Parser._instances.values():
+        for parser in Parser._instances.values():
             if parser.hook(stream=stream, path=self.path):
                 # try:
                 self.meta, self.terms, self.imports = parser.parse(stream)
@@ -213,7 +199,7 @@ class Ontology(object):
 
         if isinstance(item, str) or isinstance(item, unicode):
             return item in self.terms
-        elif isinstance(item, pronto.term.Term):
+        elif isinstance(item, Term):
             return item.id in self.terms
         else:
             raise TypeError("'in <ontology>' requires string or Term as left operand, not {}".format(type(item)))
@@ -223,7 +209,7 @@ class Ontology(object):
         return (self.terms[i] for i in terms_accessions)
 
     def __len__(self):
-        return len(self.terms)
+        return self.terms.__len__()
 
     def adopt(self):
         """Make terms aware of their children via 'can_be' and 'has_part' relationships"""
@@ -257,7 +243,7 @@ class Ontology(object):
             #        relationships.append( (parent, 'part_of', term.id ) )
 
         for parent, rel, child in relationships:
-            #if isinstance(parent, pronto.term.Term):
+            #if isinstance(parent, .Term):
             try:
                 parent = parent.id
             except AttributeError:
@@ -266,7 +252,7 @@ class Ontology(object):
             if parent in self:
                 if not rel in self[parent].relations.keys():
 
-                    self[parent].relations[rel] = pronto.term.TermList()
+                    self[parent].relations[rel] = TermList()
 
                 self[parent].relations[rel].append(child)
 
@@ -305,9 +291,9 @@ class Ontology(object):
 
         for term in terms:
 
-            if isinstance(term, pronto.term.TermList):
+            if isinstance(term, TermList):
                 ref_needed = ref_needed or self._include_term_list(term)
-            elif isinstance(term, pronto.term.Term):
+            elif isinstance(term, Term):
                 ref_needed = ref_needed or self._include_term(term)
             else:
                 raise TypeError('include only accepts <Term> or <TermList> as arguments')
@@ -345,7 +331,7 @@ class Ontology(object):
             except (IOError, OSError, URLError, HTTPError, ParseError) as e:
                 warnings.warn("{} occured during import of "
                               "{}".format(type(e).__name__, i),
-                              pronto.utils.ProntoWarning)
+                              ProntoWarning)
 
     def _include_term_list(self, termlist):
         """Add terms from a TermList to the ontology.
@@ -371,7 +357,7 @@ class Ontology(object):
             for k,v in six.iteritems(term.relations):
                 for i,t in enumerate(v):
 
-                    #if isinstance(t, pronto.term.Term):
+                    #if isinstance(t, Term):
                     try:
 
                         if not t.id in self:
@@ -443,6 +429,3 @@ class Ontology(object):
         self.terms = {t.id:t for t in state[3]}
 
         self.reference()
-
-
-

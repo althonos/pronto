@@ -1,3 +1,9 @@
+"""
+pronto.parser.owl
+=================
+
+This module defines the Owl parsing method.
+"""
 
 import functools
 import os
@@ -15,10 +21,11 @@ except ImportError: # pragma: no cover
         import xml.etree.ElementTree as etree
         from xml.etree.ElementTree import ParseError
 
+from .              import Parser
+from ..relationship import Relationship
+from ..term         import Term
+from ..utils        import explicit_namespace, format_accession
 
-from pronto.parser import Parser
-from pronto.relationship import Relationship
-import pronto.utils
 
 class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
@@ -31,8 +38,8 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
         nsmap = {'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
                  'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
 
-        self.nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=nsmap)
-        self.accession = functools.partial(pronto.utils.format_accession, nsmap=nsmap)
+        self.nspaced = functools.partial(explicit_namespace, nsmap=nsmap)
+        self.accession = functools.partial(format_accession, nsmap=nsmap)
 
     def run(self):
 
@@ -52,7 +59,6 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
             if classified_term:
                 self.results.put(classified_term)
-
 
     def _classify(self, term):
         """
@@ -218,7 +224,6 @@ class OwlXMLParser(Parser):
 
         self._number_of_terms = 0
 
-
     def hook(self, *args, **kwargs):
         """Returns True if the file is an Owl file (extension is .owl)"""
         if 'path' in kwargs:
@@ -309,7 +314,7 @@ class OwlXMLParser(Parser):
         #for t in pool.map(self._classify, self._elements):
         #    self.terms.update(t)
 
-        accession = functools.partial(pronto.utils.format_accession, nsmap=self._ns)
+        accession = functools.partial(format_accession, nsmap=self._ns)
 
         number_extracted = 0
 
@@ -320,12 +325,12 @@ class OwlXMLParser(Parser):
             if tid is None and d is None:
                 break
 
-            tid = pronto.utils.format_accession(tid, self._ns)
+            tid = format_accession(tid, self._ns)
 
             d['relations'] = { Relationship(k):[accession(x) for x in v] for k,v in six.iteritems(d['relations']) }
 
             if not tid in self.terms:
-                self.terms[tid] = pronto.term.Term(tid, **d)
+                self.terms[tid] = Term(tid, **d)
 
         # if 'tid' in locals() and locals()['tid'] is None:
         #     for p in self._processes:
@@ -335,10 +340,9 @@ class OwlXMLParser(Parser):
         # else:
         self.shut_workers()
 
-
     def manage_imports(self):
         pass
-        #nspaced = functools.partial(pronto.utils.explicit_namespace, nsmap=self._ns)
+        #nspaced = functools.partial(explicit_namespace, nsmap=self._ns)
         #for imp in self._tree.iterfind('./owl:Ontology/owl:imports', self._ns):
         #    path = imp.attrib[nspaced('rdf:resource')]
         #    if path.endswith('.owl'):
@@ -366,9 +370,6 @@ class OwlXMLParser(Parser):
         ])
 
         self.meta["namespace"] = list(set([ x.text for x in self._meta["hasOBONamespace"]]))
-
-
-
 
 
 OwlXMLParser()

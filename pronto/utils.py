@@ -10,36 +10,29 @@ Todo:
     * Maybe add a ProntoError class ?
 """
 
-
-
-
-
 #import functools
 #import errno
 #import os
 #import signal
 import itertools
 import atexit
+import six
 
 import multiprocessing
 import multiprocessing.pool
 import multiprocessing.queues
 
-
+from six.moves.urllib.error import URLError, HTTPError
 
 try:
-    from urllib.error import URLError, HTTPError
-except ImportError:
-    from urllib2 import URLError, HTTPError
-    itertools.filterfalse = itertools.ifilterfalse
+    from itertools import filterfalse
+except ImportError: # pragma: no cover
+    from itertools import ifilterfalse as filterfalse
 
 try:
     from lxml.etree import XMLSyntaxError as ParseError
-except ImportError:
+except ImportError: # pragma: no cover
     from xml.etree.ElementTree import ParseError
-
-
-
 
 class TimeoutError(IOError):
     pass
@@ -183,105 +176,103 @@ class ProntoPool(multiprocessing.pool.Pool): # pragma: no cover
 atexit.register(ProntoPool._close_all)
 
 
-class SharedCounter(object):
-    """ A synchronized shared counter.
+# class SharedCounter(object):
+#     """ A synchronized shared counter.
 
-    The locking done by multiprocessing.Value ensures that only a single
-    process or thread may read or write the in-memory ctypes object. However,
-    in order to do n += 1, Python performs a read followed by a write, so a
-    second process may read the old value before the new one is written by
-    the first process. The solution is to use a multiprocessing.Lock to
-    guarantee the atomicity of the modifications to Value.
+#     The locking done by multiprocessing.Value ensures that only a single
+#     process or thread may read or write the in-memory ctypes object. However,
+#     in order to do n += 1, Python performs a read followed by a write, so a
+#     second process may read the old value before the new one is written by
+#     the first process. The solution is to use a multiprocessing.Lock to
+#     guarantee the atomicity of the modifications to Value.
 
-    This class comes almost entirely from Eli Bendersky's blog:
-    http://eli.thegreenplace.net/2012/01/04/shared-counter-with-
-        pythons-multiprocessing/
+#     This class comes almost entirely from Eli Bendersky's blog:
+#     http://eli.thegreenplace.net/2012/01/04/shared-counter-with-
+#         pythons-multiprocessing/
 
-    --------------------------------------------------------------------------
+#     --------------------------------------------------------------------------
 
-    Solution of issue:
-        https://github.com/vterron/lemon/issues/11
-    implemented in:
-        https://github.com/vterron/lemon/commit/9ca6b4b1212228dbd4f69b88aaf88b12952d7d6f
+#     Solution of issue:
+#         https://github.com/vterron/lemon/issues/11
+#     implemented in:
+#         https://github.com/vterron/lemon/commit/9ca6b4b1212228dbd4f69b88aaf88b12952d7d6f
 
-    """
+#     """
 
-    def __init__(self, n = 0):
-        self.count = multiprocessing.Value('i', n)
+#     def __init__(self, n = 0):
+#         self.count = multiprocessing.Value('i', n)
 
-    def increment(self, n = 1):
-        """ Increment the counter by n (default = 1) """
-        with self.count.get_lock():
-            self.count.value += n
+#     def increment(self, n = 1):
+#         """ Increment the counter by n (default = 1) """
+#         with self.count.get_lock():
+#             self.count.value += n
 
-    @property
-    def value(self):
-        """ Return the value of the counter """
-        return self.count.value
-
-
-class Queue(multiprocessing.queues.Queue):
-    """ A portable implementation of multiprocessing.JoinableQueue.
-
-    Because of multithreading / multiprocessing semantics, Queue.qsize() may
-    raise the NotImplementedError exception on Unix platforms like Mac OS X
-    where sem_getvalue() is not implemented. This subclass addresses this
-    problem by using a synchronized shared counter (initialized to zero) and
-    increasing / decreasing its value every time the put() and get() methods
-    are called, respectively. This not only prevents NotImplementedError from
-    being raised, but also allows us to implement a reliable version of both
-    qsize() and empty().
-
-    --------------------------------------------------------------------------
-
-    Solution of issue:
-        https://github.com/vterron/lemon/issues/11
-    implemented in:
-        https://github.com/vterron/lemon/commit/9ca6b4b1212228dbd4f69b88aaf88b12952d7d6f
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        try:
-            super(Queue, self).__init__(*args,**kwargs)
-        except TypeError:
-            super(Queue, self).__init__(*args, ctx=multiprocessing.get_context(), **kwargs)
-        self.size =  SharedCounter(0)
-
-    def put(self, *args, **kwargs):
-        super(Queue, self).put(*args, **kwargs)
-        #self.size.increment(1)
-
-    def get(self, *args, **kwargs):
-        x = super(Queue, self).get(*args, **kwargs)
-        #self.size.increment(-1)
-        return x
-
-    #def task_done(self, *args, **kwargs):
-    #    self.size.increment(-1)
-    #    return
-
-    @staticmethod
-    def _feed(self, *args, **kwargs):
-        """Avoid making a fuss if the Queue was closed with elements in it"""
-        try:
-            super(Queue, self)._feed(*args, **kwargs)
-        except BrokenPipeError:
-            pass
-
-    def qsize(self):
-        """ Reliable implementation of multiprocessing.Queue.qsize() """
-        return self.size.value
-
-    def empty(self):
-        """ Reliable implementation of multiprocessing.Queue.empty() """
-        return not self.qsize() > 0
-
-    def _empty_queue(self):
-        while not super(Queue, self).empty():
-            self.get()
+#     @property
+#     def value(self):
+#         """ Return the value of the counter """
+#         return self.count.value
 
 
+# class Queue(multiprocessing.queues.Queue):
+#     """ A portable implementation of multiprocessing.JoinableQueue.
+
+#     Because of multithreading / multiprocessing semantics, Queue.qsize() may
+#     raise the NotImplementedError exception on Unix platforms like Mac OS X
+#     where sem_getvalue() is not implemented. This subclass addresses this
+#     problem by using a synchronized shared counter (initialized to zero) and
+#     increasing / decreasing its value every time the put() and get() methods
+#     are called, respectively. This not only prevents NotImplementedError from
+#     being raised, but also allows us to implement a reliable version of both
+#     qsize() and empty().
+
+#     --------------------------------------------------------------------------
+
+#     Solution of issue:
+#         https://github.com/vterron/lemon/issues/11
+#     implemented in:
+#         https://github.com/vterron/lemon/commit/9ca6b4b1212228dbd4f69b88aaf88b12952d7d6f
+
+#     """
+
+#     def __init__(self, *args, **kwargs):
+#         try:
+#             super(Queue, self).__init__(*args,**kwargs)
+#         except TypeError:
+#             super(Queue, self).__init__(*args, ctx=multiprocessing.get_context(), **kwargs)
+#         self.size =  SharedCounter(0)
+
+#     def put(self, *args, **kwargs):
+#         super(Queue, self).put(*args, **kwargs)
+#         #self.size.increment(1)
+
+#     def get(self, *args, **kwargs):
+#         x = super(Queue, self).get(*args, **kwargs)
+#         #self.size.increment(-1)
+#         return x
+
+#     #def task_done(self, *args, **kwargs):
+#     #    self.size.increment(-1)
+#     #    return
+
+#     @staticmethod
+#     def _feed(self, *args, **kwargs):
+#         """Avoid making a fuss if the Queue was closed with elements in it"""
+#         try:
+#             super(Queue, self)._feed(*args, **kwargs)
+#         except BrokenPipeError:
+#             pass
+
+#     def qsize(self):
+#         """ Reliable implementation of multiprocessing.Queue.qsize() """
+#         return self.size.value
+
+#     def empty(self):
+#         """ Reliable implementation of multiprocessing.Queue.empty() """
+#         return not self.qsize() > 0
+
+#     def _empty_queue(self):
+#         while not super(Queue, self).empty():
+#             self.get()
 
 
 def _ontologize(x):
@@ -338,12 +329,10 @@ def format_accession(accession, nsmap=None):
 
 def unique_everseen(iterable):
     """List unique elements, preserving order. Remember all elements ever seen."""
-    # unique_everseen('AAAABBBCCDAABBB') --> A B C D
-    # unique_everseen('ABBCcAD', str.lower) --> A B C D
+    # unique_everseen('AAAABBBCCDAABBB')    --> A B C D
     seen = set()
     seen_add = seen.add
 
-    for element in itertools.filterfalse(seen.__contains__, iterable):
+    for element in filterfalse(seen.__contains__, iterable):
         seen_add(element)
         yield element
-

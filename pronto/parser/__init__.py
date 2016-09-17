@@ -1,13 +1,20 @@
+"""
+pronto.parser
+=============
+
+This module defines the Parser virtual class.
+"""
+
 import warnings
 import weakref
 import multiprocessing
 import time
 #import atexit
 
-import pronto.utils
+from ..utils import ProntoWarning
+
 
 __all__ = ["Parser", "OboParser", "OwlXMLParser"]
-
 
 
 class Parser(object):
@@ -65,8 +72,6 @@ class Parser(object):
 
     def init_workers(self, ParserProcess, *args, **kwargs):
 
-        #self._rawterms = pronto.utils.Queue()#multiprocessing.Queue()
-        #self._terms = pronto.utils.Queue()#multiprocessing.Queue()
         self._rawterms = multiprocessing.Queue()
         self._terms = multiprocessing.Queue()
         self._processes = []
@@ -93,7 +98,6 @@ class Parser(object):
         #for p in self._processes:
         #    p.join()
 
-
     @classmethod
     def __del__(cls):
 
@@ -111,14 +115,12 @@ class Parser(object):
             pass
 
 
-
 #atexit.register(Parser.__del__)
 
 
 from pronto.parser.obo import OboParser
-
 try:
    from pronto.parser.owl import OwlXMLParser
 except ImportError:
    warnings.warn("You don't seem to have lxml installed on your machine, "
-                 ".owl parsing will be disabled", pronto.utils.ProntoWarning)
+                 ".owl parsing will be disabled", ProntoWarning)

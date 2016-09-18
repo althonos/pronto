@@ -196,9 +196,13 @@ class Term(object):
             ] + [ #relationships
 
                 "relationship: {} {} ! {}".format(relation.obo_name, companion.id, companion.name)
-                    for relation in Relationship.bottomup()
-                        if relation in self.relations and relation is not Relationship('is_a')
+                    for relation in self.relations
+                        if relation.direction=="bottomup" and relation is not Relationship('is_a')
                             for companion in self.relations[relation]
+
+                    #for relation in Relationship.bottomup()
+                    #    if relation in self.relations and relation is not Relationship('is_a')
+                    #        for companion in self.relations[relation]
 
             ] + [ #metatags from created_by to consider
 

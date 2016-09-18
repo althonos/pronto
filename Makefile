@@ -90,3 +90,14 @@ ifdef EDITOR
 coverage:
 	${EDITOR} docs/build/coverage/python.txt
 endif
+
+
+.PHONY: compile
+.SILENT: compile
+compile:
+	[ -d build ] || mkdir build
+	cd build
+	nuitka --module ../pronto --recurse-all --recurse-stdlib \
+	--improved --lto --show-modules --nofreeze-stdlib \
+	--recurse-directory=../pronto
+

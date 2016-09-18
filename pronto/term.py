@@ -12,7 +12,7 @@ from .relationship import Relationship
 
 
 class Term(object):
-    """ An ontology term.
+    """An ontology term.
 
     Example:
 
@@ -25,7 +25,6 @@ class Term(object):
         ...               'HUPO-PSI/psi-ms-CV/master/psi-ms.obo')
         >>> type(ms['MS:1000015'])
         <class 'pronto.term.Term'>
-
 
     """
 
@@ -117,21 +116,13 @@ class Term(object):
                         for other in others
                             if rship in topdowns
                 ]
-
             )
 
         return self._children
 
-
-
-            #for rship in Relationship.topdown():
-            #    if rship in self.relations:
-            #        self._children.extend(self.relations[rship])
-        #return self._children
-
     @property
     def obo(self):
-        """Displays the term as an obo Term entry
+        """The Term serialized in an Obo Term stanza.
 
         Example:
 
@@ -144,13 +135,10 @@ class Term(object):
 
 
         .. note::
-            The following specification was used:
+            The following guide was used:
             ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
 
-
         """
-
-
 
         metatags = ["id", "is_anonymous", "name", "namespace","alt_id", "def","comment",
                     "subset","synonym","xref","builtin","property_value","is_a",
@@ -258,7 +246,7 @@ class Term(object):
 
     @property
     def __deref__(self):
-        """A dereferenced relations dictionary
+        """A dereferenced Term.__dict__.
 
         It only contains other Terms id to avoid circular references when
         creating a json.

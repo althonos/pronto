@@ -32,6 +32,7 @@ try:
 except ImportError:
     from xml.etree.ElementTree import ParseError
 
+from . import __version__
 from .term   import Term, TermList
 from .parser import Parser
 from .utils  import ProntoWarning
@@ -132,6 +133,10 @@ class Ontology(object):
 
         Generated following specs of the official format guide:
         ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
+
+        Todo:
+            * Change the `auto-generated-by` tag to be **auto-generated-by pronto pronto.__version__**
+
         """
 
         metatags = ["format-version", "data-version", "date", "saved-by", "auto-generated-by",
@@ -143,9 +148,9 @@ class Ontology(object):
 
             [ # official obo tags
                 "{}: {}".format(k, x)
-                    for k in metatags[:-1]
-                        if k in self.meta
-                            for x in self.meta[k]
+                        for k in metatags[:-1]
+                            if k in self.meta
+                                for x in self.meta[k]
             ] + [ # eventual other metadata added to remarks
                 "remark: {}: {}".format(k, x)
                     for k,v in sorted(six.iteritems(self.meta), key=lambda x: x[0])
@@ -161,13 +166,13 @@ class Ontology(object):
 
         return obo_meta
 
-        #'format-version', meta['format-version'])
-        #for k,v in six.iteritems(meta):
-        #    if k != 'format-version':
-        #        yield k,v
-
     def reference(self):
-        """Make relationships point to classes of ontology instead of ontology id"""
+        """Make relationships point to classes of ontology instead of ontology id
+
+        This is done automatically when using the :obj:`merge` and :obj:`include`
+        methods as well as the :obj:`__init__` method, but it should be called in
+        case of manual changes of the relationships of a Term.
+        """
 
         for termkey,termval in six.iteritems(self.terms):
 
@@ -183,6 +188,8 @@ class Ontology(object):
             self.terms[termkey].relations.update(relvalref)
 
     def parse(self, stream):
+        """Parse the given file using available Parser instances
+        """
         for parser in Parser._instances.values():
             if parser.hook(stream=stream, path=self.path):
                 # try:
@@ -193,26 +200,76 @@ class Ontology(object):
                 #                    pronto.utils.ProntoWarning)
 
     def __getitem__(self, item):
+        """Overloaded object.__getitem__
+
+        Method was overloaded to allow accessing to any Term of the Ontology
+        using the Python dictionary syntax.
+
+        Example:
+            >>> cl['CL:0002380']
+            <CL:0002380: oospore>
+            >>> cl['CL:0002380'].relations
+            {Relationship(is_a): [<CL:0000605: fungal asexual spore>]}
+
+        """
         return self.terms[item]
 
     def __contains__(self, item):
+        """Check if the ontology contains a term
+
+        It is possible to check if an Ontology contains a Term
+        using an id or a Term object.
+
+        Raises:
+            TypeError: if argument (or left operand) is
+                neither a string nor a Term
+
+        Example:
+            >>> 'CL:0002404' in cl
+            True
+            >>> from pronto import Term
+            >>> Term('TST:001', 'tst') in cl
+            False
+
+        """
 
         if isinstance(item, str) or isinstance(item, unicode):
             return item in self.terms
         elif isinstance(item, Term):
             return item.id in self.terms
         else:
-            raise TypeError("'in <ontology>' requires string or Term as left operand, not {}".format(type(item)))
+            raise TypeError("'in <Ontology>' requires string or Term as left operand, not {}".format(type(item)))
 
     def __iter__(self):
+        """Returns an iterator over the Terms of the Ontology
+
+        For convenience of implementation, the returned object is actually
+        a generator object that returns each term of the ontology, sorted in
+        alphabetic order of their id.
+
+        Example:
+            >>> for k in uo:
+            ...    if 'basepair' in k.name:
+            ...       print(k)
+            <UO:0000328: kilobasepair>
+            <UO:0000329: megabasepair>
+            <UO:0000330: gigabasepair>
+        """
         terms_accessions = sorted(self.terms.keys())
         return (self.terms[i] for i in terms_accessions)
 
     def __len__(self):
+        """Returns the number of terms in the Ontology.
+        """
         return self.terms.__len__()
 
     def adopt(self):
-        """Make terms aware of their children via 'can_be' and 'has_part' relationships"""
+        """Make terms aware of their children via complementary relationships
+
+        This is done automatically when using the :obj:`merge` and :obj:`include`
+        methods as well as the :obj:`__init__` method, but it should be called in
+        case of manual editing of the parents or children of a Term.
+        """
 
         relationships = [
             (parent, relation.complement(), term.id)
@@ -302,7 +359,8 @@ class Ontology(object):
         self.reference()
 
     def resolve_imports(self, import_depth):
-        """Imports required ontologies."""
+        """Import required ontologies.
+        """
 
         # pool = pronto.utils.ProntoPool()
         # cls = type(self)
@@ -376,6 +434,9 @@ class Ontology(object):
     def merge(self, other):
         """Merges another ontology into the current one.
 
+        Raises:
+            TypeError: When argument is not an Ontology object.
+
         Example:
             >>> from pronto import Ontology
             >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
@@ -390,14 +451,23 @@ class Ontology(object):
             True
 
         """
-        if isinstance(other, Ontology):
-            self.terms.update(other.terms)
-            self._empty_cache()
-            self.reference()
-        else:
+        if not isinstance(other, Ontology):
             raise TypeError("'merge' requires an Ontology as argument, not {}".format(type(other)))
 
+        self.terms.update(other.terms)
+        self._empty_cache()
+        self.adopt()
+        self.reference()
+
     def _empty_cache(self, termlist=None):
+        """Empty associated cache of each Term object
+
+        This method is called when merging Ontologies or including
+        new terms in the Ontology to make sure the cache of each
+        term is cleaned and avoid returning wrong memoized values
+        (such as Term.rchildren() TermLists, which get memoized for
+        performance concerns)
+        """
         if termlist is None:
             for term in self.terms.values():
                 term._empty_cache()
@@ -413,19 +483,13 @@ class Ontology(object):
         meta = frozenset( (k, frozenset(v)) for k,v in six.iteritems(self.meta) )
         imports = self.imports
         path = self.path
-
         terms = frozenset(term for term in self)
-
         return (meta, imports, path, terms)
 
     def __setstate__(self, state):
 
         self.meta = {k:list(v) for (k,v) in state[0] }
-
         self.imports = state[1]
-
         self.path = state[2]
-
         self.terms = {t.id:t for t in state[3]}
-
         self.reference()

@@ -1,7 +1,7 @@
 **pronto** : Python frontend to Ontologies
 ==========================================
 
-|Version| |Py versions| |Build Status| |Dev repo| |Codacy grade| |License| |DOI| |coverage|
+|Version| |Py versions| |Build Status| |Dev repo| |Codacy grade| |License| |DOI| |coverage| |rtd|
 
 Overview
 ^^^^^^^^
@@ -130,3 +130,7 @@ Author: Martin Larralde
 
 .. |coverage| image:: https://img.shields.io/codacy/coverage/157b5fd24e5648ea80580f28399e79a4.svg?maxAge=2592000   
    :target: https://www.codacy.com/app/althonos/pronto/dashboard
+
+.. |rtd| image:: https://readthedocs.org/projects/pronto/badge/?version=latest
+   :target: http://pronto.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status

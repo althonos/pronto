@@ -233,7 +233,7 @@ class Ontology(object):
 
         """
 
-        if isinstance(item, str) or isinstance(item, unicode):
+        if isinstance(item, str) or isinstance(item, six.text_type):
             return item in self.terms
         elif isinstance(item, Term):
             return item.id in self.terms
@@ -254,6 +254,7 @@ class Ontology(object):
             <UO:0000328: kilobasepair>
             <UO:0000329: megabasepair>
             <UO:0000330: gigabasepair>
+
         """
         terms_accessions = sorted(self.terms.keys())
         return (self.terms[i] for i in terms_accessions)
@@ -307,11 +308,15 @@ class Ontology(object):
                 pass
 
             if parent in self:
-                if not rel in self[parent].relations.keys():
+                try:
+                    if not child in self[parent].relations[rel]:
+                        self[parent].relations[rel].append(child)
+                except KeyError:
+                    self[parent].relations[rel] = [child]
+                    #self[parent].relations[rel].add(child)
 
-                    self[parent].relations[rel] = TermList()
-
-                self[parent].relations[rel].append(child)
+                #if not child.id in self[parent].relations[rel]:
+                #    self[parent].relations[rel].append(child)
 
     def include(self, *terms):
         """Add new terms to the current ontology.

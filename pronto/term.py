@@ -383,11 +383,19 @@ class TermList(list):
 
     """
 
-    def __init__(self, *elements):
+    def __init__(self, elements=None):
         """
         """
-        list.__init__(self, *elements)
+        super(TermList, self).__init__(elements or [])
         self._check_content()
+
+
+    def append(self, element):
+        try:
+            if not element in self:
+                super(TermList, self).append(element)
+        except TypeError:
+            raise
 
     def _check_content(self):
         try:
@@ -459,4 +467,16 @@ class TermList(list):
             True
 
         """
-        return term in self.id or any(t for t in self if t==term)
+        try:
+            _id = term.id
+        except AttributeError:
+            _id = term
+
+        for t in self:
+            try:
+                if t.id==_id: return True
+            except AttributeError:
+                if t==_id: return True
+
+        return False
+

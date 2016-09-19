@@ -101,3 +101,8 @@ compile:
 	--improved --lto --show-modules --nofreeze-stdlib \
 	--recurse-directory=../pronto
 
+.PHONY: monitor
+.SILENT: monitor
+monitor:
+	LATEST_BUILD=`travis status | xargs python -c "import sys; print(sys.argv[1][1:])"`
+	while true; do travis show $$LATEST_BUILD; tput cup 1 0; done

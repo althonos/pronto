@@ -472,11 +472,7 @@ class TermList(list):
         except AttributeError:
             _id = term
 
-        for t in self:
-            try:
-                if t.id==_id: return True
-            except AttributeError:
-                if t==_id: return True
+        return any((t.id==_id if isinstance(t, Term) else t==_id for t in self))
 
-        return False
+        #return False
 

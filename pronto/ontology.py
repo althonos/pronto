@@ -125,8 +125,10 @@ class Ontology(object):
         # for accession in sorted(self.terms.keys()):
         #     obo += '\n'
         #     obo += self.terms[accession].obo
-
-        return "\n\n".join( [self._obo_meta()] + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
+        try:
+            return "\n\n".join( self._obo_meta() + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
+        except KeyError:
+            return "\n\n".join(self._obo_meta() + [t.obo for t in self])
 
     def _obo_meta(self):
         """Generates the obo metadata header
@@ -156,15 +158,13 @@ class Ontology(object):
                     for k,v in sorted(six.iteritems(self.meta), key=lambda x: x[0])
                         for x in v
                             if k not in metatags
-            ] + [ # last header: ontology
-                "ontology: {}".format(x)
-                    for x in self.meta["ontology"]
-                        if "ontology" in self.meta
-            ] if "ontology" in self.meta else ["ontology: {}".format(self.meta["namespace"][0].lower())]
+            ] +      ["ontology: {}".format(x) for x in self.meta["ontology"]] if "ontology" in self.meta 
+                else ["ontology: {}".format(self.meta["namespace"][0].lower())] if "namespace" in self.meta
+                else []
 
         )
 
-        return obo_meta
+        return [obo_meta] if obo_meta else []
 
     def reference(self):
         """Make relationships point to classes of ontology instead of ontology id

@@ -157,11 +157,10 @@ class Term(object):
                     for k in metatags[3:6]
                         if k in self.other
 
-            ] + [ #def
+            ] + ([ " ".join(["def:", self.desc]) ] if self.desc else [])
 
-                " ".join(["def:", self.desc] if self.desc else [] )
 
-            ] + [ # metatags from comment to property_value
+              + [ # metatags from comment to property_value
 
                   "{}: {}".format(k, self.other[k])
                         for k in metatags[7:12]

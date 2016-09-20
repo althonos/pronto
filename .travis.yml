@@ -12,6 +12,7 @@ python:
 
 env:
 - TEST_SUITE="doctests"
+- TEST_SUITE="unit"
 #- TEST_SUITE="foundrytest"
 
 matrix:

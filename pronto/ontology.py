@@ -54,8 +54,11 @@ class Ontology(object):
 
         Merge two local ontologies and export the merge:
 
-            >>> uo = Ontology("resources/uo.owl", False)
+            >>> uo = Ontology("resources/uo.obo", False)
             >>> cl = Ontology("resources/cl.ont", False)
+            >>> uo.merge(cl)
+            >>> with open('run/merge.obo', 'w') as f:
+            ...     lines_count = f.write(uo.obo)
 
         Export an ontology with its dependencies embedded:
 

@@ -367,7 +367,10 @@ class OwlXMLParser(Parser):
 
         ])
 
-        self.meta["namespace"] = list(set([ x.text for x in self._meta["hasOBONamespace"]]))
+        try:
+            self.meta["namespace"] = list(set([ x.text for x in self._meta["hasOBONamespace"]]))
+        except KeyError:
+            pass
 
 
 OwlXMLParser()

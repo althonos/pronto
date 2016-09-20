@@ -90,6 +90,8 @@ class Ontology(object):
 
             self.parse(handle)
 
+            handle.close()
+
             self.adopt()
 
             if imports and import_depth:
@@ -158,7 +160,7 @@ class Ontology(object):
                     for k,v in sorted(six.iteritems(self.meta), key=lambda x: x[0])
                         for x in v
                             if k not in metatags
-            ] +      ["ontology: {}".format(x) for x in self.meta["ontology"]] if "ontology" in self.meta 
+            ] +      ["ontology: {}".format(x) for x in self.meta["ontology"]] if "ontology" in self.meta
                 else ["ontology: {}".format(self.meta["namespace"][0].lower())] if "namespace" in self.meta
                 else []
 

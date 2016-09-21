@@ -1,56 +1,18 @@
+### DEPS
+import utils
+utils.require(('yaml', 'PyYAML'), 'six')
+
+import six
+import yaml
 import unittest
 import io
-import os
 import warnings
 
 import pronto
 
 
-### DEPS
-
-if os.getcwd().endswith("pronto"):
-    os.chdir("tests")
-
-def require(*packages):
-    import sys, pip
-    for package in packages:
-        try:
-            if not isinstance(package, str):
-                import_name, install_name = package
-            else:
-                import_name = install_name = package
-            __import__(import_name)
-        except ImportError:
-            cmd = ['install', install_name]
-            if not hasattr(sys, 'real_prefix'):
-                cmd.append('--user')
-            pip.main(cmd)
-
-
-require(('yaml', 'PyYAML'), 'six')
-
-import six
-import yaml
-
-
-
-def ciskip(func):
-
-    if "CI" in os.environ and os.environ["CI"]=="true":
-        def _pass(*args, **kwargs):
-            pass
-        return _pass
-    else:
-        return func
-
-
-
-
 
 ### TESTS
-
-
-
 class ProntoOntologyTest(unittest.TestCase):
 
     def assert_loaded(self, ontology):
@@ -64,16 +26,25 @@ class ProntoOntologyTest(unittest.TestCase):
                 for other in l:
                     self.assertIsInstance(other, pronto.Term)
 
-        # check
-
     def assert_exportable(self, ontology):
-        file = io.StringIO()
-        file.write(ontology.obo)
+        try:
+            file = io.StringIO()
+            file.write(ontology.obo)
+        except Error as e:
+            self.fail("export failed: {}".format(e))
+
+    def assert_mergeable(self, ontology):
+        try:
+            other = pronto.Ontology()
+            other.merge(ontology)
+        except BaseException as e:
+            self.fail("merge failed: {}".format(e))
+        self.assertEqual(len(other), len(ontology))
 
     def check_ontology(self, ontology):
-        for name,method in six.iteritems(self.__dict__):
-            if name.startswith("assert_"):
-                method(self, ontology)
+        self.assert_loaded(ontology)
+        self.assert_exportable(ontology)
+        self.assert_mergeable(ontology)
 
 
 class ProntoLocalOntologyTest(ProntoOntologyTest):
@@ -106,10 +77,6 @@ class ProntoRemoteOntologyTest(ProntoOntologyTest):
         self.check_ontology(owl)
 
 
-
-
-
-
 class ProntoAberOwlTest(ProntoOntologyTest):
 
     pass
@@ -118,11 +85,10 @@ class ProntoAberOwlTest(ProntoOntologyTest):
 class ProntoOboFoundryTest(ProntoOntologyTest):
 
     @classmethod
+    @utils.ciskip
     def register_tests(cls):
 
         foundry_url = "http://www.obofoundry.org/registry/ontologies.yml"
-        print("Reaching", foundry_url, "...")
-
         foundry_rq = six.moves.urllib.request.urlopen(foundry_url)
         foundry_yaml = yaml.load(foundry_rq)
 
@@ -141,7 +107,7 @@ class ProntoOboFoundryTest(ProntoOntologyTest):
                     cls.add_test(product['id'].replace(".", "_"), _foundry_noimports, _foundry_imports)
 
     @classmethod
-    @ciskip
+    @utils.ciskip
     def add_test(cls, name, callable_noimports, callable_imports):
         #print('Registering tests for', name)
         setattr(cls, "test_{}_foundry_noimports".format(name), callable_noimports)
@@ -150,7 +116,6 @@ class ProntoOboFoundryTest(ProntoOntologyTest):
 
 
 ### RUN
-
 if __name__=="__main__":
 
     ProntoOboFoundryTest.register_tests()

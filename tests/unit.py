@@ -3,6 +3,7 @@ import utils
 utils.require(('yaml', 'PyYAML'), 'six')
 
 import six
+import sys
 import yaml
 import unittest
 import io
@@ -25,12 +26,12 @@ class ProntoOntologyTest(unittest.TestCase):
             for r,l in six.iteritems(term.relations):
                 for other in l:
                     self.assertIsInstance(other, pronto.Term)
-
+    @utils.py2skip
     def assert_exportable(self, ontology):
         try:
             file = io.StringIO()
             file.write(ontology.obo)
-        except Error as e:
+        except BaseException as e:
             self.fail("export failed: {}".format(e))
 
     def assert_mergeable(self, ontology):
@@ -55,6 +56,18 @@ class ProntoLocalOntologyTest(ProntoOntologyTest):
 
     def test_obo_noimports(self):
         obo = pronto.Ontology("resources/cmo.obo", False)
+        self.check_ontology(obo)
+
+    def test_owl_noimports(self):
+        owl = pronto.Ontology("resources/cl.ont")
+        self.check_ontology(owl)
+
+    def test_obo_noimports(self):
+        obo = pronto.Ontology("resources/cmo.obo")
+        self.check_ontology(obo)
+
+    def test_winni_genp(self):
+        obo = pronto.Ontology("resources/winni-genp.obo")
         self.check_ontology(obo)
 
 
@@ -91,27 +104,28 @@ class ProntoOboFoundryTest(ProntoOntologyTest):
         foundry_url = "http://www.obofoundry.org/registry/ontologies.yml"
         foundry_rq = six.moves.urllib.request.urlopen(foundry_url)
         foundry_yaml = yaml.load(foundry_rq)
+        url = []
 
-        for o in foundry_yaml['ontologies']:
-            if 'products' in o:
-                for product in o['products']:
-
-                    def _foundry_noimports(self):
-                        onto = pronto.Ontology(product['ontology_purl'], False)
-                        self.check_ontology(onto)
-
-                    def _foundry_imports(self):
-                        onto = pronto.Ontology(product['ontology_purl'])
-                        self.check_ontology(onto)
-
-                    cls.add_test(product['id'].replace(".", "_"), _foundry_noimports, _foundry_imports)
+        { cls.add_test(product)
+            for o in foundry_yaml['ontologies']
+                if 'products' in o
+                    for product in o['products'] }
 
     @classmethod
-    @utils.ciskip
-    def add_test(cls, name, callable_noimports, callable_imports):
-        #print('Registering tests for', name)
-        setattr(cls, "test_{}_foundry_noimports".format(name), callable_noimports)
-        setattr(cls, "test_{}_foundry_imports".format(name), callable_imports)
+    def add_test(cls, product):
+
+        url, name = product["ontology_purl"], product["id"]
+
+        def _foundry_noimports(self):
+            onto = pronto.Ontology(url, False)
+            self.check_ontology(onto)
+
+        def _foundry_imports(self):
+            onto = pronto.Ontology(url)
+            self.check_ontology(onto)
+
+        setattr(cls, "test_{}_foundry_noimports".format(name), _foundry_noimports)
+        setattr(cls, "test_{}_foundry_imports".format(name),   _foundry_imports)
 
 
 

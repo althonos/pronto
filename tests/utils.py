@@ -30,7 +30,10 @@ def ciskip(func):
     else:
         return func
 
-
-def vprint(*args, **kwargs):
-    if '-v' in sys.argv:
-        print(*args, **kwargs)
+def py2skip(func):
+    if sys.version_info[0]==3:
+        return func
+    else:
+        def _pass(*args, **kwargs):
+            pass
+        return _pass

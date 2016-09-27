@@ -33,12 +33,14 @@ profile:
 .SILENT: cover
 ifndef CODACY_PROJECT_TOKEN
 cover:
+	export CI=true
 	coverage run tests/doctests.py --source=pronto --concurrency=multiprocessing
 	coverage combine
 	coverage xml --include 'pronto/*'
 	export CODACY_PROJECT_TOKEN=${TOKEN} && python-codacy-coverage -r coverage.xml
 else
 cover:
+	export CI=true
 	coverage run tests/doctests.py --source pronto --concurrency=multiprocessing
 	coverage xml --include 'pronto/*'
 	python-codacy-coverage -r coverage.xml

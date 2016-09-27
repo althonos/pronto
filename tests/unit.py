@@ -3,7 +3,6 @@ import utils
 utils.require(('yaml', 'PyYAML'), 'six')
 
 import six
-import sys
 import yaml
 import unittest
 import io
@@ -23,7 +22,7 @@ class ProntoOntologyTest(unittest.TestCase):
 
         # check if succesfully crosslinked
         for term in ontology:
-            for r,l in six.iteritems(term.relations):
+            for l in term.relations.values():
                 for other in l:
                     self.assertIsInstance(other, pronto.Term)
     @utils.py2skip
@@ -58,11 +57,11 @@ class ProntoLocalOntologyTest(ProntoOntologyTest):
         obo = pronto.Ontology("resources/cmo.obo", False)
         self.check_ontology(obo)
 
-    def test_owl_noimports(self):
+    def test_owl_imports(self):
         owl = pronto.Ontology("resources/cl.ont")
         self.check_ontology(owl)
 
-    def test_obo_noimports(self):
+    def test_obo_imports(self):
         obo = pronto.Ontology("resources/cmo.obo")
         self.check_ontology(obo)
 
@@ -91,7 +90,6 @@ class ProntoRemoteOntologyTest(ProntoOntologyTest):
 
 
 class ProntoAberOwlTest(ProntoOntologyTest):
-
     pass
 
 
@@ -104,12 +102,12 @@ class ProntoOboFoundryTest(ProntoOntologyTest):
         foundry_url = "http://www.obofoundry.org/registry/ontologies.yml"
         foundry_rq = six.moves.urllib.request.urlopen(foundry_url)
         foundry_yaml = yaml.load(foundry_rq)
-        url = []
 
-        { cls.add_test(product)
+        _ = { cls.add_test(product)
             for o in foundry_yaml['ontologies']
                 if 'products' in o
                     for product in o['products'] }
+        del _
 
     @classmethod
     def add_test(cls, product):

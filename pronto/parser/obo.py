@@ -7,6 +7,7 @@ This module defines the Obo parsing method.
 
 import multiprocessing
 import six
+import os
 
 from .              import Parser
 from ..relationship import Relationship
@@ -146,7 +147,7 @@ class OboParser(Parser):
 
     def __init__(self):
         super(OboParser, self).__init__()
-        self.extension = '.obo'
+        self.extensions = ('obo',)
 
         self._tempterm = {}
         self._typedef = []
@@ -158,7 +159,9 @@ class OboParser(Parser):
         """Returns True if the file is an Obo file (extension is .obo)"""
 
         if 'path' in kwargs:
-            return kwargs['path'].endswith(self.extension)
+            split_path = kwargs['path'].split(os.extsep)
+            return any( (ext in split_path for ext in self.extensions) )
+            #return kwargs['path'].endswith(self.extension)
 
     def read(self, stream):
         """Read the stream and extract information in a 'raw' format."""

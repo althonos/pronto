@@ -220,14 +220,18 @@ class OwlXMLParser(Parser):
         self._tree = None
         self._ns = {}
         self._meta = {}
-        self.extensions = ('.owl', '.xml', '.ont')
+        self.extensions = ('owl', 'xml', 'ont')
 
         self._number_of_terms = 0
 
     def hook(self, *args, **kwargs):
         """Returns True if the file is an Owl file (extension is .owl)"""
         if 'path' in kwargs:
-            return os.path.splitext(kwargs['path'])[1] in self.extensions
+            split_path = kwargs['path'].split(os.extsep)
+            return any( (ext in split_path for ext in self.extensions) )
+				
+            #ext = kwargs['path'].split("
+					#os.path.splitext(kwargs['path'])[1] in self.extensions
 
     def read(self, stream):
         """

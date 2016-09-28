@@ -22,6 +22,7 @@ import json
 import os
 import warnings
 import six
+import gzip
 #import functools
 
 import six.moves.urllib.request as rq
@@ -82,14 +83,16 @@ class Ontology(object):
         if path is not None:
 
 
-            if path.startswith('http') or path.startswith('ftp'):
-                handle = rq.urlopen(path, timeout=timeout)
+            if path.startswith(('http', 'ftp')): #or path.startswith('ftp'):
+                handle = rq.urlopen(path, timeout=timeout)               
             else:
-                if not os.path.exists(path):
-                    raise OSError('Ontology file {} could not be found'.format(path))
+                if os.path.exists(path):
+                     handle = open(path, 'rb')
                 else:
-                    handle = open(path, 'rb')
+                    raise OSError('Ontology file {} could not be found'.format(path))
 
+            if path.endswith('gz'):
+                handle = gzip.GzipFile(fileobj=handle)
 
             self.parse(handle)
 

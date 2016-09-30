@@ -1,0 +1,78 @@
+format-version: 1.4
+default-namespace: ELO
+remark: coverage: English Literature
+remark: license: Creative Commons
+
+[Typedef]
+id: has_written
+name: has written
+inverse_of: written_by
+
+[Typedef]
+id: written_by
+name: written by
+inverse_of: has_written
+
+[Term]
+id: ELO:0100000
+name: Literature form
+def: An form of literature
+
+[Term]
+id: ELO:0110000
+name: Novel
+is_a: ELO:0110000 ! Literature form
+
+[Term]
+id: ELO:0120000
+name: Poem
+is_a: ELO:0110000 ! Literature form
+
+[Term]
+id: ELO:0130000
+name: Drama
+is_a: ELO:0110000 ! Literature form
+
+[Term]
+id: ELO:0130001
+name: Hamlet
+is_a: ELO:0130000 ! Drama
+relationship: written_by ELO:0330001 ! William Shakespeare
+
+[Term]
+id: ELO:0140000
+name: Short story
+is_a: ELO:0110000 ! Literature form
+
+[Term]
+id: ELO:0150000
+name: Novella
+is_a: ELO:0110000 ! Literature form
+
+[Term]
+id: ELO:0200000
+name: Literature genre
+
+[Term]
+id: ELO:0300000
+name: Author
+
+[Term]
+id: ELO:0330000
+name: Playwright
+is_a: ELO:0300000 ! Author
+
+[Term]
+id: ELO:0320000
+name: Poet
+is_a: ELO:0300000 ! Author
+
+
+[Term]
+id: ELO:0330001
+name: William Shakespeare
+is_a: ELO:0330000 ! Playwright
+
+
+
+

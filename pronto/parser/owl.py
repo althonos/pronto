@@ -41,6 +41,27 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
         self.nspaced = functools.partial(explicit_namespace, nsmap=nsmap)
         self.accession = functools.partial(format_accession, nsmap=nsmap)
 
+        self.translator = [
+            {'hook':     lambda c: c.tag == self.nspaced('rdfs:label'),
+             'callback': lambda c: c.text,
+             'dest':     'name',
+             'action':   'store',
+            },
+            {
+             'hook':     lambda c: (c.tag == self.nspaced('rdfs:subClassOf')) \
+                               and (self.nspaced('rdf:resource') in c.attrib),
+             'callback': lambda c: self.accession(c.get(self.nspaced('rdf:resource')) \
+                               or c.get(self.nspaced('rdf:about'))),
+             'dest':     'relations',
+             'action':   'list',
+             'list_to':  'is_a',
+            },
+            {'hook':     lambda c: c.tag == self.nspaced('rdfs:comment'),
+             'callback': lambda c: self.parse_comment(c.text),
+             'action':   'update'
+            }
+        ]
+
     def run(self):
 
         while True:
@@ -79,29 +100,9 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
         term_dict = {'name':'', 'relations': {}, 'desc': ''}
 
-        translator = [
-            {'hook': lambda c: c.tag == self.nspaced('rdfs:label'),
-             'callback': lambda c: c.text,
-             'dest': 'name',
-             'action': 'store'
-            },
-            {
-             'hook': lambda c: (c.tag == self.nspaced('rdfs:subClassOf')) \
-                               and (self.nspaced('rdf:resource') in c.attrib),
-             'callback': lambda c: self.accession(c.get(self.nspaced('rdf:resource')) or c.get(self.nspaced('rdf:about'))),
-             'dest': 'relations',
-             'action': 'list',
-             'list_to': 'is_a',
-            },
-            {'hook': lambda c: c.tag == self.nspaced('rdfs:comment'),
-             'callback': lambda c: self.parse_comment(c.text),
-             'action': 'update'
-            }
-        ]
-
         for child in term.iter():#term.iterchildren():
 
-            for rule in translator:
+            for rule in self.translator:
 
                 if rule['hook'](child):
 
@@ -119,13 +120,7 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
                     elif rule['action'] == 'update':
                         term_dict.update(rule['callback'](child))
 
-
-                    #break
-
-        #if ':' in tid: #remove administrative classes
-        return (tid, term_dict)#{tid: pronto.term.Term(tid, **term_dict)}
-        #else:
-        #    return {}
+        return (tid, term_dict)
 
     @staticmethod
     def parse_comment(comment):
@@ -180,13 +175,6 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
                     except KeyError:
                         parsed['other'] = {ref: [value] }
 
-
-                #if not 'other' in parsed.keys():
-                #    parsed['other'] = {}
-                #if not ref in parsed['other']:
-                #    parsed['other'][ref] = []
-                #parsed['other'][ref].append(value)
-
             else:
                 if not 'desc' in parsed:
                     parsed['desc'] = "\n".join(commentlines[index:])
@@ -229,7 +217,7 @@ class OwlXMLParser(Parser):
         if 'path' in kwargs:
             split_path = kwargs['path'].split(os.extsep)
             return any( (ext in split_path for ext in self.extensions) )
-				
+
             #ext = kwargs['path'].split("
 					#os.path.splitext(kwargs['path'])[1] in self.extensions
 
@@ -257,12 +245,12 @@ class OwlXMLParser(Parser):
             if event == "start-ns":
                 self._ns.update({element[0]:element[1]})
 
-                if element[0]== 'owl':
+                if element[0]=='owl':
                     owl_imports = "".join(["{", element[1], "}", "imports"])
                     owl_class = "".join(["{", element[1], "}", "Class"])
-                elif element[0] == 'rdf':
+                elif element[0]=='rdf':
                     rdf_resource = "".join(["{", element[1], "}", "resource"])
-                elif element[0] == "oboInOwl":
+                elif element[0]=="oboInOwl":
                     obo_in_owl = "".join(["{", element[1], "}"])
                     l_obo_in_owl = len(obo_in_owl)
 
@@ -314,13 +302,10 @@ class OwlXMLParser(Parser):
             pool (Pool): a pool of workers that is used to map the _classify
                 function on the terms.
         """
-        #terms_elements = self._tree.iterfind('./owl:Class', self._ns)
-        #for t in pool.map(self._classify, self._elements):
-        #    self.terms.update(t)
 
         accession = functools.partial(format_accession, nsmap=self._ns)
 
-        while len(self.terms) < self._number_of_terms: #not self._terms.empty() or not self._rawterms.empty(): #self._terms.qsize() > 0 or self._rawterms.qsize() > 0:
+        while len(self.terms) < self._number_of_terms:
 
             tid, d = self._terms.get()
 
@@ -334,27 +319,14 @@ class OwlXMLParser(Parser):
             if not tid in self.terms:
                 self.terms[tid] = Term(tid, **d)
 
-        # if 'tid' in locals() and locals()['tid'] is None:
-        #     for p in self._processes:
-        #         self._rawterms.put(None)
-        #     self.shut_workers()
-        #     #return ParseError
-        # else:
         self.shut_workers()
 
     def manage_imports(self):
         pass
-        #nspaced = functools.partial(explicit_namespace, nsmap=self._ns)
-        #for imp in self._tree.iterfind('./owl:Ontology/owl:imports', self._ns):
-        #    path = imp.attrib[nspaced('rdf:resource')]
-        #    if path.endswith('.owl'):
-        #        self.imports.append(path)
 
     def metanalyze(self):
         """
         Extract metadata from the headers of the owl file.
-
-
         """
 
         obomap = {    #"created_by":      "creator",

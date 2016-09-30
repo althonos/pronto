@@ -84,7 +84,7 @@ class Ontology(object):
 
 
             if path.startswith(('http', 'ftp')): #or path.startswith('ftp'):
-                handle = rq.urlopen(path, timeout=timeout)               
+                handle = rq.urlopen(path, timeout=timeout)
             else:
                 if os.path.exists(path):
                      handle = open(path, 'rb')
@@ -285,31 +285,14 @@ class Ontology(object):
                 for term in self
                     for relation in term.relations
                         for parent in term.relations[relation]
-                            if relation.complement() is not None and relation.direction=="bottomup"
+                            #if relation is not None and relation.complementary is not None #and relation.direction=="bottomup"
         ]
 
-        # for term in self:
-
-        #     for relation in term.relations.keys():
-
-        #         if relation.complement() is not None and relation.direction=="bottomup":
-        #             for parent in term.relations[relation]:
-        #                 relationships.append( (parent, relation.complement(), term.id) )
-
-            #if 'is_a' in term.relations.keys():
-            #    for parent in term.relations['is_a']:
-            #        relationships.append( (parent, 'can_be', term.id ) )
-
-            #if 'part_of' in term.relations.keys():
-            #    for parent in term.relations['part_of']:
-            #        relationships.append( (parent, 'has_part', term.id ) )
-
-            #if 'is_part' in term.relations.keys():
-            #    for parent in term.relations['is_part']:
-            #        relationships.append( (parent, 'part_of', term.id ) )
-
         for parent, rel, child in relationships:
-            #if isinstance(parent, .Term):
+
+            if rel is None:
+                break
+
             try:
                 parent = parent.id
             except AttributeError:
@@ -321,10 +304,8 @@ class Ontology(object):
                         self[parent].relations[rel].append(child)
                 except KeyError:
                     self[parent].relations[rel] = [child]
-                    #self[parent].relations[rel].add(child)
 
-                #if not child.id in self[parent].relations[rel]:
-                #    self[parent].relations[rel].append(child)
+
 
     def include(self, *terms):
         """Add new terms to the current ontology.
@@ -374,19 +355,6 @@ class Ontology(object):
     def resolve_imports(self, import_depth):
         """Import required ontologies.
         """
-
-        # pool = pronto.utils.ProntoPool()
-        # cls = type(self)
-        # #ontologize = functools.partial(Ontology, import_depth=import_depth-1)
-
-        # for x in pool.map(pronto.utils._ontologize, ((cls,x,import_depth) for x in self.imports)):
-        #     #if x is not None:
-        #     try:
-        #         self.merge(x)
-        #     except TypeError:
-        #         warnings.warn(*x)
-
-        # pool.close()
 
         for i in self.imports:
             try:

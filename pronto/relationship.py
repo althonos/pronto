@@ -227,6 +227,41 @@ class Relationship(object):
     def __setstate__(self, *args, **kwargs):
         pass
 
+    @classmethod
+    def _from_obo_dict(cls, d):
+
+        if d['id'] in cls._instances:
+            return cls._instances[d['id']]
+
+        try:
+            complementary = d['inverse_of']
+        except KeyError:
+            complementary = ""
+
+        try:
+            transitivity = d['is_transitive'].lower() == "true"
+        except KeyError:
+            transitivity = None
+
+        try:
+            symmetry = d['is_symmetric'].lower() == "true"
+        except KeyError:
+            symmetry = None
+
+        try:
+            reflexivity = d['is_reflexive'].lower() == "true"
+        except KeyError:
+            reflexivity = None
+
+        try:
+            symmetry = d['is_antisymetric'].lower() == "false"
+        except KeyError:
+            symmetry = symmetry or None
+
+        return Relationship(d['id'], symmetry=symmetry, transitivity=transitivity,
+                            reflexivity=reflexivity, complementary=complementary)
+
+
 
 Relationship('is_a', symmetry=False, transitivity=True,
                     reflexivity=True, complementary='can_be',
@@ -247,5 +282,4 @@ Relationship('part_of', symmetry=False, transitivity=True,
 Relationship('has_units', symmetry=False, transitivity=False,
                           reflexivity=None)
 
-Relationship('has_domain', symmetry=False, transitivity=False,
-                           reflexivity=None)
+Relationship('has_domain', symmetry=False, transitivity=False)

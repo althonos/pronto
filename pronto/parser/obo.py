@@ -161,7 +161,6 @@ class OboParser(Parser):
         if 'path' in kwargs:
             split_path = kwargs['path'].split(os.extsep)
             return any( (ext in split_path for ext in self.extensions) )
-            #return kwargs['path'].endswith(self.extension)
 
     def read(self, stream):
         """Read the stream and extract information in a 'raw' format."""
@@ -188,6 +187,10 @@ class OboParser(Parser):
 
         self._rawterms.put(self._tempterm)
 
+        for typedef in self._typedef:
+            Relationship._from_obo_dict(typedef)
+
+
     def makeTree(self):
         """Create the proper ontology Tree from raw terms"""
 
@@ -200,7 +203,6 @@ class OboParser(Parser):
                 )
 
             del d
-            #print("{} / {} terms extracted".format(len(self.terms), self._number_of_terms))
 
         self.shut_workers()
 
@@ -217,11 +219,9 @@ class OboParser(Parser):
     def manage_imports(self):
         """Get metadatas concerning imports."""
         try:
-        #if 'import' in self.meta: #.keys():
             self.imports = set(self.meta['import'])
-
         except KeyError:
-            pass #self.imports = set()
+            pass
 
     def _parse_remark(self, remark):
         """Parse a remark and add results to self.meta."""
@@ -269,6 +269,7 @@ class OboParser(Parser):
             return 'term'
 
         elif '[Typedef]' in line:
+
             self._typedef.append({})
             return 'typedef'
 

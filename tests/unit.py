@@ -8,6 +8,11 @@ import unittest
 import io
 import warnings
 
+
+import sys
+import os
+sys.path.insert(0, "..")
+
 import pronto
 
 
@@ -25,6 +30,7 @@ class ProntoOntologyTest(unittest.TestCase):
             for l in term.relations.values():
                 for other in l:
                     self.assertIsInstance(other, pronto.Term)
+
     @utils.py2skip
     def assert_exportable(self, ontology):
         try:
@@ -69,6 +75,14 @@ class ProntoLocalOntologyTest(ProntoOntologyTest):
         obo = pronto.Ontology("resources/winni-genp.obo")
         self.check_ontology(obo)
 
+    def test_with_custom_typedef(self):
+        obo = pronto.Ontology("resources/elo.obo")
+        self.check_ontology(obo)
+
+        self.assertIn("has_written", pronto.Relationship._instances)
+        self.assertIn(pronto.Relationship("written_by"), pronto.Relationship._instances.values())
+        self.assertIn(pronto.Relationship('written_by'), obo['ELO:0130001'].relations)
+        self.assertIn(pronto.Relationship('has_written'), obo['ELO:0330001'].relations)
 
 class ProntoRemoteOntologyTest(ProntoOntologyTest):
 
@@ -133,6 +147,8 @@ class ProntoOboFoundryTest(ProntoOntologyTest):
 
 ### RUN
 if __name__=="__main__":
+
+    print(pronto)
 
     ProntoOboFoundryTest.register_tests()
 

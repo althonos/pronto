@@ -33,11 +33,11 @@ try:
 except ImportError:
     from xml.etree.ElementTree import ParseError
 
-from . import __version__
-from .term   import Term, TermList
-from .parser import Parser
-from .utils  import ProntoWarning
-
+from .             import __version__
+from .term         import Term, TermList
+from .parser       import Parser
+from .utils        import ProntoWarning
+from .relationship import Relationship
 
 class Ontology(object):
     """An ontology.
@@ -280,12 +280,15 @@ class Ontology(object):
         case of manual editing of the parents or children of a Term.
         """
 
+        valid_relationships = set(Relationship._instances.keys())
+
         relationships = [
             (parent, relation.complement(), term.id)
                 for term in self
                     for relation in term.relations
                         for parent in term.relations[relation]
-                            #if relation is not None and relation.complementary is not None #and relation.direction=="bottomup"
+                            if relation.complementary
+                                and relation.complementary in valid_relationships
         ]
 
         for parent, rel, child in relationships:

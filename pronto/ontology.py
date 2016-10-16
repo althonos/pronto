@@ -23,6 +23,7 @@ import os
 import warnings
 import six
 import gzip
+import collections
 #import functools
 
 import six.moves.urllib.request as rq
@@ -184,16 +185,27 @@ class Ontology(object):
 
         for termkey,termval in six.iteritems(self.terms):
 
-            relvalref = { relkey: TermList(
-                                    [self.terms[x] if x in self.terms
-                                        else Term(x, '', '')
-                                            if not isinstance(x, Term)
-                                        else x for x in relval]
-                               )
-                        for relkey, relval in six.iteritems(termval.relations) }
+            self.terms[termkey].relations = collections.defaultdict(TermList)
 
+            for relkey, relval in six.iteritems(termval.relations):
 
-            self.terms[termkey].relations.update(relvalref)
+                for other in relval:
+                    try:
+                        self.terms[termkey].relations[relkey].append(self.terms[other])
+                    except KeyError:
+                        if isinstance(other, Term):
+                            self.terms[termkey].relations[relkey].append(other)
+                        else:
+                            self.terms[termkey].relations[relkey].append(Term(other, '', ''))
+
+            # relvalref = { relkey: TermList(
+            #                         [self.terms[x] if x in self.terms
+            #                             else Term(x, '', '')
+            #                                 if not isinstance(x, Term)
+            #                             else x for x in relval]
+            #                    )
+            #             for relkey, relval in six.iteritems(termval.relations) }
+            # self.terms[termkey].relations.update(relvalref)
 
     def parse(self, stream):
         """Parse the given file using available Parser instances

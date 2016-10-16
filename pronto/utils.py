@@ -15,7 +15,7 @@ Todo:
 #import os
 #import signal
 #import itertools
-#import six
+import six
 import atexit
 
 import multiprocessing
@@ -23,11 +23,6 @@ import multiprocessing.pool
 import multiprocessing.queues
 
 from six.moves.urllib.error import URLError, HTTPError
-
-try:
-    from itertools import filterfalse
-except ImportError: # pragma: no cover
-    from itertools import ifilterfalse as filterfalse
 
 try:
     from lxml.etree import XMLSyntaxError as ParseError
@@ -333,6 +328,6 @@ def unique_everseen(iterable):
     seen = set()
     seen_add = seen.add
 
-    for element in filterfalse(seen.__contains__, iterable):
+    for element in six.moves.filterfalse(seen.__contains__, iterable):
         seen_add(element)
         yield element

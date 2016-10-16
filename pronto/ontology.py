@@ -184,19 +184,17 @@ class Ontology(object):
         """
 
         for termkey,termval in six.iteritems(self.terms):
-
-            self.terms[termkey].relations = collections.defaultdict(TermList)
-
             for relkey, relval in six.iteritems(termval.relations):
-
-                for other in relval:
+                temprel = TermList()
+                for x in relval:
                     try:
-                        self.terms[termkey].relations[relkey].append(self.terms[other])
+                        temprel.append(self.terms[x])
                     except KeyError:
-                        if isinstance(other, Term):
-                            self.terms[termkey].relations[relkey].append(other)
+                        if isinstance(x, Term):
+                            temprel.append(x)
                         else:
-                            self.terms[termkey].relations[relkey].append(Term(other, '', ''))
+                            temprel.append(Term(x,'',''))
+                self.terms[termkey].relations[relkey] = temprel
 
             # relvalref = { relkey: TermList(
             #                         [self.terms[x] if x in self.terms

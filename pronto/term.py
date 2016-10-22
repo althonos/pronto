@@ -5,11 +5,11 @@ pronto.term
 
 This module defines the Term and TermList classes.
 """
-
+from __future__ import unicode_literals
 import six
 
 from .relationship import Relationship
-
+from .utils import output_bytes
 
 class Term(object):
     """An ontology term.
@@ -50,6 +50,7 @@ class Term(object):
         self._children = None
         self._parents = None
 
+    @output_bytes
     def __repr__(self):
         return "<{}: {}>".format(self.id, self.name)
 
@@ -121,6 +122,7 @@ class Term(object):
         return self._children
 
     @property
+    @output_bytes
     def obo(self):
         """The Term serialized in an Obo Term stanza.
 
@@ -198,7 +200,7 @@ class Term(object):
                         if k in self.other
 
             ]
-
+            
 
         )
 

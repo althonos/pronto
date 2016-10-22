@@ -17,6 +17,7 @@ are pickable.
 
 
 """
+from __future__ import unicode_literals
 
 import json
 import os
@@ -35,7 +36,7 @@ except ImportError:
 from . import __version__
 from .term   import Term, TermList
 from .parser import Parser
-from .utils  import ProntoWarning
+from .utils  import ProntoWarning, output_bytes
 
 
 class Ontology(object):
@@ -123,13 +124,10 @@ class Ontology(object):
                           default=lambda o: o.__deref__)
 
     @property
+    @output_bytes
     def obo(self):
         """Returns the ontology serialized in obo format.
         """
-
-        # for accession in sorted(self.terms.keys()):
-        #     obo += '\n'
-        #     obo += self.terms[accession].obo
         try:
             return "\n\n".join( self._obo_meta() + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
         except KeyError:

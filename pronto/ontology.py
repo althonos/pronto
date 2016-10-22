@@ -128,11 +128,14 @@ class Ontology(object):
     def obo(self):
         """Returns the ontology serialized in obo format.
         """
+        meta = self._obo_meta().decode('utf-8')
+        meta = [meta] if meta else []
         try:
-            return "\n\n".join( self._obo_meta() + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
+            return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self if t.id.startswith(self.meta['namespace'][0])])
         except KeyError:
-            return "\n\n".join(self._obo_meta() + [t.obo for t in self])
-
+            return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self])
+ 
+    @output_bytes
     def _obo_meta(self):
         """Generates the obo metadata header
 
@@ -167,7 +170,7 @@ class Ontology(object):
 
         )
 
-        return [obo_meta] if obo_meta else []
+        return obo_meta
 
     def reference(self):
         """Make relationships point to classes of ontology instead of ontology id

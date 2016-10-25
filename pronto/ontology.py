@@ -128,12 +128,24 @@ class Ontology(object):
     def obo(self):
         """Returns the ontology serialized in obo format.
         """
-        meta = self._obo_meta().decode('utf-8')
+
+        meta = self._obo_meta()
+        try: meta = meta.decode('utf-8')
+        except AttributeError: pass
         meta = [meta] if meta else []
-        try:
-            return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self if t.id.startswith(self.meta['namespace'][0])])
-        except KeyError:
-            return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self])
+
+        if six.PY2:
+            try: # if 'namespace' in self.meta:
+                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self if t.id.startswith(self.meta['namespace'][0])])
+            except KeyError:
+                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self])
+
+        elif six.PY3:
+            try: # if 'namespace' in self.meta:
+                return "\n\n".join( meta + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
+            except KeyError:
+                return "\n\n".join( meta + [t.obo for t in self])
+
  
     @output_bytes
     def _obo_meta(self):

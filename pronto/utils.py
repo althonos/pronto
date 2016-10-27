@@ -122,38 +122,38 @@ class ProntoPool(multiprocessing.pool.Pool): # pragma: no cover
 
     Allows to perform ontology parsing through a pool of non-daemonized
     workers while inheriting all methods and attributes of multiprocessing.pool.Pool.
-
-    Example:
-
-        >>> from pronto import Ontology
-        >>> from pronto.utils import ProntoPool
-        >>> enm = [ #ontologies from the eNanoMapper project
-        ... "http://purl.enanomapper.net/onto/external/chebi-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/bao-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/bfo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/ccont-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/cheminf-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/chmo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/efo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/envo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/go-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/hupson-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/iao-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/ncit-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/npo-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/oae-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/obcs-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/obi-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/pato-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/sio-slim.owl",
-        ... "http://purl.enanomapper.org/onto/external/uo-slim.owl"]
-        >>> pool = ProntoPool()
-
-        >>> from functools import partial
-        >>> enm_onto = pool.map(partial(Ontology, timeout=None), enm)
-        >>> pool.close()
-
     """
+
+    #Example:
+    #
+    #    >>> from pronto import Ontology
+    #    >>> from pronto.utils import ProntoPool
+    #    >>> enm = [ #ontologies from the eNanoMapper project
+    #    ... "http://purl.enanomapper.net/onto/external/chebi-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/bao-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/bfo-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/ccont-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/cheminf-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/chmo-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/efo-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/envo-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/go-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/hupson-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/iao-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/ncit-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/npo-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/oae-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/obcs-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/obi-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/pato-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/sio-slim.owl",
+    #    ... "http://purl.enanomapper.org/onto/external/uo-slim.owl"]
+    #    >>> pool = ProntoPool()
+    #
+    #    >>> from functools import partial
+    #    >>> enm_onto = pool.map(partial(Ontology, timeout=None), enm)
+    #    >>> pool.close()
+
     _instances = []
     Process = _NoDaemonProcess
 
@@ -331,3 +331,11 @@ def unique_everseen(iterable):
     for element in six.moves.filterfalse(seen.__contains__, iterable):
         seen_add(element)
         yield element
+
+def output_bytes(f):
+    if six.PY2:
+        def new_f(*args, **kwargs):
+            return f(*args, **kwargs).encode("utf-8")
+    else:
+        new_f = f
+    return new_f

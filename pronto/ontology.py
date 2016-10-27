@@ -17,6 +17,7 @@ are pickable.
 
 
 """
+from __future__ import unicode_literals
 
 import json
 import os
@@ -37,7 +38,7 @@ except ImportError:
 from .             import __version__
 from .term         import Term, TermList
 from .parser       import Parser
-from .utils        import ProntoWarning
+from .utils        import ProntoWarning, output_bytes
 from .relationship import Relationship
 
 class Ontology(object):
@@ -127,18 +128,30 @@ class Ontology(object):
                           default=lambda o: o.__deref__)
 
     @property
+    @output_bytes
     def obo(self):
         """Returns the ontology serialized in obo format.
         """
 
-        # for accession in sorted(self.terms.keys()):
-        #     obo += '\n'
-        #     obo += self.terms[accession].obo
-        try:
-            return "\n\n".join( self._obo_meta() + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
-        except KeyError:
-            return "\n\n".join(self._obo_meta() + [t.obo for t in self])
+        meta = self._obo_meta()
+        try: meta = meta.decode('utf-8')
+        except AttributeError: pass
+        meta = [meta] if meta else []
 
+        if six.PY2:
+            try: # if 'namespace' in self.meta:
+                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self if t.id.startswith(self.meta['namespace'][0])])
+            except KeyError:
+                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self])
+
+        elif six.PY3:
+            try: # if 'namespace' in self.meta:
+                return "\n\n".join( meta + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
+            except KeyError:
+                return "\n\n".join( meta + [t.obo for t in self])
+
+ 
+    @output_bytes
     def _obo_meta(self):
         """Generates the obo metadata header
 
@@ -173,7 +186,7 @@ class Ontology(object):
 
         )
 
-        return [obo_meta] if obo_meta else []
+        return obo_meta
 
     def reference(self):
         """Make relationships point to classes of ontology instead of ontology id

@@ -1,3 +1,5 @@
+# coding: utf-8
+
 ### DEPS
 import utils
 utils.require(('yaml', 'PyYAML'), 'six')
@@ -6,18 +8,46 @@ import six
 import yaml
 import unittest
 import io
-import warnings
-
-
 import sys
-import os
-sys.path.insert(0, "..")
+import os.path as op
+import warnings
+import textwrap
 
+# Make sure we're using the local pronto library
+sys.path.insert(0, op.dirname(op.dirname(op.dirname(op.abspath(__file__)))))
 import pronto
-
+print(pronto)
 
 
 ### TESTS
+class ProntoUnicodeHandlingTest(unittest.TestCase):
+    
+    def setUp(self):
+        sys.__stdout__.flush()
+        sys.stdout = six.StringIO()
+
+    def tearDown(self):
+        sys.stdout = sys.__stdout__
+
+    def test_unicode_in_names(self):
+        ontology = pronto.Ontology("resources/owen-jones-gen.obo")
+        for term in ontology:
+            print(term)
+            print(term.obo)
+        print(ontology.obo)
+
+        sys.stdout.seek(0)
+        self.assertEqual(sys.stdout.read().strip(), 
+                         textwrap.dedent("""
+                                         <ONT0:ROOT: °>
+                                         [Term]
+                                         id: ONT0:ROOT
+                                         name: °
+                                         [Term]
+                                         id: ONT0:ROOT
+                                         name: °
+                                         """).strip())
+
 class ProntoOntologyTest(unittest.TestCase):
 
     def assert_loaded(self, ontology):

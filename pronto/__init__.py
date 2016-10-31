@@ -12,10 +12,14 @@ __version__='0.4.2'
 __author__='Martin Larralde'
 __author_email__ = 'martin.larralde@ens-cachan.fr'
 
-from .ontology import Ontology
-from .term import Term, TermList
-from .relationship import Relationship
-from .parser import Parser
+try:
+    from .ontology import Ontology
+    from .term import Term, TermList
+    from .relationship import Relationship
+    from .parser import Parser
+except ImportError: # can occur when running setup.py
+    pass            # with missing dependencies
+
 
 
 

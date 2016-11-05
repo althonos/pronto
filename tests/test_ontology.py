@@ -1,9 +1,7 @@
 ﻿# coding: utf-8
+from __future__ import absolute_import
 
 ### DEPS
-import utils
-utils.require(('yaml', 'PyYAML'), 'six')
-
 import six
 import yaml
 import unittest
@@ -13,13 +11,15 @@ import os.path as op
 import warnings
 import textwrap
 
+from . import utils
+
 # Make sure we're using the local pronto library
 sys.path.insert(0, op.dirname(op.dirname(op.dirname(op.abspath(__file__)))))
 import pronto
 
 
 ### TESTS
-class ProntoUnicodeHandlingTest(unittest.TestCase):
+class TestProntoUnicodeHandling(unittest.TestCase):
     
     def setUp(self):
         sys.__stdout__.flush()
@@ -47,18 +47,20 @@ class ProntoUnicodeHandlingTest(unittest.TestCase):
                                          name: °
                                          """).strip())
 
-class ProntoConsistencyTest(unittest.TestCase):
+class TestProntoConsistency(unittest.TestCase):
 
-    def setUp(self):
-        self.obo = pronto.Ontology("resources/cmo.obo", False)
-        self.consistency_span = 100
+    @classmethod
+    def setUpClass(cls):
+        cls.obo = pronto.Ontology("resources/cmo.obo", False)
+        cls.expected_keys = sorted(cls.obo.terms.keys())
+        cls.consistency_span = 10
 
-    def test_obo_redundancy(self):
+    def test_cmo_consistency(self):
         for x in range(self.consistency_span):
             tmp_obo = pronto.Ontology("resources/cmo.obo", False)
-            self.assertEqual(tmp_obo.terms.keys(), self.obo.terms.keys())
+            self.assertEqual(sorted(tmp_obo.terms.keys()), self.expected_keys)
 
-class ProntoOntologyTest(unittest.TestCase):
+class TestProntoOntology(unittest.TestCase):
 
     def assert_loaded(self, ontology):
 
@@ -92,7 +94,7 @@ class ProntoOntologyTest(unittest.TestCase):
         self.assert_exportable(ontology)
         self.assert_mergeable(ontology)
 
-class ProntoLocalOntologyTest(ProntoOntologyTest):
+class TestProntoLocalOntology(TestProntoOntology):
 
     def test_owl_noimports(self):
         owl = pronto.Ontology("resources/cl.ont", False)
@@ -123,7 +125,7 @@ class ProntoLocalOntologyTest(ProntoOntologyTest):
         self.assertIn(pronto.Relationship('written_by'), obo['ELO:0130001'].relations)
         self.assertIn(pronto.Relationship('has_written'), obo['ELO:0330001'].relations)
 
-class ProntoRemoteOntologyTest(ProntoOntologyTest):
+class TestProntoRemoteOntology(TestProntoOntology):
 
     def test_obo_noimports(self):
         obo = pronto.Ontology("http://purl.obolibrary.org/obo/pdumdv.obo", False)
@@ -141,10 +143,10 @@ class ProntoRemoteOntologyTest(ProntoOntologyTest):
         owl = pronto.Ontology("http://purl.obolibrary.org/obo/xao.owl")
         self.check_ontology(owl)
 
-class ProntoAberOwlTest(ProntoOntologyTest):
+class TestProntoAberOwl(TestProntoOntology):
     pass
 
-class ProntoOboFoundryTest(ProntoOntologyTest):
+class TestProntoOboFoundry(TestProntoOntology):
 
     @classmethod
     @utils.ciskip
@@ -158,7 +160,6 @@ class ProntoOboFoundryTest(ProntoOntologyTest):
         products = ( o['products'] for o in foundry_yaml['ontologies'] if 'product' in o )
         for product in products:
             cls.add_test(product)
-
 
     @classmethod
     def add_test(cls, product):
@@ -181,15 +182,11 @@ class ProntoOboFoundryTest(ProntoOntologyTest):
         setattr(cls, "test_{}_foundry_noimports".format(name), _foundry_noimports)
         setattr(cls, "test_{}_foundry_imports".format(name),   _foundry_imports)
 
+    # @classmethod
+    # def setUpClass(cls):
+    #     cls.register_tests()
+
+TestProntoOboFoundry.register_tests()
 
 
-### RUN
-if __name__=="__main__":
 
-    print(pronto)
-
-    ProntoOboFoundryTest.register_tests()
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        unittest.main()

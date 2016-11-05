@@ -1,4 +1,4 @@
-# coding: utf-8
+﻿# coding: utf-8
 
 ### DEPS
 import utils
@@ -16,7 +16,6 @@ import textwrap
 # Make sure we're using the local pronto library
 sys.path.insert(0, op.dirname(op.dirname(op.dirname(op.abspath(__file__)))))
 import pronto
-print(pronto)
 
 
 ### TESTS
@@ -47,6 +46,17 @@ class ProntoUnicodeHandlingTest(unittest.TestCase):
                                          id: ONT0:ROOT
                                          name: °
                                          """).strip())
+
+class ProntoConsistencyTest(unittest.TestCase):
+
+    def setUp(self):
+        self.obo = pronto.Ontology("resources/cmo.obo", False)
+        self.consistency_span = 100
+
+    def test_obo_redundancy(self):
+        for x in range(self.consistency_span):
+            tmp_obo = pronto.Ontology("resources/cmo.obo", False)
+            self.assertEqual(tmp_obo.terms.keys(), self.obo.terms.keys())
 
 class ProntoOntologyTest(unittest.TestCase):
 
@@ -81,7 +91,6 @@ class ProntoOntologyTest(unittest.TestCase):
         self.assert_loaded(ontology)
         self.assert_exportable(ontology)
         self.assert_mergeable(ontology)
-
 
 class ProntoLocalOntologyTest(ProntoOntologyTest):
 
@@ -132,29 +141,28 @@ class ProntoRemoteOntologyTest(ProntoOntologyTest):
         owl = pronto.Ontology("http://purl.obolibrary.org/obo/xao.owl")
         self.check_ontology(owl)
 
-
 class ProntoAberOwlTest(ProntoOntologyTest):
     pass
-
 
 class ProntoOboFoundryTest(ProntoOntologyTest):
 
     @classmethod
     @utils.ciskip
     def register_tests(cls):
+        """Register tests for each ontology of the obofoundry"""
 
         foundry_url = "http://www.obofoundry.org/registry/ontologies.yml"
         foundry_rq = six.moves.urllib.request.urlopen(foundry_url)
         foundry_yaml = yaml.load(foundry_rq)
 
-        _ = { cls.add_test(product)
-            for o in foundry_yaml['ontologies']
-                if 'products' in o
-                    for product in o['products'] }
-        del _
+        products = ( o['products'] for o in foundry_yaml['ontologies'] if 'product' in o )
+        for product in products:
+            cls.add_test(product)
+
 
     @classmethod
     def add_test(cls, product):
+        """Add test for each product found in the obofoundry yaml file"""
 
                              #CRASH       #INF. WAIT
         if product["id"] in ("chebi.obo", "dideo.owl"):

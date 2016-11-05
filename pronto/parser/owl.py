@@ -42,22 +42,20 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
         self.accession = functools.partial(format_accession, nsmap=nsmap)
 
         self.translator = [
-            {'hook':     lambda c: c.tag == self.nspaced('rdfs:label'),
-             'callback': lambda c: c.text,
+            {'hook':     _store_hook,
+             'callback': _store_callback,
              'dest':     'name',
              'action':   'store',
             },
             {
-             'hook':     lambda c: (c.tag == self.nspaced('rdfs:subClassOf')) \
-                               and (self.nspaced('rdf:resource') in c.attrib),
-             'callback': lambda c: self.accession(c.get(self.nspaced('rdf:resource')) \
-                               or c.get(self.nspaced('rdf:about'))),
+             'hook':     _list_hook,
+             'callback': _list_callback,
              'dest':     'relations',
              'action':   'list',
              'list_to':  'is_a',
             },
-            {'hook':     lambda c: c.tag == self.nspaced('rdfs:comment'),
-             'callback': lambda c: self.parse_comment(c.text),
+            {'hook':     _update_hook,
+             'callback': _update_callback,
              'action':   'update'
             }
         ]
@@ -104,21 +102,21 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
             for rule in self.translator:
 
-                if rule['hook'](child):
+                if rule['hook'](self, child):
 
                     if rule['action'] == 'store':
-                        term_dict[rule['dest']] = rule['callback'](child)
+                        term_dict[rule['dest']] = rule['callback'](self, child)
 
                     elif rule['action'] == 'list':
 
                         try:
-                            term_dict[rule['dest']][rule['list_to']].append(rule['callback'](child))
+                            term_dict[rule['dest']][rule['list_to']].append(rule['callback'](self, child))
                         except KeyError:
-                            term_dict[rule['dest']][rule['list_to']] = [rule['callback'](child)]
+                            term_dict[rule['dest']][rule['list_to']] = [rule['callback'](self, child)]
 
 
                     elif rule['action'] == 'update':
-                        term_dict.update(rule['callback'](child))
+                        term_dict.update(rule['callback'](self, child))
 
         return (tid, term_dict)
 
@@ -197,6 +195,25 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
 
 
         return parsed
+
+
+def _store_hook(self, c):      
+    return c.tag == self.nspaced('rdfs:label')
+def _store_callback(self, c):  
+    return c.text
+def _list_hook(self, c):       
+    return (
+        c.tag == self.nspaced('rdfs:subClassOf')) and (self.nspaced('rdf:resource') in c.attrib
+    )
+def _list_callback(self, c):   
+    return self.accession(
+        c.get(self.nspaced('rdf:resource')) or c.get(self.nspaced('rdf:about'))
+    )
+def _update_hook(self, c):     
+    return  c.tag == self.nspaced('rdfs:comment')
+def _update_callback(self, c): 
+    return self.parse_comment(c.text)
+
 
 
 class OwlXMLParser(Parser):

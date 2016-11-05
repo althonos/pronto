@@ -23,7 +23,7 @@ def require(*packages):
 
 def ciskip(func):
 
-    if "CI" in os.environ and os.environ["CI"]=="true":
+    if "CI" in os.environ and os.environ["CI"].lower()=="true":
         def _pass(*args, **kwargs):
             pass
         return _pass

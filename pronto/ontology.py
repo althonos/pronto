@@ -57,16 +57,16 @@ class Ontology(object):
 
         Merge two local ontologies and export the merge:
 
-            >>> uo = Ontology("resources/uo.obo", False)
-            >>> cl = Ontology("resources/cl.ont", False)
+            >>> uo = Ontology("tests/resources/uo.obo", False)
+            >>> cl = Ontology("tests/resources/cl.ont", False)
             >>> uo.merge(cl)
-            >>> with open('run/merge.obo', 'w') as f:
+            >>> with open('tests/run/merge.obo', 'w') as f:
             ...     lines_count = f.write(uo.obo)
 
         Export an ontology with its dependencies embedded:
 
-            >>> cl = Ontology("resources/cl.ont")
-            >>> with open('run/cl.obo', 'w') as f:
+            >>> cl = Ontology("tests/resources/cl.ont")
+            >>> with open('tests/run/cl.obo', 'w') as f:
             ...     lines_count = f.write(cl.obo)
 
 
@@ -357,7 +357,7 @@ class Ontology(object):
             ...           {Relationship('part_of'): ['ONT:001']})
             >>> ont = Ontology()
             >>> ont.include(t1, t2)
-
+            >>>
             >>> 'ONT:002' in ont
             True
             >>> ont['ONT:001'].children

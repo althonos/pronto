@@ -31,7 +31,7 @@ class _OwlXMLMultiClassifier(multiprocessing.Process): # pragma: no cover
 
     def __init__(self, queue, results):
 
-        super(_OwlXMLClassifier, self).__init__()
+        super(_OwlXMLMultiClassifier, self).__init__()
 
         self.queue = queue
         self.results = results
@@ -260,7 +260,7 @@ class OwlXMLMultiParser(Parser):
         Parse the content of the stream
         """
 
-        self.init_workers(_OwlXMLClassifier)
+        self.init_workers(_OwlXMLMultiClassifier)
         self._number_of_terms = 0
 
         events = ("end", "start-ns")

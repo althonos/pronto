@@ -1,6 +1,9 @@
-lxml
-six
+-r requirements.txt
+
 PyYAML
-coverage
 codacy-coverage
-mock
+
+mock             ;  python_version <= "3.3" or python_version <= "2.7" 
+
+coverage<4.0     ;  python_version == "3.2"
+coverage         ;  python_version != "3.2"

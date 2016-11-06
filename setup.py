@@ -8,7 +8,35 @@ import platform
 warnings.simplefilter("ignore")
 import pronto
 
-PYPY = platform.python_implementation()=='PyPy'
+
+def format_for_setup(requirement_file):
+
+    requirements = []
+
+    with open(requirement_file) as rq:
+        
+        for line in rq:
+            line = line.strip()
+
+            if line.startswith('-r'):
+                requirements.extend(
+                    format_for_setup(line.split(' ', 1)[-1])
+                )
+
+            elif line:
+                if ';' in line:
+                    req, env = line.split(';')
+                    requirements.append(
+                        {'requires':   [req.strip()],
+                         'environment': env.strip() }
+                    )
+                else:
+                    requirements.append(
+                        {'requires':[line]}
+                    )
+
+    return requirements
+
 
 ## SETUPTOOLS VERSION
 setup(
@@ -25,13 +53,17 @@ setup(
     description="Python frontend to ontologies - a library to parse, create, browse and export ontologies.",
     long_description=open('README.rst').read(),
 
-    install_requires=open('requirements.txt').read().splitlines() if not PYPY else ["six"],
-    extras_require = { extra:open('requirements-{}.txt'.format(extra)).read().splitlines()
+    run_requires= format_for_setup('requirements.txt'),
+    test_requires = format_for_setup('requirements-test.txt'),
+
+    extras_require = { extra:format_for_setup('requirements-{}.txt'.format(extra))
                         for extra in ['doc'] },
 
     include_package_data=True,
 
     url='http://github.com/althonos/pronto',
+
+    test_suite="tests",
 
     classifiers=[
     "Programming Language :: Python",

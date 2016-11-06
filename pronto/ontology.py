@@ -84,8 +84,6 @@ class Ontology(object):
 
         if path is not None:
 
-            print("IMPORTING {}".format(path))
-
             if path.startswith(('http', 'ftp')): #or path.startswith('ftp'):
                 handle = rq.urlopen(path, timeout=timeout)
             else:
@@ -388,7 +386,6 @@ class Ontology(object):
 
                 if os.path.exists(i) or i.startswith('http') or i.startswith('ftp'):
                     self.merge(Ontology(i, import_depth=import_depth-1))
-
 
                 else: # try to look at neighbouring ontologies
                     self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),

@@ -10,32 +10,31 @@ python:
 - pypy
 - pypy3
 
-env:
-- TEST_SUITE="doctests"
-- TEST_SUITE="unit"
-#- TEST_SUITE="foundrytest"
-
 matrix:
   allow_failures:
   - python: '2.6'
   - python: 'pypy'
   - python: 'pypy3'
-#  - env: TEST_SUITE="foundrytest"
 
 before_install:
 - export DOC=$(python -c "import sys; x = float(sys.version[0:3]) > 3.4 if sys.version[0]=='3'
   else float(sys.version[0:3])>2.6; sys.exit(x)")
 
 install:
-- if [ $DOC -eq 1 ]; then pip install -r requirements-doc.txt; else pip install -r requirements.txt; fi
+- pip install -r requirements-doc.txt
+- pip install -r requirements-test.txt
 - pip install .
 
-script: make test
+script:
+- coverage run --source=pronto -m unittest discover -v
+- coverage combine
+- coverage xml --include "pronto/*"
 
-#after_success:
-#  - if [ "$(python -V)" \> "Python 3.5" ]; then pip install coverage codacy-coverage; make cover; fi
+after_success:
+- python-codacy-coverage -r "coverage.xml"
 
-before_deploy: python setup.py sdist --formats zip,gztar bdist_wheel
+before_deploy:
+- python setup.py sdist --formats zip,gztar bdist_wheel
 
 #deploy:
 #  - provider: pypi

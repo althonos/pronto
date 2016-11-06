@@ -5,6 +5,8 @@ from __future__ import absolute_import
 import unittest
 import io
 import sys
+import six
+import yaml
 import os.path as op
 import warnings
 import textwrap
@@ -19,10 +21,6 @@ import pronto
 
 
 ### TESTS
-
-utils.require(('yaml', 'PyYAML'), 'six')
-import six
-import yaml
 class TestProntoOboFoundry(TestProntoOntology):
 
     @classmethod
@@ -38,11 +36,10 @@ class TestProntoOboFoundry(TestProntoOntology):
         # for product in products:
         #     cls.add_test(product)
 
-        _ = { cls.add_test(product)
-            for o in foundry_yaml['ontologies']
-                if 'products' in o
-                    for product in o['products'] }
-        del _
+        for o in foundry_yaml['ontologies']:
+            if 'products' in o:
+                for product in o['products']:
+                    cls.add_test(product)
 
     @classmethod
     def add_test(cls, product):

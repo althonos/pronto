@@ -28,11 +28,14 @@ def load_tests(loader, tests, ignore):
 
     def _setUp(self):
         """setUp method used by the DocTestSuite"""
+        self._starting_dir = os.getcwd()
+        os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         self._rundir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'run')
         os.mkdir(self._rundir)
 
     def _tearDown(self):
         """tearDown method used by the DocTestSuite"""
+        os.chdir(self._starting_dir)
         shutil.rmtree(self._rundir)
 
     globs = {

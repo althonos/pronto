@@ -4,29 +4,26 @@
 TOKEN=`cat ./.codacy.token`
 PROFILE_FUNC="import pstats as p; f=open('profile.cprof', 'w'); p.Stats('p.tmp',stream=f).print_stats()"
 
-ifndef TEST_SUITE
-TEST_SUITE="doctests"
-endif
 
-.PHONY: all
-all:
-	nuitka pronto --module --nofreeze-stdlib --recurse-to=pronto --enhanced --lto --verbose
+#.PHONY: all
+#all:
+#	nuitka pronto --module --nofreeze-stdlib --recurse-to=pronto --enhanced --lto --verbose
 
 
 .PHONY: test
 .SILENT: test
 test:
-	python tests/$(TEST_SUITE).py -v
+	python -m unittest discover -v
 
-.PHONY: profile
-.SILENT: profile
-profile:
-	python -m cProfile -o '../profile.cprof' tests/doctests.py
-	#echo "Converting profile..."
-	#python -c ${PROFILE_FUNC}
-	#echo "Cleaning..."
-	#rm ./p.tmp
-	pyprof2calltree -k -i profile.cprof
+#.PHONY: profile
+#.SILENT: profile
+#profile:
+#	python -m cProfile -o '../profile.cprof' tests/doctests.py
+#	#echo "Converting profile..."
+#	#python -c ${PROFILE_FUNC}
+#	#echo "Cleaning..."
+#	#rm ./p.tmp
+#	pyprof2calltree -k -i profile.cprof
 
 
 .PHONY: cover
@@ -34,14 +31,14 @@ profile:
 ifndef CODACY_PROJECT_TOKEN
 cover:
 	export CI=true
-	coverage run tests/doctests.py --source=pronto --concurrency=multiprocessing
+	coverage run --source=pronto -m unittest discover
 	coverage combine
 	coverage xml --include 'pronto/*'
 	export CODACY_PROJECT_TOKEN=${TOKEN} && python-codacy-coverage -r coverage.xml
 else
 cover:
 	export CI=true
-	coverage run tests/doctests.py --source pronto --concurrency=multiprocessing
+	coverage run --source pronto -m unittest discover
 	coverage xml --include 'pronto/*'
 	python-codacy-coverage -r coverage.xml
 endif
@@ -75,8 +72,7 @@ clean:
 
 .PHONY: upload
 upload:
-	@python setup.py sdist upload
-	@python setup.py bdist_wheel upload
+	@python setup.py sdist bdist_wheel upload
 
 # targets of Sphinx makefile
 .PHONY: html xml pdf dirhtml singlehtml pickle json htmlhelp

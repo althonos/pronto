@@ -1,4 +1,5 @@
 lxml
+six
 Sphinx
 sphinx-rtd-theme
 sphinxcontrib-napoleon

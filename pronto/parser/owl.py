@@ -27,7 +27,7 @@ from ..term         import Term
 from ..utils        import explicit_namespace, format_accession
 
 
-class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
+class _OwlXMLMultiClassifier(multiprocessing.Process): # pragma: no cover
 
     def __init__(self, queue, results):
 
@@ -197,31 +197,31 @@ class _OwlXMLClassifier(multiprocessing.Process): # pragma: no cover
         return parsed
 
 
-def _store_hook(self, c):      
+def _store_hook(self, c):
     return c.tag == self.nspaced('rdfs:label')
-def _store_callback(self, c):  
+def _store_callback(self, c):
     return c.text
-def _list_hook(self, c):       
+def _list_hook(self, c):
     return (
         c.tag == self.nspaced('rdfs:subClassOf')) and (self.nspaced('rdf:resource') in c.attrib
     )
-def _list_callback(self, c):   
+def _list_callback(self, c):
     return self.accession(
         c.get(self.nspaced('rdf:resource')) or c.get(self.nspaced('rdf:about'))
     )
-def _update_hook(self, c):     
+def _update_hook(self, c):
     return  c.tag == self.nspaced('rdfs:comment')
-def _update_callback(self, c): 
+def _update_callback(self, c):
     return self.parse_comment(c.text)
 
 
 
-class OwlXMLParser(Parser):
+class OwlXMLMultiParser(Parser):
     """A parser for the owl xml format.
     """
 
     def __init__(self, daemon=False):
-        super(OwlXMLParser, self).__init__()
+        super(OwlXMLMultiParser, self).__init__()
         self._tree = None
         self._ns = {}
         self._meta = {}
@@ -237,6 +237,23 @@ class OwlXMLParser(Parser):
 
             #ext = kwargs['path'].split("
 					#os.path.splitext(kwargs['path'])[1] in self.extensions
+
+    def parse(self, stream):
+        """
+        Parse the ontology file.
+
+        Parameters
+            stream (io.StringIO): A stream of the ontology file.
+        """
+
+        self.terms, self.meta, self.imports = {}, {}, set()
+
+        self.read(stream)
+        self.makeTree()
+        self.metanalyze()
+        self.manage_imports()
+
+        return self.meta, self.terms, self.imports
 
     def read(self, stream):
         """
@@ -366,4 +383,4 @@ class OwlXMLParser(Parser):
             pass
 
 
-OwlXMLParser()
+OwlXMLMultiParser()

@@ -63,6 +63,7 @@ clean:
 	if [ -d dist ]; then rm -rd dist; fi
 	rm -rf docs/build/*
 	rm -rf tests/run
+	rm -rf .coverage*
 	if [ -d pronto.egg-info ]; then rm -rf pronto.egg-info/; fi
 	rm -f ./*.whl
 	if [ -f coverage.xml ]; then rm coverage.xml; fi

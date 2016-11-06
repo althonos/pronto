@@ -84,6 +84,7 @@ class Ontology(object):
 
         if path is not None:
 
+            print("IMPORTING {}".format(path))
 
             if path.startswith(('http', 'ftp')): #or path.startswith('ftp'):
                 handle = rq.urlopen(path, timeout=timeout)
@@ -150,7 +151,7 @@ class Ontology(object):
             except KeyError:
                 return "\n\n".join( meta + [t.obo for t in self])
 
- 
+
     @output_bytes
     def _obo_meta(self):
         """Generates the obo metadata header
@@ -382,7 +383,7 @@ class Ontology(object):
         """Import required ontologies.
         """
 
-        for i in self.imports:
+        for i in list(self.imports):
             try:
 
                 if os.path.exists(i) or i.startswith('http') or i.startswith('ftp'):

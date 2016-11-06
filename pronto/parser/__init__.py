@@ -9,7 +9,7 @@ import warnings
 import weakref
 import multiprocessing
 import time
-#import atexit
+import atexit
 
 from ..utils import ProntoWarning
 
@@ -26,7 +26,7 @@ class Parser(object):
     def __init__(self, timeout=None):
         self.terms = {}
         self.meta = {}
-        self.imports = []
+        self.imports = set()
         self._instances[type(self).__name__] = self
         self._rawterms, self._terms, self._processes= None, None, None
 
@@ -37,38 +37,44 @@ class Parser(object):
 
         Parameters
             stream (io.StringIO): A stream of the ontology file.
-        """
 
-        self.terms, self.meta, self.imports = {}, {}, set()
-
-        self.read(stream)
-        self.makeTree()
-        self.metanalyze()
-        self.manage_imports()
-
-        return self.meta, self.terms, self.imports
-
-    def hook(self, *args, **kwargs):
-        """Defines when the parser is used
-
-        For Obo and Owl, based on file extension (altough that may need to
-        change depending on Owl format).
+        Returns:
+            dict: contains the metadata
+            dict: contains the terms
+            list: contains the imports
         """
         raise NotImplementedError
 
-    def read(self, stream):
-        """Reads and preprocesses the stream.
-        """
-        raise NotImplementedError
+        # self.terms, self.meta, self.imports = {}, {}, set()
 
-    def makeTree(self):
-        raise NotImplementedError
+        # self.read(stream)
+        # self.makeTree()
+        # self.metanalyze()
+        # self.manage_imports()
 
-    def metanalyze(self):
-        raise NotImplementedError
+        # return self.meta, self.terms, self.imports
 
-    def manage_imports(self):
-        raise NotImplementedError
+    # def hook(self, *args, **kwargs):
+    #     """Defines when the parser is used
+
+    #     For Obo and Owl, based on file extension (altough that may need to
+    #     change depending on Owl format).
+    #     """
+    #     raise NotImplementedError
+
+    # def read(self, stream):
+    #     """Reads and preprocesses the stream.
+    #     """
+    #     raise NotImplementedError
+
+    # def makeTree(self):
+    #     raise NotImplementedError
+
+    # def metanalyze(self):
+    #     raise NotImplementedError
+
+    # def manage_imports(self):
+    #     raise NotImplementedError
 
     def init_workers(self, ParserProcess, *args, **kwargs):
 
@@ -115,12 +121,12 @@ class Parser(object):
             pass
 
 
-#atexit.register(Parser.__del__)
+atexit.register(Parser.__del__)
 
 
 from pronto.parser.obo import OboParser
 try:
-   from pronto.parser.owl import OwlXMLParser
+   from pronto.parser.owl import OwlXMLMultiParser
 except ImportError:
    warnings.warn("You don't seem to have lxml installed on your machine, "
                  ".owl parsing will be disabled", ProntoWarning)

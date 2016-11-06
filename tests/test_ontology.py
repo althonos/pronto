@@ -24,16 +24,16 @@ import pronto
 
 ### TESTS
 class TestProntoUnicodeHandling(unittest.TestCase):
-    
+
     def test_unicode_in_names(self):
-        ontology = pronto.Ontology("resources/owen-jones-gen.obo")
+        self.ontology = pronto.Ontology("resources/owen-jones-gen.obo")
         with mock.patch('sys.stdout', new=six.moves.StringIO()) as self.output:
-            for term in ontology:
+            for term in self.ontology:
                 print(term)
                 print(term.obo)
-            print(ontology.obo)
+            print(self.ontology.obo)
 
-        self.assertEqual(self.output.getvalue().strip(), 
+        self.assertEqual(self.output.getvalue().strip(),
                          textwrap.dedent("""
                                          <ONT0:ROOT: °>
                                          [Term]

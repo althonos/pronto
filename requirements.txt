@@ -1,3 +1,4 @@
 lxml ; implementation_name == 'cpython'
+chardet
 six
 

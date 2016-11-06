@@ -3,3 +3,4 @@ six
 PyYAML
 coverage
 codacy-coverage
+mock

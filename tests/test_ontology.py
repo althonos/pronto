@@ -10,6 +10,11 @@ import os.path as op
 import warnings
 import textwrap
 
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
 from . import utils
 
 # Make sure we're using the local pronto library
@@ -20,22 +25,15 @@ import pronto
 ### TESTS
 class TestProntoUnicodeHandling(unittest.TestCase):
     
-    def setUp(self):
-        sys.__stdout__.flush()
-        sys.stdout = six.StringIO()
-
-    def tearDown(self):
-        sys.stdout = sys.__stdout__
-
     def test_unicode_in_names(self):
         ontology = pronto.Ontology("resources/owen-jones-gen.obo")
-        for term in ontology:
-            print(term)
-            print(term.obo)
-        print(ontology.obo)
+        with mock.patch('sys.stdout', new=six.moves.StringIO()) as self.output:
+            for term in ontology:
+                print(term)
+                print(term.obo)
+            print(ontology.obo)
 
-        sys.stdout.seek(0)
-        self.assertEqual(sys.stdout.read().strip(), 
+        self.assertEqual(self.output.getvalue().strip(), 
                          textwrap.dedent("""
                                          <ONT0:ROOT: °>
                                          [Term]

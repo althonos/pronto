@@ -18,7 +18,7 @@ from ..term         import Term
 class OboParser(Parser):
 
     def __init__(self):
-        """Initializes the parser
+        """Initializes the parser.
         """
         if type(self).__name__ not in self._instances:
             self._instances[type(self).__name__] = self
@@ -173,28 +173,26 @@ class OboParser(Parser):
         for _term in self._rawterms:
             _id   = _term['id'][0]
 
-            try:
-                _name = _term['name'][0]
-                del _term['name']
+            try: _name = _term['name'][0]
             except IndexError: _name = ''
+            finally: del _term['name']
 
-            try:
-                _desc = _term['def'][0]
-                del _term['def']
+            try: _desc = _term['def'][0]
             except IndexError: _desc = ''
+            finally: del _term['def']
 
             _relations = collections.defaultdict(list)
             try:
                 for other in _term['is_a']:
                     _relations[Relationship('is_a')].append(other.split('!')[0].strip())
-                del _term['is_a']
             except IndexError: pass
+            finally: del _term['is_a']
 
             try:
                 for relname, other in ( x.split(' ', 1) for x in _term['relationship'] ):
                     _relations[Relationship(relname)].append(other.split('!')[0].strip())
-                del _term['relationship']
             except IndexError: pass
+            finally: del _term['relationship']
 
             self.terms[_id] = Term(_id, _name, _desc, dict(_relations), dict(_term))
 

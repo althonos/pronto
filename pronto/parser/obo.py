@@ -20,8 +20,9 @@ class OboParser(Parser):
     def __init__(self):
         """Initializes the parser.
         """
-        if type(self).__name__ not in self._instances:
-            self._instances[type(self).__name__] = self
+        #if type(self).__name__ not in self._instances:
+        #    self._instances[type(self).__name__] = self
+        super(OboParser, self).__init__()
 
         self.terms       = {}
         self.meta        = collections.defaultdict(list)

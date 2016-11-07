@@ -6,8 +6,9 @@ This module defines the Owl parsing method.
 """
 
 import functools
+import itertools
 import os
-import multiprocessing
+import collections
 import six
 
 try:
@@ -22,365 +23,174 @@ except ImportError: # pragma: no cover
         from xml.etree.ElementTree import ParseError
 
 from .              import Parser
+from .utils         import owl_ns, XMLNameSpacer, owl_to_obo
 from ..relationship import Relationship
 from ..term         import Term
 from ..utils        import explicit_namespace, format_accession
 
 
-class _OwlXMLMultiClassifier(multiprocessing.Process): # pragma: no cover
-
-    def __init__(self, queue, results):
-
-        super(_OwlXMLMultiClassifier, self).__init__()
-
-        self.queue = queue
-        self.results = results
-        nsmap = {'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-                 'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
-
-        self.nspaced = functools.partial(explicit_namespace, nsmap=nsmap)
-        self.accession = functools.partial(format_accession, nsmap=nsmap)
-
-        self.translator = [
-            {'hook':     _store_hook,
-             'callback': _store_callback,
-             'dest':     'name',
-             'action':   'store',
-            },
-            {
-             'hook':     _list_hook,
-             'callback': _list_callback,
-             'dest':     'relations',
-             'action':   'list',
-             'list_to':  'is_a',
-            },
-            {'hook':     _update_hook,
-             'callback': _update_callback,
-             'action':   'update'
-            }
-        ]
-
-    def run(self):
-
-        while True:
-
-
-            term = self.queue.get()
-
-            if term is None:
-                break
-
-            try:
-                classified_term = self._classify(etree.fromstring(term))
-            except ParseError:
-                self.results.put((None, None))
-                break
-
-            if classified_term:
-                self.results.put(classified_term)
-
-    def _classify(self, term):
-        """
-        Map raw information extracted from each owl Class.
-
-        The raw data (in an etree.Element object) is extracted to a proper
-        dictionnary containing a Term referenced by its id, which is then
-        used to update :attribute:terms
-
-        Todo:
-            * Split into smaller methods to lower code complexity.
-        """
-
-        if not term.attrib:
-           return {}
-
-        tid = self.accession(term.get(self.nspaced('rdf:about')))
-
-        term_dict = {'name':'', 'relations': {}, 'desc': ''}
-
-        for child in term.iter():#term.iterchildren():
-
-            for rule in self.translator:
-
-                if rule['hook'](self, child):
-
-                    if rule['action'] == 'store':
-                        term_dict[rule['dest']] = rule['callback'](self, child)
-
-                    elif rule['action'] == 'list':
-
-                        try:
-                            term_dict[rule['dest']][rule['list_to']].append(rule['callback'](self, child))
-                        except KeyError:
-                            term_dict[rule['dest']][rule['list_to']] = [rule['callback'](self, child)]
-
-
-                    elif rule['action'] == 'update':
-                        term_dict.update(rule['callback'](self, child))
-
-        return (tid, term_dict)
-
-    @staticmethod
-    def parse_comment(comment):
-        """Parse an rdfs:comment to extract information.
-
-        Owl contains comment which can contain additional metadata (specially
-        when the Owl file was converted from Obo to Owl). This function parses
-        the comment to try to extract those metadata.
-
-        Parameters:
-            comment (str): if containing different sections (such as 'def:',
-                'functional form' or 'altdef:'), the value of those sections will
-                be returned in a dictionnary. If there are not sections, the
-                comment is interpreted as a description
-
-        Todo:
-            * Add more parsing special cases
-
-        """
-        if comment is None:
-            return {}
-
-        commentlines = comment.split('\n')
-        parsed = {}
-
-        for (index, line) in enumerate(commentlines):
-
-            line = line.strip()
-
-            if line.startswith('Functional form:'):
-                #if not 'other' in parsed.keys():
-                #    parsed['other'] = dict()
-
-                try:
-                    parsed['other']['functional form'] = "\n".join(commentlines[index:])
-                except KeyError:
-                    parsed['other'] = {'functional form': "\n".join(commentlines[index:])}
-
-                break
-
-            if line.startswith('def:'):
-                parsed['desc'] = line.split('def:')[-1].strip()
-
-            elif ': ' in line:
-                ref, value = [x.strip() for x in line.split(': ', 1)]
-
-                try:
-                    parsed['other'][ref].append(value)
-                except KeyError:
-                    try:
-                        parsed['other'][ref] = [value]
-                    except KeyError:
-                        parsed['other'] = {ref: [value] }
-
-            else:
-                if not 'desc' in parsed:
-                    parsed['desc'] = "\n".join(commentlines[index:])
-                    break
-
-        if not 'desc' in parsed and 'other' in parsed:
-            #if 'tempdef' in parsed['other'].keys():
-            try:
-                parsed['desc'] = next(iter(parsed['other']['tempdef']), "")
-                del parsed['other']['tempdef']
-            except KeyError:
-                pass
-
-            #if 'altdef' in parsed['other'].keys():
-            try:
-                parsed['desc'] = next(iter(parsed['other']['altdef']), "")
-                del parsed['other']['altdef']
-            except KeyError:
-                pass
-
-
-        return parsed
-
-
-def _store_hook(self, c):
-    return c.tag == self.nspaced('rdfs:label')
-def _store_callback(self, c):
-    return c.text
-def _list_hook(self, c):
-    return (
-        c.tag == self.nspaced('rdfs:subClassOf')) and (self.nspaced('rdf:resource') in c.attrib
-    )
-def _list_callback(self, c):
-    return self.accession(
-        c.get(self.nspaced('rdf:resource')) or c.get(self.nspaced('rdf:about'))
-    )
-def _update_hook(self, c):
-    return  c.tag == self.nspaced('rdfs:comment')
-def _update_callback(self, c):
-    return self.parse_comment(c.text)
 
 
 
-class OwlXMLMultiParser(Parser):
-    """A parser for the owl xml format.
-    """
 
-    def __init__(self, daemon=False):
-        super(OwlXMLMultiParser, self).__init__()
-        self._tree = None
-        self._ns = {}
-        self._meta = {}
-        self.extensions = ('owl', 'xml', 'ont')
+class OwlXMLParser(Parser):
 
-        self._number_of_terms = 0
+    ns = owl_ns
+
+    def __init__(self):
+
+        super(OwlXMLParser, self).__init__()
+
+        self.extensions = ('.owl', '.ont')
+        self.meta = collections.defaultdict(list)
+        self.imports = set()
+        self.terms = {}
+        self._rawterms = []
+
 
     def hook(self, *args, **kwargs):
-        """Returns True if the file is an Owl file (extension is .owl)"""
-        if 'path' in kwargs:
-            split_path = kwargs['path'].split(os.extsep)
-            return any( (ext in split_path for ext in self.extensions) )
+        """Returns True if this parser should be used.
 
-            #ext = kwargs['path'].split("
-					#os.path.splitext(kwargs['path'])[1] in self.extensions
+        The current behaviour relies on filenames and file extension
+        (.obo), but this is subject to change.
+        """
+        if 'path' in kwargs:
+            return kwargs['path'].endswith(self.extensions)
+
 
     def parse(self, stream):
-        """
-        Parse the ontology file.
 
-        Parameters
-            stream (io.StringIO): A stream of the ontology file.
-        """
+        self.__init__()
 
-        self.terms, self.meta, self.imports = {}, {}, set()
+        tree = etree.parse(stream)
 
-        self.read(stream)
-        self.makeTree()
-        self.metanalyze()
-        self.manage_imports()
+        self._parse_meta(tree)
+        self._parse_terms(tree)
+        self._classify()
 
-        return self.meta, self.terms, self.imports
+        return dict(self.meta), self.terms, self.imports
 
-    def read(self, stream):
-        """
-        Parse the content of the stream
-        """
+    def _parse_meta(self, tree):
 
-        self.init_workers(_OwlXMLMultiClassifier)
-        self._number_of_terms = 0
+        ontology = tree.find('owl:Ontology', self.ns)
 
-        events = ("end", "start-ns")
+        rdf = XMLNameSpacer('rdf')
 
-        owl_imports, owl_class, rdf_resource, obo_in_owl = "", "", "", ""
-        l_obo_in_owl = 0
+        # tag.iter() starts on the element itself so we drop that
+        for elem in itertools.islice(ontology.iter(), 1, None):
 
-        context = etree.iterparse(stream, events=events)
+            basename = elem.tag.split('}', 1)[-1]
+            if basename == 'imports':
+                self.imports.add(next(six.itervalues(elem.attrib)))
+            elif elem.text:
+                self.meta[basename].append(elem.text)
+            elif elem.get(rdf.resource) is not None:
+                self.meta[basename].append(elem.get(rdf.resource))
 
-        for event, element in context: #etree.iterparse(stream, #huge_tree=True,
-                                       #                events=events):
+    def _parse_terms(self, tree):
 
-            if element is None:
-                break
+        rdf = XMLNameSpacer('rdf')
+        owl = XMLNameSpacer('owl')
 
-            if event == "start-ns":
-                self._ns.update({element[0]:element[1]})
+        for rawterm in tree.iterfind(owl.Class):
 
-                if element[0]=='owl':
-                    owl_imports = "".join(["{", element[1], "}", "imports"])
-                    owl_class = "".join(["{", element[1], "}", "Class"])
-                elif element[0]=='rdf':
-                    rdf_resource = "".join(["{", element[1], "}", "resource"])
-                elif element[0]=="oboInOwl":
-                    obo_in_owl = "".join(["{", element[1], "}"])
-                    l_obo_in_owl = len(obo_in_owl)
+            if rawterm.get(rdf.about) is None:   # This avoids parsing a class
+                continue                         # created by restriction
 
-                del event
-                del element
-                continue
+            self._rawterms.append(collections.defaultdict(list))
+            self._rawterms[-1]['id'].append(self._get_id_from_url(rawterm.get(rdf.about)))
 
-            elif element.tag==owl_imports:
-                self.imports.add(element.attrib[rdf_resource])
+            for elem in itertools.islice(rawterm.iter(), 1, None):
 
-            elif element.tag==owl_class:
-                if element.attrib:
-                    self._rawterms.put(etree.tostring(element))
-                    self._number_of_terms += 1
+                basename = elem.tag.split('}', 1)[-1]
+                if elem.text:
+                    self._rawterms[-1][basename].append(elem.text)
+                elif elem.get(rdf.resource) is not None:
+                    self._rawterms[-1][basename].append(elem.get(rdf.resource))
 
-            elif obo_in_owl and element.tag.startswith(obo_in_owl):
-                try:
-                    self._meta[element.tag[l_obo_in_owl:]].append(element)
-                except KeyError:
-                    self._meta[element.tag[l_obo_in_owl:]] = [element]
 
-                del element
-                continue
+    def _classify(self):
 
-            else:
-                continue
+        for rawterm in self._rawterms:
 
-            element.clear()
+            _id = self._extract_obo_id(rawterm)
+            name = self._extract_obo_name(rawterm)
+            desc = self._extract_obo_desc(rawterm)
+            relations = self._extract_obo_relation(rawterm)
+            others = self._relabel_owl_properties(rawterm)
 
-            try:
-                for ancestor in element.xpath('ancestor-or-self::*'):
-                    while ancestor.getprevious() is not None:
-                        del ancestor.getparent()[0]
-            except AttributeError:
-                pass
+            self.terms[_id] = Term(_id, name, desc, dict(relations), others)
 
-            del element
 
-        del context
-
-    def makeTree(self):
-        """
-        Maps :function:_classify to each term of the file via a ThreadPool.
-
-        Once all the raw terms are all classified, the :attrib:terms dictionnary
-        gets updated.
-
-        Arguments:
-            pool (Pool): a pool of workers that is used to map the _classify
-                function on the terms.
-        """
-
-        accession = functools.partial(format_accession, nsmap=self._ns)
-
-        while len(self.terms) < self._number_of_terms:
-
-            tid, d = self._terms.get()
-
-            if tid is None and d is None:
-                break
-
-            tid = format_accession(tid, self._ns)
-
-            d['relations'] = { Relationship(k):[accession(x) for x in v] for k,v in six.iteritems(d['relations']) }
-
-            if not tid in self.terms:
-                self.terms[tid] = Term(tid, **d)
-
-        self.shut_workers()
-
-    def manage_imports(self):
-        pass
-
-    def metanalyze(self):
-        """
-        Extract metadata from the headers of the owl file.
-        """
-
-        obomap = {    #"created_by":      "creator",
-                   "hasOBONamespace": "namespace",
-                   "hasOBOFormatVersion": "format-version",
-                 }
-
-        exclusion = {"hasOBONamespace", "id", "hasExactSynonym", "hasDbXref", "hasBroadSynonym"}
-
-        self.meta = dict([
-            (obomap[k],[x.text for x in v]) if k in obomap else (k,[x.text for x in v])
-                for k,v in six.iteritems(self._meta)
-                    if k not in exclusion
-
-        ])
-
+    @staticmethod
+    def _extract_obo_id(rawterm):
         try:
-            self.meta["namespace"] = list(set([ x.text for x in self._meta["hasOBONamespace"]]))
-        except KeyError:
-            pass
+            _id = rawterm['id'][0]
+            del rawterm['id']
+            return _id
+        except IndexError:
+            print(rawterm)
 
 
-OwlXMLMultiParser()
+
+    @staticmethod
+    def _extract_obo_name(rawterm):
+        try:
+            name = rawterm['label'][0]
+        except IndexError:
+            name = ''
+        finally:
+            del rawterm['label']
+            return name
+
+    @staticmethod
+    def _get_id_from_url(url):
+        if '#' in url: _id = url.split('#')[-1]
+        else: _id = url.split('/')[-1]
+        return _id.replace('_', ':')
+
+    @staticmethod
+    def _extract_obo_desc(rawterm):
+        desc = ''
+        try: desc = rawterm['definition'][0]
+        except IndexError:
+            try: desc = rawterm['IAO_0000115'][0]
+            except IndexError: pass
+            finally: del rawterm['IAO_0000115']
+        finally: del rawterm['definition']
+        return desc
+
+    @staticmethod
+    def _extract_obo_relation(rawterm):
+        relations = collections.defaultdict(list)
+
+        for other in rawterm['subClassOf']:
+            relations[Relationship('is_a')].append(
+                OwlXMLParser._get_id_from_url(other)
+            )
+        del rawterm['subClassOf']
+
+        return relations
+
+
+    @staticmethod
+    def _relabel_owl_properties(rawterm):
+        new_term = {}
+        for old_k, old_v in six.iteritems(rawterm):
+            try:
+                new_term[owl_to_obo[old_k]] = old_v
+            except KeyError:
+                new_term[old_k] = old_v
+        return new_term
+
+    def _relabel_owl_metadata(self):
+        new_meta = {}
+        for old_k, old_v in six.iteritems(self.meta):
+            try:
+                new_meta[owl_to_obo[old_k]] = old_v
+            except KeyError:
+                new_term[old_k] = old_v
+        self.meta = new_meta
+
+
+OwlXMLParser()

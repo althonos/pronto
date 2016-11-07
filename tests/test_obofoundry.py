@@ -16,7 +16,7 @@ from .              import utils
 
 
 # Make sure we're using the local pronto library
-sys.path.insert(0, op.dirname(op.dirname(op.dirname(op.abspath(__file__)))))
+sys.path.insert(0, op.dirname(op.dirname(op.abspath(__file__))))
 import pronto
 
 

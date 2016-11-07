@@ -8,7 +8,11 @@ import sys
 import unittest
 import doctest
 import shutil
+import os.path as op
 
+
+# Make sure we're using the local pronto library
+sys.path.insert(0, op.dirname(op.dirname(op.abspath(__file__))))
 import pronto
 
 MODULE_TYPE = type(sys)
@@ -52,6 +56,6 @@ def load_tests(loader, tests, ignore):
         'TermList':     pronto.term.TermList,
     }
 
-    tests = _load_tests_from_module(tests, pronto, globs, _setUp, _tearDown)   
+    tests = _load_tests_from_module(tests, pronto, globs, _setUp, _tearDown)
     return tests
 

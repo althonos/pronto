@@ -5,6 +5,12 @@ class OboSection(object):
     typedef = 2
     term    = 3
 
+class OwlSection(object):
+    ontology = 1
+    classes  = 2
+
+
+
 
 owl_ns = {
 
@@ -29,12 +35,17 @@ owl_ns = {
 
 
 
+
+
 owl_to_obo = {
     'hasDbXref': 'xref',
     'equivalentClass': 'equivalent_to',
     'inSubset': 'subset',
     'hasOBONamespace': 'namespace',
     'hasOBOFormatVersion': 'format-version',
+
+    #FEAT# Translate Information Ontology
+    #FEAT# 'IAO_0000115': 'definition',
 }
 
 

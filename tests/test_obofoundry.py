@@ -46,8 +46,8 @@ class TestProntoOboFoundry(TestProntoOntology):
         """Add test for each product found in the obofoundry yaml file"""
 
                              #CRASH       #INF. WAIT
-        if product["id"] in ("chebi.obo", "dideo.owl"):
-            return
+        #if product["id"] in ("chebi.obo", "dideo.owl"):
+        #    return
 
         url, name = product["ontology_purl"], product["id"]
 

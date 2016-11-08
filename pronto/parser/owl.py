@@ -15,17 +15,14 @@ import six
 
 try:
     import lxml.etree as etree
-    from lxml.etree import XMLSyntaxError as ParseError
-except ImportError: # pragma: no cover
+except ImportError: # pragma: no-cover
     try:
         import xml.etree.cElementTree as etree
-        from xml.etree.cElementTree import ParseError
     except ImportError:
         import xml.etree.ElementTree as etree
-        from xml.etree.ElementTree import ParseError
 
 from .              import Parser
-from .utils         import owl_ns, XMLNameSpacer, owl_to_obo, OwlSection
+from .utils         import owl_ns, owl_to_obo, OwlSection
 from ..relationship import Relationship
 from ..term         import Term
 from ..utils        import explicit_namespace, format_accession
@@ -39,29 +36,22 @@ OWL_ONTOLOGY = "{{{}}}{}".format(owl_ns['owl'], 'Ontology')
 
 
 
-
-
-
 class OwlXMLParser(Parser):
 
     ns = owl_ns
 
     def __init__(self):
-
         super(OwlXMLParser, self).__init__()
-
         self.extensions = ('.owl', '.ont')
-        self.meta = collections.defaultdict(list)
-        self.imports = set()
-        self.terms = {}
-        self._rawterms = []
 
     def hook(self, *args, **kwargs):
         """Returns True if this parser should be used.
 
         The current behaviour relies on filenames and file extension
-        (.obo), but this is subject to change.
+        (.owl, .ont), but this is subject to change.
         """
+        if 'force' in kwargs and kwargs['force']:
+            return True
         if 'path' in kwargs:
             return kwargs['path'].endswith(self.extensions)
 
@@ -79,66 +69,69 @@ class OwlXMLTreeParser(OwlXMLParser):
 
     def parse(self, stream):
 
-        self.__init__()
-
         tree = etree.parse(stream)
 
-        self._parse_meta(tree)
-        self._parse_terms(tree)
-        self._classify()
+        meta, imports = self._parse_meta(tree)
+        _rawterms = self._parse_terms(tree)
+        del tree
 
-        self._relabel_owl_metadata()
+        terms = self._classify(_rawterms)
+        del _rawterms
+        meta = self._relabel_owl_metadata(meta)
 
-        return dict(self.meta), self.terms, self.imports
+        return meta, terms, imports
 
-    def _parse_meta(self, tree):
+    @staticmethod
+    def _parse_meta(tree):
 
-        owl = XMLNameSpacer('owl')
-        rdf = XMLNameSpacer('rdf')
+        imports = set()
+        meta = collections.defaultdict(list)
 
         # tag.iter() starts on the element itself so we drop that
-        for elem in itertools.islice(tree.find(owl.Ontology).iter(), 1, None):
+        for elem in itertools.islice(tree.find(OWL_ONTOLOGY).iter(), 1, None):
 
             basename = elem.tag.split('}', 1)[-1]
             if basename == 'imports':
-                self.imports.add(next(six.itervalues(elem.attrib)))
+                imports.add(next(six.itervalues(elem.attrib)))
             elif elem.text:
-                self.meta[basename].append(elem.text)
-            elif elem.get(rdf.resource) is not None:
-                self.meta[basename].append(elem.get(rdf.resource))
+                meta[basename].append(elem.text)
+            elif elem.get(RDF_RESOURCE) is not None:
+                meta[basename].append(elem.get(RDF_RESOURCE))
+
+        return meta, imports
 
     def _parse_terms(self, tree):
 
-        rdf = XMLNameSpacer('rdf')
-        owl = XMLNameSpacer('owl')
+        _rawterms = []
 
-        for rawterm in tree.iterfind(owl.Class):
+        for rawterm in tree.iterfind(OWL_CLASS):
 
-            if rawterm.get(rdf.about) is None:   # This avoids parsing a class
+            if rawterm.get(RDF_ABOUT) is None:   # This avoids parsing a class
                 continue                         # created by restriction
 
-            self._rawterms.append(collections.defaultdict(list))
-            self._rawterms[-1]['id'].append(self._get_id_from_url(rawterm.get(rdf.about)))
+            _rawterms.append(collections.defaultdict(list))
+            _rawterms[-1]['id'].append(self._get_id_from_url(rawterm.get(RDF_ABOUT)))
 
             for elem in itertools.islice(rawterm.iter(), 1, None):
 
                 basename = elem.tag.split('}', 1)[-1]
                 if elem.text:
-                    self._rawterms[-1][basename].append(elem.text)
-                elif elem.get(rdf.resource) is not None:
-                    self._rawterms[-1][basename].append(elem.get(rdf.resource))
+                    _rawterms[-1][basename].append(elem.text)
+                elif elem.get(RDF_RESOURCE) is not None:
+                    _rawterms[-1][basename].append(elem.get(RDF_RESOURCE))
 
-    def _classify(self):
+        return _rawterms
 
-        for rawterm in self._rawterms:
-
+    def _classify(self, _rawterms):
+        terms = {}
+        for rawterm in _rawterms:
             _id = self._extract_obo_id(rawterm)
             name = self._extract_obo_name(rawterm)
             desc = self._extract_obo_desc(rawterm)
             relations = self._extract_obo_relation(rawterm)
             others = self._relabel_owl_properties(rawterm)
-
-            self.terms[_id] = Term(_id, name, desc, dict(relations), others)
+            terms[_id] = Term(_id, name, desc, dict(relations), others)
+        return terms
 
     @staticmethod
     def _extract_obo_id(rawterm):
@@ -191,22 +184,21 @@ class OwlXMLTreeParser(OwlXMLParser):
                 new_term[old_k] = old_v
         return new_term
 
-    def _relabel_owl_metadata(self):
+    @staticmethod
+    def _relabel_owl_metadata(meta):
         new_meta = {}
-        for old_k, old_v in six.iteritems(self.meta):
+        for old_k, old_v in six.iteritems(meta):
             try:
                 new_meta[owl_to_obo[old_k]] = old_v
             except KeyError:
                 new_meta[old_k] = old_v
-        self.meta = new_meta
+        del meta
+        return new_meta
 
 OwlXMLTreeParser()
 
 
 class _OwlXMLTarget(object):
-
-
-    owl = XMLNameSpacer('owl')
 
     def __init__(self, meta=None, rawterms=None):
         self.ontology_tag = meta or collections.defaultdict(dict)
@@ -275,15 +267,13 @@ class _OwlXMLTarget(object):
 
             elif self.current_section == OwlSection.classes:
                 basename = self._get_basename(self.current_tag['name'])
-
                 if basename in self.classes[-1]:
                     if 'data' in self.classes[-1][basename]:
                         self.classes[-1][basename]['data'].append(data)
                     else:
                         self.classes[-1][basename]['data'] = [data]
 
-            #     try: self.classes[-1][basename]['data'].append(data)
-            #     except KeyError: self.classes[-1][basename]['data'] = [data]
+            del data
 
     def comment(self, text):
         pass
@@ -306,41 +296,48 @@ class OwlXMLTargetParser(OwlXMLParser):
 
     def parse(self, stream):
 
+        parser = etree.XMLParser(target=_OwlXMLTarget())
 
-        parser = etree.XMLParser(target = _OwlXMLTarget())
+        while True:
+            chunk = stream.read(1024)
+            if not chunk: break
+            parser.feed(chunk)
 
-        self.meta, self._rawterms = etree.XML(stream.read(), parser)
+        meta, _rawterms = parser.close()
+        del parser
 
-        self._relabel_owl_metadata()
-        self._classify()
+        meta = self._relabel_owl_metadata(meta)
+        terms = self._classify(_rawterms)
+        del _rawterms
 
         try:
-            self.imports = set(self.meta['imports'])
-            del self.meta['imports']
+            imports = set(meta['imports'])
+            del meta['imports']
         except KeyError:
-            self.imports = set()
+            imports = set()
 
-        return self.meta, self.terms, self.imports
+        return meta, terms, imports
 
-    def _relabel_owl_metadata(self):
+    @staticmethod
+    def _relabel_owl_metadata(meta):
 
         new_meta = {}
 
-        for k,v in self.meta.items():
+        for k,v in meta.items():
 
             try:
                 if v['datatype'] == "{}string".format(owl_ns['xsd']):
 
                     try:
-                        new_meta[owl_to_obo[k]] = ''.join(self.meta[k]['data'])
+                        new_meta[owl_to_obo[k]] = ''.join(meta[k]['data'])
                     except KeyError:
-                        new_meta[k] = ''.join(self.meta[k]['data'])
+                        new_meta[k] = ''.join(meta[k]['data'])
 
                 else:
                     try:
-                        new_meta[owl_to_obo[k]] = self.meta[k]['data']
+                        new_meta[owl_to_obo[k]] = meta[k]['data']
                     except KeyError:
-                        new_meta[k] = self.meta[k]['data']
+                        new_meta[k] = meta[k]['data']
 
                 #FEAT# DESERIALIZE AS DATES
                 #FEAT# elif v['datatype'] == "{xsd}dateTime".format_map(owl_ns):
@@ -349,18 +346,14 @@ class OwlXMLTargetParser(OwlXMLParser):
             except TypeError:
                 pass
 
-        del self.meta
-        self.meta = new_meta
+        return new_meta
 
-    def _classify(self):
+    def _classify(self, rawterms):
 
+        terms = {}
 
-        while True:
-
-            try:
-                rawterm = self._rawterms.pop()
-            except IndexError:
-                break
+        #while True:
+        for rawterm in rawterms:
 
             new_term = {}
 
@@ -413,6 +406,9 @@ class OwlXMLTargetParser(OwlXMLParser):
             except KeyError:
                 pass
 
-            self.terms[_id] = Term(_id, name, desc, relations, new_term)
+            terms[_id] = Term(_id, name, desc, relations, new_term)
+            del new_term
+
+        return terms
 
 OwlXMLTargetParser()

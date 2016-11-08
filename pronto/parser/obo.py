@@ -32,13 +32,14 @@ class OboParser(Parser):
 
         self.extensions = ".obo"
 
-
     def hook(self, *args, **kwargs):
         """Returns True if this parser should be used.
 
         The current behaviour relies on filenames and file extension
         (.obo), but this is subject to change.
         """
+        if 'force' in kwargs and kwargs['force']:
+            return True
         if 'path' in kwargs:
             return kwargs['path'].endswith(self.extensions)
 
@@ -75,7 +76,6 @@ class OboParser(Parser):
         self._classify()
 
         return dict(self.meta), self.terms, set(self.meta['import'])
-
 
     def _check_section(self, line):
         """Updates the section currently parsed
@@ -196,6 +196,5 @@ class OboParser(Parser):
             finally: del _term['relationship']
 
             self.terms[_id] = Term(_id, _name, _desc, dict(_relations), dict(_term))
-
 
 OboParser()

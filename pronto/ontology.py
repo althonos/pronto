@@ -25,9 +25,9 @@ import warnings
 import six
 import gzip
 import collections
-#import functools
+import contextlib
+import functools
 
-import six.moves.urllib.request as rq
 from six.moves.urllib.error import URLError, HTTPError
 
 try:
@@ -74,175 +74,39 @@ class Ontology(object):
         * Add a __repr__ method to Ontology
     """
 
-    def __init__(self, path=None, imports=True, import_depth=-1, timeout=2):
+    def __init__(self, path=None, imports=True, import_depth=-1, timeout=2, parser=None):
         """
         """
         self.path = path
         self.meta = {}
         self.terms = {}
         self.imports = ()
+        self.__parsedby__ = None
 
         if path is not None:
 
             if path.startswith(('http', 'ftp')): #or path.startswith('ftp'):
-                handle = rq.urlopen(path, timeout=timeout)
+                handler = functools.partial(six.moves.urllib.request.urlopen, timeout=timeout)
             else:
                 if os.path.exists(path):
-                     handle = open(path, 'rb')
+                     handler = functools.partial(open, mode='rb')
                 else:
                     raise OSError('Ontology file {} could not be found'.format(path))
 
-            if path.endswith('gz'):
-                handle = gzip.GzipFile(fileobj=handle)
+            with contextlib.closing(handler(path)) as handle:
+                if path.endswith('gz'):
+                    handle = gzip.GzipFile(fileobj=handle)
+                self.parse(handle, parser)
 
-            self.parse(handle)
-
-            handle.close()
+            if self.__parsedby__ == None:
+                raise ValueError("Could not find a suitable parser to parse {},"
+                                 "consider using the parser argument to create"
+                                 " the Ontology".format(path))
 
             self.adopt()
 
-            if imports and import_depth:
-                self.resolve_imports(import_depth)
-
+            self.resolve_imports(imports, import_depth, parser)
             self.reference()
-
-    @property
-    def json(self):
-        """Returns the ontology serialized in json format.
-
-        Example:
-            >>> j = uo.json
-            >>> all(term.id in j for term in uo)
-            True
-
-        Note:
-            It is possible to save and load an ontology to and from
-            json format, although it is cleaner to save and load
-            an ontology in Obo format (as the json export doesn't store
-            metadata, only terms).
-
-        """
-
-        return json.dumps( self.terms, indent=4, sort_keys=True,
-                          default=lambda o: o.__deref__)
-
-    @property
-    @output_bytes
-    def obo(self):
-        """Returns the ontology serialized in obo format.
-        """
-
-        meta = self._obo_meta()
-        try: meta = meta.decode('utf-8')
-        except AttributeError: pass
-        meta = [meta] if meta else []
-
-        if six.PY2:
-            try: # if 'namespace' in self.meta:
-                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self if t.id.startswith(self.meta['namespace'][0])])
-            except KeyError:
-                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self])
-
-        elif six.PY3:
-            try: # if 'namespace' in self.meta:
-                return "\n\n".join( meta + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
-            except KeyError:
-                return "\n\n".join( meta + [t.obo for t in self])
-
-
-    @output_bytes
-    def _obo_meta(self):
-        """Generates the obo metadata header
-
-        Generated following specs of the official format guide:
-        ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
-
-        Todo:
-            * Change the `auto-generated-by` tag to be **auto-generated-by pronto pronto.__version__**
-
-        """
-
-        metatags = ["format-version", "data-version", "date", "saved-by", "auto-generated-by",
-                "import", "subsetdef", "synonymtypedef", "default-namespace", "namespace-id-rule",
-                "idspace", "treat-xrefs-as-equivalent", "treat-xrefs-as-genus-differentia",
-                "treat-xrefs-as-is_a", "remark", "ontology"]
-
-        obo_meta = "\n".join(
-
-            [ # official obo tags
-                "{}: {}".format(k, x)
-                        for k in metatags[:-1]
-                            if k in self.meta
-                                for x in self.meta[k]
-            ] + [ # eventual other metadata added to remarks
-                "remark: {}: {}".format(k, x)
-                    for k,v in sorted(six.iteritems(self.meta), key=lambda x: x[0])
-                        for x in v
-                            if k not in metatags
-            ] +      ["ontology: {}".format(x) for x in self.meta["ontology"]] if "ontology" in self.meta
-                else ["ontology: {}".format(self.meta["namespace"][0].lower())] if "namespace" in self.meta
-                else []
-
-        )
-
-        return obo_meta
-
-    def reference(self):
-        """Make relationships point to classes of ontology instead of ontology id
-
-        This is done automatically when using the :obj:`merge` and :obj:`include`
-        methods as well as the :obj:`__init__` method, but it should be called in
-        case of manual changes of the relationships of a Term.
-        """
-
-        for termkey,termval in six.iteritems(self.terms):
-            for relkey, relval in six.iteritems(termval.relations):
-                temprel = TermList()
-                for x in relval:
-                    try:
-                        temprel.append(self.terms[x])
-                    except KeyError:
-                        if isinstance(x, Term):
-                            temprel.append(x)
-                        else:
-                            temprel.append(Term(x,'',''))
-                self.terms[termkey].relations[relkey] = temprel
-
-            # relvalref = { relkey: TermList(
-            #                         [self.terms[x] if x in self.terms
-            #                             else Term(x, '', '')
-            #                                 if not isinstance(x, Term)
-            #                             else x for x in relval]
-            #                    )
-            #             for relkey, relval in six.iteritems(termval.relations) }
-            # self.terms[termkey].relations.update(relvalref)
-
-    def parse(self, stream):
-        """Parse the given file using available Parser instances
-        """
-        for parser in Parser._instances.values():
-            if parser.hook(stream=stream, path=self.path):
-                # try:
-                self.meta, self.terms, self.imports = parser.parse(stream)
-                return
-                # except TimeoutError:
-                #     warnings.warn("Parsing of {} timed out".format(self.path),
-                #                    pronto.utils.ProntoWarning)
-
-    def __getitem__(self, item):
-        """Overloaded object.__getitem__
-
-        Method was overloaded to allow accessing to any Term of the Ontology
-        using the Python dictionary syntax.
-
-        Example:
-            >>> cl['CL:0002380']
-            <CL:0002380: oospore>
-            >>> cl['CL:0002380'].relations
-            {Relationship(is_a): [<CL:0000605: fungal asexual spore>]}
-
-        """
-        return self.terms[item]
 
     def __contains__(self, item):
         """Check if the ontology contains a term
@@ -262,8 +126,7 @@ class Ontology(object):
             False
 
         """
-
-        if isinstance(item, str) or isinstance(item, six.text_type):
+        if isinstance(item, (str, six.text_type)):
             return item in self.terms
         elif isinstance(item, Term):
             return item.id in self.terms
@@ -284,15 +147,74 @@ class Ontology(object):
             <UO:0000328: kilobasepair>
             <UO:0000329: megabasepair>
             <UO:0000330: gigabasepair>
-
         """
         terms_accessions = sorted(self.terms.keys())
         return (self.terms[i] for i in terms_accessions)
+
+    def __getitem__(self, item):
+        """Overloaded object.__getitem__
+
+        Method was overloaded to allow accessing to any Term of the Ontology
+        using the Python dictionary syntax.
+
+        Example:
+            >>> cl['CL:0002380']
+            <CL:0002380: oospore>
+            >>> cl['CL:0002380'].relations
+            {Relationship(is_a): [<CL:0000605: fungal asexual spore>]}
+
+        """
+        return self.terms[item]
 
     def __len__(self):
         """Returns the number of terms in the Ontology.
         """
         return self.terms.__len__()
+
+    def __getstate__(self):
+
+        meta = frozenset( (k, frozenset(v)) for k,v in six.iteritems(self.meta) )
+        imports = self.imports
+        path = self.path
+        terms = frozenset(term for term in self)
+        return (meta, imports, path, terms)
+
+    def __setstate__(self, state):
+
+        self.meta = {k:list(v) for (k,v) in state[0] }
+        self.imports = state[1]
+        self.path = state[2]
+        self.terms = {t.id:t for t in state[3]}
+        self.reference()
+
+    def parse(self, stream, parser=None):
+        """Parse the given file using available Parser instances
+
+        Raises:
+            TypeError: when the parser argument is not a string,
+                a Parser or None
+            ValueError: when the parser argumentis a string that does
+                not name a Parser
+
+        """
+        if not (isinstance(parser, (Parser, str, six.text_type)) or parser is None):
+            raise TypeError("parser must be either a Parser, the name of a parser, or None")
+        elif isinstance(parser, six.text_type) and not parser in Parser._instances:
+            raise ValueError("could not find parser: {}".format(parser))
+        elif isinstance(parser, Parser):
+            FORCE = True
+            parsers = [parser]
+        elif isinstance(parser, (str, six.text_type)):
+            FORCE = True
+            parsers = [Parser._instances[parser]]
+        elif parser is None:
+            FORCE = False
+            parsers = Parser._instances.values()
+
+        for p in parsers:
+            if p.hook(stream=stream, path=self.path, force=FORCE):
+                self.meta, self.terms, self.imports = p.parse(stream)
+                self.__parsedby__ = type(p).__name__
 
     def adopt(self):
         """Make terms aware of their children via complementary relationships
@@ -306,11 +228,11 @@ class Ontology(object):
 
         relationships = [
             (parent, relation.complement(), term.id)
-                for term in self
+                for term in six.itervalues(self.terms)
                     for relation in term.relations
-                        for parent in term.relations[relation]
-                            if relation.complementary
-                                and relation.complementary in valid_relationships
+                        if relation.complementary
+                        and relation.complementary in valid_relationships
+                            for parent in term.relations[relation]
         ]
 
         for parent, rel, child in relationships:
@@ -323,14 +245,64 @@ class Ontology(object):
             except AttributeError:
                 pass
 
-            if parent in self:
+            if parent in self.terms:
                 try:
-                    if not child in self[parent].relations[rel]:
-                        self[parent].relations[rel].append(child)
+                    if not child in self.terms[parent].relations[rel]:
+                        self.terms[parent].relations[rel].append(child)
                 except KeyError:
                     self[parent].relations[rel] = [child]
 
+        del relationships
 
+    def reference(self):
+        """Make relationships point to classes of ontology instead of ontology id
+
+        This is done automatically when using the :obj:`merge` and :obj:`include`
+        methods as well as the :obj:`__init__` method, but it should be called in
+        case of manual changes of the relationships of a Term.
+        """
+        for termkey,termval in six.iteritems(self.terms):
+            for relkey, relval in six.iteritems(termval.relations):
+                temprel = TermList()
+                for x in relval:
+                    try:
+                        temprel.append(self.terms[x])
+                    except KeyError:
+                        if isinstance(x, Term):
+                            temprel.append(x)
+                        else:
+                            temprel.append(Term(x,'',''))
+                self.terms[termkey].relations[relkey] = temprel
+                del temprel
+                del relval
+
+            # relvalref = { relkey: TermList(
+            #                         [self.terms[x] if x in self.terms
+            #                             else Term(x, '', '')
+            #                                 if not isinstance(x, Term)
+            #                             else x for x in relval]
+            #                    )
+            #             for relkey, relval in six.iteritems(termval.relations) }
+            # self.terms[termkey].relations.update(relvalref)
+
+    def resolve_imports(self, imports, import_depth, parser=None):
+        """Import required ontologies.
+        """
+        if imports and import_depth:
+            for i in list(self.imports):
+                try:
+
+                    if os.path.exists(i) or i.startswith(('http', 'ftp')):
+                        self.merge(Ontology(i, import_depth=import_depth-1, parser=parser))
+
+                    else: # try to look at neighbouring ontologies
+                        self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
+                                             import_depth=import_depth-1, parser=parser))
+
+                except (IOError, OSError, URLError, HTTPError, ParseError) as e:
+                    warnings.warn("{} occured during import of "
+                                  "{}".format(type(e).__name__, i),
+                                  ProntoWarning)
 
     def include(self, *terms):
         """Add new terms to the current ontology.
@@ -377,24 +349,33 @@ class Ontology(object):
         self.adopt()
         self.reference()
 
-    def resolve_imports(self, import_depth):
-        """Import required ontologies.
+    def merge(self, other):
+        """Merges another ontology into the current one.
+
+        Raises:
+            TypeError: When argument is not an Ontology object.
+
+        Example:
+            >>> from pronto import Ontology
+            >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
+            >>> po = Ontology('https://raw.githubusercontent.com/Planteome'
+            ... '/plant-ontology/master/po.obo', False)
+            >>> 'NMR:1000271' in nmr
+            True
+            >>> 'NMR:1000271' in po
+            False
+            >>> po.merge(nmr)
+            >>> 'NMR:1000271' in po
+            True
+
         """
+        if not isinstance(other, Ontology):
+            raise TypeError("'merge' requires an Ontology as argument, not {}".format(type(other)))
 
-        for i in list(self.imports):
-            try:
-
-                if os.path.exists(i) or i.startswith('http') or i.startswith('ftp'):
-                    self.merge(Ontology(i, import_depth=import_depth-1))
-
-                else: # try to look at neighbouring ontologies
-                    self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
-                                         import_depth=import_depth-1))
-
-            except (IOError, OSError, URLError, HTTPError, ParseError) as e:
-                warnings.warn("{} occured during import of "
-                              "{}".format(type(e).__name__, i),
-                              ProntoWarning)
+        self.terms.update(other.terms)
+        self._empty_cache()
+        self.adopt()
+        self.reference()
 
     def _include_term_list(self, termlist):
         """Add terms from a TermList to the ontology.
@@ -436,34 +417,6 @@ class Ontology(object):
         self.terms[term.id] = term
         return ref_needed
 
-    def merge(self, other):
-        """Merges another ontology into the current one.
-
-        Raises:
-            TypeError: When argument is not an Ontology object.
-
-        Example:
-            >>> from pronto import Ontology
-            >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
-            >>> po = Ontology('https://raw.githubusercontent.com/Planteome'
-            ... '/plant-ontology/master/po.obo', False)
-            >>> 'NMR:1000271' in nmr
-            True
-            >>> 'NMR:1000271' in po
-            False
-            >>> po.merge(nmr)
-            >>> 'NMR:1000271' in po
-            True
-
-        """
-        if not isinstance(other, Ontology):
-            raise TypeError("'merge' requires an Ontology as argument, not {}".format(type(other)))
-
-        self.terms.update(other.terms)
-        self._empty_cache()
-        self.adopt()
-        self.reference()
-
     def _empty_cache(self, termlist=None):
         """Empty associated cache of each Term object
 
@@ -474,7 +427,7 @@ class Ontology(object):
         performance concerns)
         """
         if termlist is None:
-            for term in self.terms.values():
+            for term in six.itervalues(self.terms):
                 term._empty_cache()
         else:
             for term in termlist:
@@ -483,18 +436,80 @@ class Ontology(object):
                 except AttributeError:
                     self.terms[term]._empty_cache()
 
-    def __getstate__(self):
+    @output_bytes
+    def _obo_meta(self):
+        """Generates the obo metadata header
 
-        meta = frozenset( (k, frozenset(v)) for k,v in six.iteritems(self.meta) )
-        imports = self.imports
-        path = self.path
-        terms = frozenset(term for term in self)
-        return (meta, imports, path, terms)
+        Generated following specs of the official format guide:
+        ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
 
-    def __setstate__(self, state):
+        Todo:
+            * Change the `auto-generated-by` tag to be **auto-generated-by pronto pronto.__version__**
 
-        self.meta = {k:list(v) for (k,v) in state[0] }
-        self.imports = state[1]
-        self.path = state[2]
-        self.terms = {t.id:t for t in state[3]}
-        self.reference()
+        """
+        metatags = ["format-version", "data-version", "date", "saved-by", "auto-generated-by",
+                "import", "subsetdef", "synonymtypedef", "default-namespace", "namespace-id-rule",
+                "idspace", "treat-xrefs-as-equivalent", "treat-xrefs-as-genus-differentia",
+                "treat-xrefs-as-is_a", "remark", "ontology"]
+
+        obo_meta = "\n".join(
+
+            [ # official obo tags
+                "{}: {}".format(k, x)
+                        for k in metatags[:-1]
+                            if k in self.meta
+                                for x in self.meta[k]
+            ] + [ # eventual other metadata added to remarks
+                "remark: {}: {}".format(k, x)
+                    for k,v in sorted(six.iteritems(self.meta), key=lambda x: x[0])
+                        for x in v
+                            if k not in metatags
+            ] +      ["ontology: {}".format(x) for x in self.meta["ontology"]] if "ontology" in self.meta
+                else ["ontology: {}".format(self.meta["namespace"][0].lower())] if "namespace" in self.meta
+                else []
+
+        )
+
+        return obo_meta
+
+    @property
+    def json(self):
+        """Returns the ontology serialized in json format.
+
+        Example:
+            >>> j = uo.json
+            >>> all(term.id in j for term in uo)
+            True
+
+        Note:
+            It is possible to save and load an ontology to and from
+            json format, although it is cleaner to save and load
+            an ontology in Obo format (as the json export doesn't store
+            metadata, only terms).
+
+        """
+        return json.dumps( self.terms, indent=4, sort_keys=True,
+                          default=lambda o: o.__deref__)
+
+    @property
+    @output_bytes
+    def obo(self):
+        """Returns the ontology serialized in obo format.
+        """
+        meta = self._obo_meta()
+        try: meta = meta.decode('utf-8')
+        except AttributeError: pass
+        meta = [meta] if meta else []
+
+        if six.PY2:
+            try: # if 'namespace' in self.meta:
+                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self if t.id.startswith(self.meta['namespace'][0])])
+            except KeyError:
+                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self])
+
+        elif six.PY3:
+            try: # if 'namespace' in self.meta:
+                return "\n\n".join( meta + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
+            except KeyError:
+                return "\n\n".join( meta + [t.obo for t in self])
+

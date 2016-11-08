@@ -34,4 +34,4 @@ class Parser(object):
 
 
 from .obo import OboParser
-from .owl import OwlXMLParser
+from .owl import OwlXMLParser, OwlXMLTreeParser, OwlXMLTargetParser

@@ -195,7 +195,7 @@ class OwlXMLTreeParser(OwlXMLParser):
         del meta
         return new_meta
 
-OwlXMLTreeParser()
+#OwlXMLTreeParser()
 
 
 class _OwlXMLTarget(object):
@@ -364,15 +364,17 @@ class OwlXMLTargetParser(OwlXMLParser):
 
                 try:
 
-                    if 'datatype' in v and v['datatype'] == "{}string".format(owl_ns['xsd']):
+                    if 'datatype' in v and v['datatype'] == "{}string".format(owl_ns['xsd']) and k != "id":
 
                         try:
                             new_term[owl_to_obo[k]] = ''.join(rawterm[k]['data'])
                         except KeyError:
                             new_term[k] = ''.join(rawterm[k]['data'])
 
-                    else:
+                    elif k == "subClassOf":
+                        new_term[Relationship('is_a')] = [self._get_id_from_url(t) for t in rawterm['subClassOf']['data']]
 
+                    else:
                         try:
                             new_term[owl_to_obo[k]] = rawterm[k]['data'][0]
                         except KeyError:
@@ -401,8 +403,8 @@ class OwlXMLTargetParser(OwlXMLParser):
 
             relations = {}
             try:
-                relations[Relationship('is_a')] = [self._get_id_from_url(t) for t in new_term['subClassOf']]
-                del new_term['subClassOf']
+                relations[Relationship('is_a')] = new_term[Relationship('is_a')]
+                del new_term[Relationship('is_a')]
             except KeyError:
                 pass
 

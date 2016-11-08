@@ -86,17 +86,18 @@ class Ontology(object):
         if path is not None:
 
             if path.startswith(('http', 'ftp')): #or path.startswith('ftp'):
-                handler = functools.partial(six.moves.urllib.request.urlopen, timeout=timeout)
+                handle = six.moves.urllib.request.urlopen(path, timeout=timeout)
             else:
                 if os.path.exists(path):
-                     handler = functools.partial(open, mode='rb')
+                    handle = open(path, 'rb')
                 else:
                     raise OSError('Ontology file {} could not be found'.format(path))
 
-            with contextlib.closing(handler(path)) as handle:
-                if path.endswith('gz'):
-                    handle = gzip.GzipFile(fileobj=handle)
-                self.parse(handle, parser)
+            if path.endswith('gz'):
+                handle = gzip.GzipFile(fileobj=handle)
+
+            self.parse(handle, parser)
+            handle.close()
 
             if self.__parsedby__ == None:
                 raise ValueError("Could not find a suitable parser to parse {},"
@@ -230,11 +231,13 @@ class Ontology(object):
             (parent, relation.complement(), term.id)
                 for term in six.itervalues(self.terms)
                     for relation in term.relations
-                        if relation.complementary
-                        and relation.complementary in valid_relationships
-                            for parent in term.relations[relation]
+                        for parent in term.relations[relation]
+                        	if relation.complementary
+                        		and relation.complementary in valid_relationships
         ]
 
+        relationships.sort(key=lambda x: x[2])
+        
         for parent, rel, child in relationships:
 
             if rel is None:

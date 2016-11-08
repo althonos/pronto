@@ -6,6 +6,7 @@ import six
 import unittest
 import io
 import sys
+import os
 import os.path as op
 import warnings
 import textwrap
@@ -17,6 +18,8 @@ except ImportError:
 
 from . import utils
 
+if os.getcwd().endswith("pronto"):
+    os.chdir("tests")
 
 # Make sure we're using the local pronto library
 sys.path.insert(0, op.dirname(op.dirname(op.abspath(__file__))))

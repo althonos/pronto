@@ -8,6 +8,7 @@ import sys
 import unittest
 import doctest
 import shutil
+import re
 import os.path as op
 
 
@@ -19,12 +20,19 @@ MODULE_TYPE = type(sys)
 RESOURCES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
 
 
+class IgnoreUnicodeChecker(doctest.OutputChecker):
+  def check_output(self, want, got, optionflags):
+    if sys.version_info[0] > 2:
+      want = re.sub("u'(.*?)'", "'\\1'", want)
+      want = re.sub('u"(.*?)"', '"\\1"', want)
+    return doctest.OutputChecker.check_output(self, want, got, optionflags)
+
 
 def _load_tests_from_module(tests, module, globs, setUp, tearDown):
     """Load tests from module, iterating through submodules"""
     for attr in (getattr(module, x) for x in dir(module)):
         if isinstance(attr, MODULE_TYPE):
-            tests.addTests(doctest.DocTestSuite(attr, globs=globs, setUp=setUp, tearDown=tearDown))
+            tests.addTests(doctest.DocTestSuite(attr, globs=globs, setUp=setUp, tearDown=tearDown, checker=IgnoreUnicodeChecker()))
     return tests
 
 def load_tests(loader, tests, ignore):
@@ -58,4 +66,5 @@ def load_tests(loader, tests, ignore):
 
     tests = _load_tests_from_module(tests, pronto, globs, _setUp, _tearDown)
     return tests
+
 

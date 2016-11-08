@@ -31,8 +31,8 @@ class TestProntoParser(unittest.TestCase):
         if 'exp_len' in kwargs:
             self._check_len(t, kwargs['exp_len'])
 
-    def _check_utf8(self):
-        for term in six.itervalues(self.terms):
+    def _check_utf8(self, m, t, i):
+        for term in six.itervalues(t):
             # six.text_type is str in Py3, unicode in Py2
             self.assertIsInstance(term.id, six.text_type)
             self.assertIsInstance(term.name, six.text_type)
@@ -111,11 +111,12 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
 
     def test_with_xml_cElementTree(self):
         with mock.patch("pronto.parser.owl.etree", self.xml_etree):
-            dt = self._parse(
+            m,t,i =  self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-                685,
+
             )
+        self._check(m,t,i, exp_len=685)
 
 class TestProntoOwlTreeParser(TestProntoOwlParser):
 
@@ -141,7 +142,6 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
                 os.path.join(self.resources_dir, 'cl.ont'),
-                2348,
             )
         self._check(m,t,i, exp_len=2348)
 
@@ -150,7 +150,6 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-                685,
             )
         self._check(m,t,i, exp_len=685)
 
@@ -159,7 +158,6 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-                685,
             )
         self._check(m,t,i, exp_len=685)
 
@@ -168,7 +166,6 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-
             )
         self._check(m,t,i, exp_len=685)
 

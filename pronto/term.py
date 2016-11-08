@@ -200,7 +200,7 @@ class Term(object):
                         if k in self.other
 
             ]
-            
+
 
         )
 
@@ -370,7 +370,7 @@ class TermList(list):
         <class 'pronto.term.TermList'>
 
         >>> nmr['NMR:1000031'].children.id
-        ['NMR:1000122', 'NMR:1000156', 'NMR:1000157', 'NMR:1000489']
+        [u'NMR:1000122', u'NMR:1000156', u'NMR:1000157', u'NMR:1000489']
         >>> nmr['NMR:1400014'].relations[Relationship('is_a')]
         [<NMR:1400011: cardinal part of NMR instrument>]
 
@@ -380,7 +380,7 @@ class TermList(list):
         create another TermList::
 
             >>> nmr['NMR:1000031'].rchildren(3, False).rparents(3, False).id
-            ['NMR:1000031']
+            [u'NMR:1000031']
 
     """
 

@@ -6,11 +6,9 @@ pronto.relationship
 This submodule contains the definition of the Relationship class.
 """
 
-import multiprocessing
-import threading
 import collections
 
-from .utils import unique_everseen, classproperty
+from .utils import unique_everseen
 
 
 class Relationship(object):
@@ -51,8 +49,6 @@ class Relationship(object):
     """
 
     _instances = collections.OrderedDict()
-    _lock = multiprocessing.Lock()
-    _tlock = threading.Lock()
 
     def __init__(self, obo_name, symmetry=None, transitivity=None,
                  reflexivity=None, complementary=None, prefix=None,
@@ -160,7 +156,6 @@ class Relationship(object):
         else:
             return super(Relationship, cls).__new__(cls)
 
-    #@classproperty
     @classmethod
     def topdown(cls):
         """Get all topdown Relationship instances
@@ -179,7 +174,6 @@ class Relationship(object):
         """
         return tuple(unique_everseen(r for r in cls._instances.values() if r.direction=='topdown'))
 
-    #@classproperty
     @classmethod
     def bottomup(cls):
         """Get all bottomup Relationship instances
@@ -194,29 +188,6 @@ class Relationship(object):
 
         """
         return tuple(unique_everseen(r for r in cls._instances.values() if r.direction=='bottomup'))
-
-    @classproperty
-    def lock(self):
-        """A :obj:`multiprocessing.Lock` provided at a class level
-
-        This allows to use pronto's Relationship objects in a multiprocessed
-        environment.
-
-        Todo:
-            * Use the lock within Relationship.__init__ method and Relationship.topdown
-              and Relationship.bottomup
-            * Write a classmethod Relationship.instances that wraps the process of acquiring
-              the lock during iteration to avoid data races within iteration if other Relationship
-              if created (! may end in a deadlock)
-
-        """
-        return self._lock
-
-    @classproperty
-    def tlock(self):
-        """A :obj:`threading.Lock` provided at a class level
-        """
-        return self._tlock
 
     def __getstate__(self):
         pass

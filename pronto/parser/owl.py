@@ -25,7 +25,6 @@ from .              import Parser
 from .utils         import owl_ns, owl_to_obo, OwlSection
 from ..relationship import Relationship
 from ..term         import Term
-from ..utils        import explicit_namespace, format_accession
 
 
 RDF_ABOUT = "{{{}}}{}".format(owl_ns['rdf'], 'about')

@@ -19,150 +19,157 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pronto
 
 
-class TestOwlParserUtils(unittest.TestCase):
 
-    def test_get_id_from_url(self):
-
-        test_values = {
-            'http://purl.obolibrary.org/obo/IAO_0000115': 'IAO:0000115',
-            'http://purl.obolibrary.org/obo/CL_0002420': 'CL:0002420',
-            'http://purl.obolibrary.org/obo/UBERON_0001278': 'UBERON:0001278',
-            'http://nmrML.org/nmrCV#NMR:1000001': 'NMR:1000001',
-        }
-
-        for k,v in six.iteritems(test_values):
-            self.assertEqual(pronto.parser.owl.OwlXMLParser._get_id_from_url(k), v)
-
-
-class TestOwlParser(unittest.TestCase):
+class TestProntoParser(unittest.TestCase):
 
     def setUp(self):
         self.resources_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
+
+    def _check(self, m,t,i, *args, **kwargs):
+        self._check_utf8(m,t,i)
+
+        if 'exp_len' in kwargs:
+            self._check_len(t, kwargs['exp_len'])
+
+    def _check_utf8(self):
+        for term in six.itervalues(self.terms):
+            # six.text_type is str in Py3, unicode in Py2
+            self.assertIsInstance(term.id, six.text_type)
+            self.assertIsInstance(term.name, six.text_type)
+            self.assertIsInstance(term.desc, six.text_type)
+
+    def _check_len(self, t, exp_len):
+        self.assertEqual(len(t), exp_len)
+
+
+
+class TestProntoOwlParser(TestProntoParser):
+
+    def setUp(self):
+        super(TestProntoOwlParser, self).setUp()
         self.lxml_etree = importlib.import_module("lxml.etree")
         self.xml_etree = importlib.import_module("xml.etree.ElementTree")
         self.cxml_etree = importlib.import_module("xml.etree.cElementTree")
 
-    def _parse(self, parser, path, expected_len):
+    def _parse(self, parser, path):
 
         if path.startswith(('http', 'ftp')):
-            handler = six.moves.urllib.request.urlopen
+            handle = six.moves.urllib.request.urlopen(path)
         else:
-            handler = functools.partial(open, mode='rb')
+            handle = open(path, 'rb')
 
-        with contextlib.closing(handler(path)) as file:
+        try:
             t1 = time.time()
-            m,t,i = parser.parse(file)
+            m,t,i = parser.parse(handle)
             t2 = time.time()
+        finally:
+            handle.close()
 
-        self.assertEqual(len(t), expected_len)
-        return t2-t1
+        return m,t,i
 
-
-class TestOwlTargetParser(TestOwlParser):
-
-    def test_with_lxml_etree(self):
-        with mock.patch("pronto.parser.owl.etree", self.lxml_etree):
-            dt = self._parse(
-                pronto.parser.owl.OwlXMLTargetParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
-                2348,
-            )
-
-    def test_with_xml_elementTree(self):
-        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
-            dt = self._parse(
-                pronto.parser.owl.OwlXMLTargetParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
-                2348,
-            )
-
-    def test_with_xml_cElementTree(self):
-        with mock.patch("pronto.parser.owl.etree", self.xml_etree):
-            dt = self._parse(
-                pronto.parser.owl.OwlXMLTargetParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
-                2348,
-            )
-
-    def test_lxml_etree_remote(self):
-        dt = self._parse(
-            pronto.parser.owl.OwlXMLTargetParser(),
-            "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-            685,
-        )
-
-    def test_with_xml_elementTree(self):
-        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
-            dt = self._parse(
-                pronto.parser.owl.OwlXMLTargetParser(),
-                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-                685,
-            )
-
-    def test_with_xml_cElementTree(self):
-        with mock.patch("pronto.parser.owl.etree", self.xml_etree):
-            dt = self._parse(
-                pronto.parser.owl.OwlXMLTargetParser(),
-                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-                685,
-            )
-
-
-class TestOwlTreeParser(TestOwlParser):
+class TestProntoOwlTargetParser(TestProntoOwlParser):
 
     def test_with_lxml_etree(self):
         with mock.patch("pronto.parser.owl.etree", self.lxml_etree):
-            dt = self._parse(
-                pronto.parser.owl.OwlXMLTreeParser(),
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTargetParser(),
                 os.path.join(self.resources_dir, 'cl.ont'),
-                2348,
             )
-            self.assertGreater(dt, 0)
+        self._check(m,t,i, exp_len=2348)
 
     def test_with_xml_elementTree(self):
         with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
-            dt = self._parse(
-                pronto.parser.owl.OwlXMLTreeParser(),
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTargetParser(),
                 os.path.join(self.resources_dir, 'cl.ont'),
-                2348,
             )
-        self.assertGreater(dt, 0)
+        self._check(m,t,i, exp_len=2348)
 
     def test_with_xml_cElementTree(self):
         with mock.patch("pronto.parser.owl.etree", self.xml_etree):
-            dt = self._parse(
-                pronto.parser.owl.OwlXMLTreeParser(),
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTargetParser(),
                 os.path.join(self.resources_dir, 'cl.ont'),
-                2348,
             )
-        self.assertGreater(dt, 0)
+        self._check(m,t,i, exp_len=2348)
 
     def test_lxml_etree_remote(self):
-        dt = self._parse(
-            pronto.parser.owl.OwlXMLTreeParser(),
-            "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-            685,
-        )
+        with mock.patch("pronto.parser.owl.etree", self.lxml_etree):
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTargetParser(),
+                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+            )
+        self._check(m,t,i, exp_len=685)
 
     def test_with_xml_elementTree(self):
         with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
-            dt = self._parse(
-                pronto.parser.owl.OwlXMLTreeParser(),
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTargetParser(),
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-                685,
             )
+        self._check(m,t,i, exp_len=685)
 
     def test_with_xml_cElementTree(self):
         with mock.patch("pronto.parser.owl.etree", self.xml_etree):
             dt = self._parse(
-                pronto.parser.owl.OwlXMLTreeParser(),
+                pronto.parser.owl.OwlXMLTargetParser(),
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
                 685,
             )
 
+class TestProntoOwlTreeParser(TestProntoOwlParser):
+
+    def test_with_lxml_etree(self):
+        with mock.patch("pronto.parser.owl.etree", self.lxml_etree):
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTreeParser(),
+                os.path.join(self.resources_dir, 'cl.ont'),
+            )
+        self._check(m,t,i, exp_len=2348)
+
+    def test_with_xml_elementTree(self):
+        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTreeParser(),
+                os.path.join(self.resources_dir, 'cl.ont'),
+                2348,
+            )
+        self._check(m,t,i, exp_len=2348)
+
+    def test_with_xml_cElementTree(self):
+        with mock.patch("pronto.parser.owl.etree", self.xml_etree):
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTreeParser(),
+                os.path.join(self.resources_dir, 'cl.ont'),
+                2348,
+            )
+        self._check(m,t,i, exp_len=2348)
+
+    def test_lxml_etree_remote(self):
+        with mock.patch("pronto.parser.owl.etree", self.lxml_etree):
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTreeParser(),
+                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+                685,
+            )
+        self._check(m,t,i, exp_len=685)
+
+    def test_with_xml_elementTree(self):
+        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTreeParser(),
+                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+                685,
+            )
+        self._check(m,t,i, exp_len=685)
+
+    def test_with_xml_cElementTree(self):
+        with mock.patch("pronto.parser.owl.etree", self.xml_etree):
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTreeParser(),
+                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+
+            )
+        self._check(m,t,i, exp_len=685)
 
 
-# class TestProntoOboParser(unittest.TestCase):
-
-#     def test_obo_parser(self):
-#         pass

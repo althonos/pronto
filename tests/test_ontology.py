@@ -141,5 +141,3 @@ class TestProntoRemoteOntology(TestProntoOntology):
         owl = pronto.Ontology("http://purl.obolibrary.org/obo/xao.owl")
         self.check_ontology(owl)
 
-class TestProntoAberOwl(TestProntoOntology):
-    pass

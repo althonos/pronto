@@ -9,6 +9,7 @@ import unittest
 import doctest
 import shutil
 import re
+import warnings
 import os.path as op
 
 
@@ -68,3 +69,9 @@ def load_tests(loader, tests, ignore):
     return tests
 
 
+
+def setUpModule():
+    warnings.simplefilter('ignore')
+
+def tearDownModule():
+    warnings.simplefilter(warnings.defaultaction)

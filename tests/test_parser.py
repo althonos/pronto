@@ -7,6 +7,7 @@ import functools
 import unittest
 import contextlib
 import importlib
+import warnings
 import gzip
 
 try:
@@ -32,11 +33,18 @@ class TestProntoParser(unittest.TestCase):
             self._check_len(t, kwargs['exp_len'])
 
     def _check_utf8(self, m, t, i):
+        """Check that inner properties are stored as utf-8
+        """
         for term in six.itervalues(t):
             # six.text_type is str in Py3, unicode in Py2
             self.assertIsInstance(term.id, six.text_type)
             self.assertIsInstance(term.name, six.text_type)
             self.assertIsInstance(term.desc, six.text_type)
+
+        for k,v in six.iteritems(m):
+            self.assertIsInstance(k, six.text_type)
+            for x in v:
+                self.assertIsInstance(x, six.text_type)
 
     def _check_len(self, t, exp_len):
         self.assertEqual(len(t), exp_len)
@@ -170,3 +178,8 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
         self._check(m,t,i, exp_len=685)
 
 
+def setUpModule():
+    warnings.simplefilter('ignore')
+
+def tearDownModule():
+    warnings.simplefilter(warnings.defaultaction)

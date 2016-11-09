@@ -62,13 +62,6 @@ class TestProntoOboFoundry(TestProntoOntology):
         setattr(cls, "test_{}_foundry_noimports".format(name), _foundry_noimports)
         setattr(cls, "test_{}_foundry_imports".format(name),   _foundry_imports)
 
-    # @classmethod
-    # def setUpClass(cls):
-    #     cls.register_tests()
-
-# ### SETUP
-# def setUpModule():
-#     TestProntoOboFoundry.register_tests()
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestSuite()
@@ -76,3 +69,9 @@ def load_tests(loader, tests, pattern):
     suite.addTests(loader.loadTestsFromTestCase(TestProntoOboFoundry))
     return suite
 
+
+def setUpModule():
+    warnings.simplefilter('ignore')
+
+def tearDownModule():
+    warnings.simplefilter(warnings.defaultaction)

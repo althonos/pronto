@@ -82,3 +82,10 @@ class TestTestUtils(unittest.TestCase):
                 l = list("test")
                 sort(l)
                 self.assertEqual(l, r)
+
+
+def setUpModule():
+    warnings.simplefilter('ignore')
+
+def tearDownModule():
+    warnings.simplefilter(warnings.defaultaction)

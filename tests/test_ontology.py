@@ -144,3 +144,9 @@ class TestProntoRemoteOntology(TestProntoOntology):
         owl = pronto.Ontology("http://purl.obolibrary.org/obo/xao.owl")
         self.check_ontology(owl)
 
+
+def setUpModule():
+    warnings.simplefilter('ignore')
+
+def tearDownModule():
+    warnings.simplefilter(warnings.defaultaction)

@@ -31,7 +31,7 @@ class IgnoreUnicodeChecker(doctest.OutputChecker):
 
 def _load_tests_from_module(tests, module, globs, setUp, tearDown):
     """Load tests from module, iterating through submodules"""
-    for attr in (getattr(module, x) for x in dir(module)):
+    for attr in (getattr(module, x) for x in dir(module) if not x.startswith('_')):
         if isinstance(attr, MODULE_TYPE):
             tests.addTests(doctest.DocTestSuite(attr, globs=globs, setUp=setUp, tearDown=tearDown, checker=IgnoreUnicodeChecker()))
     return tests

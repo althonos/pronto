@@ -86,13 +86,13 @@ class Ontology(object):
         if path is not None:
 
             if path.startswith(('http', 'ftp')): #or path.startswith('ftp'):
-                handle = six.moves.urllib.request.urlopen(path, timeout=timeout)
+                req = six.moves.urllib.request.Request(path, headers={'HTTP_CONNECTION': 'keep-alive'})
+                handle = six.moves.urllib.request.urlopen(req, timeout=timeout)
             else:
                 if os.path.exists(path):
                     handle = open(path, 'rb')
                 else:
                     raise OSError('Ontology file {} could not be found'.format(path))
-
             if path.endswith('gz'):
                 handle = gzip.GzipFile(fileobj=handle)
 
@@ -216,6 +216,7 @@ class Ontology(object):
             if p.hook(stream=stream, path=self.path, force=FORCE):
                 self.meta, self.terms, self.imports = p.parse(stream)
                 self.__parsedby__ = type(p).__name__
+                break
 
     def adopt(self):
         """Make terms aware of their children via complementary relationships
@@ -237,7 +238,7 @@ class Ontology(object):
         ]
 
         relationships.sort(key=lambda x: x[2])
-        
+
         for parent, rel, child in relationships:
 
             if rel is None:

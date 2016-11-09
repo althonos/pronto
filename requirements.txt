@@ -1,3 +1,2 @@
-lxml ; implementation_name == 'cpython'
 six
 

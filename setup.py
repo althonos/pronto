@@ -10,33 +10,16 @@ import pronto
 
 
 def format_for_setup(requirement_file):
-
     requirements = []
-
     with open(requirement_file) as rq:
-        
+
         for line in rq:
             line = line.strip()
-
             if line.startswith('-r'):
-                requirements.extend(
-                    format_for_setup(line.split(' ', 1)[-1])
-                )
-
+                requirements.extend(format_for_setup(line.split(' ', 1)[-1]))
             elif line:
-                if ';' in line:
-                    req, env = line.split(';')
-                    requirements.append(
-                        {'requires':   [req.strip()],
-                         'environment': env.strip() }
-                    )
-                else:
-                    requirements.append(
-                        {'requires':[line]}
-                    )
-
+                    requirements.append(line)
     return requirements
-
 
 ## SETUPTOOLS VERSION
 setup(

@@ -42,9 +42,9 @@ class OwlXMLParser(Parser):
 
     def __init__(self):
         super(OwlXMLParser, self).__init__()
-        self.extensions = ('.owl', '.ont')
+        self.extensions = ('.owl', '.ont', '.owl.gz', '.ont.gz')
 
-    def hook(self, *args, **kwargs):
+    def hook(self, **kwargs):
         """Returns True if this parser should be used.
 
         The current behaviour relies on filenames and file extension
@@ -73,7 +73,6 @@ class OwlXMLTreeParser(OwlXMLParser):
 
         while True:
             chunk = stream.read(1024)
-            #print(chunk)
             if not chunk: break
             parser.feed(chunk)
 
@@ -215,9 +214,10 @@ class _OwlXMLTarget(object):
 
         self.current_section = None
         self.current_tag = {'name':''}
+        self.current_depth = 0
 
     def start(self, tag, attrib):
-
+        self.current_depth += 1
         self.current_tag['name'] = tag
 
         if tag == OWL_ONTOLOGY and RDF_ABOUT in attrib:
@@ -226,12 +226,9 @@ class _OwlXMLTarget(object):
 
         elif tag == OWL_CLASS:
             if RDF_ABOUT in attrib:
-                self.in_fake_class = False
                 self.current_section = OwlSection.classes
                 self.classes.append(collections.defaultdict(dict))
                 self.classes[-1]['id'] = {'data': [self._get_id_from_url(attrib[RDF_ABOUT])]}
-            else:
-                self.in_fake_class = True
 
         elif self.current_section == OwlSection.ontology:
             basename = self._get_basename(tag)
@@ -251,19 +248,18 @@ class _OwlXMLTarget(object):
             #print(self.classes[-1][basename])
 
     def end(self, tag):
-        #print("end %s" % tag)
+        self.current_depth -= 1
+
         if tag == OWL_ONTOLOGY:
             self.current_section = None
 
         if tag == OWL_CLASS:
-            if self.in_fake_class:
+            if self.current_depth > 1:
                 self.current_section = OwlSection.classes
             else:
                 self.current_section = None
-            self.in_fake_class = False
 
     def data(self, data):
-        #print("data %r" % data)
         data = data.strip()
 
         if data:

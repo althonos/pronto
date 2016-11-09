@@ -14,7 +14,7 @@ class Parser(object):
 
     _instances = {}
 
-    def __init__(self, timeout=None):
+    def __init__(self):
         self._instances[type(self).__name__] = self
 
     #@pronto.utils.timeout(0)

@@ -24,9 +24,9 @@ import os
 import warnings
 import six
 import gzip
-import collections
+import tempfile
 import contextlib
-import functools
+import collections
 
 from six.moves.urllib.error import URLError, HTTPError
 
@@ -38,7 +38,7 @@ except ImportError:
 from .             import __version__
 from .term         import Term, TermList
 from .parser       import Parser
-from .utils        import ProntoWarning, output_bytes
+from .utils        import ProntoWarning, output_str
 from .relationship import Relationship
 
 class Ontology(object):
@@ -69,6 +69,11 @@ class Ontology(object):
             >>> with open('tests/run/cl.obo', 'w') as f:
             ...     lines_count = f.write(cl.obo)
 
+        Use the parser argument to force a parser:
+
+            >>> cl = cl = Ontology("tests/resources/cl.ont",
+            ...                    parser='OwlXMLTargetParser')
+
 
     Todo:
         * Add a __repr__ method to Ontology
@@ -85,24 +90,11 @@ class Ontology(object):
 
         if path is not None:
 
-            if path.startswith(('http', 'ftp')): #or path.startswith('ftp'):
-                req = six.moves.urllib.request.Request(path, headers={'HTTP_CONNECTION': 'keep-alive'})
-                handle = six.moves.urllib.request.urlopen(req, timeout=timeout)
-            else:
-                if os.path.exists(path):
-                    handle = open(path, 'rb')
-                else:
-                    raise OSError('Ontology file {} could not be found'.format(path))
-            if path.endswith('gz'):
-                handle = gzip.GzipFile(fileobj=handle)
-
-            self.parse(handle, parser)
-            handle.close()
+            with self._get_handle(path, timeout) as handle:
+                self.parse(handle, parser)
 
             if self.__parsedby__ == None:
-                raise ValueError("Could not find a suitable parser to parse {},"
-                                 "consider using the parser argument to create"
-                                 " the Ontology".format(path))
+                raise ValueError("Could not find a suitable parser to parse {}".format(path))
 
             self.adopt()
 
@@ -192,25 +184,26 @@ class Ontology(object):
         """Parse the given file using available Parser instances
 
         Raises:
-            TypeError: when the parser argument is not a string,
-                a Parser or None
-            ValueError: when the parser argumentis a string that does
+            TypeError: when the parser argument is not a string or None,
+            ValueError: when the parser argument is a string that does
                 not name a Parser
 
         """
-        if not (isinstance(parser, (Parser, str, six.text_type)) or parser is None):
-            raise TypeError("parser must be either a Parser, the name of a parser, or None")
-        elif isinstance(parser, six.text_type) and not parser in Parser._instances:
-            raise ValueError("could not find parser: {}".format(parser))
-        elif isinstance(parser, Parser):
-            FORCE = True
-            parsers = [parser]
-        elif isinstance(parser, (str, six.text_type)):
-            FORCE = True
-            parsers = [Parser._instances[parser]]
-        elif parser is None:
+
+        if parser is None:
             FORCE = False
             parsers = Parser._instances.values()
+        elif isinstance(parser, (str, six.text_type)):
+            if parser in Parser._instances:
+                FORCE = True
+                parsers = [Parser._instances[parser]]
+            else:
+                raise ValueError("could not find parser: {}".format(parser))
+        else:
+            raise TypeError("parser must be {types} or None, not {actual}".format(
+                types = " or ".join([six.text_type.__name__, six.binary_type.__name__]),
+                actual=type(parser).__name__,
+            ))
 
         for p in parsers:
             if p.hook(stream=stream, path=self.path, force=FORCE):
@@ -381,6 +374,33 @@ class Ontology(object):
         self.adopt()
         self.reference()
 
+    @contextlib.contextmanager
+    def _get_handle(self, path, timeout=2):
+
+        REMOTE = path.startswith(('http', 'ftp'))
+        ZIPPED = path.endswith('gz')
+
+        if REMOTE:
+            req = six.moves.urllib.request.Request(path, headers={'HTTP_CONNECTION': 'keep-alive'})
+            if not ZIPPED or (ZIPPED and six.PY3):
+                handle = six.moves.urllib.request.urlopen(req, timeout=timeout)
+                if ZIPPED: handle = gzip.GzipFile(fileobj=handle)
+            else:
+                raise NotImplementedError("Cannot parse a remote zipped file (this is an urllib2 limitation)")
+
+        else:
+            if os.path.exists(path):
+                handle = open(path, 'rb')
+            else:
+                raise OSError('Ontology file {} could not be found'.format(path))
+            if ZIPPED:
+                handle = gzip.GzipFile(fileobj=handle)
+
+        try:
+            yield handle
+        finally:
+            handle.close()
+
     def _include_term_list(self, termlist):
         """Add terms from a TermList to the ontology.
         """
@@ -440,7 +460,7 @@ class Ontology(object):
                 except AttributeError:
                     self.terms[term]._empty_cache()
 
-    @output_bytes
+    @output_str
     def _obo_meta(self):
         """Generates the obo metadata header
 
@@ -496,7 +516,7 @@ class Ontology(object):
                           default=lambda o: o.__deref__)
 
     @property
-    @output_bytes
+    @output_str
     def obo(self):
         """Returns the ontology serialized in obo format.
         """

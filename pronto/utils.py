@@ -10,24 +10,7 @@ Todo:
     * Maybe add a ProntoError class ?
 """
 
-#import functools
-#import errno
-#import os
-#import signal
-#import itertools
 import six
-import atexit
-
-import multiprocessing
-import multiprocessing.pool
-import multiprocessing.queues
-
-from six.moves.urllib.error import URLError, HTTPError
-
-try:
-    from lxml.etree import XMLSyntaxError as ParseError
-except ImportError: # pragma: no cover
-    from xml.etree.ElementTree import ParseError
 
 
 class ProntoWarning(Warning):
@@ -57,7 +40,7 @@ def unique_everseen(iterable):
         seen_add(element)
         yield element
 
-def output_bytes(f):
+def output_str(f):
     if six.PY2:
         def new_f(*args, **kwargs):
             return f(*args, **kwargs).encode("utf-8")

@@ -5,10 +5,8 @@ import os
 import time
 import functools
 import unittest
-import contextlib
 import importlib
 import warnings
-import gzip
 
 try:
     from unittest import mock
@@ -40,6 +38,9 @@ class TestProntoParser(unittest.TestCase):
             self.assertIsInstance(term.name, six.text_type)
             self.assertIsInstance(term.desc, six.text_type)
 
+        for importpath in i:
+            self.assertIsInstance(importpath, six.text_type)
+
         for k,v in six.iteritems(m):
             self.assertIsInstance(k, six.text_type)
             for x in v:
@@ -66,9 +67,7 @@ class TestProntoOwlParser(TestProntoParser):
             handle = open(path, 'rb')
 
         try:
-            t1 = time.time()
             m,t,i = parser.parse(handle)
-            t2 = time.time()
         finally:
             handle.close()
 

@@ -7,7 +7,6 @@ This module defines the Obo parsing method.
 
 import collections
 import six
-import os
 
 from .              import Parser
 from .utils         import OboSection
@@ -30,9 +29,9 @@ class OboParser(Parser):
         self._rawtypedef = []
         self._section    = OboSection.meta
 
-        self.extensions = ".obo"
+        self.extensions = (".obo", ".obo.gz")
 
-    def hook(self, *args, **kwargs):
+    def hook(self, **kwargs):
         """Returns True if this parser should be used.
 
         The current behaviour relies on filenames and file extension

@@ -3,12 +3,10 @@
 import sys
 import six
 import os
-import time
 import functools
 import unittest
 import contextlib
 import importlib
-import gzip
 import warnings
 
 try:
@@ -40,9 +38,9 @@ class TestProntoOwlParserUtils(unittest.TestCase):
 
 class TestProntoUtils(unittest.TestCase):
 
-    def test_output_bytes(self):
+    def test_output_str(self):
 
-        @pronto.utils.output_bytes
+        @pronto.utils.output_str
         def unicode_returning_function():
             """This function returns str in Py3 and unicode in Py2"""
             return six.u("abc")

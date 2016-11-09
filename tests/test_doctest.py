@@ -5,7 +5,6 @@ Test doctest contained tests in every file of the module.
 
 import os
 import sys
-import unittest
 import doctest
 import shutil
 import re

@@ -98,7 +98,7 @@ class Relationship(object):
 
             self.obo_name = obo_name
             self.symmetry = symmetry
-            self.transitivity = reflexivity
+            self.transitivity = transitivity
             self.reflexivity = reflexivity
             self.complementary = complementary or ''
             self.prefix = prefix or ''

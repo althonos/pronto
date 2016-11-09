@@ -4,6 +4,7 @@ pronto.parser.owl
 
 This module defines the Owl parsing method.
 """
+from __future__ import unicode_literals
 
 import functools
 import itertools
@@ -68,7 +69,16 @@ class OwlXMLTreeParser(OwlXMLParser):
 
     def parse(self, stream):
 
-        tree = etree.parse(stream)
+        parser = etree.XMLParser()
+
+        while True:
+            chunk = stream.read(1024)
+            #print(chunk)
+            if not chunk: break
+            parser.feed(chunk)
+
+        tree = parser.close()
+        del parser
 
         meta, imports = self._parse_meta(tree)
         _rawterms = self._parse_terms(tree)
@@ -194,7 +204,7 @@ class OwlXMLTreeParser(OwlXMLParser):
         del meta
         return new_meta
 
-#OwlXMLTreeParser()
+OwlXMLTreeParser()
 
 
 class _OwlXMLTarget(object):
@@ -207,7 +217,6 @@ class _OwlXMLTarget(object):
         self.current_tag = {'name':''}
 
     def start(self, tag, attrib):
-        #print("start %s %r" % (tag, dict(attrib)))
 
         self.current_tag['name'] = tag
 
@@ -325,7 +334,7 @@ class OwlXMLTargetParser(OwlXMLParser):
         for k,v in meta.items():
 
             try:
-                if v['datatype'] == "{}string".format(owl_ns['xsd']):
+                if v['datatype'] == "{}string".format(owl_ns['xsd']) and k not in {'hasDbXref', 'subClassOf'}:
 
                     try:
                         new_meta[owl_to_obo[k]] = ''.join(meta[k]['data'])
@@ -363,39 +372,39 @@ class OwlXMLTargetParser(OwlXMLParser):
 
                 try:
 
-                    if 'datatype' in v and v['datatype'] == "{}string".format(owl_ns['xsd']) and k != "id":
+                    # if 'datatype' in v and v['datatype'] == "{}string".format(owl_ns['xsd']) and k != "id":
 
-                        try:
-                            new_term[owl_to_obo[k]] = ''.join(rawterm[k]['data'])
-                        except KeyError:
-                            new_term[k] = ''.join(rawterm[k]['data'])
+                    #     try:
+                    #         new_term[owl_to_obo[k]] = ''.join(rawterm[k]['data'])
+                    #     except KeyError:
+                    #         new_term[k] = ''.join(rawterm[k]['data'])
 
-                    elif k == "subClassOf":
-                        new_term[Relationship('is_a')] = [self._get_id_from_url(t) for t in rawterm['subClassOf']['data']]
+                    if k == "subClassOf":
+                        new_term[Relationship('is_a')] = [self._get_id_from_url(t) for t in rawterm[k]['data']]
 
                     else:
                         try:
-                            new_term[owl_to_obo[k]] = rawterm[k]['data'][0]
+                            new_term[owl_to_obo[k]] = rawterm[k]['data']
                         except KeyError:
-                            new_term[k] = rawterm[k]['data'][0]
+                            new_term[k] = rawterm[k]['data']
 
                 except TypeError:
                     pass
 
             del rawterm
 
-            _id = new_term['id']
+            _id = new_term['id'][0]
             del new_term['id']
 
             try:
-                name = new_term['label']
+                name = new_term['label'][0]
                 del new_term['label']
             except KeyError:
                 name = ''
 
 
             try:
-                desc = new_term['IAO_0000115']
+                desc = ''.join(new_term['IAO_0000115'])
                 del new_term['IAO_0000115']
             except KeyError:
                 desc = ''

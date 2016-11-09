@@ -6,7 +6,9 @@ pronto.term
 This module defines the Term and TermList classes.
 """
 from __future__ import unicode_literals
+
 import six
+import collections
 
 from .relationship import Relationship
 from .utils import output_bytes
@@ -28,7 +30,7 @@ class Term(object):
 
     """
 
-    def __init__(self, tid, name, desc='', relations=None, other=None):
+    def __init__(self, tid, name='', desc='', relations=None, other=None):
         """
 
         Parameters:
@@ -45,6 +47,7 @@ class Term(object):
         self.desc = desc
         self.relations = relations or {}
         self.other = other or {}
+
         self._rchildren  = {}
         self._rparents = {}
         self._children = None

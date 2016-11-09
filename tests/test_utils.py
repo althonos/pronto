@@ -45,7 +45,7 @@ class TestProntoUtils(unittest.TestCase):
         @pronto.utils.output_bytes
         def unicode_returning_function():
             """This function returns str in Py3 and unicode in Py2"""
-            return u"abc"
+            return six.u("abc")
 
         self.assertIsInstance(unicode_returning_function(), str)
 

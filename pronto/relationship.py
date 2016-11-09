@@ -5,8 +5,10 @@ pronto.relationship
 
 This submodule contains the definition of the Relationship class.
 """
+from __future__ import unicode_literals
 
 import collections
+import six
 
 from .utils import unique_everseen
 
@@ -82,6 +84,18 @@ class Relationship(object):
 
         """
         if obo_name not in self._instances:
+
+            if not isinstance(obo_name, six.text_type):
+                obo_name = obo_name.decode('utf-8')
+            if complementary is not None and not isinstance(complementary, six.text_type):
+                complementary = complementary.decode('utf-8')
+            if prefix is not None and not isinstance(prefix, six.text_type):
+                prefix = prefix.decode('utf-8')
+            if direction is not None and not isinstance(direction, six.text_type):
+                direction = direction.decode('utf-8')
+            if comment is not None and not isinstance(comment, six.text_type):
+                comment = comment.decode('utf-8')
+
             self.obo_name = obo_name
             self.symmetry = symmetry
             self.transitivity = reflexivity
@@ -90,7 +104,12 @@ class Relationship(object):
             self.prefix = prefix or ''
             self.direction = direction or ''
             self.comment = comment or ''
-            self.aliases = aliases or list()
+            if aliases is not None:
+                self.aliases = [alias.decode('utf-8') if not isinstance(alias, six.text_type) else alias
+                                    for alias in aliases]
+            else:
+                self.aliases = []
+
             self._instances[obo_name] = self
             for alias in self.aliases:
                 self._instances[alias] = self
@@ -138,7 +157,7 @@ class Relationship(object):
         This allows to do the following (which is frecking cool):
 
             >>> Relationship('has_part').direction
-            'topdown'
+            u'topdown'
 
         The Python syntax is overloaded, and what looks like a object
         initialization in fact retrieves an existing object with all its

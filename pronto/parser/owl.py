@@ -6,9 +6,7 @@ This module defines the Owl parsing method.
 """
 from __future__ import unicode_literals
 
-import functools
 import itertools
-import os
 import collections
 import six
 #FEAT# DESERIALIZE AS DATES
@@ -16,7 +14,7 @@ import six
 
 try:
     import lxml.etree as etree
-except ImportError: # pragma: no-cover
+except ImportError:
     try:
         import xml.etree.cElementTree as etree
     except ImportError:
@@ -37,13 +35,16 @@ OWL_ONTOLOGY = "{{{}}}{}".format(owl_ns['owl'], 'Ontology')
 
 
 class OwlXMLParser(Parser):
+    """Abstract OwlXMLParser.
+
+    Provides functions common to all OwlXMLParsers, such as a function to
+    extract ontology terms id from a url, or the common :obj:`hook` method.
+    """
 
     ns = owl_ns
+    extensions = ('.owl', '.ont', '.owl.gz', '.ont.gz')
 
-    def __init__(self):
-        super(OwlXMLParser, self).__init__()
-        self.extensions = ('.owl', '.ont', '.owl.gz', '.ont.gz')
-
+    @classmethod
     def hook(self, **kwargs):
         """Returns True if this parser should be used.
 
@@ -55,19 +56,40 @@ class OwlXMLParser(Parser):
         if 'path' in kwargs:
             return kwargs['path'].endswith(self.extensions)
 
+    @classmethod
     def parse(self, stream):
+        """Parse the stream.
+
+        This method is a classmethod, so it can be used to simply extract
+        metadata, terms and imports of a file-like object without creating
+        an ontology.
+
+        Example:
+            >>> fromp
+
+        Parameters:
+            stream (file handle): a binary stream of the file to parse
+
+        Returns:
+            dict: a dictionary containing the metadata headers
+            dict: a dictionnary containing the terms
+            set:  a set containing the imports
+        """
         raise NotImplementedError
 
     @staticmethod
     def _get_id_from_url(url):
-        if '#' in url: _id = url.split('#')[-1]
-        else: _id = url.split('/')[-1]
+        if '#' in url:
+            _id = url.split('#')[-1]
+        else:
+            _id = url.split('/')[-1]
         return _id.replace('_', ':')
 
 
 class OwlXMLTreeParser(OwlXMLParser):
 
-    def parse(self, stream):
+    @classmethod
+    def parse(cls, stream):
 
         parser = etree.XMLParser()
 
@@ -79,13 +101,13 @@ class OwlXMLTreeParser(OwlXMLParser):
         tree = parser.close()
         del parser
 
-        meta, imports = self._parse_meta(tree)
-        _rawterms = self._parse_terms(tree)
+        meta, imports = cls._parse_meta(tree)
+        _rawterms = cls._parse_terms(tree)
         del tree
 
-        terms = self._classify(_rawterms)
+        terms = cls._classify(_rawterms)
         del _rawterms
-        meta = self._relabel_owl_metadata(meta)
+        meta = cls._relabel_owl_metadata(meta)
 
         return meta, terms, imports
 
@@ -108,7 +130,8 @@ class OwlXMLTreeParser(OwlXMLParser):
 
         return meta, imports
 
-    def _parse_terms(self, tree):
+    @classmethod
+    def _parse_terms(cls, tree):
 
         _rawterms = []
 
@@ -118,7 +141,7 @@ class OwlXMLTreeParser(OwlXMLParser):
                 continue                         # created by restriction
 
             _rawterms.append(collections.defaultdict(list))
-            _rawterms[-1]['id'].append(self._get_id_from_url(rawterm.get(RDF_ABOUT)))
+            _rawterms[-1]['id'].append(cls._get_id_from_url(rawterm.get(RDF_ABOUT)))
 
             for elem in itertools.islice(rawterm.iter(), 1, None):
 
@@ -130,25 +153,23 @@ class OwlXMLTreeParser(OwlXMLParser):
 
         return _rawterms
 
-    def _classify(self, _rawterms):
+    @classmethod
+    def _classify(cls, _rawterms):
         terms = {}
         for rawterm in _rawterms:
-            _id = self._extract_obo_id(rawterm)
-            name = self._extract_obo_name(rawterm)
-            desc = self._extract_obo_desc(rawterm)
-            relations = self._extract_obo_relation(rawterm)
-            others = self._relabel_owl_properties(rawterm)
+            _id = cls._extract_obo_id(rawterm)
+            name = cls._extract_obo_name(rawterm)
+            desc = cls._extract_obo_desc(rawterm)
+            relations = cls._extract_obo_relation(rawterm)
+            others = cls._relabel_owl_properties(rawterm)
             terms[_id] = Term(_id, name, desc, dict(relations), others)
         return terms
 
     @staticmethod
     def _extract_obo_id(rawterm):
-        # try:
         _id = rawterm['id'][0]
         del rawterm['id']
         return _id
-        # except IndexError:
-        #     print(rawterm)
 
     @staticmethod
     def _extract_obo_name(rawterm):
@@ -158,25 +179,31 @@ class OwlXMLTreeParser(OwlXMLParser):
             name = ''
         finally:
             del rawterm['label']
-            return name
+        return name
 
     @staticmethod
     def _extract_obo_desc(rawterm):
         desc = ''
-        try: desc = rawterm['definition'][0]
+        try:
+            desc = rawterm['definition'][0]
         except IndexError:
-            try: desc = rawterm['IAO_0000115'][0]
-            except IndexError: pass
-            finally: del rawterm['IAO_0000115']
-        finally: del rawterm['definition']
+            try:
+                desc = rawterm['IAO_0000115'][0]
+            except IndexError:
+                pass
+            finally:
+                del rawterm['IAO_0000115']
+        finally:
+            del rawterm['definition']
         return desc
 
-    def _extract_obo_relation(self, rawterm):
+    @classmethod
+    def _extract_obo_relation(cls, rawterm):
         relations = collections.defaultdict(list)
 
         for other in rawterm['subClassOf']:
             relations[Relationship('is_a')].append(
-                self._get_id_from_url(other)
+                cls._get_id_from_url(other)
             )
         del rawterm['subClassOf']
 
@@ -228,24 +255,33 @@ class _OwlXMLTarget(object):
             if RDF_ABOUT in attrib:
                 self.current_section = OwlSection.classes
                 self.classes.append(collections.defaultdict(dict))
-                self.classes[-1]['id'] = {'data': [self._get_id_from_url(attrib[RDF_ABOUT])]}
+                self.classes[-1]['id'] = {
+                    'data': [OwlXMLParser._get_id_from_url(attrib[RDF_ABOUT])],
+                }
 
         elif self.current_section == OwlSection.ontology:
             basename = self._get_basename(tag)
-            try: self.ontology_tag[basename]['data'] = [attrib[RDF_RESOURCE]]
-            except KeyError: pass
-            try: self.ontology_tag[basename]['datatype'] = attrib[RDF_DATATYPE]
-            except KeyError: self.ontology_tag[basename]['datatype'] = ''
+            try:
+                self.ontology_tag[basename]['data'] = [attrib[RDF_RESOURCE]]
+            except KeyError:
+                pass
+            try:
+                self.ontology_tag[basename]['datatype'] = attrib[RDF_DATATYPE]
+            except KeyError:
+                self.ontology_tag[basename]['datatype'] = ''
 
         elif self.current_section == OwlSection.classes:
             basename = self._get_basename(tag)
-            try: self.classes[-1][basename] = {'data': [ attrib[RDF_RESOURCE] ]}
-            except KeyError: pass
-            #print(self.classes[-1])
-            #if RDF_DATATYPE in attrib:
-            try: self.classes[-1][basename]['datatype'] = attrib[RDF_DATATYPE]
-            except KeyError: pass
-            #print(self.classes[-1][basename])
+            try:
+                self.classes[-1][basename] = {
+                    'data': [attrib[RDF_RESOURCE]],
+                }
+            except KeyError:
+                pass
+            try:
+                self.classes[-1][basename]['datatype'] = attrib[RDF_DATATYPE]
+            except KeyError:
+                pass
 
     def end(self, tag):
         self.current_depth -= 1
@@ -266,8 +302,10 @@ class _OwlXMLTarget(object):
 
             if self.current_section == OwlSection.ontology:
                 basename = self._get_basename(self.current_tag['name'])
-                try: self.ontology_tag[basename]['data'].append(data)
-                except KeyError: self.ontology_tag[basename]['data'] = [data]
+                try:
+                    self.ontology_tag[basename]['data'].append(data)
+                except KeyError:
+                    self.ontology_tag[basename]['data'] = [data]
 
             elif self.current_section == OwlSection.classes:
                 basename = self._get_basename(self.current_tag['name'])
@@ -279,9 +317,8 @@ class _OwlXMLTarget(object):
 
             del data
 
-    def comment(self, text):
-        pass
-        #print("comment %s" % text)
+    # def comment(self, text):
+    #     pass
 
     def close(self):
         return self.ontology_tag, self.classes
@@ -290,15 +327,10 @@ class _OwlXMLTarget(object):
     def _get_basename(tag):
         return tag.split('}', 1)[-1]
 
-    @staticmethod
-    def _get_id_from_url(url):
-        if '#' in url: _id = url.split('#')[-1]
-        else: _id = url.split('/')[-1]
-        return _id.replace('_', ':')
-
 class OwlXMLTargetParser(OwlXMLParser):
 
-    def parse(self, stream):
+    @classmethod
+    def parse(cls, stream):
 
         parser = etree.XMLParser(target=_OwlXMLTarget())
 
@@ -310,8 +342,8 @@ class OwlXMLTargetParser(OwlXMLParser):
         meta, _rawterms = parser.close()
         del parser
 
-        meta = self._relabel_owl_metadata(meta)
-        terms = self._classify(_rawterms)
+        meta = cls._relabel_owl_metadata(meta)
+        terms = cls._classify(_rawterms)
         del _rawterms
 
         try:
@@ -352,7 +384,8 @@ class OwlXMLTargetParser(OwlXMLParser):
 
         return new_meta
 
-    def _classify(self, rawterms):
+    @classmethod
+    def _classify(cls, rawterms):
 
         terms = {}
 
@@ -376,7 +409,7 @@ class OwlXMLTargetParser(OwlXMLParser):
                     #         new_term[k] = ''.join(rawterm[k]['data'])
 
                     if k == "subClassOf":
-                        new_term[Relationship('is_a')] = [self._get_id_from_url(t) for t in rawterm[k]['data']]
+                        new_term[Relationship('is_a')] = [cls._get_id_from_url(t) for t in rawterm[k]['data']]
 
                     else:
                         try:

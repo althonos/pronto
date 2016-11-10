@@ -107,28 +107,28 @@ please cite it (see the `Zenodo record <https://zenodo.org/badge/latestdoi/23304
 Author: Martin Larralde
 
 
-.. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat&maxAge=2592000
+.. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat&maxAge=3600
    :target: https://travis-ci.org/althonos/pronto
 
-.. |Py versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat&maxAge=2592000
+.. |Py versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat&maxAge=3600
    :target: https://pypi.python.org/pypi/pronto/
 
-.. |Version| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat&maxAge=2592000
+.. |Version| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat&maxAge=3600
    :target: https://pypi.python.org/pypi/pronto
 
-.. |Dev repo| image:: https://img.shields.io/badge/repository-GitHub-blue.svg?style=flat&maxAge=2592000
+.. |Dev repo| image:: https://img.shields.io/badge/repository-GitHub-blue.svg?style=flat&maxAge=3600
    :target: https://github.com/althonos/pronto
 
-.. |License| image:: https://img.shields.io/pypi/l/pronto.svg?style=flat&maxAge=2592000
+.. |License| image:: https://img.shields.io/pypi/l/pronto.svg?style=flat&maxAge=3600
    :target: https://www.gnu.org/licenses/gpl-3.0.html
 
-.. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=2592000
+.. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=3600
    :target: https://codacy.com/app/althonos/pronto
 
 .. |DOI| image:: https://zenodo.org/badge/23304/althonos/pronto.svg
    :target: https://zenodo.org/badge/latestdoi/23304/althonos/pronto
 
-.. |coverage| image:: https://img.shields.io/codacy/coverage/157b5fd24e5648ea80580f28399e79a4.svg?maxAge=2592000   
+.. |coverage| image:: https://img.shields.io/codacy/coverage/157b5fd24e5648ea80580f28399e79a4.svg?maxAge=3600
    :target: https://www.codacy.com/app/althonos/pronto/dashboard
 
 .. |rtd| image:: https://readthedocs.org/projects/pronto/badge/?version=latest

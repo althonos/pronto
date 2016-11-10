@@ -29,7 +29,6 @@ class ProntoWarning(Warning):
     """
     pass
 
-
 def unique_everseen(iterable):
     """List unique elements, preserving order. Remember all elements ever seen."""
     # unique_everseen('AAAABBBCCDAABBB')    --> A B C D

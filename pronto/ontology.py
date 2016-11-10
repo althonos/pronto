@@ -24,22 +24,17 @@ import os
 import warnings
 import six
 import gzip
-import tempfile
 import contextlib
-import collections
 
 from six.moves.urllib.error import URLError, HTTPError
 
-try:
-    from lxml.etree import XMLSyntaxError as ParseError
-except ImportError:
-    from xml.etree.ElementTree import ParseError
+from .                   import __version__
+from .term               import Term, TermList
+from .parser             import Parser
+from .parser.owl         import etree as _etree
+from .utils              import ProntoWarning, output_str
+from .relationship       import Relationship
 
-from .             import __version__
-from .term         import Term, TermList
-from .parser       import Parser
-from .utils        import ProntoWarning, output_str
-from .relationship import Relationship
 
 class Ontology(object):
     """An ontology.
@@ -49,13 +44,13 @@ class Ontology(object):
     method.
 
     Examples:
-        Import an ontology from a remote location:
+        Import an ontology from a remote location::
 
             >>> from pronto import Ontology
             >>> envo = Ontology("https://raw.githubusercontent.com/"
             ... "EnvironmentOntology/envo/master/src/envo/envo.obo")
 
-        Merge two local ontologies and export the merge:
+        Merge two local ontologies and export the merge::
 
             >>> uo = Ontology("tests/resources/uo.obo", False)
             >>> cl = Ontology("tests/resources/cl.ont", False)
@@ -63,16 +58,16 @@ class Ontology(object):
             >>> with open('tests/run/merge.obo', 'w') as f:
             ...     lines_count = f.write(uo.obo)
 
-        Export an ontology with its dependencies embedded:
+        Export an ontology with its dependencies embedded::
 
             >>> cl = Ontology("tests/resources/cl.ont")
             >>> with open('tests/run/cl.obo', 'w') as f:
             ...     lines_count = f.write(cl.obo)
 
-        Use the parser argument to force a parser:
+        Use the parser argument to force usage a parser::
 
-            >>> cl = cl = Ontology("tests/resources/cl.ont",
-            ...                    parser='OwlXMLTargetParser')
+            >>> cl = Ontology("tests/resources/cl.ont",
+            ...               parser='OwlXMLTargetParser')
 
 
     Todo:
@@ -296,7 +291,7 @@ class Ontology(object):
                         self.merge(Ontology( os.path.join(os.path.dirname(self.path), i),
                                              import_depth=import_depth-1, parser=parser))
 
-                except (IOError, OSError, URLError, HTTPError, ParseError) as e:
+                except (IOError, OSError, URLError, HTTPError, _etree.ParseError) as e:
                     warnings.warn("{} occured during import of "
                                   "{}".format(type(e).__name__, i),
                                   ProntoWarning)
@@ -367,15 +362,17 @@ class Ontology(object):
 
         """
         if not isinstance(other, Ontology):
-            raise TypeError("'merge' requires an Ontology as argument, not {}".format(type(other)))
+            raise TypeError("'merge' requires an Ontology as argument,"
+                            " not {}".format(type(other)))
 
         self.terms.update(other.terms)
         self._empty_cache()
         self.adopt()
         self.reference()
 
+    @staticmethod
     @contextlib.contextmanager
-    def _get_handle(self, path, timeout=2):
+    def _get_handle(path, timeout=2):
 
         REMOTE = path.startswith(('http', 'ftp'))
         ZIPPED = path.endswith('gz')
@@ -384,7 +381,8 @@ class Ontology(object):
             req = six.moves.urllib.request.Request(path, headers={'HTTP_CONNECTION': 'keep-alive'})
             if not ZIPPED or (ZIPPED and six.PY3):
                 handle = six.moves.urllib.request.urlopen(req, timeout=timeout)
-                if ZIPPED: handle = gzip.GzipFile(fileobj=handle)
+                if ZIPPED:
+                    handle = gzip.GzipFile(fileobj=handle)
             else:
                 raise NotImplementedError("Cannot parse a remote zipped file (this is an urllib2 limitation)")
 
@@ -471,10 +469,13 @@ class Ontology(object):
             * Change the `auto-generated-by` tag to be **auto-generated-by pronto pronto.__version__**
 
         """
-        metatags = ["format-version", "data-version", "date", "saved-by", "auto-generated-by",
-                "import", "subsetdef", "synonymtypedef", "default-namespace", "namespace-id-rule",
-                "idspace", "treat-xrefs-as-equivalent", "treat-xrefs-as-genus-differentia",
-                "treat-xrefs-as-is_a", "remark", "ontology"]
+        metatags = [
+            "format-version", "data-version", "date", "saved-by",
+            "auto-generated-by","import", "subsetdef", "synonymtypedef",
+            "default-namespace", "namespace-id-rule", "idspace",
+            "treat-xrefs-as-equivalent", "treat-xrefs-as-genus-differentia",
+            "treat-xrefs-as-is_a", "remark", "ontology"
+        ]
 
         obo_meta = "\n".join(
 
@@ -488,8 +489,10 @@ class Ontology(object):
                     for k,v in sorted(six.iteritems(self.meta), key=lambda x: x[0])
                         for x in v
                             if k not in metatags
-            ] +      ["ontology: {}".format(x) for x in self.meta["ontology"]] if "ontology" in self.meta
-                else ["ontology: {}".format(self.meta["namespace"][0].lower())] if "namespace" in self.meta
+            ] +      ["ontology: {}".format(x) for x in self.meta["ontology"]]
+                            if "ontology" in self.meta
+                else ["ontology: {}".format(self.meta["namespace"][0].lower())]
+                            if "namespace" in self.meta
                 else []
 
         )
@@ -521,19 +524,29 @@ class Ontology(object):
         """Returns the ontology serialized in obo format.
         """
         meta = self._obo_meta()
-        try: meta = meta.decode('utf-8')
-        except AttributeError: pass
+        if not isinstance(meta, six.text_type):
+            meta = meta.decode('utf-8')
         meta = [meta] if meta else []
 
         if six.PY2:
             try: # if 'namespace' in self.meta:
-                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self if t.id.startswith(self.meta['namespace'][0])])
+                return "\n\n".join( meta + [
+                    t.obo.decode('utf-8')
+                        for t in self
+                            if t.id.startswith(self.meta['namespace'][0])
+                ])
             except KeyError:
-                return "\n\n".join( meta + [t.obo.decode('utf-8') for t in self])
-
+                return "\n\n".join( meta + [
+                    t.obo.decode('utf-8') for t in self
+                ])
         elif six.PY3:
             try: # if 'namespace' in self.meta:
-                return "\n\n".join( meta + [t.obo for t in self if t.id.startswith(self.meta['namespace'][0])])
+                return "\n\n".join( meta + [
+                    t.obo for t in self
+                        if t.id.startswith(self.meta['namespace'][0])
+                ])
             except KeyError:
-                return "\n\n".join( meta + [t.obo for t in self])
+                return "\n\n".join( meta + [
+                    t.obo for t in self
+                ])
 

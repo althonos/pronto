@@ -1,3 +1,4 @@
+# coding: utf-8
 """
 pronto.parser.obo
 =================
@@ -44,7 +45,7 @@ class OboParser(Parser):
 
 
     def parse(self, stream):
-        """Parse the stream provided.
+        """Parse the stream.
 
         Parameters:
             stream (file handle): a binary stream of the file to parse
@@ -62,7 +63,8 @@ class OboParser(Parser):
 
             # manage encoding && cleaning of line
             streamline = streamline.strip().decode('utf-8')
-            if not streamline: continue
+            if not streamline:
+                continue
 
             self._check_section(streamline)
             if self._section is OboSection.meta:
@@ -119,7 +121,8 @@ class OboParser(Parser):
                 try:                                        # not too far avoid parsing a sentence
                     self._parse_metadata(value.strip())     # containing a ':' as a key: value
                     return                                  # obo statement nested in a remark
-                except ValueError: pass                     # (20 is arbitrary, it may require tweaking)
+                except ValueError:                          # (20 is arbitrary, it may require tweaking)
+                    pass
         self.meta[key].append(value)
 
     def _parse_typedef(self, line):
@@ -173,26 +176,36 @@ class OboParser(Parser):
         for _term in self._rawterms:
             _id   = _term['id'][0]
 
-            try: _name = _term['name'][0]
-            except IndexError: _name = ''
-            finally: del _term['name']
+            try:
+                _name = _term['name'][0]
+            except IndexError:
+                _name = ''
+            finally:
+                del _term['name']
 
-            try: _desc = _term['def'][0]
-            except IndexError: _desc = ''
-            finally: del _term['def']
+            try:
+                _desc = _term['def'][0]
+            except IndexError:
+                _desc = ''
+            finally:
+                del _term['def']
 
             _relations = collections.defaultdict(list)
             try:
                 for other in _term['is_a']:
                     _relations[Relationship('is_a')].append(other.split('!')[0].strip())
-            except IndexError: pass
-            finally: del _term['is_a']
+            except IndexError:
+                pass
+            finally:
+                del _term['is_a']
 
             try:
                 for relname, other in ( x.split(' ', 1) for x in _term['relationship'] ):
                     _relations[Relationship(relname)].append(other.split('!')[0].strip())
-            except IndexError: pass
-            finally: del _term['relationship']
+            except IndexError:
+                pass
+            finally:
+                del _term['relationship']
 
             self.terms[_id] = Term(_id, _name, _desc, dict(_relations), dict(_term))
 

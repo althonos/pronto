@@ -149,8 +149,6 @@ class Relationship(object):
         """Overloaded :obj:`object.__repr__`"""
         return "Relationship({})".format(self.obo_name)
 
-#    @classmethod
-#    @staticmethod
     def __new__(cls, obo_name, *args, **kwargs):
         """Overloaded :obj:`object.__new__` method that `memoizes` the objects.
 

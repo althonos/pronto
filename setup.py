@@ -3,22 +3,23 @@
 
 from setuptools import setup, find_packages
 import warnings
-import platform
 
 warnings.simplefilter("ignore")
 import pronto
 
 
 def format_for_setup(requirement_file):
+    """Build a list of requirements out of requirements.txt files.
+    """
     requirements = []
     with open(requirement_file) as rq:
-
         for line in rq:
             line = line.strip()
             if line.startswith('-r'):
-                requirements.extend(format_for_setup(line.split(' ', 1)[-1]))
+                other_requirement_file = line.split(' ', 1)[-1]
+                requirements.extend(format_for_setup(other_requirement_file))
             elif line:
-                    requirements.append(line)
+                requirements.append(line)
     return requirements
 
 ## SETUPTOOLS VERSION

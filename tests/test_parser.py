@@ -59,7 +59,8 @@ class TestProntoOwlParser(TestProntoParser):
         self.xml_etree = importlib.import_module("xml.etree.ElementTree")
         self.cxml_etree = importlib.import_module("xml.etree.cElementTree")
 
-    def _parse(self, parser, path):
+    @staticmethod
+    def _parse(parser, path):
         if path.startswith(('http', 'ftp')):
             handle = six.moves.urllib.request.urlopen(path)
         else:
@@ -173,11 +174,7 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
 
 
 def setUpModule():
-    """
-    """
     warnings.simplefilter('ignore')
 
 def tearDownModule():
-    """
-    """
     warnings.simplefilter(warnings.defaultaction)

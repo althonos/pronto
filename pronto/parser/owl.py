@@ -95,7 +95,8 @@ class OwlXMLTreeParser(OwlXMLParser):
 
         while True:
             chunk = stream.read(1024)
-            if not chunk: break
+            if not chunk:
+                break
             parser.feed(chunk)
 
         tree = parser.close()
@@ -336,7 +337,8 @@ class OwlXMLTargetParser(OwlXMLParser):
 
         while True:
             chunk = stream.read(1024)
-            if not chunk: break
+            if not chunk:
+                break
             parser.feed(chunk)
 
         meta, _rawterms = parser.close()

@@ -8,7 +8,6 @@ This module defines the Term and TermList classes.
 from __future__ import unicode_literals
 
 import six
-import collections
 
 from .relationship import Relationship
 from .utils import output_str
@@ -407,10 +406,6 @@ class TermList(list):
         except AttributeError:
             raise TypeError('TermList can only contain Terms.')
 
-        #for term in self:
-        #    if not isinstance(term, Term):
-        #        raise TypeError('TermList can only contain Terms.')
-
     def rparents(self, level=-1, intermediate=True):
         return TermList(set(
             [y for x in self for y in x.rparents(level, intermediate)]
@@ -431,6 +426,8 @@ class TermList(list):
 
     @property
     def id(self):
+        """Return a list containing id of all terms in current TermList
+        """
         return [x.id for x in self]
 
     @property
@@ -477,6 +474,3 @@ class TermList(list):
             _id = term
 
         return any((t.id==_id if isinstance(t, Term) else t==_id for t in self))
-
-        #return False
-

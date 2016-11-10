@@ -129,6 +129,7 @@ class OwlXMLTreeParser(OwlXMLParser):
             elif elem.get(RDF_RESOURCE) is not None:
                 meta[basename].append(elem.get(RDF_RESOURCE))
 
+        meta['import'] = list(imports)
         return meta, imports
 
     @classmethod
@@ -350,7 +351,6 @@ class OwlXMLTargetParser(OwlXMLParser):
 
         try:
             imports = set(meta['imports'])
-            del meta['imports']
         except KeyError:
             imports = set()
 

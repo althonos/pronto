@@ -17,20 +17,7 @@ from ..term         import Term
 
 class OboParser(Parser):
 
-    def __init__(self):
-        """Initializes the parser.
-        """
-        #if type(self).__name__ not in self._instances:
-        #    self._instances[type(self).__name__] = self
-        super(OboParser, self).__init__()
-
-        self.terms       = {}
-        self.meta        = collections.defaultdict(list)
-        self._rawterms   = []
-        self._rawtypedef = []
-        self._section    = OboSection.meta
-
-        self.extensions = (".obo", ".obo.gz")
+    extensions = (".obo", ".obo.gz")
 
     def hook(self, **kwargs):
         """Returns True if this parser should be used.
@@ -43,8 +30,8 @@ class OboParser(Parser):
         if 'path' in kwargs:
             return kwargs['path'].endswith(self.extensions)
 
-
-    def parse(self, stream):
+    @classmethod
+    def parse(cls, stream):
         """Parse the stream.
 
         Parameters:
@@ -56,8 +43,10 @@ class OboParser(Parser):
             set:  a set containing the imports
 
         """
-
-        self.__init__() # resets values to empty lists
+        _section    = OboSection.meta
+        meta        = collections.defaultdict(list)
+        _rawterms   = []
+        _rawtypedef = []
 
         for streamline in stream:
 
@@ -66,19 +55,21 @@ class OboParser(Parser):
             if not streamline:
                 continue
 
-            self._check_section(streamline)
-            if self._section is OboSection.meta:
-                self._parse_metadata(streamline)
-            elif self._section is OboSection.typedef:
-                self._parse_typedef(streamline)
-            elif self._section is OboSection.term:
-                self._parse_term(streamline)
+            _section = cls._check_section(streamline, _section)
+            if _section is OboSection.meta:
+                meta = cls._parse_metadata(streamline, meta)
+            elif _section is OboSection.typedef:
+                _rawtypedef = cls._parse_typedef(streamline, _rawtypedef)
+            elif _section is OboSection.term:
+                _rawterms = cls._parse_term(streamline, _rawterms)
 
-        self._classify()
+        terms = cls._classify(_rawtypedef, _rawterms)
+        imports = set(meta['import']) if 'import' in meta else set()
 
-        return dict(self.meta), self.terms, set(self.meta['import'])
+        return dict(meta), terms, imports
 
-    def _check_section(self, line):
+    @staticmethod
+    def _check_section(line, section):
         """Updates the section currently parsed
 
         The parser starts in the OboSection.meta section but once
@@ -87,11 +78,13 @@ class OboParser(Parser):
         the OboSection.term section.
         """
         if line=="[Term]":
-            self._section = OboSection.term
+            section = OboSection.term
         if line=="[Typedef]":
-            self._section = OboSection.typedef
+            section = OboSection.typedef
+        return section
 
-    def _parse_metadata(self, line, parse_remarks=True):
+    @classmethod
+    def _parse_metadata(cls, line, meta, parse_remarks=True):
         """Parse a metadata line
 
         The metadata is organized as a "key: value" statement which
@@ -113,19 +106,20 @@ class OboParser(Parser):
             (found in imagingMS.obo). To prevent the splitting from happening,
             the text on the left of the colon must be less that *20 chars long*.
         """
-
         key, value = (x.strip() for x in line.split(':', 1))
-
         if parse_remarks and key=="remark":
-            if 0<value.find(': ')<20:                       # Checking that the ':' is not
-                try:                                        # not too far avoid parsing a sentence
-                    self._parse_metadata(value.strip())     # containing a ':' as a key: value
-                    return                                  # obo statement nested in a remark
-                except ValueError:                          # (20 is arbitrary, it may require tweaking)
+            if 0<value.find(': ')<20:                                # Checking that the ':' is not
+                try:                                                 # not too far avoid parsing a sentence
+                    meta = cls._parse_metadata(value.strip(),        # containing a ':' as a key: value
+                                               meta, parse_remarks)  # obo statement nested in a remark
+                    return meta                                      # (20 is arbitrary, it may require
+                except ValueError:                                   # tweaking)
                     pass
-        self.meta[key].append(value)
+        meta[key].append(value)
+        return meta
 
-    def _parse_typedef(self, line):
+    @staticmethod
+    def _parse_typedef(line, _rawtypedef):
         """Parse a typedef line
 
         The typedef is organized as a succesion of key:value pairs
@@ -136,12 +130,14 @@ class OboParser(Parser):
             line (str): the line containing a typedef statement
         """
         if line.strip()=="[Typedef]":
-            self._rawtypedef.append(collections.defaultdict(list))
+            _rawtypedef.append(collections.defaultdict(list))
         else:
             key, value = (x.strip() for x in line.split(':', 1))
-            self._rawtypedef[-1][key].append(value)
+            _rawtypedef[-1][key].append(value)
+        return _rawtypedef
 
-    def _parse_term(self, line):
+    @staticmethod
+    def _parse_term(line, _rawterms):
         """Parse a term line
 
         The term is organized as a succesion of key:value pairs
@@ -152,12 +148,14 @@ class OboParser(Parser):
             line (str): the line containing a term statement
         """
         if line.strip()=="[Term]":
-            self._rawterms.append(collections.defaultdict(list))
+            _rawterms.append(collections.defaultdict(list))
         else:
             key, value = (x.strip() for x in line.split(':', 1))
-            self._rawterms[-1][key].append(value)
+            _rawterms[-1][key].append(value)
+        return _rawterms
 
-    def _classify(self):
+    @staticmethod
+    def _classify(_rawtypedef, _rawterms):
         """Create proper objects out of the extracted dictionnaries
 
         New Relationship objects are instantiated with the help of
@@ -167,29 +165,27 @@ class OboParser(Parser):
         name, desc and relationships out of the raw _term dictionnary,
         and then calling the default constructor.
         """
+        terms = {}
 
-        for _typedef in self._rawtypedef:
+        for _typedef in _rawtypedef:
             Relationship._from_obo_dict( # instantiate a new Relationship
                 {k:v for k,lv in six.iteritems(_typedef) for v in lv}
             )
 
-        for _term in self._rawterms:
+        for _term in _rawterms:
             _id   = _term['id'][0]
-
             try:
                 _name = _term['name'][0]
             except IndexError:
                 _name = ''
             finally:
                 del _term['name']
-
             try:
                 _desc = _term['def'][0]
             except IndexError:
                 _desc = ''
             finally:
                 del _term['def']
-
             _relations = collections.defaultdict(list)
             try:
                 for other in _term['is_a']:
@@ -198,7 +194,6 @@ class OboParser(Parser):
                 pass
             finally:
                 del _term['is_a']
-
             try:
                 for relname, other in ( x.split(' ', 1) for x in _term['relationship'] ):
                     _relations[Relationship(relname)].append(other.split('!')[0].strip())
@@ -206,7 +201,8 @@ class OboParser(Parser):
                 pass
             finally:
                 del _term['relationship']
+            terms[_id] = Term(_id, _name, _desc, dict(_relations), dict(_term))
+        return terms
 
-            self.terms[_id] = Term(_id, _name, _desc, dict(_relations), dict(_term))
 
 OboParser()

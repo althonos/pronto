@@ -1,14 +1,28 @@
 # coding: utf-8
+"""
+pronto.parser.utils
+=================
+
+This module defines mapping to convert metadata from obo to owl and owl to
+obo, as well as enums to state the section of the ontology the parser is
+currently looking at.
+"""
 from __future__ import unicode_literals
 
-#class OboSection(enum.Enum):
-class OboSection(object):
+import six
+
+try:                        # Use enums if possible to improve
+    from enum import Enum   # output but don't have to dl enum32
+except ImportError:         # backport as it's not that important
+    Enum = object           # enough to truly depend on it
+
+
+class OboSection(Enum):
     meta    = 1
     typedef = 2
     term    = 3
 
-#class OwlSection(enum.Enum):
-class OwlSection(object):
+class OwlSection(Enum):
     ontology = 1
     classes  = 2
 
@@ -47,4 +61,4 @@ owl_to_obo = {
     #FEAT# 'is_metadata_tag': 'is_metadata_tag',
 }
 
-
+obo_to_owl = {v:k for k,v in six.iteritems(owl_to_obo)}

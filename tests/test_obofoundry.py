@@ -3,13 +3,11 @@ from __future__ import absolute_import
 
 ### DEPS
 import unittest
-import io
 import sys
 import six
 import yaml
 import os.path as op
 import warnings
-import textwrap
 
 from .test_ontology import TestProntoOntology
 from .              import utils

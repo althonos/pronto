@@ -21,11 +21,11 @@ RESOURCES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resou
 
 
 class IgnoreUnicodeChecker(doctest.OutputChecker):
-  def check_output(self, want, got, optionflags):
-    if sys.version_info[0] > 2:
-      want = re.sub("u'(.*?)'", "'\\1'", want)
-      want = re.sub('u"(.*?)"', '"\\1"', want)
-    return doctest.OutputChecker.check_output(self, want, got, optionflags)
+    def check_output(self, want, got, optionflags):
+        if sys.version_info[0] > 2:
+            want = re.sub("u'(.*?)'", "'\\1'", want)
+            want = re.sub('u"(.*?)"', '"\\1"', want)
+        return doctest.OutputChecker.check_output(self, want, got, optionflags)
 
 
 def _load_tests_from_module(tests, module, globs, setUp, tearDown):

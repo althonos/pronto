@@ -8,10 +8,7 @@ import unittest
 import importlib
 import warnings
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from .utils import mock
 
 # Make sure we're using the local pronto library
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,6 +22,7 @@ class TestProntoParser(unittest.TestCase):
         self.resources_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
 
     def _check(self, m,t,i, *args, **kwargs):
+        #FEAT# Store internals as utf-8
         #self._check_utf8(m,t,i)
         if 'exp_len' in kwargs:
             self._check_len(t, kwargs['exp_len'])
@@ -47,6 +45,8 @@ class TestProntoParser(unittest.TestCase):
                 self.assertIsInstance(x, six.text_type)
 
     def _check_len(self, t, exp_len):
+        """Check the terms dict length matches the expected length
+        """
         self.assertEqual(len(t), exp_len)
 
 
@@ -60,17 +60,14 @@ class TestProntoOwlParser(TestProntoParser):
         self.cxml_etree = importlib.import_module("xml.etree.cElementTree")
 
     def _parse(self, parser, path):
-
         if path.startswith(('http', 'ftp')):
             handle = six.moves.urllib.request.urlopen(path)
         else:
             handle = open(path, 'rb')
-
         try:
             m,t,i = parser.parse(handle)
         finally:
             handle.close()
-
         return m,t,i
 
 class TestProntoOwlTargetParser(TestProntoOwlParser):
@@ -176,7 +173,11 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
 
 
 def setUpModule():
+    """
+    """
     warnings.simplefilter('ignore')
 
 def tearDownModule():
+    """
+    """
     warnings.simplefilter(warnings.defaultaction)

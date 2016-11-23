@@ -279,6 +279,7 @@ class Term(object):
         self.other = {k:v for (k,v) in state[2]}
         self.desc = state[3]
         self.relations = {Relationship(k):v for k,v in state[4]}
+        self._empty_cache()
 
     def _empty_cache(self):
         """

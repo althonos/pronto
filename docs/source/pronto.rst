@@ -11,7 +11,6 @@ The following classes are imported when running ``from pronto import *``:
    :toctree: pronto/
 
    pronto.Ontology
-   pronto.Parser
    pronto.Relationship
    pronto.Term
    pronto.TermList

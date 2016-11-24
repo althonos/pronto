@@ -393,7 +393,6 @@ class TermList(list):
         super(TermList, self).__init__(elements or [])
         self._check_content()
 
-
     def append(self, element):
         try:
             if not element in self:
@@ -408,22 +407,22 @@ class TermList(list):
             raise TypeError('TermList can only contain Terms.')
 
     def rparents(self, level=-1, intermediate=True):
-        return TermList(set(
-            [y for x in self for y in x.rparents(level, intermediate)]
-        ))
+        return TermList(
+            {y for x in self for y in x.rparents(level, intermediate)}
+        )
 
     def rchildren(self, level=-1, intermediate=True):
-        return TermList(set(
-            [y for x in self for y in x.rchildren(level, intermediate)]
-        ))
+        return TermList(
+            {y for x in self for y in x.rchildren(level, intermediate)}
+        )
 
     @property
     def children(self):
-        return TermList( [ y for x in self for y in x.children] )
+        return TermList(y for x in self for y in x.children)
 
     @property
     def parents(self):
-        return TermList( [ y for x in self for y in x.parents] )
+        return TermList(y for x in self for y in x.parents)
 
     @property
     def id(self):
@@ -448,7 +447,7 @@ class TermList(list):
         return [x.obo for x in self]
 
     def __getstate__(self):
-        return (x for x in self)
+        return tuple(x for x in self)
 
     def __setstate__(self, state):
         self.extend(state)

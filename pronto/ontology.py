@@ -25,6 +25,7 @@ import warnings
 import six
 import gzip
 import contextlib
+import collections
 
 from six.moves.urllib.error import URLError, HTTPError
 
@@ -36,7 +37,7 @@ from .utils              import ProntoWarning, output_str
 from .relationship       import Relationship
 
 
-class Ontology(object):
+class Ontology(collections.Mapping):
     """An ontology.
 
     Ontologies inheriting from this class will be able to use the same API as
@@ -157,7 +158,7 @@ class Ontology(object):
     def __len__(self):
         """Returns the number of terms in the Ontology.
         """
-        return self.terms.__len__()
+        return len(self.terms)
 
     def __getstate__(self):
 

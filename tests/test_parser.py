@@ -7,6 +7,7 @@ import functools
 import unittest
 import importlib
 import warnings
+import platform
 
 from .utils import mock
 
@@ -73,6 +74,8 @@ class TestProntoOwlParser(TestProntoParser):
 
 class TestProntoOwlTargetParser(TestProntoOwlParser):
 
+    @unittest.skipIf(platform.python_implementation()!="CPython",
+        'cannot run lxml with {}'.format(platform.python_implementation()))
     def test_with_lxml_etree(self):
         with mock.patch("pronto.parser.owl.etree", self.lxml_etree):
             m,t,i = self._parse(
@@ -81,7 +84,9 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
             )
         self._check(m,t,i, exp_len=2348)
 
-    def test_with_xml_elementTree(self):
+    @unittest.skipIf(platform.python_implementation()!="CPython",
+        'cannot run cElementTree with {}'.format(platform.python_implementation()))
+    def test_with_xml_cElementTree(self):
         with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
@@ -89,7 +94,7 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
             )
         self._check(m,t,i, exp_len=2348)
 
-    def test_with_xml_cElementTree(self):
+    def test_with_xml_elementTree(self):
         with mock.patch("pronto.parser.owl.etree", self.xml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
@@ -97,6 +102,8 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
             )
         self._check(m,t,i, exp_len=2348)
 
+    @unittest.skipIf(platform.python_implementation()!="CPython",
+        'cannot run lxml with {}'.format(platform.python_implementation()))
     def test_with_lxml_etree_remote(self):
         with mock.patch("pronto.parser.owl.etree", self.lxml_etree):
             m,t,i = self._parse(
@@ -105,16 +112,10 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
             )
         self._check(m,t,i, exp_len=685)
 
-    def test_with_xml_elementTree_remote(self):
-        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
-            m,t,i = self._parse(
-                pronto.parser.owl.OwlXMLTargetParser(),
-                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
-            )
-        self._check(m,t,i, exp_len=685)
-
+    @unittest.skipIf(platform.python_implementation()!="CPython",
+        'cannot run cElementTree with {}'.format(platform.python_implementation()))
     def test_with_xml_cElementTree_remote(self):
-        with mock.patch("pronto.parser.owl.etree", self.xml_etree):
+        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
             m,t,i =  self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
@@ -122,8 +123,20 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
             )
         self._check(m,t,i, exp_len=685)
 
+    def test_with_xml_elementTree_remote(self):
+        with mock.patch("pronto.parser.owl.etree", self.xml_etree):
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTargetParser(),
+                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+            )
+        self._check(m,t,i, exp_len=685)
+
+
 class TestProntoOwlTreeParser(TestProntoOwlParser):
 
+
+    @unittest.skipIf(platform.python_implementation()!="CPython",
+        'cannot run lxml with {}'.format(platform.python_implementation()))
     def test_with_lxml_etree(self):
         with mock.patch("pronto.parser.owl.etree", self.lxml_etree):
             m,t,i = self._parse(
@@ -133,14 +146,6 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
         self._check(m,t,i, exp_len=2348)
 
     def test_with_xml_elementTree(self):
-        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
-            m,t,i = self._parse(
-                pronto.parser.owl.OwlXMLTreeParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
-            )
-        self._check(m,t,i, exp_len=2348)
-
-    def test_with_xml_cElementTree(self):
         with mock.patch("pronto.parser.owl.etree", self.xml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
@@ -148,6 +153,18 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
             )
         self._check(m,t,i, exp_len=2348)
 
+    @unittest.skipIf(platform.python_implementation()!="CPython",
+        'cannot run cElementTree with {}'.format(platform.python_implementation()))
+    def test_with_xml_cElementTree(self):
+        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
+            m,t,i = self._parse(
+                pronto.parser.owl.OwlXMLTreeParser(),
+                os.path.join(self.resources_dir, 'cl.ont'),
+            )
+        self._check(m,t,i, exp_len=2348)
+
+    @unittest.skipIf(platform.python_implementation()!="CPython",
+        'cannot run lxml with {}'.format(platform.python_implementation()))
     def test_with_lxml_etree_remote(self):
         with mock.patch("pronto.parser.owl.etree", self.lxml_etree):
             m,t,i = self._parse(
@@ -157,15 +174,17 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
         self._check(m,t,i, exp_len=685)
 
     def test_with_xml_elementTree_remote(self):
-        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
+        with mock.patch("pronto.parser.owl.etree", self.xml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
             )
         self._check(m,t,i, exp_len=685)
 
+    @unittest.skipIf(platform.python_implementation()!="CPython",
+        'cannot run cElementTree with {}'.format(platform.python_implementation()))
     def test_with_xml_cElementTree_remote(self):
-        with mock.patch("pronto.parser.owl.etree", self.xml_etree):
+        with mock.patch("pronto.parser.owl.etree", self.cxml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",

@@ -14,13 +14,13 @@ import os.path as op
 import warnings
 import textwrap
 
-from .utils import mock
+from . import utils
 
 if os.getcwd().endswith("pronto"):
     os.chdir("tests")
 
 # Make sure we're using the local pronto library
-sys.path.insert(0, op.dirname(op.dirname(op.abspath(__file__))))
+sys.path.insert(0, utils.MAINDIR)
 import pronto
 
 
@@ -129,7 +129,7 @@ class TestProntoFeatures(TestProntoOntology):
         Thanks to @owen-jones-gen for issue reporting.
         """
         ontology = pronto.Ontology("resources/owen-jones-gen.obo")
-        with mock.patch('sys.stdout', new=six.moves.StringIO()) as output:
+        with utils.mock.patch('sys.stdout', new=six.moves.StringIO()) as output:
             for term in ontology:
                 print(term)
                 print(term.obo)

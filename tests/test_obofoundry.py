@@ -6,7 +6,7 @@ import unittest
 import sys
 import six
 import yaml
-import os.path as op
+import os
 import warnings
 
 from .test_ontology import TestProntoOntology
@@ -14,7 +14,7 @@ from .              import utils
 
 
 # Make sure we're using the local pronto library
-sys.path.insert(0, op.dirname(op.dirname(op.abspath(__file__))))
+sys.path.insert(0, utils.MAINDIR)
 import pronto
 
 
@@ -22,7 +22,8 @@ import pronto
 class TestProntoOboFoundry(TestProntoOntology):
 
     @classmethod
-    @utils.ciskip
+    @unittest.skipIf(os.environ.get('CI', 'false').lower()=='true',
+        'too long for Travis-CI')
     def register_tests(cls):
         """Register tests for each ontology of the obofoundry"""
 

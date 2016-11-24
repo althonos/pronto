@@ -6,10 +6,10 @@ import os
 import unittest
 import warnings
 
-from .utils import mock, py2skip, ciskip
+from . import utils
 
 # Make sure we're using the local pronto library
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, utils.MAINDIR)
 import pronto
 
 
@@ -41,48 +41,6 @@ class TestProntoUtils(unittest.TestCase):
         }
         for k,v in six.iteritems(test_values):
             self.assertEqual(pronto.parser.owl.OwlXMLParser._get_id_from_url(k), v)
-
-
-class TestTestUtils(unittest.TestCase):
-
-    def setUp(self):
-        warnings.simplefilter('ignore')
-
-    def tearDown(self):
-        warnings.simplefilter('default')
-
-    def test_ciskip(self):
-        """Test the ciskip function of the tests.utils module
-
-        If there is an environment variable called CI with value true
-        (as defined in a CI build environment), then the decorated function
-        will not even be declared, and a mock function will be created and
-        called instead.
-        """
-        for v,r in ('true', list('test')), ('false', list('estt')):
-            with mock.patch.dict('os.environ', {'CI': v}):
-                @ciskip
-                def sort(l):
-                    l.sort()
-                l = list("test")
-                sort(l)
-                self.assertEqual(l, r)
-
-    def test_py2skip(self):
-        """Test the py2skip function of the tests.utils module
-
-        If the python version is not 3, then the decorated function
-        will not even be declared, and a mock function will be created and
-        called instead.
-        """
-        for v,r in ((2,7,12), list('test')), ((3,5,2), list('estt')):
-            with mock.patch('sys.version_info', v):
-                @py2skip
-                def sort(l):
-                    l.sort()
-                l = list("test")
-                sort(l)
-                self.assertEqual(l, r)
 
 
 def setUpModule():

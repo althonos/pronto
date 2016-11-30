@@ -72,6 +72,24 @@ class TestProntoOwlParser(TestProntoParser):
             handle.close()
         return m,t,i
 
+    def test_parser_unicity(self):
+        tree_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTreeParser')
+        target_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTargetParser')
+
+        self.assertEqual(tree_cl.terms.keys(), target_cl.terms.keys())
+
+        for tid in tree_cl.terms.keys():
+
+            tree_term = tree_cl[tid]
+            target_term = target_cl[tid]
+
+            self.assertEqual(tree_term.id, target_term.id)
+            self.assertEqual(tree_term.name, target_term.name)
+            self.assertEqual(tree_term.desc, target_term.desc)
+            self.assertEqual(tree_term.relations.keys(), target_term.relations.keys())
+
+
+
 class TestProntoOwlTargetParser(TestProntoOwlParser):
 
     @unittest.skipIf(platform.python_implementation()!="CPython",
@@ -130,7 +148,6 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
                 "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
             )
         self._check(m,t,i, exp_len=685)
-
 
 class TestProntoOwlTreeParser(TestProntoOwlParser):
 

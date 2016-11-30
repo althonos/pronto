@@ -207,7 +207,7 @@ class TestProntoRemoteOntology(TestProntoOntology):
     def test_remote_owl_noimports(self):
         """Try to import a remote owl ontology without its imports
         """
-        owl = pronto.Ontology("http://aber-owl.net/onts/FLU_63.ont", False)
+        owl = pronto.Ontology("https://www.ebi.ac.uk/ols/ontologies/flu/download", False, parser="OwlXMLTreeParser")
         self.check_ontology(owl)
 
     def test_remote_obo_imports(self):
@@ -217,7 +217,7 @@ class TestProntoRemoteOntology(TestProntoOntology):
         self.check_ontology(obo)
 
     def test_remote_owl_imports(self):
-        """Try to import a remote owl ontology without its imports
+        """Try to import a remote owl ontology with its imports
         """
         owl = pronto.Ontology("http://purl.obolibrary.org/obo/xao.owl")
         self.check_ontology(owl)

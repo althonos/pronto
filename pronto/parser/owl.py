@@ -148,6 +148,9 @@ class OwlXMLTreeParser(OwlXMLParser):
             for elem in itertools.islice(rawterm.iter(), 1, None):
 
                 basename = elem.tag.split('}', 1)[-1]
+                if elem.text is not None:
+                    elem.text = elem.text.strip()
+
                 if elem.text:
                     _rawterms[-1][basename].append(elem.text)
                 elif elem.get(RDF_RESOURCE) is not None:

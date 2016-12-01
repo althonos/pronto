@@ -17,6 +17,7 @@ import pronto
 
 
 
+
 class TestProntoParser(unittest.TestCase):
 
     def setUp(self):
@@ -25,8 +26,18 @@ class TestProntoParser(unittest.TestCase):
     def _check(self, m,t,i, *args, **kwargs):
         #FEAT# Store internals as utf-8
         #self._check_utf8(m,t,i)
+
         if 'exp_len' in kwargs:
             self._check_len(t, kwargs['exp_len'])
+
+        for term in six.itervalues(t):
+            self._check_synonyms(term)
+
+    def _check_synonyms(self, term):
+        """Check that each Term synonym is stored as Synonym object
+        """
+        for s in term.synonyms:
+            self.assertIsInstance(s, pronto.synonym.Synonym)
 
     def _check_utf8(self, m, t, i):
         """Check that inner properties are stored as utf-8

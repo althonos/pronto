@@ -84,20 +84,30 @@ class TestProntoOwlParser(TestProntoParser):
         return m,t,i
 
     def test_parser_unicity(self):
-        tree_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTreeParser')
-        target_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTargetParser')
+        tree_m, tree_t, tree_i  = self._parse(
+                pronto.parser.owl.OwlXMLTreeParser(),
+                os.path.join(self.resources_dir, 'cl.ont'),
+            )
+        target_m, target_t, target_i = self._parse(
+                pronto.parser.owl.OwlXMLTargetParser(),
+                os.path.join(self.resources_dir, 'cl.ont'),
+            )
+        #tree_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTreeParser')
+        #target_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTargetParser')
 
-        self.assertEqual(tree_cl.terms.keys(), target_cl.terms.keys())
+        self.assertEqual(tree_t.keys(), target_t.keys())
+        self.assertEqual(tree_m.keys(), target_m.keys())
 
-        for tid in tree_cl.terms.keys():
+        for tid in tree_t:
 
-            tree_term = tree_cl[tid]
-            target_term = target_cl[tid]
+            tree_term = tree_t[tid]
+            target_term = target_t[tid]
 
             self.assertEqual(tree_term.id, target_term.id)
             self.assertEqual(tree_term.name, target_term.name)
             self.assertEqual(tree_term.desc, target_term.desc)
             self.assertEqual(tree_term.relations.keys(), target_term.relations.keys())
+            self.assertEqual(tree_term.synonyms, target_term.synonyms)
 
 
 

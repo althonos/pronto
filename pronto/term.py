@@ -29,16 +29,18 @@ class Term(object):
 
     """
 
-    def __init__(self, tid, name='', desc='', relations=None, other=None):
+    def __init__(self, tid, name='', desc='', relations=None, synonyms=None, other=None):
         """
 
         Parameters:
             tid (str): the Term id (e.g. MS:1000031)
             name (str): the name of the Term in human language
             desc (str): a description of the Term
-            relations (dict): a dictionary containing the other
+            relations (dict, optional): a dictionary containing the other
                 terms the Term is in a relationship with.
-            other (dict): other information about the term
+            other (dict, optional): other information about the term
+            synonyms (list, optional): a list containing :obj:`pronto.synonym.Synonym`
+                objects relating to the term.
 
         """
         self.id = tid
@@ -46,6 +48,7 @@ class Term(object):
         self.desc = desc
         self.relations = relations or {}
         self.other = other or {}
+        self.synonyms = synonyms or []
 
         self._rchildren  = {}
         self._rparents = {}

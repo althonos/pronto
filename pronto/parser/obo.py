@@ -11,9 +11,11 @@ import six
 
 from .              import Parser
 from .utils         import OboSection
+from ..synonym      import SynonymType, Synonym
 from ..relationship import Relationship
 from ..term         import Term
 
+_obo_synonyms_map = [('EXACT', 'exact_synonym'), ('BROAD', 'broad_synonym'), ('NARROW', 'narrow_synonym'), ('RELATED', 'synonym')]
 
 class OboParser(Parser):
 
@@ -116,6 +118,17 @@ class OboParser(Parser):
                 except ValueError:                                   # tweaking)
                     pass
         meta[key].append(value)
+
+        if 'synonymtypedef' in meta:
+            syn_type_def = []
+            for m in meta['synonymtypedef']:
+                if not isinstance(m, SynonymType):
+                    x = SynonymType.from_obo_header(m)
+                    syn_type_def.append(x)
+                else:
+                    syn_type_def.append(m)
+            meta['synonymtypedef'] = syn_type_def
+
         return meta
 
     @staticmethod
@@ -173,6 +186,8 @@ class OboParser(Parser):
             )
 
         for _term in _rawterms:
+            synonyms = []
+
             _id   = _term['id'][0]
             try:
                 _name = _term['name'][0]
@@ -201,7 +216,14 @@ class OboParser(Parser):
                 pass
             finally:
                 del _term['relationship']
-            terms[_id] = Term(_id, _name, _desc, dict(_relations), dict(_term))
+
+            for scope, key in _obo_synonyms_map:
+                if key in _term:
+                    for obo_header in _term[key]:
+                        synonyms.append(Synonym.from_obo_header(obo_header, scope))
+                    del _term[key]
+
+            terms[_id] = Term(_id, _name, _desc, dict(_relations), synonyms, dict(_term))
         return terms
 
 

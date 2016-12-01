@@ -23,8 +23,6 @@ class TestProntoDocumentation(unittest.TestCase):
     def setUpClass(cls):
         cls.build_dir = os.path.join(utils.TESTDIR, "run", "build")
         cls.source_dir = os.path.join(utils.DOCSDIR, "source")
-        print(cls.build_dir)
-        print(cls.source_dir)
         os.mkdir(os.path.join(utils.TESTDIR, "run"))
 
     @classmethod

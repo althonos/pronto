@@ -23,6 +23,7 @@ except ImportError:
 from .              import Parser
 from .utils         import owl_ns, owl_to_obo, OwlSection
 from ..relationship import Relationship
+from ..synonym      import Synonym
 from ..term         import Term
 
 
@@ -32,7 +33,9 @@ RDF_DATATYPE = "{{{}}}{}".format(owl_ns['rdf'], 'datatype')
 OWL_CLASS = "{{{}}}{}".format(owl_ns['owl'], 'Class')
 OWL_ONTOLOGY = "{{{}}}{}".format(owl_ns['owl'], 'Ontology')
 
-
+_owl_synonyms_map = {"hasExactSynonym": "EXACT", "hasNarrowSynonym": "NARROW",
+                     "hasBroadSynonym": "BROAD", "hasRelatedSynonym": "RELATED",
+                     "hasSynonym": "RELATED"}
 
 class OwlXMLParser(Parser):
     """Abstract OwlXMLParser.
@@ -166,9 +169,22 @@ class OwlXMLTreeParser(OwlXMLParser):
             name = cls._extract_obo_name(rawterm)
             desc = cls._extract_obo_desc(rawterm)
             relations = cls._extract_obo_relation(rawterm)
+            synonyms = cls._extract_obo_synonyms(rawterm)
             others = cls._relabel_owl_properties(rawterm)
-            terms[_id] = Term(_id, name, desc, dict(relations), others)
+            terms[_id] = Term(_id, name, desc, dict(relations), synonyms, others)
         return terms
+
+    @staticmethod
+    def _extract_obo_synonyms(rawterm):
+        synonyms = []
+        for k,v in six.iteritems(_owl_synonyms_map):
+            try:
+                for s in rawterm[k]:
+                    synonyms.append(Synonym(s, v))
+                del rawterm[k]
+            except KeyError:
+                pass
+        return synonyms
 
     @staticmethod
     def _extract_obo_id(rawterm):
@@ -398,6 +414,7 @@ class OwlXMLTargetParser(OwlXMLParser):
         for rawterm in rawterms:
 
             new_term = {}
+            synonyms = []
 
             for k,v in rawterm.items():
 
@@ -416,6 +433,9 @@ class OwlXMLTargetParser(OwlXMLParser):
                     if k == "subClassOf":
                         new_term[Relationship('is_a')] = [cls._get_id_from_url(t) for t in rawterm[k]['data']]
 
+                    elif k in _owl_synonyms_map:
+                        for s in v:
+                            synonyms.append(Synonym(s, _owl_synonyms_map[k]))
                     else:
                         try:
                             new_term[owl_to_obo[k]] = rawterm[k]['data']
@@ -450,8 +470,9 @@ class OwlXMLTargetParser(OwlXMLParser):
             except KeyError:
                 pass
 
-            terms[_id] = Term(_id, name, desc, relations, new_term)
+            terms[_id] = Term(_id, name, desc, relations, synonyms, new_term)
             del new_term
+            del synonyms
 
         return terms
 

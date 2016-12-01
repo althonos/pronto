@@ -50,9 +50,6 @@ owl_to_obo = {
     'inSubset': 'subset',
     'hasOBONamespace': 'namespace',
     'hasOBOFormatVersion': 'format-version',
-    'hasExactSynonym': 'exact_synonym',
-    'hasBroadSynonym': 'broad_synonym',
-    'hasNarrowSynonym': 'narrow_synonym',
 
     #FEAT# Translate Information Ontology
     #FEAT# 'IAO_0000115': 'definition',

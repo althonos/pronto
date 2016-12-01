@@ -481,7 +481,8 @@ class Ontology(collections.Mapping):
         obo_meta = "\n".join(
 
             [ # official obo tags
-                "{}: {}".format(k, x)
+                x.obo if hasattr(x, 'obo') \
+                    else "{}: {}".format(k,x)
                         for k in metatags[:-1]
                             if k in self.meta
                                 for x in self.meta[k]

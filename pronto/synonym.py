@@ -14,7 +14,7 @@ class SynonymType(object):
         desc(str): the description of the synonym type
     """
     _instances = collections.OrderedDict()
-    _RX_OBO_EXTRACTER = re.compile(r'([^ ]*) \"([^\"]*)\" ?(BROAD|NARROW|EXACT|RELATED|)')
+    _RX_OBO_EXTRACTER = re.compile(six.u(r'([^ ]*) \"([^\"]*)\" ?(BROAD|NARROW|EXACT|RELATED|)'))
 
     def __init__(self, name, desc, scope=None):
         self.name = name
@@ -96,10 +96,10 @@ class Synonym(object):
         if not self.scope in {'EXACT', 'BROAD', 'NARROW', 'RELATED', None}:
             raise ValueError("scope must be 'NARROW', 'BROAD', 'EXACT', 'RELATED' or None")
 
-        self.xref = xref
+        self.xref = xref or []
 
     @classmethod
-    def from_obo_header(cls, obo_header):
+    def from_obo_header(cls, obo_header, scope='RELATED'):
 
         if isinstance(obo_header, six.binary_type):
             obo_header = obo_header.decode('utf-8')
@@ -112,7 +112,7 @@ class Synonym(object):
         else:
             type_name = result[-1]
 
-        return cls(result[0].strip(), result[1] or 'RELATED', type_name, xref)
+        return cls(result[0].strip(), result[1] or scope, type_name, xref)
 
     @property
     def obo(self):

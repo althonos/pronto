@@ -131,4 +131,8 @@ class Synonym(object):
                 ', '.join(self.xref)
         )
 
+    def __eq__(self, other):
+        return self.desc==other.desc and self.scope==other.scope and self.syn_type==other.syn_type and self.xref==other.xref
 
+    def __hash__(self):
+        return hash((self.desc, self.scope, self.syn_type, tuple(self.xref)))

@@ -39,7 +39,7 @@ class Term(object):
             relations (dict, optional): a dictionary containing the other
                 terms the Term is in a relationship with.
             other (dict, optional): other information about the term
-            synonyms (list, optional): a list containing :obj:`pronto.synonym.Synonym`
+            synonyms (set, optional): a list containing :obj:`pronto.synonym.Synonym`
                 objects relating to the term.
 
         """
@@ -48,7 +48,7 @@ class Term(object):
         self.desc = desc
         self.relations = relations or {}
         self.other = other or {}
-        self.synonyms = synonyms or []
+        self.synonyms = synonyms or set()
 
         self._rchildren  = {}
         self._rparents = {}

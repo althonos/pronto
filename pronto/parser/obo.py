@@ -15,7 +15,8 @@ from ..synonym      import SynonymType, Synonym
 from ..relationship import Relationship
 from ..term         import Term
 
-_obo_synonyms_map = [('EXACT', 'exact_synonym'), ('BROAD', 'broad_synonym'), ('NARROW', 'narrow_synonym'), ('RELATED', 'synonym')]
+_obo_synonyms_map = {'exact_synonym': 'EXACT', 'broad_synonym': 'BROAD',
+                    'narrow_synonym': 'NARROW', 'synonym': 'RELATED'}
 
 class OboParser(Parser):
 
@@ -186,7 +187,7 @@ class OboParser(Parser):
             )
 
         for _term in _rawterms:
-            synonyms = []
+            synonyms = set()
 
             _id   = _term['id'][0]
             try:
@@ -217,10 +218,10 @@ class OboParser(Parser):
             finally:
                 del _term['relationship']
 
-            for scope, key in _obo_synonyms_map:
+            for key, scope in six.iteritems(_obo_synonyms_map):
                 if key in _term:
                     for obo_header in _term[key]:
-                        synonyms.append(Synonym.from_obo_header(obo_header, scope))
+                        synonyms.add(Synonym.from_obo_header(obo_header, scope))
                     del _term[key]
 
             terms[_id] = Term(_id, _name, _desc, dict(_relations), synonyms, dict(_term))

@@ -101,8 +101,8 @@ class TestProntoOwlUnicity(TestProntoOwlParser):
         #tree_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTreeParser')
         #target_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTargetParser')
 
-        self.assertEqual(tree_t.keys(), target_t.keys())
-        self.assertEqual(tree_m.keys(), target_m.keys())
+        self.assertEqual(set(tree_t.keys()), set(target_t.keys()))
+        self.assertEqual(set(tree_m.keys()), set(target_m.keys()))
 
         #FEAT# Acceptance test for althonos/pronto#7
         #self.assertEqual(tree_i, target_i)

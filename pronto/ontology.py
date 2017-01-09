@@ -74,7 +74,8 @@ class Ontology(collections.Mapping):
     Todo:
         * Add a __repr__ method to Ontology
     """
-
+    __slots__ = ("path", "meta", "terms", "imports", "__parsedby__")
+    
     def __init__(self, path=None, imports=True, import_depth=-1, timeout=2, parser=None):
         """
         """
@@ -551,4 +552,3 @@ class Ontology(collections.Mapping):
                 return "\n\n".join( meta + [
                     t.obo for t in self
                 ])
-

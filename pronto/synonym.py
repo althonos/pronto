@@ -13,6 +13,7 @@ class SynonymType(object):
             'BROAD', 'NARROW', 'RELATED', or None).
         desc(str): the description of the synonym type
     """
+    __slots__ = ['name', 'desc', 'scope']
     _instances = collections.OrderedDict()
     _RX_OBO_EXTRACTER = re.compile(six.u(r'([^ ]*) \"([^\"]*)\" ?(BROAD|NARROW|EXACT|RELATED|)'))
 

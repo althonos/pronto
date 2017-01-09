@@ -28,6 +28,8 @@ class Term(object):
         <class 'pronto.term.Term'>
 
     """
+    __slots__ = ['id', 'name', 'desc', 'relations', 'other', 'synonyms',
+                 '_children', '_parents', '_rchildren', '_rparents']
 
     def __init__(self, tid, name='', desc='', relations=None, synonyms=None, other=None):
         """

@@ -15,7 +15,7 @@ class SynonymType(object):
     """
     __slots__ = ['name', 'desc', 'scope']
     _instances = collections.OrderedDict()
-    _RX_OBO_EXTRACTER = re.compile(six.u(r'([^ ]*) \"([^\"]*)\" ?(BROAD|NARROW|EXACT|RELATED|)'))
+    _RX_OBO_EXTRACTER = re.compile(six.u(r'(?P<name>[^ ]*) *\"(?P<desc>.*)\" *(?P<scope>BROAD|NARROW|EXACT|RELATED)?'))
 
     def __init__(self, name, desc, scope=None):
         self.name = name
@@ -37,9 +37,10 @@ class SynonymType(object):
     def from_obo_header(cls, obo_header):
         if isinstance(obo_header, six.binary_type):
             obo_header = obo_header.decode('utf-8')
-        result = list(cls._RX_OBO_EXTRACTER.search(obo_header).groups())
-        scope = result.pop(-1) or None
-        return cls(result[0], result[1], scope)
+
+        groupdict = cls._RX_OBO_EXTRACTER.search(obo_header).groupdict()
+        result = {k:v.strip() if v else None for k,v in six.iteritems(groupdict)}
+        return cls(**result)
 
     @property
     def obo(self):
@@ -66,8 +67,7 @@ class Synonym(object):
         xref (list, optional): the list of the cross-references of
             the synonym
     """
-    _RX_OBO_EXTRACTER = re.compile(r'\"([^\"]*)\" ?(EXACT|BROAD|NARROW|RELATED|) ?([^ ]*)')
-    _RX_LIST_EXTRACTER = re.compile(r'\[([^\]]*)\]')
+    _RX_OBO_EXTRACTER = re.compile(r'\"(?P<desc>.*)\" *(?P<scope>EXACT|BROAD|NARROW|RELATED)? *(?P<syn_type>[^ ]*)? *\[(?P<xref>.*)\]')
 
     def __init__(self, desc, scope=None, syn_type=None, xref=None):
 
@@ -105,15 +105,11 @@ class Synonym(object):
         if isinstance(obo_header, six.binary_type):
             obo_header = obo_header.decode('utf-8')
 
-        result = cls._RX_OBO_EXTRACTER.search(obo_header).groups()
-        xref = [x.strip() for x in cls._RX_LIST_EXTRACTER.search(obo_header).group(1).split(',')]
-
-        if result[-1].startswith('['):
-            type_name = None
-        else:
-            type_name = result[-1]
-
-        return cls(result[0].strip(), result[1] or scope, type_name, xref)
+        groupdict = cls._RX_OBO_EXTRACTER.search(obo_header).groupdict()
+        result = {k:v.strip() if v else None for k,v in six.iteritems(groupdict)}
+        if result['xref'] is not None:
+            result['xref'] = [x.strip() for x in result['xref'].split(',')]
+        return cls(**result)
 
     @property
     def obo(self):

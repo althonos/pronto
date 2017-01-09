@@ -1,5 +1,4 @@
-﻿# coding: utf-8
-from __future__ import absolute_import
+﻿# coding: utf-8 from __future__ import absolute_import
 
 ### DEPS
 import six
@@ -219,7 +218,7 @@ class TestProntoRemoteOntology(TestProntoOntology):
     def test_remote_owl_imports(self):
         """Try to import a remote owl ontology with its imports
         """
-        owl = pronto.Ontology("http://purl.obolibrary.org/obo/xao.owl")
+        owl = pronto.Ontology("ftp://ftp.xenbase.org/pub/XenopusAnatomyOntology/xenopus_anatomy.owl")
         self.check_ontology(owl)
 
 

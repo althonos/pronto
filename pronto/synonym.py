@@ -15,7 +15,7 @@ class SynonymType(object):
     """
     __slots__ = ['name', 'desc', 'scope']
     _instances = collections.OrderedDict()
-    _RX_OBO_EXTRACTER = re.compile(six.u(r'(?P<name>[^ ]*) *\"(?P<desc>.*)\" *(?P<scope>BROAD|NARROW|EXACT|RELATED)?'))
+    _RX_OBO_EXTRACTER = re.compile(six.u(r'(?P<name>[^ ]*)[ ]*\"(?P<desc>.*)\"[ ]*(?P<scope>BROAD|NARROW|EXACT|RELATED)?'))
 
     def __init__(self, name, desc, scope=None):
         self.name = name
@@ -67,7 +67,7 @@ class Synonym(object):
         xref (list, optional): the list of the cross-references of
             the synonym
     """
-    _RX_OBO_EXTRACTER = re.compile(r'\"(?P<desc>.*)\" *(?P<scope>EXACT|BROAD|NARROW|RELATED)? *(?P<syn_type>[^ ]*)? *\[(?P<xref>.*)\]')
+    _RX_OBO_EXTRACTER = re.compile(r'\"(?P<desc>.*)\" *(?P<scope>EXACT|BROAD|NARROW|RELATED)? *(?P<syn_type> .*)? \[(?P<xref>.*)\]')
 
     def __init__(self, desc, scope=None, syn_type=None, xref=None):
 

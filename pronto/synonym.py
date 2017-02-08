@@ -1,6 +1,19 @@
+# coding: utf-8
+"""
+pronto.relationship
+===================
+
+This submodule contains the definition of the :ref:`Synonym`
+and :ref:`SynonymType` classes.
+"""
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
 import re
 import six
 import collections
+
+from .utils import output_str
 
 
 class SynonymType(object):
@@ -48,11 +61,15 @@ class SynonymType(object):
                                 '"{}"'.format(self.desc),
                                 self.scope or '']).strip()
 
+    @output_str
     def __repr__(self):
         return six.u('').join(['<SynonymType: ', self.name, ' ',
                                 '"{}"'.format(self.desc),
                                  ' {}>'.format(self.scope) \
                                     if self.scope else '>']).strip()
+
+    def __hash__(self):
+        return hash((self.name, self.desc, self.scope))
 
 
 class Synonym(object):
@@ -120,6 +137,7 @@ class Synonym(object):
 
         )
 
+    @output_str
     def __repr__(self):
         return '<Synonym: "{}" {} [{}]>'.format(
             self.desc,

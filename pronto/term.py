@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 import six
 
 from .relationship import Relationship
-from .utils import output_str
+from .utils import output_str, unique_everseen
 
 class Term(object):
     """An ontology term.
@@ -129,7 +129,6 @@ class Term(object):
         return self._children
 
     @property
-    @output_str
     def obo(self):
         """The Term serialized in an Obo Term stanza.
 
@@ -275,6 +274,7 @@ class Term(object):
             tuple((k,v) for k,v in six.iteritems(self.other)),
             self.desc,
             tuple((k.obo_name,v.id) for k,v in six.iteritems(self.relations)),
+            frozenset(self.synonyms),
         )
 
     def __setstate__(self, state):
@@ -284,6 +284,7 @@ class Term(object):
         self.other = {k:v for (k,v) in state[2]}
         self.desc = state[3]
         self.relations = {Relationship(k):v for k,v in state[4]}
+        self.synonyms = set(state[5])
         self._empty_cache()
 
     def _empty_cache(self):
@@ -323,7 +324,7 @@ class Term(object):
                     rchildren.extend(child.rchildren(level=level-1,
                                                      intermediate=intermediate))
 
-            rchildren = TermList(set(rchildren))
+            rchildren = TermList(unique_everseen(rchildren))
             self._rchildren[(level, intermediate)] = rchildren
             return rchildren
 
@@ -360,7 +361,7 @@ class Term(object):
                     rparents.extend(parent.rparents(level=level-1,
                                                      intermediate=intermediate))
 
-            rparents = TermList(set(rparents))
+            rparents = TermList(unique_everseen(rparents))
             self._rparents[(level, intermediate)] = rparents
             return rparents
 
@@ -412,22 +413,26 @@ class TermList(list):
             raise TypeError('TermList can only contain Terms.')
 
     def rparents(self, level=-1, intermediate=True):
-        return TermList(
-            {y for x in self for y in x.rparents(level, intermediate)}
-        )
+        return TermList(unique_everseen(
+            y for x in self for y in x.rparents(level, intermediate)
+        ))
 
     def rchildren(self, level=-1, intermediate=True):
-        return TermList(
-            {y for x in self for y in x.rchildren(level, intermediate)}
-        )
+        return TermList(unique_everseen(
+            y for x in self for y in x.rchildren(level, intermediate)
+        ))
 
     @property
     def children(self):
-        return TermList(y for x in self for y in x.children)
+        return TermList(unique_everseen(
+            y for x in self for y in x.children
+        ))
 
     @property
     def parents(self):
-        return TermList(y for x in self for y in x.parents)
+        return TermList(unique_everseen(
+            y for x in self for y in x.parents
+        ))
 
     @property
     def id(self):
@@ -455,7 +460,7 @@ class TermList(list):
         return tuple(x for x in self)
 
     def __setstate__(self, state):
-        self.extend(state)
+        pass
 
     def __contains__(self, term):
         """Check if the TermList contains a term.

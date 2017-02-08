@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 import collections
 import six
 
-from .utils import unique_everseen
+from .utils import unique_everseen, output_str
 
 
 class Relationship(object):
@@ -145,6 +145,7 @@ class Relationship(object):
         else:
             return None
 
+    @output_str
     def __repr__(self):
         """Overloaded :obj:`object.__repr__`"""
         return "Relationship({})".format(self.obo_name)
@@ -206,14 +207,8 @@ class Relationship(object):
         """
         return tuple(unique_everseen(r for r in cls._instances.values() if r.direction=='bottomup'))
 
-    def __getstate__(self):
-        pass
-
     def __getnewargs__(self):
         return (self.obo_name,)
-
-    def __setstate__(self, *args, **kwargs):
-        pass
 
     @classmethod
     def _from_obo_dict(cls, d):
@@ -244,7 +239,7 @@ class Relationship(object):
         try:
             symmetry = d['is_antisymetric'].lower() == "false"
         except KeyError:
-            symmetry = symmetry or None
+            pass
 
         return Relationship(d['id'], symmetry=symmetry, transitivity=transitivity,
                             reflexivity=reflexivity, complementary=complementary)

@@ -9,8 +9,11 @@ of the pronto library, as well as the definition of ProntoWarning.
 Todo:
     * Maybe add a ProntoError class ?
 """
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import six
+import functools
 
 
 class ProntoWarning(Warning):
@@ -41,6 +44,7 @@ def unique_everseen(iterable):
 
 def output_str(f):
     if six.PY2:
+        #@functools.wraps(f)
         def new_f(*args, **kwargs):
             return f(*args, **kwargs).encode("utf-8")
     else:

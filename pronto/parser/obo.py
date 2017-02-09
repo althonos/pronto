@@ -5,9 +5,12 @@ pronto.parser.obo
 
 This module defines the Obo parsing method.
 """
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import collections
 import six
+import string
 
 from .              import Parser
 from .utils         import OboSection
@@ -28,10 +31,8 @@ class OboParser(Parser):
         The current behaviour relies on filenames and file extension
         (.obo), but this is subject to change.
         """
-        if 'force' in kwargs and kwargs['force']:
-            return True
-        if 'path' in kwargs:
-            return kwargs['path'].endswith(self.extensions)
+        return kwargs.get('force', False) \
+            or kwargs.get('path', '').endswith(self.extensions)
 
     @classmethod
     def parse(cls, stream):
@@ -54,8 +55,8 @@ class OboParser(Parser):
         for streamline in stream:
 
             # manage encoding && cleaning of line
-            streamline = streamline.strip().decode('utf-8')
-            if not streamline:
+            streamline = streamline.decode('utf-8')
+            if streamline[0] in string.whitespace:
                 continue
 
             _section = cls._check_section(streamline, _section)
@@ -80,9 +81,9 @@ class OboParser(Parser):
         section, and/or when it reaches the first [Term], it will enter
         the OboSection.term section.
         """
-        if line=="[Term]":
+        if "[Term]" in line:
             section = OboSection.term
-        if line=="[Typedef]":
+        elif "[Typedef]" in line:
             section = OboSection.typedef
         return section
 
@@ -120,7 +121,8 @@ class OboParser(Parser):
                     pass
         meta[key].append(value)
 
-        if 'synonymtypedef' in meta:
+        #if 'synonymtypedef' in meta:
+        try:
             syn_type_def = []
             for m in meta['synonymtypedef']:
                 if not isinstance(m, SynonymType):
@@ -128,6 +130,9 @@ class OboParser(Parser):
                     syn_type_def.append(x)
                 else:
                     syn_type_def.append(m)
+        except KeyError:
+            pass
+        else:
             meta['synonymtypedef'] = syn_type_def
 
         return meta
@@ -143,7 +148,7 @@ class OboParser(Parser):
         Parameters:
             line (str): the line containing a typedef statement
         """
-        if line.strip()=="[Typedef]":
+        if "[Typedef]" in line:
             _rawtypedef.append(collections.defaultdict(list))
         else:
             key, value = (x.strip() for x in line.split(':', 1))
@@ -161,7 +166,7 @@ class OboParser(Parser):
         Parameters:
             line (str): the line containing a term statement
         """
-        if line.strip()=="[Term]":
+        if "[Term]" in line:
             _rawterms.append(collections.defaultdict(list))
         else:
             key, value = (x.strip() for x in line.split(':', 1))
@@ -179,7 +184,7 @@ class OboParser(Parser):
         name, desc and relationships out of the raw _term dictionnary,
         and then calling the default constructor.
         """
-        terms = {}
+        terms = collections.OrderedDict()
 
         for _typedef in _rawtypedef:
             Relationship._from_obo_dict( # instantiate a new Relationship

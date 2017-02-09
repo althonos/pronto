@@ -4,20 +4,9 @@ pronto.ontology
 ===============
 
 This submodule contains the definition of the Ontology class.
-
-
-Multiprocessing
----------------
-
-Ontology parsing relies on multiprocessing, which means it
-isn't possible to use Ontology parsing within daemons. Still,
-once the parsing is done, it is possible to use Ontologies
-within processes or threads as all object implemented in pronto
-are pickable.
-
-
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import json
 import os
@@ -57,13 +46,15 @@ class Ontology(collections.Mapping):
             >>> cl = Ontology("tests/resources/cl.ont", False)
             >>> uo.merge(cl)
             >>> with open('tests/run/merge.obo', 'w') as f:
-            ...     lines_count = f.write(uo.obo)
+            ...     f.write(uo.obo)
+            750804
 
         Export an ontology with its dependencies embedded::
 
             >>> cl = Ontology("tests/resources/cl.ont")
             >>> with open('tests/run/cl.obo', 'w') as f:
-            ...     lines_count = f.write(cl.obo)
+            ...     f.write(cl.obo)
+            1550752
 
         Use the parser argument to force usage a parser::
 
@@ -75,7 +66,7 @@ class Ontology(collections.Mapping):
         * Add a __repr__ method to Ontology
     """
     __slots__ = ("path", "meta", "terms", "imports", "__parsedby__")
-    
+
     def __init__(self, path=None, imports=True, import_depth=-1, timeout=2, parser=None):
         """
         """
@@ -128,7 +119,7 @@ class Ontology(collections.Mapping):
 
         For convenience of implementation, the returned object is actually
         a generator object that returns each term of the ontology, sorted in
-        alphabetic order of their id.
+        the definition order in the ontology file.
 
         Example:
             >>> for k in uo:
@@ -138,8 +129,9 @@ class Ontology(collections.Mapping):
             <UO:0000329: megabasepair>
             <UO:0000330: gigabasepair>
         """
-        terms_accessions = sorted(self.terms.keys())
-        return (self.terms[i] for i in terms_accessions)
+        return six.itervalues(self.terms)
+        # terms_accessions = sorted(self.terms.keys())
+        # return (self.terms[i] for i in terms_accessions)
 
     def __getitem__(self, item):
         """Overloaded object.__getitem__
@@ -255,28 +247,36 @@ class Ontology(collections.Mapping):
         methods as well as the :obj:`__init__` method, but it should be called in
         case of manual changes of the relationships of a Term.
         """
-        for termkey,termval in six.iteritems(self.terms):
-            for relkey, relval in six.iteritems(termval.relations):
-                temprel = TermList()
-                for x in relval:
-                    try:
-                        temprel.append(self.terms[x])
-                    except KeyError:
-                        if isinstance(x, Term):
-                            temprel.append(x)
-                        else:
-                            temprel.append(Term(x,'',''))
-                self.terms[termkey].relations[relkey] = temprel
-                del temprel
-                del relval
+        # for termkey, termval in six.iteritems(self.terms):
+        #     for relkey, relval in six.iteritems(termval.relations):
+        #         self.terms[termkey].relations[relkey] = temprel = TermList()
+        #         for x in relval:
+        #             try:
+        #                 temprel.append(self.terms[x])
+        #             except KeyError:
+        #                 if isinstance(x, Term):
+        #                     temprel.append(x)
+        #                 else:
+        #                     temprel.append(Term(x,'',''))
 
-            # relvalref = { relkey: TermList(
-            #                         [self.terms[x] if x in self.terms
-            #                             else Term(x, '', '')
-            #                                 if not isinstance(x, Term)
-            #                             else x for x in relval]
-            #                    )
-            #             for relkey, relval in six.iteritems(termval.relations) }
+
+        for termkey, termval in six.iteritems(self.terms):
+            termval.relations.update(
+                (relkey, TermList(
+                    (self.terms.get(x) or Term(x, '', '')
+                    if not isinstance(x, Term) else x) for x in relval
+                )) for relkey, relval in six.iteritems(termval.relations)
+            )
+
+            # relvalref = {
+            #
+            #     relkey: TermList(
+            #         [self.terms.get(x) or Term(x, '', '')
+            #          if not isinstance(x, Term) else x for x in relval]
+            #     )
+            #     for relkey, relval in six.iteritems(termval.relations)
+            #
+            # }
             # self.terms[termkey].relations.update(relvalref)
 
     def resolve_imports(self, imports, import_depth, parser=None):
@@ -431,7 +431,7 @@ class Ontology(collections.Mapping):
                         if not t.id in self:
                             self._include_term(t)
 
-                        term.relations[k][i] = t.id
+                        v[i] = t.id
 
                     except AttributeError:
                         pass
@@ -471,13 +471,13 @@ class Ontology(collections.Mapping):
             * Change the `auto-generated-by` tag to be **auto-generated-by pronto pronto.__version__**
 
         """
-        metatags = [
+        metatags = (
             "format-version", "data-version", "date", "saved-by",
             "auto-generated-by","import", "subsetdef", "synonymtypedef",
             "default-namespace", "namespace-id-rule", "idspace",
             "treat-xrefs-as-equivalent", "treat-xrefs-as-genus-differentia",
             "treat-xrefs-as-is_a", "remark", "ontology"
-        ]
+        )
 
         obo_meta = "\n".join(
 
@@ -522,33 +522,19 @@ class Ontology(collections.Mapping):
                           default=lambda o: o.__deref__)
 
     @property
-    @output_str
     def obo(self):
         """Returns the ontology serialized in obo format.
         """
         meta = self._obo_meta()
-        if not isinstance(meta, six.text_type):
-            meta = meta.decode('utf-8')
         meta = [meta] if meta else []
+        newline = "\n\n" if six.PY3 else "\n\n".encode('utf-8')
 
-        if six.PY2:
-            try: # if 'namespace' in self.meta:
-                return "\n\n".join( meta + [
-                    t.obo.decode('utf-8')
-                        for t in self
-                            if t.id.startswith(self.meta['namespace'][0])
-                ])
-            except KeyError:
-                return "\n\n".join( meta + [
-                    t.obo.decode('utf-8') for t in self
-                ])
-        elif six.PY3:
-            try: # if 'namespace' in self.meta:
-                return "\n\n".join( meta + [
-                    t.obo for t in self
-                        if t.id.startswith(self.meta['namespace'][0])
-                ])
-            except KeyError:
-                return "\n\n".join( meta + [
-                    t.obo for t in self
-                ])
+        try: # if 'namespace' in self.meta:
+            return newline.join( meta + [
+                t.obo for t in self
+                    if t.id.startswith(self.meta['namespace'][0])
+            ])
+        except KeyError:
+            return newline.join( meta + [
+                t.obo for t in self
+            ])

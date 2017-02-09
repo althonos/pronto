@@ -39,7 +39,7 @@ class TestProntoOntology(unittest.TestCase):
 
     def assert_exportable(self, ontology):
         try:
-            file = six.StringIO()
+            file = six.moves.StringIO()
             file.write(ontology.obo)
         except BaseException as e:
             self.fail("export failed: {}".format(e))
@@ -134,7 +134,8 @@ class TestProntoFeatures(TestProntoOntology):
                 print(term.obo)
             print(ontology.obo)
 
-            self.assertEqual(output.getvalue().strip(),
+            output.seek(0)
+            self.assertEqual(output.read().strip(),
                              textwrap.dedent("""
                                              <ONT0:ROOT: °>
                                              [Term]

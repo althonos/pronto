@@ -6,6 +6,7 @@ pronto.term
 This module defines the Term and TermList classes.
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import six
 
@@ -29,13 +30,14 @@ class Term(object):
 
     """
     __slots__ = ['id', 'name', 'desc', 'relations', 'other', 'synonyms',
-                 '_children', '_parents', '_rchildren', '_rparents']
+                 '_children', '_parents', '_rchildren', '_rparents',
+                 '__weakref__']
 
-    def __init__(self, tid, name='', desc='', relations=None, synonyms=None, other=None):
+    def __init__(self, id, name='', desc='', relations=None, synonyms=None, other=None):
         """
 
         Parameters:
-            tid (str): the Term id (e.g. MS:1000031)
+            id (str): the Term id (e.g. MS:1000031)
             name (str): the name of the Term in human language
             desc (str): a description of the Term
             relations (dict, optional): a dictionary containing the other
@@ -45,7 +47,14 @@ class Term(object):
                 objects relating to the term.
 
         """
-        self.id = tid
+        if not isinstance(id, six.text_type):
+            id = id.decode('utf-8')
+        if not isinstance(desc, six.text_type):
+            desc = desc.decode('utf-8')
+        if not isinstance(name, six.text_type):
+            name = name.decode('utf-8')
+
+        self.id = id
         self.name = name
         self.desc = desc
         self.relations = relations or {}
@@ -129,6 +138,7 @@ class Term(object):
         return self._children
 
     @property
+    @output_str
     def obo(self):
         """The Term serialized in an Obo Term stanza.
 
@@ -396,21 +406,34 @@ class TermList(list):
     def __init__(self, elements=None):
         """
         """
-        super(TermList, self).__init__(elements or [])
-        self._check_content()
-
-    def append(self, element):
+        super(TermList, self).__init__()
+        self._contents = set()
         try:
-            if not element in self:
-                super(TermList, self).append(element)
-        except TypeError:
-            raise
-
-    def _check_content(self):
-        try:
-            [ term.id for term in self ]
+            for t in elements or []:
+                super(TermList, self).append(t)
+                self._contents.add(t.id)
         except AttributeError:
             raise TypeError('TermList can only contain Terms.')
+        #self._check_content()
+        # self._content_map = {
+        #     x if isinstance(x, six.text_type)
+        #     else x.id for x in self
+        # }
+
+    def append(self, element):
+        #try:
+        if not element in self:
+            super(TermList, self).append(element)
+            try:
+                self._contents.add(element.id)
+            except AttributeError:
+                self._contents.add(element)
+        # except TypeError:
+        #     raise
+
+    def extend(self, sequence):
+        for element in sequence:
+            self.append(element)
 
     def rparents(self, level=-1, intermediate=True):
         return TermList(unique_everseen(
@@ -482,5 +505,5 @@ class TermList(list):
             _id = term.id
         except AttributeError:
             _id = term
-
-        return any((t.id==_id if isinstance(t, Term) else t==_id for t in self))
+        return _id in self._contents
+        #return any((t.id==_id if isinstance(t, Term) else t==_id for t in self))

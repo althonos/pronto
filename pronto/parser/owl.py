@@ -163,7 +163,7 @@ class OwlXMLTreeParser(OwlXMLParser):
 
     @classmethod
     def _classify(cls, _rawterms):
-        terms = {}
+        terms = collections.OrderedDict()
         for rawterm in _rawterms:
             _id = cls._extract_obo_id(rawterm)
             name = cls._extract_obo_name(rawterm)
@@ -324,7 +324,7 @@ class _OwlXMLTarget(object):
             if self.current_section == OwlSection.ontology:
                 basename = self._get_basename(self.current_tag['name'])
                 try:
-                    self.ontology_tag[basename]['data'].append(' {}'.format(data).strip())
+                    self.ontology_tag[basename]['data'].append(data)#' {}'.format(data).strip())
                 except KeyError:
                     self.ontology_tag[basename]['data'] = [data]
 
@@ -332,7 +332,7 @@ class _OwlXMLTarget(object):
                 basename = self._get_basename(self.current_tag['name'])
                 if basename in self.classes[-1]:
                     if 'data' in self.classes[-1][basename]:
-                        self.classes[-1][basename]['data'].append(' {}'.format(data).strip())
+                        self.classes[-1][basename]['data'].append(data)#' {}'.format(data).strip())
                     else:
                         self.classes[-1][basename]['data'] = [data]
 
@@ -408,7 +408,7 @@ class OwlXMLTargetParser(OwlXMLParser):
     @classmethod
     def _classify(cls, rawterms):
 
-        terms = {}
+        terms = collections.OrderedDict()
 
         #while True:
         for rawterm in rawterms:

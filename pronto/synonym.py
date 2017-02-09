@@ -28,14 +28,12 @@ class SynonymType(object):
     """
     __slots__ = ['name', 'desc', 'scope']
     _instances = collections.OrderedDict()
-    _RX_OBO_EXTRACTER = re.compile(six.u(r'(?P<name>[^ ]*)[ ]*\"(?P<desc>.*)\"[ ]*(?P<scope>BROAD|NARROW|EXACT|RELATED)?'))
+    _RX_OBO_EXTRACTER = re.compile(r'(?P<name>[^ ]*)[ ]*\"(?P<desc>.*)\"[ ]*(?P<scope>BROAD|NARROW|EXACT|RELATED)?')
 
     def __init__(self, name, desc, scope=None):
         self.name = name
         self.desc = desc
-        if scope is None:
-            self.scope = scope
-        elif scope in {six.u('BROAD'), six.u('NARROW'), six.u('EXACT'), six.u('RELATED')}:
+        if scope in {'BROAD', 'NARROW', 'EXACT', 'RELATED', None}:
             self.scope = scope
         elif scope in {six.b('BROAD'), six.b('NARROW'), six.b('EXACT'), six.b('RELATED')}:
             self.scope = scope.decode('utf-8')
@@ -57,16 +55,16 @@ class SynonymType(object):
 
     @property
     def obo(self):
-        return six.u(' ').join(['synonymtypedef:', self.name,
-                                '"{}"'.format(self.desc),
-                                self.scope or '']).strip()
+        return ' '.join(['synonymtypedef:', self.name,
+                         '"{}"'.format(self.desc),
+                         self.scope or '']).strip()
 
     @output_str
     def __repr__(self):
-        return six.u('').join(['<SynonymType: ', self.name, ' ',
-                                '"{}"'.format(self.desc),
-                                 ' {}>'.format(self.scope) \
-                                    if self.scope else '>']).strip()
+        return ''.join(['<SynonymType: ', self.name, ' ',
+                        '"{}"'.format(self.desc),
+                        ' {}>'.format(self.scope) \
+                        if self.scope else '>']).strip()
 
     def __hash__(self):
         return hash((self.name, self.desc, self.scope))

@@ -82,7 +82,7 @@ class Synonym(object):
         xref (list, optional): the list of the cross-references of
             the synonym
     """
-    _RX_OBO_EXTRACTER = re.compile(r'\"(?P<desc>.*)\" *(?P<scope>EXACT|BROAD|NARROW|RELATED)? *(?P<syn_type> .*)? \[(?P<xref>.*)\]')
+    _RX_OBO_EXTRACTER = re.compile(r'\"(?P<desc>.*)\" *(?P<scope>EXACT|BROAD|NARROW|RELATED)? *(?P<syn_type>[^ ]+)? \[(?P<xref>.*)\]')
 
     def __init__(self, desc, scope=None, syn_type=None, xref=None):
 
@@ -121,10 +121,14 @@ class Synonym(object):
             obo_header = obo_header.decode('utf-8')
 
         groupdict = cls._RX_OBO_EXTRACTER.search(obo_header).groupdict()
-        result = {k:v.strip() if v else None for k,v in six.iteritems(groupdict)}
-        if result['xref'] is not None:
-            result['xref'] = [x.strip() for x in result['xref'].split(',')]
-        return cls(**result)
+        if groupdict.get('xref', ''):
+            groupdict['xref'] = [x.strip() for x in groupdict['xref'].split(',')]
+        groupdict['syn_type'] = groupdict['syn_type'] or None
+
+        # result = {k:v.strip() if v else None for k,v in six.iteritems(groupdict)}
+        # if result['xref'] is not None:
+        #     result['xref'] = [x.strip() for x in result['xref'].split(',')]
+        return cls(**groupdict)#cls(**result)
 
     @property
     def obo(self):

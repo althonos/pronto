@@ -52,20 +52,25 @@ class OboParser(Parser):
         _rawterms   = []
         _rawtypedef = []
 
+        _term_parser = cls._parse_term(_rawterms)
+        next(_term_parser)
+
         for streamline in stream:
 
             # manage encoding && cleaning of line
             streamline = streamline.decode('utf-8')
             if streamline[0] in string.whitespace:
                 continue
+            elif streamline[0] == "[":
+                _section = cls._check_section(streamline, _section)
 
-            _section = cls._check_section(streamline, _section)
             if _section is OboSection.meta:
-                meta = cls._parse_metadata(streamline, meta)
+                cls._parse_metadata(streamline, meta)
             elif _section is OboSection.typedef:
-                _rawtypedef = cls._parse_typedef(streamline, _rawtypedef)
+                cls._parse_typedef(streamline, _rawtypedef)
             elif _section is OboSection.term:
-                _rawterms = cls._parse_term(streamline, _rawterms)
+                _term_parser.send(streamline)
+                #_rawterms = cls._parse_term(streamline, _rawterms)
 
         terms = cls._classify(_rawtypedef, _rawterms)
         imports = set(meta['import']) if 'import' in meta else set()
@@ -110,32 +115,29 @@ class OboParser(Parser):
             (found in imagingMS.obo). To prevent the splitting from happening,
             the text on the left of the colon must be less that *20 chars long*.
         """
-        key, value = (x.strip() for x in line.split(':', 1))
-        if parse_remarks and key=="remark":
-            if 0<value.find(': ')<20:                                # Checking that the ':' is not
-                try:                                                 # not too far avoid parsing a sentence
-                    meta = cls._parse_metadata(value.strip(),        # containing a ':' as a key: value
-                                               meta, parse_remarks)  # obo statement nested in a remark
-                    return meta                                      # (20 is arbitrary, it may require
-                except ValueError:                                   # tweaking)
-                    pass
-        meta[key].append(value)
-
-        #if 'synonymtypedef' in meta:
-        try:
-            syn_type_def = []
-            for m in meta['synonymtypedef']:
-                if not isinstance(m, SynonymType):
-                    x = SynonymType.from_obo_header(m)
-                    syn_type_def.append(x)
-                else:
-                    syn_type_def.append(m)
-        except KeyError:
-            pass
+        key, value = line.split(':', 1)
+        key, value = key.strip(), value.strip()
+        if parse_remarks and "remark" in key:                        # Checking that the ':' is not
+            if 0<value.find(': ')<20:                                # not too far avoid parsing a sentence
+                try:                                                 # containing a ':' as a key: value
+                    cls._parse_metadata(value, meta, parse_remarks)  # obo statement nested in a remark
+                except ValueError:                                   # (20 is arbitrary, it may require
+                    pass                                             # tweaking)
         else:
-            meta['synonymtypedef'] = syn_type_def
+            meta[key].append(value)
+            try:
+                syn_type_def = []
+                for m in meta['synonymtypedef']:
+                    if not isinstance(m, SynonymType):
+                        x = SynonymType.from_obo_header(m)
+                        syn_type_def.append(x)
+                    else:
+                        syn_type_def.append(m)
+            except KeyError:
+                pass
+            else:
+                meta['synonymtypedef'] = syn_type_def
 
-        return meta
 
     @staticmethod
     def _parse_typedef(line, _rawtypedef):
@@ -151,12 +153,12 @@ class OboParser(Parser):
         if "[Typedef]" in line:
             _rawtypedef.append(collections.defaultdict(list))
         else:
-            key, value = (x.strip() for x in line.split(':', 1))
-            _rawtypedef[-1][key].append(value)
-        return _rawtypedef
+            key, value = line.split(':', 1)
+            _rawtypedef[-1][key.strip()].append(value.strip())
+        #return _rawtypedef
 
     @staticmethod
-    def _parse_term(line, _rawterms):
+    def _parse_term(_rawterms):
         """Parse a term line
 
         The term is organized as a succesion of key:value pairs
@@ -166,12 +168,16 @@ class OboParser(Parser):
         Parameters:
             line (str): the line containing a term statement
         """
-        if "[Term]" in line:
-            _rawterms.append(collections.defaultdict(list))
-        else:
-            key, value = (x.strip() for x in line.split(':', 1))
-            _rawterms[-1][key].append(value)
-        return _rawterms
+        line = yield
+        _rawterms.append(collections.defaultdict(list))
+        while True:
+            line = yield
+            if "[Term]" in line:
+                _rawterms.append(collections.defaultdict(list))
+            else:
+                key, value = line.split(':', 1)
+                _rawterms[-1][key.strip()].append(value.strip())
+            #_rawterms
 
     @staticmethod
     def _classify(_rawtypedef, _rawterms):
@@ -185,49 +191,42 @@ class OboParser(Parser):
         and then calling the default constructor.
         """
         terms = collections.OrderedDict()
+        _cached_synonyms = {}
 
         for _typedef in _rawtypedef:
             Relationship._from_obo_dict( # instantiate a new Relationship
                 {k:v for k,lv in six.iteritems(_typedef) for v in lv}
             )
 
+
         for _term in _rawterms:
             synonyms = set()
 
             _id   = _term['id'][0]
-            try:
-                _name = _term['name'][0]
-            except IndexError:
-                _name = ''
-            finally:
-                del _term['name']
-            try:
-                _desc = _term['def'][0]
-            except IndexError:
-                _desc = ''
-            finally:
-                del _term['def']
+            _name = _term.pop('name', ('',))[0]
+            _desc = _term.pop('def', ('',))[0]
+
             _relations = collections.defaultdict(list)
             try:
-                for other in _term['is_a']:
+                for other in _term.get('is_a', ()):
                     _relations[Relationship('is_a')].append(other.split('!')[0].strip())
             except IndexError:
                 pass
-            finally:
-                del _term['is_a']
             try:
-                for relname, other in ( x.split(' ', 1) for x in _term['relationship'] ):
+                for relname, other in ( x.split(' ', 1) for x in _term.pop('relationship', ())):
                     _relations[Relationship(relname)].append(other.split('!')[0].strip())
             except IndexError:
                 pass
-            finally:
-                del _term['relationship']
 
             for key, scope in six.iteritems(_obo_synonyms_map):
-                if key in _term:
-                    for obo_header in _term[key]:
-                        synonyms.add(Synonym.from_obo_header(obo_header, scope))
-                    del _term[key]
+                for obo_header in _term.pop(key, ()):
+                    try:
+                        s = _cached_synonyms.get(obo_header)
+                    except KeyError:
+                         s = Synonym.from_obo_header(obo_header, scope)
+                         _cached_synonyms[obo_header] = s
+                    finally:
+                        synonyms.add(s)
 
             terms[_id] = Term(_id, _name, _desc, dict(_relations), synonyms, dict(_term))
         return terms

@@ -46,15 +46,13 @@ class Ontology(collections.Mapping):
             >>> cl = Ontology("tests/resources/cl.ont", False)
             >>> uo.merge(cl)
             >>> with open('tests/run/merge.obo', 'w') as f:
-            ...     f.write(uo.obo)
-            750804
+            ...     f.write(uo.obo) # doctest: +SKIP
 
         Export an ontology with its dependencies embedded::
 
             >>> cl = Ontology("tests/resources/cl.ont")
             >>> with open('tests/run/cl.obo', 'w') as f:
-            ...     f.write(cl.obo)
-            1550752
+            ...     f.write(cl.obo) # doctest: +SKIP
 
         Use the parser argument to force usage a parser::
 

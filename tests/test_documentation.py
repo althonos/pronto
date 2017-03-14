@@ -10,9 +10,6 @@ import warnings
 import shutil
 
 from . import utils
-
-# Make sure we're using the local pronto library
-sys.path.insert(0, utils.MAINDIR)
 import pronto
 
 
@@ -30,7 +27,7 @@ class TestProntoDocumentation(unittest.TestCase):
         shutil.rmtree(os.path.join(utils.TESTDIR, "run"))
 
     @classmethod
-    @unittest.skipUnless(sys.version[:3] in {'3.5', '2.7'},
+    @unittest.skipUnless(sys.version[:3] in {'3.6', '2.7'},
         "Python {} cannot run Sphinx".format(sys.version[:3]))
     def register_tests(cls):
         """Register tests for most sphinx builders"""

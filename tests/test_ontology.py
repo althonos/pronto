@@ -14,12 +14,6 @@ import warnings
 import textwrap
 
 from . import utils
-
-if os.getcwd().endswith("pronto"):
-    os.chdir("tests")
-
-# Make sure we're using the local pronto library
-sys.path.insert(0, utils.MAINDIR)
 import pronto
 
 
@@ -66,7 +60,7 @@ class TestProntoFeatures(TestProntoOntology):
     @classmethod
     def setUpClass(cls):
         cls.consistency_span = 10
-        cls._rundir = os.path.join(os.getcwd(), 'run')
+        cls._rundir = utils.RUNDIR
         os.mkdir(cls._rundir)
 
         ims_url = "https://github.com/beny/imzml/raw/master/data/imagingMS.obo"
@@ -127,7 +121,7 @@ class TestProntoFeatures(TestProntoOntology):
         See [https://github.com/althonos/pronto/issues/6]
         Thanks to @owen-jones-gen for issue reporting.
         """
-        ontology = pronto.Ontology("resources/owen-jones-gen.obo")
+        ontology = pronto.Ontology("tests/resources/owen-jones-gen.obo")
         with utils.mock.patch('sys.stdout', new=six.moves.StringIO()) as output:
             for term in ontology:
                 print(term)
@@ -154,13 +148,13 @@ class TestProntoFeatures(TestProntoOntology):
         See [https://github.com/althonos/pronto/issues/5]
         Thanks to @winni-genp for issue reporting.
         """
-        obo = pronto.Ontology("resources/winni-genp.obo")
+        obo = pronto.Ontology("tests/resources/winni-genp.obo")
         self.check_ontology(obo)
 
     def test_with_custom_typedef(self):
         """Try to import an obo ontology containing custom typedefs
         """
-        obo = pronto.Ontology("resources/elo.obo")
+        obo = pronto.Ontology("tests/resources/elo.obo")
         self.check_ontology(obo)
 
         self.assertIn("has_written", pronto.Relationship._instances)
@@ -174,25 +168,25 @@ class TestProntoLocalOntology(TestProntoOntology):
     def test_local_owl_noimports(self):
         """Try to import a local owl ontology without its imports
         """
-        owl = pronto.Ontology("resources/cl.ont", False)
+        owl = pronto.Ontology("tests/resources/cl.ont", False)
         self.check_ontology(owl)
 
     def test_local_obo_noimports(self):
         """Try to import a local obo ontology without its imports
         """
-        obo = pronto.Ontology("resources/cmo.obo", False)
+        obo = pronto.Ontology("tests/resources/cmo.obo", False)
         self.check_ontology(obo)
 
     def test_local_owl_imports(self):
         """Try to import a local owl ontology with its imports
         """
-        owl = pronto.Ontology("resources/cl.ont")
+        owl = pronto.Ontology("tests/resources/cl.ont")
         self.check_ontology(owl)
 
     def test_local_obo_imports(self):
         """Try to import a local owl ontology with its imports
         """
-        obo = pronto.Ontology("resources/cmo.obo")
+        obo = pronto.Ontology("tests/resources/cmo.obo")
         self.check_ontology(obo)
 
 

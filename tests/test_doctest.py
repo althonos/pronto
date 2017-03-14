@@ -9,15 +9,11 @@ import doctest
 import shutil
 import re
 import warnings
-import os.path as op
+import types
 
-
-# Make sure we're using the local pronto library
-sys.path.insert(0, op.dirname(op.dirname(op.abspath(__file__))))
+from . import utils
 import pronto
 
-MODULE_TYPE = type(sys)
-RESOURCES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
 
 
 class IgnoreUnicodeChecker(doctest.OutputChecker):
@@ -31,7 +27,7 @@ class IgnoreUnicodeChecker(doctest.OutputChecker):
 def _load_tests_from_module(tests, module, globs, setUp, tearDown):
     """Load tests from module, iterating through submodules"""
     for attr in (getattr(module, x) for x in dir(module) if not x.startswith('_')):
-        if isinstance(attr, MODULE_TYPE):
+        if isinstance(attr, types.ModuleType):
             tests.addTests(doctest.DocTestSuite(attr, globs=globs,
                 setUp=setUp, tearDown=tearDown, checker=IgnoreUnicodeChecker()))
     return tests
@@ -55,8 +51,8 @@ def load_tests(loader, tests, ignore):
         # ontologies
         'nmr': pronto.Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False),
         'ms':  pronto.Ontology('https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo'),
-        'uo':  pronto.Ontology(os.path.join(RESOURCES_DIR, "uo.obo"), False),
-        'cl':  pronto.Ontology(os.path.join(RESOURCES_DIR, "cl.ont"), False),
+        'uo':  pronto.Ontology(os.path.join(utils.DATADIR, "uo.obo"), False),
+        'cl':  pronto.Ontology(os.path.join(utils.DATADIR, "cl.ont"), False),
 
         # classes
         'Relationship': pronto.relationship.Relationship,

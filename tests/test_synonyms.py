@@ -15,9 +15,6 @@ import warnings
 import textwrap
 
 from . import utils
-
-# Make sure we're using the local pronto library
-sys.path.insert(0, utils.MAINDIR)
 import pronto.synonym
 
 
@@ -162,5 +159,3 @@ class TestProntoSynonym(unittest.TestCase):
             synonym = pronto.synonym.Synonym(
                 "The other white meat", "BROAD", "WRONG_TYPE", ["MEAT:00324", "BACONBASE:03021"],
         )
-
-

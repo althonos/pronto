@@ -7,9 +7,6 @@ import unittest
 import warnings
 
 from . import utils
-
-# Make sure we're using the local pronto library
-sys.path.insert(0, utils.MAINDIR)
 import pronto
 
 

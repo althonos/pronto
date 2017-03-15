@@ -20,7 +20,7 @@ matrix:
   - python: 'pypy3'
 
 before_install:
-- pip install -U wheel setuptools
+- pip install -U wheel setuptools pip
 
 install:
 - pip install -r requirements-test.txt

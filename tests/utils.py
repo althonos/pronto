@@ -14,3 +14,7 @@ RUNDIR = os.path.join(TESTDIR, "run")
 
 # Force importing the local version of the module
 sys.path.insert(0, MAINDIR)
+
+# Launch a stub HTTP server to server local files
+from .stubs import StubHTTPServer
+StubHTTPServer(DATADIR).start()

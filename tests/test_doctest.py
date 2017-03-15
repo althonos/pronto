@@ -49,10 +49,10 @@ def load_tests(loader, tests, ignore):
 
     globs = {
         # ontologies
-        'nmr': pronto.Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False),
-        'ms':  pronto.Ontology('https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo'),
+        'nmr': pronto.Ontology('http://localhost:8080/nmrCV.owl', False),
+        'ms':  pronto.Ontology('http://localhost:8080/psi-ms.obo'),
         'uo':  pronto.Ontology(os.path.join(utils.DATADIR, "uo.obo"), False),
-        'cl':  pronto.Ontology(os.path.join(utils.DATADIR, "cl.ont"), False),
+        'cl':  pronto.Ontology(os.path.join(utils.DATADIR, "cl.ont.gz"), False),
 
         # classes
         'Relationship': pronto.relationship.Relationship,

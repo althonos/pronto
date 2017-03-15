@@ -8,6 +8,7 @@ import unittest
 import importlib
 import warnings
 import platform
+import gzip
 
 from . import utils
 import pronto
@@ -72,6 +73,8 @@ class TestProntoOwlParser(TestProntoParser):
     def _parse(parser, path):
         if path.startswith(('http', 'ftp')):
             handle = six.moves.urllib.request.urlopen(path)
+        elif path.endswith('.gz'):
+            handle = gzip.GzipFile(path)
         else:
             handle = open(path, 'rb')
         try:
@@ -86,17 +89,17 @@ class TestProntoOwlUnicity(TestProntoOwlParser):
     def test_parser_unicity(self):
         tree_m, tree_t, tree_i  = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
+                os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
         target_m, target_t, target_i = self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
+                os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
 
         print(target_i)
         print(target_m)
-        #tree_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTreeParser')
-        #target_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont'), 'OwlXMLTargetParser')
+        #tree_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont.gz'), 'OwlXMLTreeParser')
+        #target_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont.gz'), 'OwlXMLTargetParser')
 
         self.assertEqual(set(tree_t.keys()), set(target_t.keys()))
         self.assertEqual(set(tree_m.keys()), set(target_m.keys()))
@@ -123,7 +126,7 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.lxml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
+                os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
         self._check(m,t,i, exp_len=2348)
 
@@ -133,7 +136,7 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.cxml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
+                os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
         self._check(m,t,i, exp_len=2348)
 
@@ -141,7 +144,7 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.xml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
+                os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
         self._check(m,t,i, exp_len=2348)
 
@@ -151,7 +154,7 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.lxml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
-                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+                "http://localhost:8080/nmrCV.owl",
             )
         self._check(m,t,i, exp_len=685)
 
@@ -161,7 +164,7 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.cxml_etree):
             m,t,i =  self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
-                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+                "http://localhost:8080/nmrCV.owl",
 
             )
         self._check(m,t,i, exp_len=685)
@@ -170,7 +173,7 @@ class TestProntoOwlTargetParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.xml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTargetParser(),
-                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+                "http://localhost:8080/nmrCV.owl",
             )
         self._check(m,t,i, exp_len=685)
 
@@ -183,7 +186,7 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.lxml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
+                os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
         self._check(m,t,i, exp_len=2348)
 
@@ -191,7 +194,7 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.xml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
+                os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
         self._check(m,t,i, exp_len=2348)
 
@@ -201,7 +204,7 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.cxml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
-                os.path.join(self.resources_dir, 'cl.ont'),
+                os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
         self._check(m,t,i, exp_len=2348)
 
@@ -211,7 +214,7 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.lxml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
-                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+                "http://localhost:8080/nmrCV.owl",
             )
         self._check(m,t,i, exp_len=685)
 
@@ -219,7 +222,7 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.xml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
-                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+                "http://localhost:8080/nmrCV.owl",
             )
         self._check(m,t,i, exp_len=685)
 
@@ -229,7 +232,7 @@ class TestProntoOwlTreeParser(TestProntoOwlParser):
         with utils.mock.patch("pronto.parser.owl.etree", self.cxml_etree):
             m,t,i = self._parse(
                 pronto.parser.owl.OwlXMLTreeParser(),
-                "http://nmrml.org/cv/v1.0.rc1/nmrCV.owl",
+                "http://localhost:8080/nmrCV.owl",
             )
         self._check(m,t,i, exp_len=685)
 

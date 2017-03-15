@@ -60,21 +60,6 @@ class TestProntoFeatures(TestProntoOntology):
     @classmethod
     def setUpClass(cls):
         cls.consistency_span = 10
-        cls._rundir = utils.RUNDIR
-        os.mkdir(cls._rundir)
-
-        ims_url = "https://github.com/beny/imzml/raw/master/data/imagingMS.obo"
-        with open(os.path.join(cls._rundir, 'imagingMS.obo'), 'wb') as out_file:
-            with contextlib.closing(six.moves.urllib.request.urlopen(ims_url)) as con:
-                while True:
-                    chunk = con.read(1024)
-                    if not chunk:
-                        break
-                    out_file.write(chunk)
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls._rundir)
 
     def test_ims_consistency(self):
         """Assert several runs on the same file give the same output.
@@ -82,10 +67,10 @@ class TestProntoFeatures(TestProntoOntology):
         See [https://github.com/althonos/pronto/issues/4]
         Thanks to @winni-genp for issue reporting.
         """
-        obo = pronto.Ontology(os.path.join(self._rundir, "imagingMS.obo"), False)
+        obo = pronto.Ontology(os.path.join(utils.DATADIR, "imagingMS.obo.gz"), False)
         expected_keys = set(obo.terms.keys())
         for _ in six.moves.range(self.consistency_span):
-            tmp_obo = pronto.Ontology(os.path.join(self._rundir, "imagingMS.obo"), False)
+            tmp_obo = pronto.Ontology(os.path.join(utils.DATADIR, "imagingMS.obo.gz"), False)
             self.assertEqual(set(tmp_obo.terms.keys()), expected_keys)
         self.check_ontology(obo)
 
@@ -98,8 +83,7 @@ class TestProntoFeatures(TestProntoOntology):
 
         On Python3, this should actually produce a proper ontology.
         """
-        hpo_url = "https://github.com/Bioconductor-mirror/gwascat/"\
-                      "raw/master/inst/obo/hpo.obo.gz"
+        hpo_url = "http://localhost:8080/hpo.obo.gz"
         if six.PY3:
             gzipped = pronto.Ontology(hpo_url)
             expected_keys = {
@@ -168,7 +152,7 @@ class TestProntoLocalOntology(TestProntoOntology):
     def test_local_owl_noimports(self):
         """Try to import a local owl ontology without its imports
         """
-        owl = pronto.Ontology("tests/resources/cl.ont", False)
+        owl = pronto.Ontology("tests/resources/cl.ont.gz", False)
         self.check_ontology(owl)
 
     def test_local_obo_noimports(self):
@@ -180,7 +164,7 @@ class TestProntoLocalOntology(TestProntoOntology):
     def test_local_owl_imports(self):
         """Try to import a local owl ontology with its imports
         """
-        owl = pronto.Ontology("tests/resources/cl.ont")
+        owl = pronto.Ontology("tests/resources/cl.ont.gz")
         self.check_ontology(owl)
 
     def test_local_obo_imports(self):

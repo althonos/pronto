@@ -19,8 +19,7 @@ class TestProntoOboFoundry(TestProntoOntology):
 
     @classmethod
     @unittest.skipUnless(os.environ.get('FOUNDRY', 'false').lower()=='true',
-    #    'too long for Travis-CI')
-    )
+        'run tests with FOUNDRY=true for OboFoundry tests')
     def register_tests(cls):
         """Register tests for each ontology of the obofoundry"""
 

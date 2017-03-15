@@ -38,25 +38,25 @@ class Ontology(collections.Mapping):
 
             >>> from pronto import Ontology
             >>> envo = Ontology("https://raw.githubusercontent.com/"
-            ... "EnvironmentOntology/envo/master/src/envo/envo.obo")
+            ...                 "BFO-ontology/BFO/master/releases/2.0/bfo.owl")
 
         Merge two local ontologies and export the merge::
 
             >>> uo = Ontology("tests/resources/uo.obo", False)
-            >>> cl = Ontology("tests/resources/cl.ont", False)
+            >>> cl = Ontology("tests/resources/cl.ont.gz", False)
             >>> uo.merge(cl)
             >>> with open('tests/run/merge.obo', 'w') as f:
             ...     f.write(uo.obo) # doctest: +SKIP
 
         Export an ontology with its dependencies embedded::
 
-            >>> cl = Ontology("tests/resources/cl.ont")
+            >>> cl = Ontology("tests/resources/cl.ont.gz")
             >>> with open('tests/run/cl.obo', 'w') as f:
             ...     f.write(cl.obo) # doctest: +SKIP
 
         Use the parser argument to force usage a parser::
 
-            >>> cl = Ontology("tests/resources/cl.ont",
+            >>> cl = Ontology("tests/resources/cl.ont.gz",
             ...               parser='OwlXMLTargetParser')
 
 
@@ -349,9 +349,8 @@ class Ontology(collections.Mapping):
 
         Example:
             >>> from pronto import Ontology
-            >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl', False)
-            >>> po = Ontology('https://raw.githubusercontent.com/Planteome'
-            ... '/plant-ontology/master/po.obo', False)
+            >>> nmr = Ontology('tests/resources/nmrCV.owl', False)
+            >>> po = Ontology('tests/resources/po.obo.gz', False)
             >>> 'NMR:1000271' in nmr
             True
             >>> 'NMR:1000271' in po
@@ -388,11 +387,12 @@ class Ontology(collections.Mapping):
 
         else:
             if os.path.exists(path):
-                handle = open(path, 'rb')
+                if ZIPPED:
+                    handle = gzip.GzipFile(path)
+                else:
+                    handle = open(path, 'rb')
             else:
                 raise OSError('Ontology file {} could not be found'.format(path))
-            if ZIPPED:
-                handle = gzip.GzipFile(fileobj=handle)
 
         try:
             yield handle

@@ -17,14 +17,7 @@ class Term(object):
     """An ontology term.
 
     Example:
-
-        >>> from pronto import *
-        >>> new_term = Term('TR:001', 'new term', 'a new term')
-        >>> linked_term = Term('TR:002', 'other new', 'another term',
-        ...                    { Relationship('is_a'): 'TR:001'})
-
-        >>> ms = Ontology('https://raw.githubusercontent.com/'
-        ...               'HUPO-PSI/psi-ms-CV/master/psi-ms.obo')
+        >>> ms = Ontology('tests/resources/psi-ms.obo')
         >>> type(ms['MS:1000015'])
         <class 'pronto.term.Term'>
 
@@ -34,7 +27,7 @@ class Term(object):
                  '__weakref__']
 
     def __init__(self, id, name='', desc='', relations=None, synonyms=None, other=None):
-        """
+        """Create a new Term.
 
         Parameters:
             id (str): the Term id (e.g. MS:1000031)
@@ -46,6 +39,11 @@ class Term(object):
             synonyms (set, optional): a list containing :obj:`pronto.synonym.Synonym`
                 objects relating to the term.
 
+
+        Example:
+            >>> new_term = Term('TR:001', 'new term', 'a new term')
+            >>> linked_term = Term('TR:002', 'other new', 'another term',
+            ...                    { Relationship('is_a'): 'TR:001'})
         """
         if not isinstance(id, six.text_type):
             id = id.decode('utf-8')
@@ -383,8 +381,7 @@ class TermList(list):
     generate lists of terms' attributes.
 
     Example:
-        >>> from pronto import *
-        >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
+        >>> nmr = Ontology('tests/resources/nmrCV.owl')
         >>> type(nmr['NMR:1000031'].children)
         <class 'pronto.term.TermList'>
 
@@ -494,7 +491,7 @@ class TermList(list):
         Example:
 
             >>> from pronto import *
-            >>> nmr = Ontology('http://nmrml.org/cv/v1.0.rc1/nmrCV.owl')
+            >>> nmr = Ontology('tests/resources/nmrCV.owl')
             >>> 'NMR:1000122' in nmr['NMR:1000031'].children
             True
             >>> nmr['NMR:1000122'] in nmr['NMR:1000031'].children

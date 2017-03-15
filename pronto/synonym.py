@@ -109,7 +109,7 @@ class Synonym(object):
         else:
             self.syn_type = None
 
-        if not self.scope in {'EXACT', 'BROAD', 'NARROW', 'RELATED', None}:
+        if self.scope not in {'EXACT', 'BROAD', 'NARROW', 'RELATED', None}:
             raise ValueError("scope must be 'NARROW', 'BROAD', 'EXACT', 'RELATED' or None")
 
         self.xref = xref or []
@@ -136,7 +136,7 @@ class Synonym(object):
             self.desc,
             ' '.join([self.scope, self.syn_type])\
                 if self.syn_type else self.scope,
-
+            ', '.join(self.xref)
         )
 
     @output_str
@@ -145,7 +145,7 @@ class Synonym(object):
             self.desc,
             ' '.join([self.scope, self.syn_type.name])\
                 if self.syn_type else self.scope,
-                ', '.join(self.xref)
+            ', '.join(self.xref)
         )
 
     def __eq__(self, other):

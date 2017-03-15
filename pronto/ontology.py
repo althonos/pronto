@@ -213,8 +213,8 @@ class Ontology(collections.Mapping):
                 for term in six.itervalues(self.terms)
                     for relation in term.relations
                         for parent in term.relations[relation]
-                        	if relation.complementary
-                        		and relation.complementary in valid_relationships
+                            if relation.complementary
+                                and relation.complementary in valid_relationships
         ]
 
         relationships.sort(key=lambda x: x[2])
@@ -231,7 +231,7 @@ class Ontology(collections.Mapping):
 
             if parent in self.terms:
                 try:
-                    if not child in self.terms[parent].relations[rel]:
+                    if child not in self.terms[parent].relations[rel]:
                         self.terms[parent].relations[rel].append(child)
                 except KeyError:
                     self[parent].relations[rel] = [child]
@@ -426,7 +426,7 @@ class Ontology(collections.Mapping):
                     #if isinstance(t, Term):
                     try:
 
-                        if not t.id in self:
+                        if t.id not in self:
                             self._include_term(t)
 
                         v[i] = t.id

@@ -419,7 +419,7 @@ class TermList(list):
 
     def append(self, element):
         #try:
-        if not element in self:
+        if element not in self:
             super(TermList, self).append(element)
             try:
                 self._contents.add(element.id)

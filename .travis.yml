@@ -5,7 +5,7 @@ cache: pip
 python:
 - '2.6'
 - '2.7'
-- '3.2'
+#- '3.2'
 - '3.3'
 - '3.4'
 - '3.5'
@@ -19,6 +19,9 @@ matrix:
   - python: 'pypy'
   - python: 'pypy3'
 
+before_install:
+- pip install -U wheel setuptools
+
 install:
 - pip install -r requirements-test.txt
 - pip install .
@@ -29,7 +32,7 @@ script:
 - coverage xml --include "pronto/*"
 
 after_success:
-- python-codacy-coverage -r "coverage.xml"
+- codecov
 
 before_deploy:
 - python setup.py sdist --formats zip,gztar bdist_wheel

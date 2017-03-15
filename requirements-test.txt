@@ -2,6 +2,6 @@
 
 lxml
 PyYAML
-codacy-coverage
 mock
 coverage
+codecov

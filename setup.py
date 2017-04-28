@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # released under the GNU General Public License version 3.0 (GPLv3)
 
-from setuptools import setup, find_packages
 import warnings
+import setuptools
 
 warnings.simplefilter("ignore")
 import pronto
@@ -23,11 +23,11 @@ def format_for_setup(requirement_file):
     return requirements
 
 ## SETUPTOOLS VERSION
-setup(
+setuptools.setup(
     name='pronto',
     version=pronto.__version__,
 
-    packages=find_packages(),
+    packages=setuptools.find_packages(),
 
     py_modules=['pronto'],
 

@@ -124,7 +124,7 @@ class OwlXMLTreeParser(OwlXMLParser):
         # tag.iter() starts on the element itself so we drop that
         for elem in itertools.islice(tree.find(OWL_ONTOLOGY).iter(), 1, None):
             # Check the tag is not a comment (lxml only)
-            if isinstance(elem.tag, six.string_types):
+            try:
                 basename = elem.tag.split('}', 1)[-1]
                 if basename == 'imports':
                     imports.add(next(six.itervalues(elem.attrib)))
@@ -132,6 +132,8 @@ class OwlXMLTreeParser(OwlXMLParser):
                     meta[basename].append(elem.text)
                 elif elem.get(RDF_RESOURCE) is not None:
                     meta[basename].append(elem.get(RDF_RESOURCE))
+            except AttributeError:
+                pass
 
         meta['import'] = list(imports)
         return meta, imports
@@ -150,15 +152,16 @@ class OwlXMLTreeParser(OwlXMLParser):
             _rawterms[-1]['id'].append(cls._get_id_from_url(rawterm.get(RDF_ABOUT)))
 
             for elem in itertools.islice(rawterm.iter(), 1, None):
-                if isinstance(elem.tag, six.string_types):
+                try:
                     basename = elem.tag.split('}', 1)[-1]
                     if elem.text is not None:
                         elem.text = elem.text.strip()
-
                     if elem.text:
                         _rawterms[-1][basename].append(elem.text)
                     elif elem.get(RDF_RESOURCE) is not None:
                         _rawterms[-1][basename].append(elem.get(RDF_RESOURCE))
+                except AttributeError:
+                    pass
 
         return _rawterms
 

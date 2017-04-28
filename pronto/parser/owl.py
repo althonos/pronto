@@ -25,6 +25,7 @@ from .utils         import owl_ns, owl_to_obo, OwlSection
 from ..relationship import Relationship
 from ..synonym      import Synonym
 from ..term         import Term
+from ..utils        import nowarnings
 
 
 RDF_ABOUT = "{{{}}}{}".format(owl_ns['rdf'], 'about')
@@ -92,6 +93,7 @@ class OwlXMLParser(Parser):
 class OwlXMLTreeParser(OwlXMLParser):
 
     @classmethod
+    @nowarnings
     def parse(cls, stream):
 
         parser = etree.XMLParser()
@@ -355,6 +357,7 @@ class _OwlXMLTarget(object):
 class OwlXMLTargetParser(OwlXMLParser):
 
     @classmethod
+    @nowarnings
     def parse(cls, stream):
 
         parser = etree.XMLParser(target=_OwlXMLTarget())

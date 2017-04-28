@@ -14,6 +14,7 @@ from __future__ import absolute_import
 
 import six
 import functools
+import warnings
 
 
 class ProntoWarning(Warning):
@@ -50,3 +51,11 @@ def output_str(f):
     else:
         new_f = f
     return new_f
+
+def nowarnings(func):
+    @functools.wraps(func)
+    def new_func(*args, **kwargs):
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            return func(*args, **kwargs)
+    return new_func

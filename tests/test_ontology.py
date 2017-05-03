@@ -146,6 +146,28 @@ class TestProntoFeatures(TestProntoOntology):
         self.assertIn(pronto.Relationship('written_by'), obo['ELO:0130001'].relations)
         self.assertIn(pronto.Relationship('has_written'), obo['ELO:0330001'].relations)
 
+    def test_obo_export(self):
+        hpo = pronto.Ontology("tests/resources/hpo.obo.gz")
+        self.assertEqual(
+            hpo['HP:0000003'].obo.strip(),
+            textwrap.dedent("""
+            [Term]
+            id: HP:0000003
+            name: Multicystic kidney dysplasia
+            alt_id: HP:0004715
+            def: "Multicystic dysplasia of the kidney is characterized by multiple cysts of varying size in the kidney and the absence of a normal pelvicaliceal system. The condition is associated with ureteral or ureteropelvic atresia, and the affected kidney is nonfunctional." [HPO:curators]
+            comment: Multicystic kidney dysplasia is the result of abnormal fetal renal development in which the affected kidney is replaced by multiple cysts and has little or no residual function. The vast majority of multicystic kidneys are unilateral. Multicystic kidney can be diagnosed on prenatal ultrasound.
+            synonym: "Multicystic dysplastic kidney" EXACT []
+            synonym: "Multicystic kidneys" EXACT []
+            synonym: "Multicystic renal dysplasia" EXACT []
+            xref: MSH:D021782
+            xref: SNOMEDCT_US:204962002
+            xref: SNOMEDCT_US:82525005
+            xref: UMLS:C3714581
+            is_a: HP:0000107 ! Renal cyst""").strip()
+        )
+
+
 
 class TestProntoLocalOntology(TestProntoOntology):
 

@@ -194,7 +194,7 @@ class Term(object):
         add_tags(stanza_list, ['comment', 'subset'])
 
         # synonyms
-        for synonym in self.synonyms:
+        for synonym in sorted(self.synonyms, key=str):
             stanza_list.append(synonym.obo)
 
         add_tags(stanza_list, ['xref'])

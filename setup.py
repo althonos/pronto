@@ -39,9 +39,7 @@ setuptools.setup(
 
     run_requires= format_for_setup('requirements.txt'),
     test_requires = format_for_setup('requirements-test.txt'),
-
-    extras_require = { extra:format_for_setup('requirements-{}.txt'.format(extra))
-                        for extra in ['doc'] },
+    extras_require = {'doc': 'requirements-doc.txt'},
 
     include_package_data=True,
 

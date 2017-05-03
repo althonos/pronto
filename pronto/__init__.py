@@ -8,7 +8,7 @@
 from __future__ import absolute_import
 
 __all__ = ["Ontology", "Term", "TermList", "Relationship"]
-__version__='0.7.3'
+__version__='0.7.4'
 __author__='Martin Larralde'
 __author_email__ = 'martin.larralde@ens-cachan.fr'
 

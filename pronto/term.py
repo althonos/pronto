@@ -156,67 +156,125 @@ class Term(object):
 
         """
 
-        metatags = ["id", "is_anonymous", "name", "namespace","alt_id", "def","comment",
-                    "subset","synonym","xref","builtin","property_value","is_a",
-                    "intersection_of","union_of","equivalent_to","disjoint_from",
-                    "relationship","created_by","creation_date","is_obsolete",
-                    "replaced_by", "consider"]
-
-        obo = "\n".join(
-            [
-
-                "[Term]\nid: {}\nname: {}".format(self.id, self.name if self.name is not None else "")
-
-            ] + [ #metatags from namespace to alt_id
-
-                "{}: {}".format(k, self.other[k])
-                    for k in metatags[3:6]
-                        if k in self.other
-
-            ] + ([ " ".join(["def:", self.desc]) ] if self.desc else [])
+        def add_tags(stanza_list, tags):
+            for tag in tags:
+                if tag in self.other:
+                    if isinstance(self.other[tag], list):
+                        for attribute in self.other[tag]:
+                            stanza_list.append("{}: {}".format(tag, attribute))
+                    else:
+                        stanza_list.append("{}: {}".format(tag, self.other[tag]))
 
 
-              + [ # metatags from comment to property_value
+        # metatags = ["id", "is_anonymous", "name", "namespace","alt_id", "def","comment",
+        #             "subset","synonym","xref","builtin","property_value","is_a",
+        #             "intersection_of","union_of","equivalent_to","disjoint_from",
+        #             "relationship","created_by","creation_date","is_obsolete",
+        #             "replaced_by", "consider"]
 
-                  "{}: {}".format(k, self.other[k])
-                        for k in metatags[7:12]
-                            if k in self.other
+        stanza_list = ["[Term]"]
 
-            ] + [ #is_a
-
-                "is_a: {} ! {}".format(companion.id, companion.name)
-                    for relation in self.relations
-                        if relation is Relationship('is_a')
-                            for companion in self.relations[Relationship('is_a')]
+        # id
+        stanza_list.append("id: {}".format(self.id))
 
 
-            ] + [ #metatags from intersection_of to disjoint_from
+        # name
+        if self.name is not None:
+            stanza_list.append("name: {}".format(self.name))
+        else:
+            stanza_list.append("name: ")
 
-                "{}: {}".format(k, self.other[k])
-                    for k in metatags[13:17]
-                        if k in self.other
+        add_tags(stanza_list, ['is_anonymous', 'alt_id'])
 
-            ] + [ #relationships
+        # def
+        if self.desc:
+            stanza_list.append("def: {}".format(self.desc))
 
-                "relationship: {} {} ! {}".format(relation.obo_name, companion.id, companion.name)
-                    for relation in self.relations
-                        if relation.direction=="bottomup" and relation is not Relationship('is_a')
-                            for companion in self.relations[relation]
+        # comment, subset
+        add_tags(stanza_list, ['comment', 'subset'])
 
-                    #for relation in Relationship.bottomup()
-                    #    if relation in self.relations and relation is not Relationship('is_a')
-                    #        for companion in self.relations[relation]
+        # synonyms
+        for synonym in self.synonyms:
+            stanza_list.append(synonym.obo)
 
-            ] + [ #metatags from created_by to consider
+        add_tags(stanza_list, ['xref'])
 
-                "{}: {}".format(k, self.other[k])
-                    for k in metatags[18:]
-                        if k in self.other
+        # is_a
+        if Relationship('is_a') in self.relations:
+            for companion in self.relations[Relationship('is_a')]:
+                stanza_list.append("is_a: {} ! {}".format(companion.id, companion.name))
 
-            ]
+        add_tags(stanza_list, ['intersection_of', 'union_of', 'disjoint_from'])
+
+        for relation in self.relations:
+            if relation.direction=="bottomup" and relation is not Relationship('is_a'):
+                stanza_list.extend(
+                    "relationship: {} {} ! {}".format(
+                        relation.obo_name, companion.id, companion.name
+                    ) for companion in self.relations[relation]
+                )
+
+        add_tags(stanza_list, ['is_obsolete', 'replaced_by', 'consider',
+                               'builtin', 'created_by', 'creation_date'])
+
+        return "\n".join(stanza_list)
 
 
-        )
+        # obo = "\n".join(
+        #     [
+        #
+        #         "[Term]\nid: {}\nname: {}".format(self.id, self.name if self.name is not None else "")
+        #
+        #     ] + [ #metatags from namespace to alt_id
+        #
+        #         "{}: {}".format(k, self.other[k])
+        #             for k in metatags[3:6]
+        #                 if k in self.other
+        #
+        #     ] + ([ " ".join(["def:", self.desc]) ] if self.desc else [])
+        #
+        #
+        #       + [ # metatags from comment to property_value
+        #
+        #           "{}: {}".format(k, self.other[k])
+        #                 for k in metatags[7:12]
+        #                     if k in self.other
+        #
+        #     ] + [ #is_a
+        #
+        #         "is_a: {} ! {}".format(companion.id, companion.name)
+        #             for relation in self.relations
+        #                 if relation is Relationship('is_a')
+        #                     for companion in self.relations[Relationship('is_a')]
+        #
+        #
+        #     ] + [ #metatags from intersection_of to disjoint_from
+        #
+        #         "{}: {}".format(k, self.other[k])
+        #             for k in metatags[13:17]
+        #                 if k in self.other
+        #
+        #     ] + [ #relationships
+        #
+        #         "relationship: {} {} ! {}".format(relation.obo_name, companion.id, companion.name)
+        #             for relation in self.relations
+        #                 if relation.direction=="bottomup" and relation is not Relationship('is_a')
+        #                     for companion in self.relations[relation]
+        #
+        #             #for relation in Relationship.bottomup()
+        #             #    if relation in self.relations and relation is not Relationship('is_a')
+        #             #        for companion in self.relations[relation]
+        #
+        #     ] + [ #metatags from created_by to consider
+        #
+        #         "{}: {}".format(k, self.other[k])
+        #             for k in metatags[18:]
+        #                 if k in self.other
+        #
+        #     ]
+        #
+        #
+        # )
 
         return obo
 

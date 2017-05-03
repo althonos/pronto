@@ -134,7 +134,7 @@ class Synonym(object):
     def obo(self):
         return 'synonym: "{}" {} [{}]'.format(
             self.desc,
-            ' '.join([self.scope, self.syn_type])\
+            ' '.join([self.scope, self.syn_type.name])\
                 if self.syn_type else self.scope,
             ', '.join(self.xref)
         )

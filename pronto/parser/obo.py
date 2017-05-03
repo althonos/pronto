@@ -221,7 +221,7 @@ class OboParser(Parser):
             for key, scope in six.iteritems(_obo_synonyms_map):
                 for obo_header in _term.pop(key, ()):
                     try:
-                        s = _cached_synonyms.get(obo_header)
+                        s = _cached_synonyms[obo_header]
                     except KeyError:
                          s = Synonym.from_obo_header(obo_header, scope)
                          _cached_synonyms[obo_header] = s

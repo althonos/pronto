@@ -1,6 +1,6 @@
 -r requirements.txt
 
-lxml
+lxml ; implementation_name=="cpython"
 PyYAML
 mock
 coverage

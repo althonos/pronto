@@ -6,6 +6,19 @@ try:
 except ImportError:
     import mock
 
+# Import several available etrees
+from xml.etree import ElementTree as xml_etree
+try:
+    from lxml import etree as lxml_etree
+except ImportError:
+    lxml_etree = None
+try:
+    from xml.etree import cElementTree as cxml_etree
+except ImportError:
+    cxml_etree = None
+
+
+
 TESTDIR = os.path.dirname(os.path.abspath(__file__))
 MAINDIR = os.path.dirname(TESTDIR)
 DOCSDIR = os.path.join(MAINDIR, "docs")

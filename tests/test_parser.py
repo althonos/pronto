@@ -15,8 +15,6 @@ from . import utils
 import pronto
 
 
-
-
 class TestProntoParser(unittest.TestCase):
 
     def setUp(self):
@@ -82,20 +80,14 @@ class TestProntoOwlParser(object):
     parser = None
     imp = platform.python_implementation()
 
-    def setUp(self):
-        super(TestProntoOwlParser, self).setUp()
-        self.lxml_etree = importlib.import_module("lxml.etree")
-        self.xml_etree = importlib.import_module("xml.etree.ElementTree")
-        self.cxml_etree = importlib.import_module("xml.etree.cElementTree")
-
     # ----------------------------------------
     # Test importing file with inline comments
     # ----------------------------------------
 
-    @unittest.skipIf(imp != "CPython", 'cannot run lxml on {}'.format(imp))
+    @unittest.skipIf(utils.lxml_etree is None, 'lxml unavailable')
     def test_inline_comment_lxml(self):
         try:
-            with utils.mock.patch("pronto.parser.owl.etree", self.lxml_etree):
+            with utils.mock.patch("pronto.parser.owl.etree", utils.lxml_etree):
                 tree_m, tree_t, tree_i = self._parse(
                     pronto.parser.owl.OwlXMLTreeParser(),
                     os.path.join(self.resources_dir, 'obi-small.owl'),
@@ -103,10 +95,10 @@ class TestProntoOwlParser(object):
         except Exception as e:
             self.fail(e)
 
-    @unittest.skipIf(imp != "CPython", 'cannot run cElementTree on {}'.format(imp))
+    @unittest.skipIf(utils.cxml_etree is None, 'cElementTree unavailable')
     def test_inline_comment_cElementTree(self):
         try:
-            with utils.mock.patch("pronto.parser.owl.etree", self.cxml_etree):
+            with utils.mock.patch("pronto.parser.owl.etree", utils.cxml_etree):
                 tree_m, tree_t, tree_i = self._parse(
                     pronto.parser.owl.OwlXMLTreeParser(),
                     os.path.join(self.resources_dir, 'obi-small.owl'),
@@ -116,7 +108,7 @@ class TestProntoOwlParser(object):
 
     def test_inline_comment_ElementTree(self):
         try:
-            with utils.mock.patch("pronto.parser.owl.etree", self.xml_etree):
+            with utils.mock.patch("pronto.parser.owl.etree", utils.xml_etree):
                 tree_m, tree_t, tree_i = self._parse(
                     pronto.parser.owl.OwlXMLTreeParser(),
                     os.path.join(self.resources_dir, 'obi-small.owl'),
@@ -128,18 +120,18 @@ class TestProntoOwlParser(object):
     # Test importing from "local" source
     # -----------------------------------
 
-    @unittest.skipIf(imp != "CPython", 'cannot run lxml on {}'.format(imp))
+    @unittest.skipIf(utils.lxml_etree is None, 'lxml unavailable')
     def test_with_lxml_etree(self):
-        with utils.mock.patch("pronto.parser.owl.etree", self.lxml_etree):
+        with utils.mock.patch("pronto.parser.owl.etree", utils.lxml_etree):
             m,t,i = self._parse(
                 self.parser(),
                 os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
         self._check(m,t,i, exp_len=2348)
 
-    @unittest.skipIf(imp != "CPython", 'cannot run cElementTree on {}'.format(imp))
+    @unittest.skipIf(utils.cxml_etree is None, 'cElementTree unavailable')
     def test_with_xml_cElementTree(self):
-        with utils.mock.patch("pronto.parser.owl.etree", self.cxml_etree):
+        with utils.mock.patch("pronto.parser.owl.etree", utils.cxml_etree):
             m,t,i = self._parse(
                 self.parser(),
                 os.path.join(self.resources_dir, 'cl.ont.gz'),
@@ -147,7 +139,7 @@ class TestProntoOwlParser(object):
         self._check(m,t,i, exp_len=2348)
 
     def test_with_xml_elementTree(self):
-        with utils.mock.patch("pronto.parser.owl.etree", self.xml_etree):
+        with utils.mock.patch("pronto.parser.owl.etree", utils.xml_etree):
             m,t,i = self._parse(
                 self.parser(),
                 os.path.join(self.resources_dir, 'cl.ont.gz'),
@@ -158,18 +150,18 @@ class TestProntoOwlParser(object):
     # Test importing from "remote" source
     # -----------------------------------
 
-    @unittest.skipIf(imp != "CPython", 'cannot run lxml on {}'.format(imp))
+    @unittest.skipIf(utils.lxml_etree is None, 'lxml unavailable')
     def test_with_lxml_etree_remote(self):
-        with utils.mock.patch("pronto.parser.owl.etree", self.lxml_etree):
+        with utils.mock.patch("pronto.parser.owl.etree", utils.lxml_etree):
             m,t,i = self._parse(
                 self.parser(),
                 "http://localhost:8080/nmrCV.owl",
             )
         self._check(m,t,i, exp_len=685)
 
-    @unittest.skipIf(imp != "CPython", 'cannot run cElementTree on {}'.format(imp))
+    @unittest.skipIf(utils.cxml_etree is None, 'cElementTree unavailable')
     def test_with_xml_cElementTree_remote(self):
-        with utils.mock.patch("pronto.parser.owl.etree", self.cxml_etree):
+        with utils.mock.patch("pronto.parser.owl.etree", utils.cxml_etree):
             m,t,i =  self._parse(
                 self.parser(),
                 "http://localhost:8080/nmrCV.owl",
@@ -178,7 +170,7 @@ class TestProntoOwlParser(object):
         self._check(m,t,i, exp_len=685)
 
     def test_with_xml_elementTree_remote(self):
-        with utils.mock.patch("pronto.parser.owl.etree", self.xml_etree):
+        with utils.mock.patch("pronto.parser.owl.etree", utils.xml_etree):
             m,t,i = self._parse(
                 self.parser(),
                 "http://localhost:8080/nmrCV.owl",

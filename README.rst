@@ -29,17 +29,17 @@ repository and install it with the setup script (still requires
 
     git clone https://github.com/althonos/pronto
     cd pronto
-    python3 setup.py install    # may also require admin rights
+    python setup.py install    # may also require admin rights
 
 Usage
 ^^^^^
 
-The class Ontology is likely the one you'll use the most
-if all you want is to browse ontologies. It can be used to import 
-ontologies in .owl (sometimes seen as .ont) and .obo formats,
-merge, and export ontologies to a rudimentary obo file.
+The ``Ontology`` class is the main entrypoint of ``pronto``. It can
+be instantiated with a given ontology file (``.owl``, ``.ont`` or ``.obo``)
+or from scratch, without any existing terms.
 
-Instantiate an obo ontology and getting a term by accession number:
+Open an ontology and get a term by accession:
+'''''''''''''''''''''''''''''''''''''''''''''
 
 .. code:: python
 
@@ -48,6 +48,7 @@ Instantiate an obo ontology and getting a term by accession number:
     term = ont['REF:ACCESSION']
 
 Display an ontology in obo format and in json format:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 .. code:: python
 
@@ -57,21 +58,28 @@ Display an ontology in obo format and in json format:
     print(ont.json)
 
 Merge two ontologies:
+'''''''''''''''''''''
+
+Example here uses the `NMR controlled vocabulary <http://nmrml.org/cv/>`_ and the
+`HUPO-PSI MS controlled vocabulary <http://www.psidev.info/groups/controlled-vocabularies>`_
 
 .. code:: python
 
     import pronto
-    nmr = pronto.Ontology('https://raw.githubusercontent.com/nmrML/nmrML/'
-                          'master/ontologies/nmrCV.owl')
-    ms  = pronto.Ontology('http://psidev.cvs.sourceforge.net/viewvc/psidev/psi'
-                          '/psi-ms/mzML/controlledVocabulary/psi-ms.obo')
+    nmr = pronto.Ontology('http://nmrml.org/cv/v1.1.0/nmrCV.owl')
+    ms  = pronto.Ontology('https://raw.githubusercontent.com/HUPO-PSI/psi-ms-CV/master/psi-ms.obo')
+    ms.merge(nmr)
 
-    ms.merge(nmr) # MS ontology keeps its metadata but now contains NMR terms
-                  # as well.
+.. code:: python
 
-    assert('NMR:1000004' in ms)
+    >>> 'NMR:1000004' in ms
+    True
+    >>> ms.meta['coverage']
+    'Mass spectrometer output files and spectra interpretation'
 
-Explore every term of an ontology and print those with children:
+
+Find ontology terms with children
+'''''''''''''''''''''''''''''''''
 
 .. code:: python
 
@@ -81,7 +89,9 @@ Explore every term of an ontology and print those with children:
         if term.children:
             print(term)
 
-Get grandchildrens of an ontology term:
+
+Get children of an ontology term recursively
+''''''''''''''''''''''''''''''''''''''''''''
 
 .. code:: python
 
@@ -89,22 +99,14 @@ Get grandchildrens of an ontology term:
     ont = pronto.Ontology('path/to/file.obo')
     print(ont['RF:XXXXXXX'].children.children)
 
-TODO
-^^^^
--  test with many different ontologies
--  extract data from OwlXML where attributes are ontologic terms
--  extract metadatas from OwlXML
--  add other owl serialized formats
--  (maybe) add serialization to owl
-
 
 Reference
 ^^^^^^^^^
 
 If you wish to use this library in a scientific publication,
-please cite it (see the `Zenodo record <https://zenodo.org/badge/latestdoi/23304/althonos/pronto>`__).
-
-Author: Martin Larralde
+please cite it !
+(see the `Zenodo record <https://zenodo.org/badge/latestdoi/23304/althonos/pronto>`_
+to get a DOI or a BibTEX record).
 
 
 .. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat&maxAge=3600
@@ -125,8 +127,8 @@ Author: Martin Larralde
 .. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=3600
    :target: https://codacy.com/app/althonos/pronto
 
-.. |DOI| image:: https://zenodo.org/badge/23304/althonos/pronto.svg
-   :target: https://zenodo.org/badge/latestdoi/23304/althonos/pronto
+.. |DOI| image:: https://zenodo.org/badge/62424052.svg
+   :target: https://zenodo.org/badge/latestdoi/62424052
 
 .. |coverage| image:: https://img.shields.io/codacy/coverage/157b5fd24e5648ea80580f28399e79a4.svg?maxAge=3600
    :target: https://www.codacy.com/app/althonos/pronto/dashboard

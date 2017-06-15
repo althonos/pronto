@@ -11,6 +11,7 @@ from __future__ import absolute_import
 import json
 import os
 import warnings
+import operator
 import six
 import gzip
 import contextlib
@@ -217,7 +218,7 @@ class Ontology(collections.Mapping):
                                 and relation.complementary in valid_relationships
         ]
 
-        relationships.sort(key=lambda x: x[2])
+        relationships.sort(key=operator.itemgetter(2))
 
         for parent, rel, child in relationships:
 
@@ -487,7 +488,7 @@ class Ontology(collections.Mapping):
                                 for x in self.meta[k]
             ] + [ # eventual other metadata added to remarks
                 "remark: {}: {}".format(k, x)
-                    for k,v in sorted(six.iteritems(self.meta), key=lambda x: x[0])
+                    for k,v in sorted(six.iteritems(self.meta), key=operator.itemgetter(0))
                         for x in v
                             if k not in metatags
             ] +      ["ontology: {}".format(x) for x in self.meta["ontology"]]
@@ -516,8 +517,8 @@ class Ontology(collections.Mapping):
             metadata, only terms).
 
         """
-        return json.dumps( self.terms, indent=4, sort_keys=True,
-                          default=lambda o: o.__deref__)
+        return json.dumps(self.terms, indent=4, sort_keys=True,
+                          default=operator.attrgetter("__deref__"))
 
     @property
     def obo(self):

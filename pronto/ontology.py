@@ -187,10 +187,12 @@ class Ontology(collections.Mapping):
 
         force, parsers = self._get_parsers(parser)
 
-        if getattr(stream, 'seekable', lambda: False)():
+
+        try:
+            stream.seek(0)
             lookup = stream.read(1024)
             stream.seek(0)
-        else:
+        except (io.UnsupportedOperation, AttributeError):
             lookup = None
 
         for p in parsers:

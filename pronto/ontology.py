@@ -493,7 +493,7 @@ class Ontology(collections.Mapping):
             "treat-xrefs-as-is_a", "remark", "ontology"
         )
 
-        meta = collections.ChainMap({}, self.meta)
+        meta = self.meta.copy()
         meta['auto-generated-by'] = ['pronto v{}'.format(__version__)]
         meta['date'] = [datetime.datetime.now().strftime('%d:%m:%Y %H:%M')]
 

@@ -1,4 +1,6 @@
-﻿# coding: utf-8 from __future__ import absolute_import
+﻿# coding: utf-8
+from __future__ import absolute_import
+from __future__ import print_function
 
 ### DEPS
 import six
@@ -20,6 +22,26 @@ import pronto
 
 ### TESTS
 class TestProntoOntology(unittest.TestCase):
+
+    class NamelessFile(object):
+        def __init__(self, f):
+            self._f = f
+        def readline(self):
+            return self._f.readline()
+        def seek(self, *args, **kwargs):
+            return self._f.seek(*args, **kwargs)
+        def readable(self):
+            return True
+        def seekable(self):
+            return True
+        def read(self, *args, **kwargs):
+            return self._f.read(*args, **kwargs)
+        def __iter__(self):
+            return self
+        def __next__(self):
+            return next(self._f)
+        def next(self):
+            return self.__next__()
 
     if six.PY2:
         def assertRegex(self, text, expected_regex, msg=None):
@@ -101,7 +123,7 @@ class TestProntoFeatures(TestProntoOntology):
             self.assertEqual(expected_keys, set(gzipped.terms.keys()))
             self.check_ontology(gzipped)
         else:
-            with self.assertRaises(NotImplementedError):
+            with self.assertRaises(io.UnsupportedOperation):
                 gzipped = pronto.Ontology(hpo_url, parser='OwlXMLTargetParser')
 
     def test_unicode_in_term_names(self):
@@ -183,37 +205,34 @@ class TestProntoFeatures(TestProntoOntology):
         with open("tests/resources/elo.obo", 'rb') as stream:
             elo = pronto.Ontology(stream)
             self.assertFalse(stream.closed)
+            self.assertEqual(elo.path, "tests/resources/elo.obo")
         self.check_ontology(elo)
 
         patch_object = utils.mock.patch.object
         PropertyMock = utils.mock.PropertyMock
 
         # Check with a nameless stream
-
-        class NamelessFile(object):
-            def __init__(self, f):
-                self._f = f
-            def readline(self):
-                return self._f.readline()
-            def seek(self, *args, **kwargs):
-                return self._f.seek(*args, **kwargs)
-            def readable(self):
-                return True
-            def seekable(self):
-                return True
-            def read(self, *args, **kwargs):
-                return self._f.read(*args, **kwargs)
-            def __iter__(self):
-                return self
-            def __next__(self):
-                return next(self._f)
-            def next(self):
-                return self.__next__()
-
         with open("tests/resources/elo.obo", 'rb') as stream:
-            elo = pronto.Ontology(NamelessFile(stream))
+            elo = pronto.Ontology(self.NamelessFile(stream))
             self.assertFalse(stream.closed)
+            self.assertIs(elo.path, None)
         self.check_ontology(elo)
+
+    def test_owl_stream_import(self):
+        # Check with a named stream
+        with open("tests/resources/nmrCV.owl", 'rb') as stream:
+            nmr = pronto.Ontology(stream)
+            self.assertFalse(stream.closed)
+            self.assertEqual(nmr.path, 'tests/resources/nmrCV.owl')
+        self.check_ontology(nmr)
+
+        # Check with a nameless stream
+        with open("tests/resources/nmrCV.owl", 'rb') as stream:
+            nmr = pronto.Ontology(self.NamelessFile(stream))
+            self.assertFalse(stream.closed)
+            self.assertIs(nmr.path, None)
+        self.check_ontology(nmr)
+
 
 
 

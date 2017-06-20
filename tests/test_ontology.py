@@ -4,6 +4,7 @@
 import six
 import unittest
 import io
+import re
 import sys
 import contextlib
 import os
@@ -19,6 +20,10 @@ import pronto
 
 ### TESTS
 class TestProntoOntology(unittest.TestCase):
+
+    if six.PY2:
+        def assertRegex(self, text, expected_regex, msg=None):
+            return self.assertRegexpMatches(text, expected_regex, msg)
 
     def assert_loaded(self, ontology):
 
@@ -110,19 +115,25 @@ class TestProntoFeatures(TestProntoOntology):
             for term in ontology:
                 print(term)
                 print(term.obo)
+            print()
             print(ontology.obo)
 
+            expected_regex = re.compile(textwrap.dedent(r"""
+                <ONT0:ROOT: °>
+                \[Term\]
+                id: ONT0:ROOT
+                name: °
+
+                date: \d{2}:\d{2}:\d{4} \d{2}:\d{2}
+                auto-generated-by: pronto v\d+\.\d+\.\d+
+
+                \[Term\]
+                id: ONT0:ROOT
+                name: °
+                """
+            ).strip())
             output.seek(0)
-            self.assertEqual(output.read().strip(),
-                             textwrap.dedent("""
-                                             <ONT0:ROOT: °>
-                                             [Term]
-                                             id: ONT0:ROOT
-                                             name: °
-                                             [Term]
-                                             id: ONT0:ROOT
-                                             name: °
-                                             """).strip())
+            self.assertRegex(output.read().strip(), expected_regex)
 
         self.check_ontology(ontology)
 

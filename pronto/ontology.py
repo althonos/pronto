@@ -8,12 +8,14 @@ This submodule contains the definition of the Ontology class.
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+import io
 import json
 import os
 import warnings
 import operator
 import six
 import gzip
+import datetime
 import contextlib
 import collections
 
@@ -384,16 +386,12 @@ class Ontology(collections.Mapping):
                 if ZIPPED:
                     handle = gzip.GzipFile(fileobj=handle)
             else:
-                raise NotImplementedError("Cannot parse a remote zipped file (this is an urllib2 limitation)")
+                raise io.UnsupportedOperation("Cannot parse a remote zipped file (this is an urllib2 limitation)")
 
+        elif os.path.exists(path):
+            handle = gzip.GzipFile(path) if ZIPPED else open(path, 'rb')
         else:
-            if os.path.exists(path):
-                if ZIPPED:
-                    handle = gzip.GzipFile(path)
-                else:
-                    handle = open(path, 'rb')
-            else:
-                raise OSError('Ontology file {} could not be found'.format(path))
+            raise OSError('Ontology file {} could not be found'.format(path))
 
         try:
             yield handle
@@ -461,22 +459,26 @@ class Ontology(collections.Mapping):
 
     @output_str
     def _obo_meta(self):
-        """Generates the obo metadata header
+        """Generates the obo metadata header and updates metadata.
 
-        Generated following specs of the official format guide:
-        ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
+        When called, this method will replace the ``auto-generated-by`` and
+        ``date`` fields of the metadata with appropriate values.
 
-        Todo:
-            * Change the `auto-generated-by` tag to be **auto-generated-by pronto pronto.__version__**
-
+        Note:
+            Generated following specs of the unofficial format guide:
+            ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
         """
         metatags = (
             "format-version", "data-version", "date", "saved-by",
-            "auto-generated-by","import", "subsetdef", "synonymtypedef",
+            "auto-generated-by", "import", "subsetdef", "synonymtypedef",
             "default-namespace", "namespace-id-rule", "idspace",
             "treat-xrefs-as-equivalent", "treat-xrefs-as-genus-differentia",
             "treat-xrefs-as-is_a", "remark", "ontology"
         )
+
+        meta = collections.ChainMap({}, self.meta)
+        meta['auto-generated-by'] = ['pronto v{}'.format(__version__)]
+        meta['date'] = [datetime.datetime.now().strftime('%d:%m:%Y %H:%M')]
 
         obo_meta = "\n".join(
 
@@ -484,18 +486,17 @@ class Ontology(collections.Mapping):
                 x.obo if hasattr(x, 'obo') \
                     else "{}: {}".format(k,x)
                         for k in metatags[:-1]
-                            if k in self.meta
-                                for x in self.meta[k]
-            ] + [ # eventual other metadata added to remarks
+                            for x in meta.get(k, ())
+            ] + [ # eventual other metadata added to remarksmock.patch in production code
                 "remark: {}: {}".format(k, x)
-                    for k,v in sorted(six.iteritems(self.meta), key=operator.itemgetter(0))
+                    for k,v in sorted(six.iteritems(meta), key=operator.itemgetter(0))
                         for x in v
                             if k not in metatags
-            ] +      ["ontology: {}".format(x) for x in self.meta["ontology"]]
-                            if "ontology" in self.meta
-                else ["ontology: {}".format(self.meta["namespace"][0].lower())]
-                            if "namespace" in self.meta
-                else []
+            ] + (     ["ontology: {}".format(x) for x in meta["ontology"]]
+                            if "ontology" in meta
+                 else ["ontology: {}".format(meta["namespace"][0].lower())]
+                            if "namespace" in meta
+                 else [])
 
         )
 

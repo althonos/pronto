@@ -18,6 +18,10 @@ class Parser(object):
     def __init__(self):
         self._instances[type(self).__name__] = self
 
+    @classmethod
+    def hook(cls, force=False, path=None, lookup=None):
+        raise NotImplementedError
+
     #@pronto.utils.timeout(0)
     def parse(self, stream):
         """

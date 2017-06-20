@@ -80,8 +80,8 @@ class Ontology(collections.Mapping):
         if handle is None:
             self.path = None
         elif hasattr(handle, 'read'):
-            self.parse(handle, parser)
             self.path = getattr(handle, 'name', None)
+            self.parse(handle, parser)
         elif isinstance(handle, six.string_types):
             self.path = handle
             with self._get_handle(handle, timeout) as handle:
@@ -92,7 +92,7 @@ class Ontology(collections.Mapping):
                             "handle or string, found {}".format(actual))
 
         if handle is not None and self._parsed_by is None:
-            raise ValueError("Could not find a suitable parser to parse {}".format(path))
+            raise ValueError("Could not find a suitable parser to parse {}".format(handle))
 
         self.adopt()
         self.resolve_imports(imports, import_depth, parser)
@@ -185,26 +185,38 @@ class Ontology(collections.Mapping):
                 not name a Parser
         """
 
+        force, parsers = self._get_parsers(parser)
+
+        if getattr(stream, 'seekable', lambda: False)():
+            lookup = stream.read(1024)
+            stream.seek(0)
+        else:
+            lookup = None
+
+        for p in parsers:
+            if p.hook(path=self.path, force=force, lookup=lookup):
+                self.meta, self.terms, self.imports = p.parse(stream)
+                self._parsed_by = type(p).__name__
+                break
+
+    def _get_parsers(self, parser):
+        """Return the appropriate parser asked by the user.
+        """
         if parser is None:
-            FORCE = False
-            parsers = Parser._instances.values()
+            return False, Parser._instances.values()
         elif isinstance(parser, (str, six.text_type)):
             if parser in Parser._instances:
-                FORCE = True
-                parsers = [Parser._instances[parser]]
+                return True, [Parser._instances[parser]]
             else:
                 raise ValueError("could not find parser: {}".format(parser))
         else:
             raise TypeError("parser must be {types} or None, not {actual}".format(
-                types = " or ".join([six.text_type.__name__, six.binary_type.__name__]),
+                types=" or ".join([six.text_type.__name__, six.binary_type.__name__]),
                 actual=type(parser).__name__,
             ))
 
-        for p in parsers:
-            if p.hook(stream=stream, path=self.path, force=FORCE):
-                self.meta, self.terms, self.imports = p.parse(stream)
-                self._parsed_by = type(p).__name__
-                break
+
+
 
     def adopt(self):
         """Make terms aware of their children via complementary relationships.

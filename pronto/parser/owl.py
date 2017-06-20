@@ -49,16 +49,20 @@ class OwlXMLParser(Parser):
     extensions = ('.owl', '.ont', '.owl.gz', '.ont.gz')
 
     @classmethod
-    def hook(self, **kwargs):
+    def hook(cls, force=False, path=None, lookup=None):
         """Returns True if this parser should be used.
 
         The current behaviour relies on filenames and file extension
         (.owl, .ont), but this is subject to change.
         """
-        if 'force' in kwargs and kwargs['force']:
+        if force:
             return True
-        if 'path' in kwargs:
-            return kwargs['path'].endswith(self.extensions)
+        if path is not None and path.endswith(cls.extensions):
+            return True
+        if lookup is not None and lookup.startswith(b'<?xml'):
+            return True
+        return False
+
 
     @classmethod
     def parse(self, stream):

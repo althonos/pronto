@@ -25,14 +25,20 @@ class OboParser(Parser):
 
     extensions = (".obo", ".obo.gz")
 
-    def hook(self, **kwargs):
-        """Returns True if this parser should be used.
+    def hook(self, force=False, path=None, lookup=None):
+        """Return True if this parser should be used.
 
         The current behaviour relies on filenames and file extension
         (.obo), but this is subject to change.
         """
-        return kwargs.get('force', False) \
-            or kwargs.get('path', '').endswith(self.extensions)
+        if force:
+            return True
+        elif path is not None and path.endswith(self.extensions):
+            return True
+        elif lookup is not None and lookup.startswith(b'format-version:'):
+            return True
+        return False
+
 
     @classmethod
     def parse(cls, stream):

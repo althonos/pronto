@@ -4,6 +4,7 @@ pronto.ontology
 ===============
 
 This submodule contains the definition of the Ontology class.
+
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -66,32 +67,39 @@ class Ontology(collections.Mapping):
     Todo:
         * Add a __repr__ method to Ontology
     """
-    __slots__ = ("path", "meta", "terms", "imports", "__parsedby__")
+    __slots__ = ("path", "meta", "terms", "imports", "_parsed_by")
 
-    def __init__(self, path=None, imports=True, import_depth=-1, timeout=2, parser=None):
+    def __init__(self, handle=None, imports=True, import_depth=-1, timeout=2, parser=None):
         """
         """
-        self.path = path
         self.meta = {}
         self.terms = {}
         self.imports = ()
-        self.__parsedby__ = None
+        self._parsed_by = None
 
-        if path is not None:
-
-            with self._get_handle(path, timeout) as handle:
+        if handle is None:
+            self.path = None
+        elif hasattr(handle, 'read'):
+            self.parse(handle, parser)
+            self.path = getattr(handle, 'name', None)
+        elif isinstance(handle, six.string_types):
+            self.path = handle
+            with self._get_handle(handle, timeout) as handle:
                 self.parse(handle, parser)
+        else:
+            actual = type(handle).__name__
+            raise TypeError("Invalid type for 'handle': expected None, file "
+                            "handle or string, found {}".format(actual))
 
-            if self.__parsedby__ == None:
-                raise ValueError("Could not find a suitable parser to parse {}".format(path))
+        if handle is not None and self._parsed_by is None:
+            raise ValueError("Could not find a suitable parser to parse {}".format(path))
 
-            self.adopt()
-
-            self.resolve_imports(imports, import_depth, parser)
-            self.reference()
+        self.adopt()
+        self.resolve_imports(imports, import_depth, parser)
+        self.reference()
 
     def __contains__(self, item):
-        """Check if the ontology contains a term
+        """Check if the ontology contains a term.
 
         It is possible to check if an Ontology contains a Term
         using an id or a Term object.
@@ -108,7 +116,7 @@ class Ontology(collections.Mapping):
             False
 
         """
-        if isinstance(item, (str, six.text_type)):
+        if isinstance(item, six.string_types):
             return item in self.terms
         elif isinstance(item, Term):
             return item.id in self.terms
@@ -116,7 +124,7 @@ class Ontology(collections.Mapping):
             raise TypeError("'in <Ontology>' requires string or Term as left operand, not {}".format(type(item)))
 
     def __iter__(self):
-        """Returns an iterator over the Terms of the Ontology
+        """Return an iterator over the Terms of the Ontology.
 
         For convenience of implementation, the returned object is actually
         a generator object that returns each term of the ontology, sorted in
@@ -135,7 +143,7 @@ class Ontology(collections.Mapping):
         # return (self.terms[i] for i in terms_accessions)
 
     def __getitem__(self, item):
-        """Overloaded object.__getitem__
+        """Get a term in the Ontology.
 
         Method was overloaded to allow accessing to any Term of the Ontology
         using the Python dictionary syntax.
@@ -150,12 +158,11 @@ class Ontology(collections.Mapping):
         return self.terms[item]
 
     def __len__(self):
-        """Returns the number of terms in the Ontology.
+        """Return the number of terms in the Ontology.
         """
         return len(self.terms)
 
     def __getstate__(self):
-
         meta = frozenset( (k, frozenset(v)) for k,v in six.iteritems(self.meta) )
         imports = self.imports
         path = self.path
@@ -163,7 +170,6 @@ class Ontology(collections.Mapping):
         return (meta, imports, path, terms)
 
     def __setstate__(self, state):
-
         self.meta = {k:list(v) for (k,v) in state[0] }
         self.imports = state[1]
         self.path = state[2]
@@ -171,13 +177,12 @@ class Ontology(collections.Mapping):
         self.reference()
 
     def parse(self, stream, parser=None):
-        """Parse the given file using available Parser instances
+        """Parse the given file using available Parser instances.
 
         Raises:
             TypeError: when the parser argument is not a string or None,
             ValueError: when the parser argument is a string that does
                 not name a Parser
-
         """
 
         if parser is None:
@@ -198,11 +203,11 @@ class Ontology(collections.Mapping):
         for p in parsers:
             if p.hook(stream=stream, path=self.path, force=FORCE):
                 self.meta, self.terms, self.imports = p.parse(stream)
-                self.__parsedby__ = type(p).__name__
+                self._parsed_by = type(p).__name__
                 break
 
     def adopt(self):
-        """Make terms aware of their children via complementary relationships
+        """Make terms aware of their children via complementary relationships.
 
         This is done automatically when using the :obj:`merge` and :obj:`include`
         methods as well as the :obj:`__init__` method, but it should be called in
@@ -242,7 +247,7 @@ class Ontology(collections.Mapping):
         del relationships
 
     def reference(self):
-        """Make relationships point to classes of ontology instead of ontology id
+        """Make relations point to ontology terms instead of term ids.
 
         This is done automatically when using the :obj:`merge` and :obj:`include`
         methods as well as the :obj:`__init__` method, but it should be called in
@@ -407,7 +412,7 @@ class Ontology(collections.Mapping):
         return ref_needed
 
     def _include_term(self, term):
-        """Add a single term to the current ontology
+        """Add a single term to the current ontology.
 
         It is needed to dereference any term in the term's relationship
         and then to build the reference again to make sure the other
@@ -439,7 +444,7 @@ class Ontology(collections.Mapping):
         return ref_needed
 
     def _empty_cache(self, termlist=None):
-        """Empty associated cache of each Term object
+        """Empty the cache associated with each Term object.
 
         This method is called when merging Ontologies or including
         new terms in the Ontology to make sure the cache of each
@@ -459,10 +464,10 @@ class Ontology(collections.Mapping):
 
     @output_str
     def _obo_meta(self):
-        """Generates the obo metadata header and updates metadata.
+        """Generate the obo metadata header and updates metadata.
 
-        When called, this method will replace the ``auto-generated-by`` and
-        ``date`` fields of the metadata with appropriate values.
+        When called, this method will create appropriate values for the
+        ``auto-generated-by`` and ``date`` fields.
 
         Note:
             Generated following specs of the unofficial format guide:
@@ -504,7 +509,7 @@ class Ontology(collections.Mapping):
 
     @property
     def json(self):
-        """Returns the ontology serialized in json format.
+        """Return the ontology serialized in json format.
 
         Example:
             >>> j = uo.json
@@ -523,7 +528,7 @@ class Ontology(collections.Mapping):
 
     @property
     def obo(self):
-        """Returns the ontology serialized in obo format.
+        """Return the ontology serialized in obo format.
         """
         meta = self._obo_meta()
         meta = [meta] if meta else []

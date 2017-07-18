@@ -36,7 +36,7 @@ after_success:
 
 before_deploy:
 - python setup.py sdist --formats zip,gztar bdist_wheel
-- $(exit $(python setup.py check --restructuredtext | grep warning -c))
+- python setup.py check -rms
 
 deploy:
 - provider: pypi

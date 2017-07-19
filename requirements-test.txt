@@ -6,3 +6,4 @@ mock
 coverage
 codecov
 codacy-coverage
+docutils

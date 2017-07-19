@@ -48,6 +48,7 @@ deploy:
     python: '3.6'
     tags: true
     repo: althonos/pronto
+  server: https://upload.pypi.org/legacy/
 
 notifications:
   email:

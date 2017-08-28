@@ -90,14 +90,14 @@ Find ontology terms with children
             print(term)
 
 
-Get children of an ontology term recursively
-''''''''''''''''''''''''''''''''''''''''''''
+Get all the transitive children of an ontology term
+'''''''''''''''''''''''''''''''''''''''''''''''''''
 
 .. code:: python
 
     import pronto
     ont = pronto.Ontology('path/to/file.obo')
-    print(ont['RF:XXXXXXX'].children.children)
+    print(ont['RF:XXXXXXX'].rchildren())
 
 
 Reference

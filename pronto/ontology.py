@@ -37,8 +37,7 @@ class Ontology(collections.Mapping):
         Import an ontology from a remote location::
 
             >>> from pronto import Ontology
-            >>> envo = Ontology("https://raw.githubusercontent.com/"
-            ...                 "BFO-ontology/BFO/master/releases/2.0/bfo.owl")
+            >>> envo = Ontology("http://purl.obolibrary.org/obo/bfo.owl")
 
         Merge two local ontologies and export the merge::
 
@@ -117,7 +116,8 @@ class Ontology(collections.Mapping):
         elif isinstance(item, Term):
             return item.id in self.terms
         else:
-            raise TypeError("'in <Ontology>' requires string or Term as left operand, not {}".format(type(item)))
+            raise TypeError("'in <Ontology>' requires string or Term as left "
+                            "operand, not {}".format(type(item)))
 
     def __iter__(self):
         """Return an iterator over the Terms of the Ontology.
@@ -182,7 +182,6 @@ class Ontology(collections.Mapping):
         """
 
         force, parsers = self._get_parsers(parser)
-
 
         try:
             stream.seek(0)

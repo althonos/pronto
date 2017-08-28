@@ -286,7 +286,7 @@ class TestProntoRemoteOntology(TestProntoOntology):
     def test_remote_owl_imports(self):
         """Try to import a remote owl ontology with its imports
         """
-        owl = pronto.Ontology("ftp://ftp.xenbase.org/pub/XenopusAnatomyOntology/xenopus_anatomy.owl")
+        owl = pronto.Ontology("http://purl.obolibrary.org/obo/xao.owl")
         self.check_ontology(owl)
 
 

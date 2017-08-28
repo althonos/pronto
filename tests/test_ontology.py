@@ -147,7 +147,7 @@ class TestProntoFeatures(TestProntoOntology):
                 name: °
 
                 date: \d{2}:\d{2}:\d{4} \d{2}:\d{2}
-                auto-generated-by: pronto v\d+\.\d+\.\d+
+                auto-generated-by: pronto v(\d+\.\d+\.\d+|dev)
 
                 \[Term\]
                 id: ONT0:ROOT

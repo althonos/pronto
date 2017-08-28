@@ -12,9 +12,6 @@ __all__ = [
     "Ontology", "Term", "TermList", "Relationship", "Synonym", "SynonymType"
 ]
 
-
-
-# try:
 from .ontology import Ontology
 from .term import Term, TermList
 from .relationship import Relationship

@@ -8,9 +8,9 @@ from __future__ import unicode_literals
 __version__ = 'dev'
 __author__ = 'Martin Larralde'
 __author_email__ = 'martin.larralde@ens-cachan.fr'
-__all__ = [
+__all__ = list(map(str, [
     "Ontology", "Term", "TermList", "Relationship", "Synonym", "SynonymType"
-]
+]))
 
 from .ontology import Ontology
 from .term import Term, TermList

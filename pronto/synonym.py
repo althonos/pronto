@@ -1,10 +1,6 @@
 # coding: utf-8
 """
-pronto.relationship
-===================
-
-This submodule contains the definition of the :ref:`Synonym`
-and :ref:`SynonymType` classes.
+Definition of the `SynonymType` and `Synonym` classes.
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import

@@ -1,9 +1,6 @@
 # coding: utf-8
 """
-pronto.relationship
-===================
-
-This submodule contains the definition of the Relationship class.
+Definition of the Relationship class.
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import

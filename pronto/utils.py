@@ -1,13 +1,9 @@
 # coding: utf-8
 """
-pronto.utils
-============
+Utility classes and functions.
 
 This module contains some functions that are used in different parts
-of the pronto library, as well as the definition of ProntoWarning.
-
-Todo:
-    * Maybe add a ProntoError class ?
+of the pronto library, as well as the definition of `ProntoWarning`.
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import

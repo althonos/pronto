@@ -1,10 +1,6 @@
 # coding: utf-8
 """
-pronto.ontology
-===============
-
-This submodule contains the definition of the Ontology class.
-
+Definition of the Ontology class.
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import

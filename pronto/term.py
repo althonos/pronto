@@ -1,9 +1,6 @@
 # coding: utf-8
 """
-pronto.term
-===========
-
-This module defines the Term and TermList classes.
+Definition of the `Term` and `TermList` classes.
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import

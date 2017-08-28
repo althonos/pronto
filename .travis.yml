@@ -18,9 +18,9 @@ matrix:
 
 before_install:
 - pip install -U wheel setuptools pip
+- pip install -r tests/requirements.txt
 
 install:
-- pip install -r requirements-test.txt
 - pip install .
 
 script:

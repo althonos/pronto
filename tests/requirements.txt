@@ -1,5 +1,3 @@
--r requirements.txt
-
 lxml ; implementation_name=="cpython"
 PyYAML
 mock

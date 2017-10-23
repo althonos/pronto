@@ -13,6 +13,7 @@ from .ontology import Ontology
 from .term import Term, TermList
 from .relationship import Relationship
 from .synonym import Synonym, SynonymType
+from .description import Description
 
 # Dynamically get the version of the installed module
 try:

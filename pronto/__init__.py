@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 __version__ = 'dev'
 __author__ = 'Martin Larralde'
-__author_email__ = 'martin.larralde@ens-paris.fr'
+__author_email__ = 'martin.larralde@ens-paris-saclay.fr'
 __license__ = "MIT"
 
 from .ontology import Ontology

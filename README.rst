@@ -122,7 +122,7 @@ to get a DOI or a BibTEX record).
    :target: https://github.com/althonos/pronto
 
 .. |License| image:: https://img.shields.io/pypi/l/pronto.svg?style=flat&maxAge=3600
-   :target: https://www.gnu.org/licenses/gpl-3.0.html
+   :target: https://choosealicense.com/licenses/mit/
 
 .. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=3600
    :target: https://codacy.com/app/althonos/pronto

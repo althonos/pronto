@@ -24,7 +24,6 @@ install:
 
 script:
 - coverage run --source=pronto -m unittest discover -v
-- coverage combine
 - coverage xml --include "pronto/*"
 
 after_success:

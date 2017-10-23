@@ -75,7 +75,7 @@ class TestProntoParser(unittest.TestCase):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class TestProntoOwlParser(object):
+class _TestProntoOwlParser(object):
 
     parser = None
     imp = platform.python_implementation()
@@ -178,11 +178,11 @@ class TestProntoOwlParser(object):
         self._check(m,t,i, exp_len=685)
 
 
-class TestProntoOwlTargetParser(TestProntoOwlParser, TestProntoParser):
+class TestProntoOwlTargetParser(_TestProntoOwlParser, TestProntoParser):
     parser = pronto.parser.owl.OwlXMLTargetParser
 
 
-class TestProntoOwlTreeParser(TestProntoOwlParser, TestProntoParser):
+class TestProntoOwlTreeParser(_TestProntoOwlParser, TestProntoParser):
     parser = pronto.parser.owl.OwlXMLTreeParser
 
 

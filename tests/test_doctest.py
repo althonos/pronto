@@ -32,6 +32,7 @@ def _load_tests_from_module(tests, module, globs, setUp, tearDown):
                 setUp=setUp, tearDown=tearDown, checker=IgnoreUnicodeChecker()))
     return tests
 
+
 def load_tests(loader, tests, ignore):
     """load_test function used by unittest to find the doctests"""
 
@@ -61,13 +62,14 @@ def load_tests(loader, tests, ignore):
         'TermList':     pronto.term.TermList,
     }
 
-    tests = _load_tests_from_module(tests, pronto, globs, _setUp, _tearDown)
+    if not sys.argv[0].endswith('green'):
+        tests = _load_tests_from_module(tests, pronto, globs, _setUp, _tearDown)
     return tests
-
 
 
 def setUpModule():
     warnings.simplefilter('ignore')
+
 
 def tearDownModule():
     warnings.simplefilter(warnings.defaultaction)

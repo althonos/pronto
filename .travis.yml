@@ -28,7 +28,7 @@ script:
 
 after_success:
 - codecov
-- python-codacy-coverage -r xml
+- python-codacy-coverage -r coverage.xml
 
 before_deploy:
 - python setup.py check -rms

@@ -58,9 +58,6 @@ class Ontology(collections.Mapping):
             >>> cl = Ontology("tests/resources/cl.ont.gz",
             ...               parser='OwlXMLTargetParser')
 
-
-    Todo:
-        * Add a __repr__ method to Ontology
     """
     __slots__ = ("path", "meta", "terms", "imports", "_parsed_by")
 
@@ -75,7 +72,9 @@ class Ontology(collections.Mapping):
         if handle is None:
             self.path = None
         elif hasattr(handle, 'read'):
-            self.path = getattr(handle, 'name', None)
+            self.path = getattr(handle, 'name', None) \
+                     or getattr(handle, 'url', None) \
+                     or getattr(handle, 'geturl', lambda: None)()
             self.parse(handle, parser)
         elif isinstance(handle, six.string_types):
             self.path = handle
@@ -92,6 +91,11 @@ class Ontology(collections.Mapping):
         self.adopt()
         self.resolve_imports(imports, import_depth, parser)
         self.reference()
+
+    def __repr__(self):
+        if self.path is not None:
+            return "Ontology(\"{}\")".format(self.path)
+        super(Ontology, self).__repr__()
 
     def __contains__(self, item):
         """Check if the ontology contains a term.
@@ -211,9 +215,6 @@ class Ontology(collections.Mapping):
                 types=" or ".join([six.text_type.__name__, six.binary_type.__name__]),
                 actual=type(parser).__name__,
             ))
-
-
-
 
     def adopt(self):
         """Make terms aware of their children via complementary relationships.

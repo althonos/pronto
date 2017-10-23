@@ -36,7 +36,6 @@ class Term(object):
             synonyms (set, optional): a list containing :obj:`pronto.synonym.Synonym`
                 objects relating to the term.
 
-
         Example:
             >>> new_term = Term('TR:001', 'new term', 'a new term')
             >>> linked_term = Term('TR:002', 'other new', 'another term',

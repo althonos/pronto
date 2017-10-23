@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# released under the GNU General Public License version 3.0 (GPLv3)
+# released under the MIT License
 
 import setuptools
 setuptools.setup()

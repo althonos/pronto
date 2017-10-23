@@ -1,16 +1,13 @@
 # coding: utf-8
-"""
-a Python frontend to ontologies
+"""a Python frontend to ontologies
 """
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
 __version__ = 'dev'
 __author__ = 'Martin Larralde'
-__author_email__ = 'martin.larralde@ens-cachan.fr'
-__all__ = list(map(str, [
-    "Ontology", "Term", "TermList", "Relationship", "Synonym", "SynonymType"
-]))
+__author_email__ = 'martin.larralde@ens-paris.fr'
+__license__ = "MIT"
 
 from .ontology import Ontology
 from .term import Term, TermList

@@ -16,7 +16,7 @@ inverse_of: has_written
 [Term]
 id: ELO:0100000
 name: Literature form
-def: An form of literature
+def: "A form of literature"
 
 [Term]
 id: ELO:0110000
@@ -72,7 +72,3 @@ is_a: ELO:0300000 ! Author
 id: ELO:0330001
 name: William Shakespeare
 is_a: ELO:0330000 ! Playwright
-
-
-
-

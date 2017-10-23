@@ -7,6 +7,7 @@ from __future__ import absolute_import
 
 import six
 
+from .description import Description
 from .relationship import Relationship
 from .utils import output_str, unique_everseen
 
@@ -43,8 +44,10 @@ class Term(object):
         """
         if not isinstance(id, six.text_type):
             id = id.decode('utf-8')
-        if not isinstance(desc, six.text_type):
+        if isinstance(desc, six.binary_type):
             desc = desc.decode('utf-8')
+        if not isinstance(desc, Description):
+            desc = Description(desc)
         if not isinstance(name, six.text_type):
             name = name.decode('utf-8')
 
@@ -76,11 +79,12 @@ class Term(object):
 
         Example:
 
-            >>> for p in ms['MS:1000532'].parents: print(p.desc)
-            "Thermo Finnigan software for data acquisition and analysis." [PSI:MS]
-            "Acquisition software." [PSI:MS]
-            "Analysis software." [PSI:MS]
-            "Data processing software." [PSI:MS]
+            >>> for p in ms['MS:1000532'].parents:
+            ...     print(p.desc)
+            Thermo Finnigan software for data acquisition and analysis.
+            Acquisition software.
+            Analysis software.
+            Data processing software.
 
         """
 
@@ -184,7 +188,7 @@ class Term(object):
 
         # def
         if self.desc:
-            stanza_list.append("def: {}".format(self.desc))
+            stanza_list.append(self.desc.obo)
 
         # comment, subset
         add_tags(stanza_list, ['comment', 'subset'])

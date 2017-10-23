@@ -1,6 +1,5 @@
 # coding: utf-8
-"""
-Test doctest contained tests in every file of the module.
+"""Test doctest contained tests in every file of the module.
 """
 
 import os

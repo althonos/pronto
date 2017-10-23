@@ -14,8 +14,9 @@ import string
 
 from .              import Parser
 from .utils         import OboSection
-from ..synonym      import SynonymType, Synonym
+from ..description  import Description
 from ..relationship import Relationship
+from ..synonym      import SynonymType, Synonym
 from ..term         import Term
 
 _obo_synonyms_map = {'exact_synonym': 'EXACT', 'broad_synonym': 'BROAD',
@@ -144,7 +145,6 @@ class OboParser(Parser):
             else:
                 meta['synonymtypedef'] = syn_type_def
 
-
     @staticmethod
     def _parse_typedef(line, _rawtypedef):
         """Parse a typedef line
@@ -234,7 +234,9 @@ class OboParser(Parser):
                     finally:
                         synonyms.add(s)
 
-            terms[_id] = Term(_id, _name, _desc, dict(_relations), synonyms, dict(_term))
+            desc = Description.from_obo(_desc) if _desc else Description("")
+
+            terms[_id] = Term(_id, _name, desc, dict(_relations), synonyms, dict(_term))
         return terms
 
 

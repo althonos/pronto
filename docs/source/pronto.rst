@@ -11,11 +11,9 @@ The following classes are imported when running ``from pronto import *``:
    :toctree: pronto/
 
    pronto.Ontology
+   pronto.Description
    pronto.Relationship
+   pronto.Synonym
+   pronto.SynonymType
    pronto.Term
    pronto.TermList
-
-
-
-
-

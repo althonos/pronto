@@ -17,8 +17,9 @@ network location, and export ontologies to obo format.
 Installation:
 -------------
 
-Run ``pip install pronto`` in a shell to download pronto latest release and all its dependencies
-from PyPi, or have a look at the :doc:`Installation page <install>` to find other ways to install pronto.
+Run ``pip install pronto`` in a shell to download the latest release and all
+its dependencies from PyPi, or have a look at the
+:doc:`Installation page <install>` to find other ways to install pronto.
 
 
 Contents:
@@ -55,5 +56,5 @@ Indices and tables
    :target: https://github.com/althonos/pronto
 .. |DOI| image:: https://zenodo.org/badge/23304/althonos/pronto.svg
    :target: https://zenodo.org/badge/latestdoi/23304/althonos/pronto
-.. |coverage| image:: https://img.shields.io/codacy/coverage/157b5fd24e5648ea80580f28399e79a4.svg?maxAge=2592000   
+.. |coverage| image:: https://img.shields.io/codacy/coverage/157b5fd24e5648ea80580f28399e79a4.svg?maxAge=2592000
    :target: https://www.codacy.com/app/althonos/pronto/dashboard

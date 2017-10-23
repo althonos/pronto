@@ -1,7 +1,0 @@
-lxml ; implementation_name=="cpython"
-PyYAML
-mock
-coverage
-codecov
-codacy-coverage
-docutils

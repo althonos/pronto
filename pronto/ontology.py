@@ -32,6 +32,16 @@ class Ontology(collections.Mapping):
     providing they generated the expected structure in the :func:`_parse`
     method.
 
+    Attributes:
+        meta (dict): the metatada contained in the `Ontology`.
+        terms (dict): the terms of the ontology. Not very useful to
+            access directly, since `Ontology` provides many useful
+            shortcuts and features to access them.
+        imports (list): a list of paths and/or URLs to additional
+            ontologies the ontology depends on.
+        path (str, optional): the path to the ontology, if any.
+
+
     Examples:
         Import an ontology from a remote location::
 
@@ -62,7 +72,7 @@ class Ontology(collections.Mapping):
     __slots__ = ("path", "meta", "terms", "imports", "_parsed_by")
 
     def __init__(self, handle=None, imports=True, import_depth=-1, timeout=2, parser=None):
-        """Create a new `Ontology` object from a file handle or a path.
+        """Create an `Ontology` instance from a file handle or a path.
 
         Arguments:
             handle (io.IOBase or str): the location of the file (either
@@ -70,15 +80,16 @@ class Ontology(collections.Mapping):
                 a readable file handle containing an ontology, or `None`
                 to create a new ontology from scratch.
             imports (bool, optional): if `True` (the default), embed the
-                ontology imports into the returned object.
+                ontology imports into the returned instance.
             import_depth (int, optional): The depth up to which the
                 imports should be resolved. Setting this to 0 is
                 equivalent to setting ``imports`` to `False`. Leave
                 as default (-1) to handle all the imports.
             timeout (int, optional): The timeout in seconds for network
                 operations.
-            parser (pronto.parser.Parser, optional): A parser object
+            parser (pronto.parser.Parser, optional): A parser instance
                 to use. Leave to `None` to autodetect.
+
         """
         self.meta = {}
         self.terms = {}
@@ -117,7 +128,7 @@ class Ontology(collections.Mapping):
         """Check if the ontology contains a term.
 
         It is possible to check if an Ontology contains a Term
-        using an id or a Term object.
+        using an id or a Term instance.
 
         Raises:
             TypeError: if argument (or left operand) is
@@ -142,9 +153,9 @@ class Ontology(collections.Mapping):
     def __iter__(self):
         """Return an iterator over the Terms of the Ontology.
 
-        For convenience of implementation, the returned object is actually
-        a generator object that returns each term of the ontology, sorted in
-        the definition order in the ontology file.
+        For convenience of implementation, the returned instance is
+        actually a generator that yields each term of the ontology,
+        sorted in the definition order in the ontology file.
 
         Example:
             >>> for k in uo:
@@ -155,20 +166,18 @@ class Ontology(collections.Mapping):
             <UO:0000330: gigabasepair>
         """
         return six.itervalues(self.terms)
-        # terms_accessions = sorted(self.terms.keys())
-        # return (self.terms[i] for i in terms_accessions)
 
     def __getitem__(self, item):
-        """Get a term in the Ontology.
+        """Get a term in the `Ontology`.
 
-        Method was overloaded to allow accessing to any Term of the Ontology
-        using the Python dictionary syntax.
+        Method was overloaded to allow accessing to any Term of the
+        `Ontology` using the Python dictionary syntax.
 
         Example:
             >>> cl['CL:0002380']
             <CL:0002380: oospore>
             >>> cl['CL:0002380'].relations
-            {Relationship(is_a): [<CL:0000605: fungal asexual spore>]}
+            {Relationship('is_a'): [<CL:0000605: fungal asexual spore>]}
 
         """
         return self.terms[item]
@@ -233,7 +242,7 @@ class Ontology(collections.Mapping):
             ))
 
     def adopt(self):
-        """Make terms aware of their children via complementary relationships.
+        """Make terms aware of their children.
 
         This is done automatically when using the `~Ontology.merge` and
         `~Ontology.include` methods as well as the `~Ontology.__init__`
@@ -280,19 +289,6 @@ class Ontology(collections.Mapping):
         methods as well as the :obj:`__init__` method, but it should be called in
         case of manual changes of the relationships of a Term.
         """
-        # for termkey, termval in six.iteritems(self.terms):
-        #     for relkey, relval in six.iteritems(termval.relations):
-        #         self.terms[termkey].relations[relkey] = temprel = TermList()
-        #         for x in relval:
-        #             try:
-        #                 temprel.append(self.terms[x])
-        #             except KeyError:
-        #                 if isinstance(x, Term):
-        #                     temprel.append(x)
-        #                 else:
-        #                     temprel.append(Term(x,'',''))
-
-
         for termkey, termval in six.iteritems(self.terms):
             termval.relations.update(
                 (relkey, TermList(
@@ -300,17 +296,6 @@ class Ontology(collections.Mapping):
                     if not isinstance(x, Term) else x) for x in relval
                 )) for relkey, relval in six.iteritems(termval.relations)
             )
-
-            # relvalref = {
-            #
-            #     relkey: TermList(
-            #         [self.terms.get(x) or Term(x, '', '')
-            #          if not isinstance(x, Term) else x for x in relval]
-            #     )
-            #     for relkey, relval in six.iteritems(termval.relations)
-            #
-            # }
-            # self.terms[termkey].relations.update(relvalref)
 
     def resolve_imports(self, imports, import_depth, parser=None):
         """Import required ontologies.
@@ -471,7 +456,7 @@ class Ontology(collections.Mapping):
         return ref_needed
 
     def _empty_cache(self, termlist=None):
-        """Empty the cache associated with each Term object.
+        """Empty the cache associated with each `Term` instance.
 
         This method is called when merging Ontologies or including
         new terms in the Ontology to make sure the cache of each
@@ -536,26 +521,14 @@ class Ontology(collections.Mapping):
 
     @property
     def json(self):
-        """Return the ontology serialized in json format.
-
-        Example:
-            >>> j = uo.json
-            >>> all(term.id in j for term in uo)
-            True
-
-        Note:
-            It is possible to save and load an ontology to and from
-            json format, although it is cleaner to save and load
-            an ontology in Obo format (as the json export doesn't store
-            metadata, only terms).
-
+        """str: the ontology serialized in json format.
         """
         return json.dumps(self.terms, indent=4, sort_keys=True,
                           default=operator.attrgetter("__deref__"))
 
     @property
     def obo(self):
-        """Return the ontology serialized in obo format.
+        """str: the ontology serialized in obo format.
         """
         meta = self._obo_meta()
         meta = [meta] if meta else []

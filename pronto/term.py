@@ -89,7 +89,7 @@ class Term(object):
 
     @property
     def children(self):
-        """~TermList: The direct children of the Term.
+        """~TermList: The direct children of the `Term`.
         """
         if self._children is None:
             topdowns = tuple(Relationship.topdown())
@@ -106,7 +106,7 @@ class Term(object):
     @property
     @output_str
     def obo(self):
-        """str: the Term serialized in an Obo Term stanza.
+        """str: the `Term` serialized in an Obo ``[Term]`` stanza.
 
         Note:
             The following guide was used:
@@ -319,7 +319,7 @@ class TermList(list):
         Raises:
             TypeError: when the given ``elements`` are not instances
                 of `Term`.
-                
+
         """
         super(TermList, self).__init__()
         self._contents = set()
@@ -354,12 +354,16 @@ class TermList(list):
 
     @property
     def children(self):
+        """~TermList: the children of all the terms in the list.
+        """
         return TermList(unique_everseen(
             y for x in self for y in x.children
         ))
 
     @property
     def parents(self):
+        """~TermList: the parents of all the terms in the list.
+        """
         return TermList(unique_everseen(
             y for x in self for y in x.parents
         ))
@@ -372,18 +376,26 @@ class TermList(list):
 
     @property
     def name(self):
+        """list: the name of all the terms in the list.
+        """
         return [x.name for x in self]
 
     @property
     def desc(self):
+        """list: the description of all the terms in the list.
+        """
         return [x.desc for x in self]
 
     @property
     def other(self):
+        """list: the "other" property of all the terms in the list.
+        """
         return [x.other for x in self]
 
     @property
     def obo(self):
+        """list: all the terms in the term list serialized in obo.
+        """
         return [x.obo for x in self]
 
     def __getstate__(self):

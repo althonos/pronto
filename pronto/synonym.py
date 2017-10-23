@@ -59,6 +59,8 @@ class SynonymType(object):
 
     @property
     def obo(self):
+        """str: the synonym type serialized in obo format.
+        """
         return ' '.join(['synonymtypedef:', self.name,
                          '"{}"'.format(self.desc),
                          self.scope or '']).strip()
@@ -137,6 +139,8 @@ class Synonym(object):
 
     @property
     def obo(self):
+        """str: the synonym serialized in obo format.
+        """
         return 'synonym: "{}" {} [{}]'.format(
             self.desc,
             ' '.join([self.scope, self.syn_type.name])\

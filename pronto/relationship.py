@@ -63,11 +63,10 @@ class Relationship(object):
             direction (string, optional): if any, the direction of the
                 relationship (can be 'topdown', 'bottomup', 'horizontal').
                 A relationship with a direction set as 'topdown' will be
-                counted as _childhooding_ when using the `Term.children`
-                property.
-            comment (string, optional): comments about the `Relationship`
+                counted as _childhooding_ when acessing `Term.children`.
+            comment (string, optional): comments about the relationship.
             aliases (list, optional): a list of names that are synonyms to
-                this Relationship obo_name.
+                the obo name of this relationship.
 
         Note:
             For symetry, transitivity, reflexivity, the allowed values are
@@ -123,7 +122,7 @@ class Relationship(object):
 
             >>> from pronto.relationship import Relationship
             >>> print(Relationship('has_part').complement())
-            Relationship(part_of)
+            Relationship('part_of')
             >>> print(Relationship('has_units').complement())
             None
 

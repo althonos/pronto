@@ -31,9 +31,7 @@ class Parser(object):
             stream (io.StringIO): A stream of the ontology file.
 
         Returns:
-            dict: contains the metadata
-            dict: contains the terms
-            list: contains the imports
+            (dict, dict, list): a tuple of metadata, dict, and imports.
         """
         raise NotImplementedError
 

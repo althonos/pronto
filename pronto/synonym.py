@@ -1,6 +1,5 @@
 # coding: utf-8
-"""
-Definition of the `SynonymType` and `Synonym` classes.
+"""Definition of the `SynonymType` and `Synonym` classes.
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -13,20 +12,29 @@ from .utils import output_str
 
 
 class SynonymType(object):
-    """A custom synonym type (obo-style).
+    """A synonym type in an ontology.
 
     Attributes:
         name(str): the name of the synonym type
         scope(str, optional): the scope all synonyms of
             that type will always have(either 'EXACT',
             'BROAD', 'NARROW', 'RELATED', or None).
-        desc(str): the description of the synonym type
+        desc(Description): the description of the synonym type
+
     """
+
     __slots__ = ['name', 'desc', 'scope']
     _instances = collections.OrderedDict()
     _RX_OBO_EXTRACTER = re.compile(r'(?P<name>[^ ]*)[ ]*\"(?P<desc>.*)\"[ ]*(?P<scope>BROAD|NARROW|EXACT|RELATED)?')
 
     def __init__(self, name, desc, scope=None):
+        """Create a new synonym type.
+
+        Arguments:
+            name (str): the name of the synonym type.
+            desc (str): the description of the synonym type.
+            scope (str, optional): the scope modifier.
+        """
         self.name = name
         self.desc = desc
         if scope in {'BROAD', 'NARROW', 'EXACT', 'RELATED', None}:
@@ -67,21 +75,25 @@ class SynonymType(object):
 
 
 class Synonym(object):
-    """A synonym representation (obo-like).
-
-    Attributes:
-        desc (str): a description of the synonym
-        syn_type (SynonymType, optional): the type of synonym if relying
-            on a custom type defined in the ontology metadata
-        scope (str, optional): the scope of the synonym (either EXACT,
-            BROAD, NARROW or RELATED).
-        xref (list, optional): the list of the cross-references of
-            the synonym
+    """A synonym in an ontology.
     """
+
     _RX_OBO_EXTRACTER = re.compile(r'\"(?P<desc>.*)\" *(?P<scope>EXACT|BROAD|NARROW|RELATED)? *(?P<syn_type>[^ ]+)? \[(?P<xref>.*)\]')
 
     def __init__(self, desc, scope=None, syn_type=None, xref=None):
+        """Create a new synonym.
 
+        Arguments:
+            desc (str): a description of the synonym.
+            scope (str, optional): the scope of the synonym (either
+                EXACT, BROAD, NARROW or RELATED).
+            syn_type (SynonymType, optional): the type of synonym if
+                relying on a synonym type defined in the *Typedef*
+                section of the ontology.
+            xref (list, optional): a list of cross-references for the
+                synonym.
+
+        """
         if isinstance(desc, six.binary_type):
             self.desc = desc.decode('utf-8')
         elif isinstance(desc, six.text_type):
@@ -121,10 +133,7 @@ class Synonym(object):
             groupdict['xref'] = [x.strip() for x in groupdict['xref'].split(',')]
         groupdict['syn_type'] = groupdict['syn_type'] or None
 
-        # result = {k:v.strip() if v else None for k,v in six.iteritems(groupdict)}
-        # if result['xref'] is not None:
-        #     result['xref'] = [x.strip() for x in result['xref'].split(',')]
-        return cls(**groupdict)#cls(**result)
+        return cls(**groupdict)
 
     @property
     def obo(self):

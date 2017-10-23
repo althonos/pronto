@@ -1,6 +1,5 @@
 # coding: utf-8
-"""
-Definition of the Relationship class.
+"""Definition of the `Relationship` class.
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -12,8 +11,7 @@ from .utils import unique_everseen, output_str
 
 
 class Relationship(object):
-    """
-    A Relationship object.
+    """A Relationship object.
 
     The Relationship class actually behaves as a factory, creating new
     relationships via the default Python syntax only if no relationship
@@ -21,11 +19,10 @@ class Relationship(object):
     (a dictionnary containing memoized relationships).
 
 
-    .. note::
-
+    Note:
        Relationships are pickable and always refer to the same adress even
        after being pickled and unpickled, but that requires to use at least
-       pickle protocol 2 (which is not default on Python 2, so take care !)
+       pickle protocol 2 (which is not default on Python 2, so take care !)::
 
           >>> import pronto
           >>> import io, pickle
@@ -55,7 +52,7 @@ class Relationship(object):
                  direction=None, comment=None, aliases=None):
         """Instantiate a new relationship.
 
-        Parameters:
+        Arguments:
             obo_name (str): the name of the relationship as it appears
                 in obo files (such as is_a, has_part, etc.)
             symetry (bool or None): the symetry of the relationship
@@ -63,22 +60,22 @@ class Relationship(object):
             reflexivity (bool or None): the reflexivity of the relationship.
             complementary (string or None): if any, the obo_name of the
                 complementary relationship.
-            direction (string or None): if any, the direction of the
+            direction (string, optional): if any, the direction of the
                 relationship (can be 'topdown', 'bottomup', 'horizontal').
                 A relationship with a direction set as 'topdown' will be
-                counted as _childhooding_ when using the Term.children
+                counted as _childhooding_ when using the `Term.children`
                 property.
-            comment (string or None): comments about the Relationship
-            aliases (list or None): a list of names that are synonyms to
-                this Relationship obo_name
+            comment (string, optional): comments about the `Relationship`
+            aliases (list, optional): a list of names that are synonyms to
+                this Relationship obo_name.
 
-        .. note::
-            For :symetry, transitivity, reflexivity, the allowed values are
+        Note:
+            For symetry, transitivity, reflexivity, the allowed values are
             the following:
-                - True for reflexive, transitive, symmetric
-                - False for areflexive, atransitive, asymmetric
-                - None for non-reflexive, non-transitive, non-symmetric
 
+            * `True` for reflexive, transitive, symmetric
+            * `False` for areflexive, atransitive, asymmetric
+            * `None` for non-reflexive, non-transitive, non-symmetric
 
         """
         if obo_name not in self._instances:
@@ -117,7 +114,7 @@ class Relationship(object):
 
         Raises:
             ValueError: if the relationship has a complementary
-                        which was not defined.
+                which was not defined.
 
         Returns:
             complementary (Relationship): the complementary relationship.
@@ -131,7 +128,6 @@ class Relationship(object):
             None
 
         """
-
         if self.complementary:
 
             #if self.complementary in self._instances.keys():
@@ -145,20 +141,21 @@ class Relationship(object):
 
     @output_str
     def __repr__(self):
-        """Overloaded :obj:`object.__repr__`"""
-        return "Relationship({})".format(self.obo_name)
+        """Return a string reprensentation of the relationship.
+        """
+        return "Relationship('{}')".format(self.obo_name)
 
     def __new__(cls, obo_name, *args, **kwargs):
-        """Overloaded :obj:`object.__new__` method that `memoizes` the objects.
+        """Create a relationship or returning an already existing one.
 
-        This allows to do the following (which is frecking cool):
+        This allows to do the following:
 
             >>> Relationship('has_part').direction
             u'topdown'
 
         The Python syntax is overloaded, and what looks like a object
         initialization in fact retrieves an existing object with all its
-        properties already set ! The Relationship class behaves like a
+        properties already set. The Relationship class behaves like a
         factory of its own objects !
 
         Todo:
@@ -174,7 +171,7 @@ class Relationship(object):
 
     @classmethod
     def topdown(cls):
-        """Get all topdown Relationship instances
+        """Get all topdown `Relationship` instances.
 
         Returns:
             :obj:`generator`
@@ -184,23 +181,23 @@ class Relationship(object):
             >>> from pronto import Relationship
             >>> for r in Relationship.topdown():
             ...    print(r)
-            Relationship(can_be)
-            Relationship(has_part)
+            Relationship('can_be')
+            Relationship('has_part')
 
         """
         return tuple(unique_everseen(r for r in cls._instances.values() if r.direction=='topdown'))
 
     @classmethod
     def bottomup(cls):
-        """Get all bottomup Relationship instances
+        """Get all bottomup `Relationship` instances.
 
         Example:
 
             >>> from pronto import Relationship
             >>> for r in Relationship.bottomup():
             ...    print(r)
-            Relationship(is_a)
-            Relationship(part_of)
+            Relationship('is_a')
+            Relationship('part_of')
 
         """
         return tuple(unique_everseen(r for r in cls._instances.values() if r.direction=='bottomup'))

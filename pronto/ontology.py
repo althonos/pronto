@@ -1,6 +1,5 @@
 # coding: utf-8
-"""
-Definition of the Ontology class.
+"""Definition of the `Ontology` class.
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -59,10 +58,27 @@ class Ontology(collections.Mapping):
             ...               parser='OwlXMLTargetParser')
 
     """
+
     __slots__ = ("path", "meta", "terms", "imports", "_parsed_by")
 
     def __init__(self, handle=None, imports=True, import_depth=-1, timeout=2, parser=None):
-        """
+        """Create a new `Ontology` object from a file handle or a path.
+
+        Arguments:
+            handle (io.IOBase or str): the location of the file (either
+                a path on the local filesystem, or a FTP or HTTP URL),
+                a readable file handle containing an ontology, or `None`
+                to create a new ontology from scratch.
+            imports (bool, optional): if `True` (the default), embed the
+                ontology imports into the returned object.
+            import_depth (int, optional): The depth up to which the
+                imports should be resolved. Setting this to 0 is
+                equivalent to setting ``imports`` to `False`. Leave
+                as default (-1) to handle all the imports.
+            timeout (int, optional): The timeout in seconds for network
+                operations.
+            parser (pronto.parser.Parser, optional): A parser object
+                to use. Leave to `None` to autodetect.
         """
         self.meta = {}
         self.terms = {}
@@ -180,11 +196,11 @@ class Ontology(collections.Mapping):
         """Parse the given file using available Parser instances.
 
         Raises:
-            TypeError: when the parser argument is not a string or None,
+            TypeError: when the parser argument is not a string or None.
             ValueError: when the parser argument is a string that does
-                not name a Parser
-        """
+                not name a `Parser`.
 
+        """
         force, parsers = self._get_parsers(parser)
 
         try:
@@ -219,11 +235,12 @@ class Ontology(collections.Mapping):
     def adopt(self):
         """Make terms aware of their children via complementary relationships.
 
-        This is done automatically when using the :obj:`merge` and :obj:`include`
-        methods as well as the :obj:`__init__` method, but it should be called in
-        case of manual editing of the parents or children of a Term.
-        """
+        This is done automatically when using the `~Ontology.merge` and
+        `~Ontology.include` methods as well as the `~Ontology.__init__`
+        method, but it should be called in case of manual editing of the
+        parents or children of a `Term`.
 
+        """
         valid_relationships = set(Relationship._instances.keys())
 
         relationships = [
@@ -360,7 +377,7 @@ class Ontology(collections.Mapping):
         self.reference()
 
     def merge(self, other):
-        """Merges another ontology into the current one.
+        """Merge another ontology into the current one.
 
         Raises:
             TypeError: When argument is not an Ontology object.

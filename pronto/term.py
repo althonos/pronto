@@ -1,6 +1,5 @@
 # coding: utf-8
-"""
-Definition of the `Term` and `TermList` classes.
+"""Definition of the `Term` and `TermList` classes.
 """
 from __future__ import unicode_literals
 from __future__ import absolute_import
@@ -12,7 +11,7 @@ from .relationship import Relationship
 from .utils import output_str, unique_everseen
 
 class Term(object):
-    """An ontology term.
+    """A term in an ontology.
 
     Example:
         >>> ms = Ontology('tests/resources/psi-ms.obo')
@@ -20,6 +19,7 @@ class Term(object):
         <class 'pronto.term.Term'>
 
     """
+
     __slots__ = ['id', 'name', 'desc', 'relations', 'other', 'synonyms',
                  '_children', '_parents', '_rchildren', '_rparents',
                  '__weakref__']
@@ -27,8 +27,8 @@ class Term(object):
     def __init__(self, id, name='', desc='', relations=None, synonyms=None, other=None):
         """Create a new Term.
 
-        Parameters:
-            id (str): the Term id (e.g. MS:1000031)
+        Arguments:
+            id (str): the Term id (e.g. "MS:1000031")
             name (str): the name of the Term in human language
             desc (str): a description of the Term
             relations (dict, optional): a dictionary containing the other
@@ -41,6 +41,7 @@ class Term(object):
             >>> new_term = Term('TR:001', 'new term', 'a new term')
             >>> linked_term = Term('TR:002', 'other new', 'another term',
             ...                    { Relationship('is_a'): 'TR:001'})
+
         """
         if not isinstance(id, six.text_type):
             id = id.decode('utf-8')
@@ -69,25 +70,8 @@ class Term(object):
 
     @property
     def parents(self):
-        """The parents of the Term.
-
-        Returns:
-            :obj:`pronto.TermList`:
-            a TermList containing all parents of the Term
-            (other terms with which this Term has a "bottomup"
-            relationship)
-
-        Example:
-
-            >>> for p in ms['MS:1000532'].parents:
-            ...     print(p.desc)
-            Thermo Finnigan software for data acquisition and analysis.
-            Acquisition software.
-            Analysis software.
-            Data processing software.
-
+        """~TermList: The direct parents of the `Term`.
         """
-
         if self._parents is None:
             bottomups = tuple(Relationship.bottomup())
 
@@ -105,24 +89,9 @@ class Term(object):
 
     @property
     def children(self):
-        """The children of the Term.
-
-        Returns:
-            :obj:`pronto.TermList`:
-
-            a TermList containing all parents of the Term
-            (other terms with which this Term has a "topdown"
-            relationship)
-
-        Example:
-
-            >>> ms['MS:1000452'].children
-            [<MS:1000530: file format conversion>, <MS:1000543: data processing action>]
-
+        """~TermList: The direct children of the Term.
         """
-
         if self._children is None:
-
             topdowns = tuple(Relationship.topdown())
             self._children = TermList()
             self._children.extend(
@@ -132,30 +101,17 @@ class Term(object):
                             if rship in topdowns
                 ]
             )
-
         return self._children
 
     @property
     @output_str
     def obo(self):
-        """The Term serialized in an Obo Term stanza.
+        """str: the Term serialized in an Obo Term stanza.
 
-        Example:
-
-            >>> print(ms['MS:1000031'].obo)
-            [Term]
-            id: MS:1000031
-            name: instrument model
-            def: "Instrument model name not including the vendor's name." [PSI:MS]
-            relationship: part_of MS:1000463 ! instrument
-
-
-        .. note::
+        Note:
             The following guide was used:
             ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
-
         """
-
         def add_tags(stanza_list, tags):
             for tag in tags:
                 if tag in self.other:
@@ -164,7 +120,6 @@ class Term(object):
                             stanza_list.append("{}: {}".format(tag, attribute))
                     else:
                         stanza_list.append("{}: {}".format(tag, self.other[tag]))
-
 
         # metatags = ["id", "is_anonymous", "name", "namespace","alt_id", "def","comment",
         #             "subset","synonym","xref","builtin","property_value","is_a",
@@ -219,110 +174,9 @@ class Term(object):
 
         return "\n".join(stanza_list)
 
-
-        # obo = "\n".join(
-        #     [
-        #
-        #         "[Term]\nid: {}\nname: {}".format(self.id, self.name if self.name is not None else "")
-        #
-        #     ] + [ #metatags from namespace to alt_id
-        #
-        #         "{}: {}".format(k, self.other[k])
-        #             for k in metatags[3:6]
-        #                 if k in self.other
-        #
-        #     ] + ([ " ".join(["def:", self.desc]) ] if self.desc else [])
-        #
-        #
-        #       + [ # metatags from comment to property_value
-        #
-        #           "{}: {}".format(k, self.other[k])
-        #                 for k in metatags[7:12]
-        #                     if k in self.other
-        #
-        #     ] + [ #is_a
-        #
-        #         "is_a: {} ! {}".format(companion.id, companion.name)
-        #             for relation in self.relations
-        #                 if relation is Relationship('is_a')
-        #                     for companion in self.relations[Relationship('is_a')]
-        #
-        #
-        #     ] + [ #metatags from intersection_of to disjoint_from
-        #
-        #         "{}: {}".format(k, self.other[k])
-        #             for k in metatags[13:17]
-        #                 if k in self.other
-        #
-        #     ] + [ #relationships
-        #
-        #         "relationship: {} {} ! {}".format(relation.obo_name, companion.id, companion.name)
-        #             for relation in self.relations
-        #                 if relation.direction=="bottomup" and relation is not Relationship('is_a')
-        #                     for companion in self.relations[relation]
-        #
-        #             #for relation in Relationship.bottomup()
-        #             #    if relation in self.relations and relation is not Relationship('is_a')
-        #             #        for companion in self.relations[relation]
-        #
-        #     ] + [ #metatags from created_by to consider
-        #
-        #         "{}: {}".format(k, self.other[k])
-        #             for k in metatags[18:]
-        #                 if k in self.other
-        #
-        #     ]
-        #
-        #
-        # )
-
-        return obo
-
-
-
-
-        # obo =  "".join([ '[Term]', '\n',
-        #                  'id: ', self.id, '\n',
-        #                  'name: ', self.name if self.name is not None else '', '\n'])
-        # if self.desc:
-        #     obo = "".join([obo, 'def: ', self.desc, '\n'])
-
-        # # add more bits of information
-        # for k,v in six.iteritems(self.other):
-        #     if isinstance(v, list):
-        #         obo = "".join( [obo] + ["{}: {}\n".format(k, x) for x in v] )
-        #     #    for x in v:
-        #     #        obo = "".join([obo, k, ': ', x, '\n'])
-        #     else:
-        #         obo = "".join([obo,k, ': ', v, '\n'])
-        #     #obo = "".join( [obo] + ["{}: {}\n".format(k, x) for x in v] )
-
-        # # add relationships (only bottom up ones)
-
-        # for relation in Relationship.bottomup():
-        #     try:
-        #         for companion in self.relations[relation]:
-
-        #             if relation is not Relationship('is_a'):
-        #                 obo = "".join([obo, 'relationship: '])
-        #             obo = "".join([obo, relation.obo_name, ': '])
-
-        #             try:
-        #                 obo = "".join([obo, companion.id, ' ! ', companion.name, '\n'])
-        #             except AttributeError:
-        #                 obo = "".join([obo,companion, '\n'])
-
-        #     except KeyError:
-        #         continue
-
-        # return obo.rstrip()
-
     @property
     def __deref__(self):
-        """A dereferenced Term.__dict__.
-
-        It only contains other Terms id to avoid circular references when
-        creating a json.
+        """dict: the `Term` as a `dict` without circular references.
         """
         return {
             'id': self.id,
@@ -333,7 +187,6 @@ class Term(object):
          }
 
     def __getstate__(self):
-
         return (
             self.id,
             self.name,
@@ -344,7 +197,6 @@ class Term(object):
         )
 
     def __setstate__(self, state):
-
         self.id = state[0]
         self.name = state[1]
         self.other = {k:v for (k,v) in state[2]}
@@ -354,8 +206,7 @@ class Term(object):
         self._empty_cache()
 
     def _empty_cache(self):
-        """
-        Empties the cache of the Term's memoized functions.
+        """Empty the cache of the Term's memoized functions.
         """
         self._children, self._parents = None, None
         self._rchildren, self._rparents = {}, {}
@@ -433,7 +284,7 @@ class Term(object):
 
 
 class TermList(list):
-    """A list of Terms.
+    """A list of `Term` instances.
 
     TermList behaves exactly like a list, except it contains shortcuts to
     generate lists of terms' attributes.
@@ -459,7 +310,16 @@ class TermList(list):
     """
 
     def __init__(self, elements=None):
-        """
+        """Create a new `TermList`.
+
+        Arguments:
+            elements (collections.Iterable, optional): an Iterable
+                that yields `Term` objects.
+
+        Raises:
+            TypeError: when the given ``elements`` are not instances
+                of `Term`.
+                
         """
         super(TermList, self).__init__()
         self._contents = set()
@@ -469,22 +329,14 @@ class TermList(list):
                 self._contents.add(t.id)
         except AttributeError:
             raise TypeError('TermList can only contain Terms.')
-        #self._check_content()
-        # self._content_map = {
-        #     x if isinstance(x, six.text_type)
-        #     else x.id for x in self
-        # }
 
     def append(self, element):
-        #try:
         if element not in self:
             super(TermList, self).append(element)
             try:
                 self._contents.add(element.id)
             except AttributeError:
                 self._contents.add(element)
-        # except TypeError:
-        #     raise
 
     def extend(self, sequence):
         for element in sequence:
@@ -514,7 +366,7 @@ class TermList(list):
 
     @property
     def id(self):
-        """Return a list containing id of all terms in current TermList
+        """list: a list of id corresponding to each term of the list.
         """
         return [x.id for x in self]
 

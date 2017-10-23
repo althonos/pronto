@@ -1,11 +1,9 @@
 # coding: utf-8
-"""
-pronto.parser.utils
-=================
+"""miscellaneous parsing utilities.
 
-This module defines mapping to convert metadata from obo to owl and owl to
-obo, as well as enums to state the section of the ontology the parser is
-currently looking at.
+This module defines mapping to convert metadata from obo to owl and
+owl to obo, as well as enums to state the section of the ontology
+the parser is currently looking at.
 """
 from __future__ import unicode_literals
 
@@ -17,12 +15,12 @@ except ImportError:         # backport as it's not that important
     Enum = object           # enough to truly depend on it
 
 
-class OboSection(Enum):
+class OboSection(Enum):  # noqa: D101
     meta    = 1
     typedef = 2
     term    = 3
 
-class OwlSection(Enum):
+class OwlSection(Enum):  # noqa: D101
     ontology = 1
     classes  = 2
 

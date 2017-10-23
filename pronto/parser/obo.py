@@ -1,16 +1,12 @@
 # coding: utf-8
-"""
-pronto.parser.obo
-=================
-
-This module defines the Obo parsing method.
+"""Definition of the Obo parser.
 """
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import collections
-import six
 import string
+import six
 
 from .              import Parser
 from .utils         import OboSection
@@ -27,10 +23,11 @@ class OboParser(Parser):
     extensions = (".obo", ".obo.gz")
 
     def hook(self, force=False, path=None, lookup=None):
-        """Return True if this parser should be used.
+        """Test whether this parser should be used.
 
-        The current behaviour relies on filenames and file extension
-        (.obo), but this is subject to change.
+        The current behaviour relies on filenames, file extension
+        and looking ahead a small buffer in the file object.
+
         """
         if force:
             return True
@@ -42,18 +39,8 @@ class OboParser(Parser):
 
 
     @classmethod
-    def parse(cls, stream):
-        """Parse the stream.
+    def parse(cls, stream):  # noqa: D102
 
-        Parameters:
-            stream (file handle): a binary stream of the file to parse
-
-        Returns:
-            dict: a dictionary containing the metadata headers
-            dict: a dictionnary containing the terms
-            set:  a set containing the imports
-
-        """
         _section    = OboSection.meta
         meta        = collections.defaultdict(list)
         _rawterms   = []
@@ -86,12 +73,13 @@ class OboParser(Parser):
 
     @staticmethod
     def _check_section(line, section):
-        """Updates the section currently parsed
+        """Update the section being parsed.
 
-        The parser starts in the OboSection.meta section but once
-        it reaches the first [Typedef], it will enter the OboSection.typedef
-        section, and/or when it reaches the first [Term], it will enter
-        the OboSection.term section.
+        The parser starts in the `OboSection.meta` section but once
+        it reaches the first ``[Typedef]``, it will enter the
+        `OboSection.typedef` section, and/or when it reaches the first
+        ``[Term]``, it will enter the `OboSection.term` section.
+
         """
         if "[Term]" in line:
             section = OboSection.term
@@ -101,26 +89,30 @@ class OboParser(Parser):
 
     @classmethod
     def _parse_metadata(cls, line, meta, parse_remarks=True):
-        """Parse a metadata line
+        """Parse a metadata line.
 
-        The metadata is organized as a "key: value" statement which
+        The metadata is organized as a ``key: value`` statement which
         is split into the proper key and the proper value.
 
-        Parameters:
+        Arguments:
             line (str): the line containing the metadata
-            parse_remarks(bool): if the remarks should be parsed as well
-                (read the note) [default: True]
+            parse_remarks(bool, optional): set to `False` to avoid
+                parsing the remarks.
 
         Note:
-            If the line follows the following schema: "remark: key: value",
-            the function will attempt to extract the proper key/value
-            instead of leaving everything inside the remark key.
+            If the line follows the following schema:
+            ``remark: key: value``, the function will attempt to extract
+            the proper key/value instead of leaving everything inside
+            the remark key.
 
-            This may cause issues when the line is identified as such even
-            though the remark is simply a sentence containing a colon, such as
-            "remark: 090506 "Attribute" in Term deleted and new entries: Scan Type [...]"
-            (found in imagingMS.obo). To prevent the splitting from happening,
-            the text on the left of the colon must be less that *20 chars long*.
+            This may cause issues when the line is identified as such
+            even though the remark is simply a sentence containing a
+            colon,  such as ``remark: 090506 "Attribute"`` in Term
+            deleted and new entries: Scan Type [...]"
+            (found in imagingMS.obo). To prevent the splitting from
+            happening, the text on the left of the colon must be less
+            that *20 chars long*.
+
         """
         key, value = line.split(':', 1)
         key, value = key.strip(), value.strip()
@@ -147,13 +139,13 @@ class OboParser(Parser):
 
     @staticmethod
     def _parse_typedef(line, _rawtypedef):
-        """Parse a typedef line
+        """Parse a typedef line.
 
-        The typedef is organized as a succesion of key:value pairs
+        The typedef is organized as a succesion of ``key:value`` pairs
         that are extracted into the same dictionnary until a new
-        "[Typedef]" header is encountered
+        header is encountered
 
-        Parameters:
+        Arguments:
             line (str): the line containing a typedef statement
         """
         if "[Typedef]" in line:
@@ -165,13 +157,13 @@ class OboParser(Parser):
 
     @staticmethod
     def _parse_term(_rawterms):
-        """Parse a term line
+        """Parse a term line.
 
-        The term is organized as a succesion of key:value pairs
+        The term is organized as a succesion of ``key:value`` pairs
         that are extracted into the same dictionnary until a new
-        "[Term]" header is encountered
+        header is encountered
 
-        Parameters:
+        Arguments:
             line (str): the line containing a term statement
         """
         line = yield
@@ -187,14 +179,14 @@ class OboParser(Parser):
 
     @staticmethod
     def _classify(_rawtypedef, _rawterms):
-        """Create proper objects out of the extracted dictionnaries
+        """Create proper objects out of extracted dictionnaries.
 
         New Relationship objects are instantiated with the help of
-        the :obj:`Relationship._from_obo_dict` alternate constructor.
+        the `Relationship._from_obo_dict` alternate constructor.
 
-        New Term objects are instantiated by manually extracting id,
-        name, desc and relationships out of the raw _term dictionnary,
-        and then calling the default constructor.
+        New `Term` objects are instantiated by manually extracting id,
+        name, desc and relationships out of the ``_rawterm``
+        dictionnary, and then calling the default constructor.
         """
         terms = collections.OrderedDict()
         _cached_synonyms = {}

@@ -1,10 +1,8 @@
-"""
-pronto.parser.owl
-=================
-
-This module defines the Owl parsing method.
+# coding: utf-8
+"""Definition of the Owl parser.
 """
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 import itertools
 import collections
@@ -39,22 +37,18 @@ _owl_synonyms_map = {"hasExactSynonym": "EXACT", "hasNarrowSynonym": "NARROW",
                      "hasSynonym": "RELATED"}
 
 class OwlXMLParser(Parser):
-    """Abstract OwlXMLParser.
+    """An abstract OwlXML Parser.
 
-    Provides functions common to all OwlXMLParsers, such as a function to
-    extract ontology terms id from a url, or the common :obj:`hook` method.
+    Provides functions common to all OwlXMLParsers, such as a
+    function to extract ontology terms id from a url, or the common
+    `~OwlXMLParser.hook` method.
     """
 
     ns = owl_ns
     extensions = ('.owl', '.ont', '.owl.gz', '.ont.gz')
 
     @classmethod
-    def hook(cls, force=False, path=None, lookup=None):
-        """Returns True if this parser should be used.
-
-        The current behaviour relies on filenames and file extension
-        (.owl, .ont), but this is subject to change.
-        """
+    def hook(cls, force=False, path=None, lookup=None):  # noqa: D102
         if force:
             return True
         if path is not None and path.endswith(cls.extensions):
@@ -66,23 +60,6 @@ class OwlXMLParser(Parser):
 
     @classmethod
     def parse(self, stream):
-        """Parse the stream.
-
-        This method is a classmethod, so it can be used to simply extract
-        metadata, terms and imports of a file-like object without creating
-        an ontology.
-
-        Example:
-            >>> fromp
-
-        Parameters:
-            stream (file handle): a binary stream of the file to parse
-
-        Returns:
-            dict: a dictionary containing the metadata headers
-            dict: a dictionnary containing the terms
-            set:  a set containing the imports
-        """
         raise NotImplementedError
 
     @staticmethod

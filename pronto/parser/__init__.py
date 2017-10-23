@@ -20,6 +20,11 @@ class Parser(object):
 
     @classmethod
     def hook(cls, force=False, path=None, lookup=None):
+        """Test whether this parser should be used.
+
+        The current behaviour relies on filenames, file extension
+        and looking ahead a small buffer in the file object.
+        """
         raise NotImplementedError
 
     #@pronto.utils.timeout(0)
@@ -32,6 +37,7 @@ class Parser(object):
 
         Returns:
             (dict, dict, list): a tuple of metadata, dict, and imports.
+
         """
         raise NotImplementedError
 

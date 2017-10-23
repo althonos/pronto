@@ -1,6 +1,5 @@
 # coding: utf-8
-"""
-Utility classes and functions.
+"""Utility classes and functions.
 
 This module contains some functions that are used in different parts
 of the pronto library, as well as the definition of `ProntoWarning`.
@@ -27,7 +26,6 @@ class ProntoWarning(Warning):
         <class 'pronto.utils.ProntoWarning'>
 
     """
-    pass
 
 def unique_everseen(iterable):
     """List unique elements, preserving order. Remember all elements ever seen."""
@@ -40,6 +38,12 @@ def unique_everseen(iterable):
         yield element
 
 def output_str(f):
+    """Create a function that always return instances of `str`.
+
+    This decorator is useful when the returned string is to be used
+    with libraries that do not support ̀`unicode` in Python 2, but work
+    fine with Python 3 `str` objects.
+    """
     if six.PY2:
         #@functools.wraps(f)
         def new_f(*args, **kwargs):
@@ -49,6 +53,8 @@ def output_str(f):
     return new_f
 
 def nowarnings(func):
+    """Create a function wrapped in a context that ignores warnings.
+    """
     @functools.wraps(func)
     def new_func(*args, **kwargs):
         with warnings.catch_warnings():

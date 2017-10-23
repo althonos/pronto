@@ -1,6 +1,5 @@
 # coding: utf-8
-"""
-Definition of the `Description` class.
+"""Definition of the `Description` class.
 """
 from __future__ import absolute_import
 from __future__ import unicode_literals
@@ -10,6 +9,8 @@ import six
 
 
 class Description(six.text_type):
+    """A description with optional cross-references.
+    """
 
     _RX_OBO_EXTRACTER = re.compile(r'[\"\'](.*)[\"\']( \[(.+)\])?')
 

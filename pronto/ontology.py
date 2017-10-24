@@ -17,12 +17,12 @@ import collections
 
 from six.moves.urllib.error import URLError, HTTPError
 
-from .                   import __version__
-from .term               import Term, TermList
-from .parser             import Parser
-from .parser.owl         import etree as _etree
-from .utils              import ProntoWarning, output_str
-from .relationship       import Relationship
+from . import __version__
+from .term import Term, TermList
+from .parser import BaseParser
+from .parser.owl import etree as _etree
+from .utils import ProntoWarning, output_str
+from .relationship import Relationship
 
 
 class Ontology(collections.Mapping):
@@ -65,7 +65,7 @@ class Ontology(collections.Mapping):
         Use the parser argument to force usage a parser::
 
             >>> cl = Ontology("tests/resources/cl.ont.gz",
-            ...               parser='OwlXMLTargetParser')
+            ...               parser='OwlXMLParser')
 
     """
 
@@ -87,8 +87,8 @@ class Ontology(collections.Mapping):
                 as default (-1) to handle all the imports.
             timeout (int, optional): The timeout in seconds for network
                 operations.
-            parser (pronto.parser.Parser, optional): A parser instance
-                to use. Leave to `None` to autodetect.
+            parser (~pronto.parser.BaseParser, optional): A parser
+                instance to use. Leave to `None` to autodetect.
 
         """
         self.meta = {}
@@ -202,12 +202,12 @@ class Ontology(collections.Mapping):
         self.reference()
 
     def parse(self, stream, parser=None):
-        """Parse the given file using available Parser instances.
+        """Parse the given file using available `BaseParser` instances.
 
         Raises:
             TypeError: when the parser argument is not a string or None.
             ValueError: when the parser argument is a string that does
-                not name a `Parser`.
+                not name a `BaseParser`.
 
         """
         force, parsers = self._get_parsers(parser)
@@ -222,24 +222,33 @@ class Ontology(collections.Mapping):
         for p in parsers:
             if p.hook(path=self.path, force=force, lookup=lookup):
                 self.meta, self.terms, self.imports = p.parse(stream)
-                self._parsed_by = type(p).__name__
+                self._parsed_by = p.__name__
                 break
 
-    def _get_parsers(self, parser):
+    def _get_parsers(self, name):
         """Return the appropriate parser asked by the user.
+
+        Todo:
+            Change `Ontology._get_parsers` behaviour to look for parsers
+            through a setuptools entrypoint instead of mere subclasses.
         """
-        if parser is None:
-            return False, Parser._instances.values()
-        elif isinstance(parser, (str, six.text_type)):
-            if parser in Parser._instances:
-                return True, [Parser._instances[parser]]
-            else:
-                raise ValueError("could not find parser: {}".format(parser))
-        else:
+
+        parserlist = BaseParser.__subclasses__()
+        forced = name is None
+
+        if isinstance(name, (six.text_type, six.binary_type)):
+            parserlist = [p for p in parserlist if p.__name__ == name]
+            if not parserlist:
+                raise ValueError("could not find parser: {}".format(name))
+
+        elif name is not None:
             raise TypeError("parser must be {types} or None, not {actual}".format(
                 types=" or ".join([six.text_type.__name__, six.binary_type.__name__]),
                 actual=type(parser).__name__,
             ))
+
+        return not forced, parserlist
+
 
     def adopt(self):
         """Make terms aware of their children.

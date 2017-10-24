@@ -49,7 +49,7 @@ class SynonymType(object):
         self._instances[self.name] = self
 
     @classmethod
-    def from_obo_header(cls, obo_header):
+    def from_obo(cls, obo_header):
         if isinstance(obo_header, six.binary_type):
             obo_header = obo_header.decode('utf-8')
 
@@ -125,7 +125,7 @@ class Synonym(object):
         self.xref = xref or []
 
     @classmethod
-    def from_obo_header(cls, obo_header, scope='RELATED'):
+    def from_obo(cls, obo_header, scope='RELATED'):
 
         if isinstance(obo_header, six.binary_type):
             obo_header = obo_header.decode('utf-8')

@@ -128,7 +128,7 @@ class OboParser(Parser):
                 syn_type_def = []
                 for m in meta['synonymtypedef']:
                     if not isinstance(m, SynonymType):
-                        x = SynonymType.from_obo_header(m)
+                        x = SynonymType.from_obo(m)
                         syn_type_def.append(x)
                     else:
                         syn_type_def.append(m)
@@ -221,7 +221,7 @@ class OboParser(Parser):
                     try:
                         s = _cached_synonyms[obo_header]
                     except KeyError:
-                         s = Synonym.from_obo_header(obo_header, scope)
+                         s = Synonym.from_obo(obo_header, scope)
                          _cached_synonyms[obo_header] = s
                     finally:
                         synonyms.add(s)

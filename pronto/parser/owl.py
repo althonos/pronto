@@ -15,6 +15,8 @@ try:
 except ImportError:
     import xml.etree.ElementTree as etree
 
+from six.moves import map
+
 from .base import BaseParser
 from .utils import owl_ns, owl_to_obo, OwlSection, owl_synonyms
 from ..description import Description
@@ -85,11 +87,10 @@ class OwlXMLParser(BaseParser):
     def _annotate(cls, terms, tree):
 
         for axiom in map(cls._extract_resources, tree.iterfind(OWL_AXIOM)):
-            print(axiom)
 
             prop = cls._get_id_from_url(axiom['annotatedProperty'][0])
             src = cls._get_id_from_url(axiom['annotatedSource'][0])
-            target = axiom['annotatedTarget']
+            target = axiom.get('annotatedTarget')
 
             # annotated description with xrefs
             if prop == 'IAO:0000115':

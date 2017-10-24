@@ -13,7 +13,8 @@ class BaseParser(object):
 
     _instances = {}
 
-    @abc.abstractclassmethod
+    @classmethod
+    @abc.abstractmethod
     def hook(cls, force=False, path=None, lookup=None):
         """Test whether this parser should be used.
 
@@ -21,6 +22,7 @@ class BaseParser(object):
         and looking ahead a small buffer in the file object.
         """
 
+    @classmethod
     @abc.abstractmethod
     def parse(self, stream):
         """

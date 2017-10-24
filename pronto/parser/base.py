@@ -11,8 +11,6 @@ class BaseParser(object):
     """An abstract parser object.
     """
 
-    _instances = {}
-
     @classmethod
     @abc.abstractmethod
     def hook(cls, force=False, path=None, lookup=None):
@@ -29,7 +27,7 @@ class BaseParser(object):
         Parse the ontology file.
 
         Parameters
-            stream (io.StringIO): A stream of the ontology file.
+            stream (io.StringIO): A stream of ontologic data.
 
         Returns:
             (dict, dict, list): a tuple of metadata, dict, and imports.

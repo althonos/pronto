@@ -59,10 +59,9 @@ class TestProntoOboFoundry(TestProntoOntology):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestSuite()
     TestProntoOboFoundry.register_tests()
-    suite.addTests(loader.loadTestsFromTestCase(TestProntoOboFoundry))
-    return suite
+    tests.addTests(loader.loadTestsFromTestCase(TestProntoOboFoundry))
+    return tests
 
 
 def setUpModule():

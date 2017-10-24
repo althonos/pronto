@@ -59,7 +59,7 @@ def tearDownModule():
     warnings.simplefilter(warnings.defaultaction)
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestSuite()
+    #suite = unittest.TestSuite()
     #TestProntoDocumentation.register_tests()
-    suite.addTests(loader.loadTestsFromTestCase(TestProntoDocumentation))
-    return suite
+    tests.addTests(loader.loadTestsFromTestCase(TestProntoDocumentation))
+    return tests

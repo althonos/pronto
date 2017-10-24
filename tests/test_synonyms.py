@@ -26,14 +26,14 @@ class TestProntoSynonymType(unittest.TestCase):
         self.assertEqual(synonymtype.scope, scope)
         self.assertIn(synonymtype.name, pronto.synonym.SynonymType._instances)
 
-    def test_new_synonymtype_from_obo_header_with_scope(self):
-        synonymtype = pronto.synonym.SynonymType.from_obo_header(
+    def test_new_synonymtype_from_obo_with_scope(self):
+        synonymtype = pronto.synonym.SynonymType.from_obo(
             'UK_SPELLING "British spelling" EXACT'
         )
         self.assertOk(synonymtype, "EXACT")
 
-    def test_new_synonymtype_from_obo_header_without_scope(self):
-        synonymtype = pronto.synonym.SynonymType.from_obo_header(
+    def test_new_synonymtype_from_obo_without_scope(self):
+        synonymtype = pronto.synonym.SynonymType.from_obo(
             'UK_SPELLING "British spelling"'
         )
         self.assertOk(synonymtype, None)
@@ -60,12 +60,12 @@ class TestProntoSynonymType(unittest.TestCase):
 
     def test_obo_with_scope(self):
         obo_header = 'UK_SPELLING "British spelling" EXACT'
-        synonymtype = pronto.synonym.SynonymType.from_obo_header(obo_header)
+        synonymtype = pronto.synonym.SynonymType.from_obo(obo_header)
         self.assertEqual(synonymtype.obo, "synonymtypedef: {}".format(obo_header))
 
     def test_obo_without_scope(self):
         obo_header = 'UK_SPELLING "British spelling"'
-        synonymtype = pronto.synonym.SynonymType.from_obo_header(obo_header)
+        synonymtype = pronto.synonym.SynonymType.from_obo(obo_header)
         self.assertEqual(synonymtype.obo, "synonymtypedef: {}".format(obo_header))
 
 
@@ -81,16 +81,16 @@ class TestProntoSynonym(unittest.TestCase):
         if synonymtype is not None:
             self.assertEqual(synonym.syn_type, synonymtype)
 
-    def test_new_synonym_from_obo_header_with_scope_with_syntype(self):
+    def test_new_synonym_from_obo_with_scope_with_syntype(self):
         synonymtype = pronto.synonym.SynonymType("MARKETING_SLOGAN", 'marketing slogan')
-        synonym = pronto.synonym.Synonym.from_obo_header(
+        synonym = pronto.synonym.Synonym.from_obo(
             '"The other white meat" EXACT MARKETING_SLOGAN [MEAT:00324, BACONBASE:03021]'
         )
         self.assertOk(synonym, "EXACT", synonymtype)
 
-    def test_new_synonym_from_obo_header_without_scope_with_syntype(self):
+    def test_new_synonym_from_obo_without_scope_with_syntype(self):
         synonymtype = pronto.synonym.SynonymType("MARKETING_SLOGAN", 'marketing slogan')
-        synonym = pronto.synonym.Synonym.from_obo_header(
+        synonym = pronto.synonym.Synonym.from_obo(
             '"The other white meat" MARKETING_SLOGAN [MEAT:00324, BACONBASE:03021]'
         )
         self.assertOk(synonym, "RELATED", synonymtype)
@@ -109,14 +109,14 @@ class TestProntoSynonym(unittest.TestCase):
         )
         self.assertOk(synonym, "RELATED", synonymtype)
 
-    def test_new_synonym_from_obo_header_with_scope_without_syntype(self):
-        synonym = pronto.synonym.Synonym.from_obo_header(
+    def test_new_synonym_from_obo_with_scope_without_syntype(self):
+        synonym = pronto.synonym.Synonym.from_obo(
             '"The other white meat" EXACT [MEAT:00324, BACONBASE:03021]'
         )
         self.assertOk(synonym, "EXACT")
 
-    def test_new_synonym_from_obo_header_without_scope_without_syntype(self):
-        synonym = pronto.synonym.Synonym.from_obo_header(
+    def test_new_synonym_from_obo_without_scope_without_syntype(self):
+        synonym = pronto.synonym.Synonym.from_obo(
             '"The other white meat" [MEAT:00324, BACONBASE:03021]'
         )
         self.assertOk(synonym, "RELATED")

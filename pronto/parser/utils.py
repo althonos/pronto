@@ -23,6 +23,7 @@ class OboSection(Enum):  # noqa: D101
 class OwlSection(Enum):  # noqa: D101
     ontology = 1
     classes  = 2
+    axiom    = 3
 
 
 owl_ns = {
@@ -57,4 +58,14 @@ owl_to_obo = {
     #FEAT# 'is_metadata_tag': 'is_metadata_tag',
 }
 
-obo_to_owl = {v:k for k,v in six.iteritems(owl_to_obo)}
+obo_to_owl = {
+    v:k for k,v in six.iteritems(owl_to_obo)
+}
+
+owl_synonyms = {
+    "hasExactSynonym": "EXACT",
+    "hasNarrowSynonym": "NARROW",
+    "hasBroadSynonym": "BROAD",
+    "hasRelatedSynonym": "RELATED",
+    "hasSynonym": "RELATED"
+}

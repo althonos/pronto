@@ -5,42 +5,10 @@ pronto.parser
 
 This module defines the Parser virtual class.
 """
+from __future__ import absolute_import
 
-__all__ = ["Parser", "OboParser", "OwlXMLParser"]
+__all__ = ["BaseParser", "OboParser", "OwlXMLParser"]
 
-
-class Parser(object):
-    """An abstract parser object.
-    """
-
-    _instances = {}
-
-    def __init__(self):
-        self._instances[type(self).__name__] = self
-
-    @classmethod
-    def hook(cls, force=False, path=None, lookup=None):
-        """Test whether this parser should be used.
-
-        The current behaviour relies on filenames, file extension
-        and looking ahead a small buffer in the file object.
-        """
-        raise NotImplementedError
-
-    #@pronto.utils.timeout(0)
-    def parse(self, stream):
-        """
-        Parse the ontology file.
-
-        Parameters
-            stream (io.StringIO): A stream of the ontology file.
-
-        Returns:
-            (dict, dict, list): a tuple of metadata, dict, and imports.
-
-        """
-        raise NotImplementedError
-
-
+from .base import BaseParser
 from .obo import OboParser
-from .owl import OwlXMLParser, OwlXMLTreeParser, OwlXMLTargetParser
+from .owl import OwlXMLParser

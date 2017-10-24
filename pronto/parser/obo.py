@@ -8,21 +8,22 @@ import collections
 import string
 import six
 
-from .              import Parser
-from .utils         import OboSection
+from .base import BaseParser
+from .utils import OboSection
 from ..description  import Description
 from ..relationship import Relationship
-from ..synonym      import SynonymType, Synonym
-from ..term         import Term
+from ..synonym import SynonymType, Synonym
+from ..term import Term
 
 _obo_synonyms_map = {'exact_synonym': 'EXACT', 'broad_synonym': 'BROAD',
                     'narrow_synonym': 'NARROW', 'synonym': 'RELATED'}
 
-class OboParser(Parser):
+class OboParser(BaseParser):
 
     extensions = (".obo", ".obo.gz")
 
-    def hook(self, force=False, path=None, lookup=None):
+    @classmethod
+    def hook(cls, force=False, path=None, lookup=None):
         """Test whether this parser should be used.
 
         The current behaviour relies on filenames, file extension
@@ -31,12 +32,11 @@ class OboParser(Parser):
         """
         if force:
             return True
-        elif path is not None and path.endswith(self.extensions):
+        elif path is not None and path.endswith(cls.extensions):
             return True
         elif lookup is not None and lookup.startswith(b'format-version:'):
             return True
         return False
-
 
     @classmethod
     def parse(cls, stream):  # noqa: D102

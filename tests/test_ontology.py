@@ -124,7 +124,7 @@ class TestProntoFeatures(TestProntoOntology):
             self.check_ontology(gzipped)
         else:
             with self.assertRaises(io.UnsupportedOperation):
-                gzipped = pronto.Ontology(hpo_url, parser='OwlXMLTargetParser')
+                gzipped = pronto.Ontology(hpo_url, parser='OwlXMLParser')
 
     def test_unicode_in_term_names(self):
         """Test if unicode characters in term names work.
@@ -274,7 +274,7 @@ class TestProntoRemoteOntology(TestProntoOntology):
     def test_remote_owl_noimports(self):
         """Try to import a remote owl ontology without its imports
         """
-        owl = pronto.Ontology("https://www.ebi.ac.uk/ols/ontologies/flu/download", False, parser="OwlXMLTreeParser")
+        owl = pronto.Ontology("https://www.ebi.ac.uk/ols/ontologies/flu/download", False, parser="OwlXMLParser")
         self.check_ontology(owl)
 
     def test_remote_obo_imports(self):

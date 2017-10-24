@@ -89,7 +89,7 @@ class _TestProntoOwlParser(object):
         try:
             with utils.mock.patch("pronto.parser.owl.etree", utils.lxml_etree):
                 tree_m, tree_t, tree_i = self._parse(
-                    pronto.parser.owl.OwlXMLTreeParser(),
+                    pronto.parser.owl.OwlXMLParser(),
                     os.path.join(self.resources_dir, 'obi-small.owl'),
                 )
         except Exception as e:
@@ -100,7 +100,7 @@ class _TestProntoOwlParser(object):
         try:
             with utils.mock.patch("pronto.parser.owl.etree", utils.cxml_etree):
                 tree_m, tree_t, tree_i = self._parse(
-                    pronto.parser.owl.OwlXMLTreeParser(),
+                    pronto.parser.owl.OwlXMLParser(),
                     os.path.join(self.resources_dir, 'obi-small.owl'),
                 )
         except Exception as e:
@@ -110,7 +110,7 @@ class _TestProntoOwlParser(object):
         try:
             with utils.mock.patch("pronto.parser.owl.etree", utils.xml_etree):
                 tree_m, tree_t, tree_i = self._parse(
-                    pronto.parser.owl.OwlXMLTreeParser(),
+                    pronto.parser.owl.OwlXMLParser(),
                     os.path.join(self.resources_dir, 'obi-small.owl'),
                 )
         except Exception as e:
@@ -178,47 +178,8 @@ class _TestProntoOwlParser(object):
         self._check(m,t,i, exp_len=685)
 
 
-class TestProntoOwlTargetParser(_TestProntoOwlParser, TestProntoParser):
-    parser = pronto.parser.owl.OwlXMLTargetParser
-
-
-class TestProntoOwlTreeParser(_TestProntoOwlParser, TestProntoParser):
-    parser = pronto.parser.owl.OwlXMLTreeParser
-
-
-class TestProntoOwlUnicity(TestProntoParser):
-
-    def test_parser_unicity(self):
-        tree_m, tree_t, tree_i  = self._parse(
-                pronto.parser.owl.OwlXMLTreeParser(),
-                os.path.join(self.resources_dir, 'cl.ont.gz'),
-            )
-        target_m, target_t, target_i = self._parse(
-                pronto.parser.owl.OwlXMLTargetParser(),
-                os.path.join(self.resources_dir, 'cl.ont.gz'),
-            )
-
-        #print(target_i)
-        #print(target_m)
-        #tree_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont.gz'), 'OwlXMLTreeParser')
-        #target_cl = pronto.Ontology(os.path.join(self.resources_dir, 'cl.ont.gz'), 'OwlXMLTargetParser')
-
-        self.assertEqual(set(tree_t.keys()), set(target_t.keys()))
-        self.assertEqual(set(tree_m.keys()), set(target_m.keys()))
-
-        #FEAT# Acceptance test for althonos/pronto#7
-        #self.assertEqual(tree_i, target_i)
-
-        # for tid in tree_t:
-        #     tree_term = tree_t[tid]
-        #     target_term = target_t[tid]
-        #     self.assertEqual(tree_term.id, target_term.id)
-        #     self.assertEqual(tree_term.name, target_term.name)
-        #     self.assertEqual(tree_term.desc, target_term.desc)
-        #     self.assertEqual(tree_term.relations.keys(), target_term.relations.keys())
-        #     self.assertEqual(tree_term.synonyms, target_term.synonyms)
-
-
+class TestOwlXMLParser(_TestProntoOwlParser, TestProntoParser):
+    parser = pronto.parser.owl.OwlXMLParser
 
 
 def setUpModule():

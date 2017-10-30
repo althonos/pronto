@@ -122,7 +122,7 @@ class Ontology(collections.Mapping):
     def __repr__(self):
         if self.path is not None:
             return "Ontology(\"{}\")".format(self.path)
-        super(Ontology, self).__repr__()
+        return super(Ontology, self).__repr__()
 
     def __contains__(self, item):
         """Check if the ontology contains a term.

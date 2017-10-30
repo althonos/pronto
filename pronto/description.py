@@ -20,7 +20,6 @@ class Description(six.text_type):
         if match is not None:
             desc, _, xref = match.groups()
         else:
-            print(obo_header)
             raise ValueError("not a valid obo definition")
         if xref is not None:
             xref = [x.split(' ')[0] for x in xref.split(', ')]

@@ -88,6 +88,9 @@ class OwlXMLParser(BaseParser):
 
         for axiom in map(cls._extract_resources, tree.iterfind(OWL_AXIOM)):
 
+            if not 'annotatedSource' in axiom:
+                continue
+
             prop = cls._get_id_from_url(axiom['annotatedProperty'][0])
             src = cls._get_id_from_url(axiom['annotatedSource'][0])
             target = axiom.get('annotatedTarget')
@@ -96,7 +99,7 @@ class OwlXMLParser(BaseParser):
             if prop == 'IAO:0000115':
                 if src in terms:
                     terms[src].desc = Description(
-                        ''.join(target), axiom.get('hasDbXref', [])
+                        ''.join(target or []), axiom.get('hasDbXref', [])
                     )
 
         return terms

@@ -260,3 +260,7 @@ Relationship('has_units', symmetry=False, transitivity=False,
                           reflexivity=None)
 
 Relationship('has_domain', symmetry=False, transitivity=False)
+
+Relationship('develops_from', symmetry=False, transitivity=True,
+                              reflexivity=True, complementary='can_be',
+                              direction='bottomup')

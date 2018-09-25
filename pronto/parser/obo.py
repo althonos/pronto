@@ -43,6 +43,7 @@ class OboParser(BaseParser):
 
         _section    = OboSection.meta
         meta        = collections.defaultdict(list)
+        typedefs    = []
         _rawterms   = []
         _rawtypedef = []
 
@@ -66,10 +67,10 @@ class OboParser(BaseParser):
                 _term_parser.send(streamline)
                 #_rawterms = cls._parse_term(streamline, _rawterms)
 
-        terms = cls._classify(_rawtypedef, _rawterms)
+        terms, typedefs = cls._classify(_rawtypedef, _rawterms)
         imports = set(meta['import']) if 'import' in meta else set()
 
-        return dict(meta), terms, imports
+        return dict(meta), terms, imports, typedefs
 
     @staticmethod
     def _check_section(line, section):
@@ -191,11 +192,12 @@ class OboParser(BaseParser):
         terms = collections.OrderedDict()
         _cached_synonyms = {}
 
-        for _typedef in _rawtypedef:
+        typedefs = [
             Relationship._from_obo_dict( # instantiate a new Relationship
                 {k:v for k,lv in six.iteritems(_typedef) for v in lv}
             )
-
+            for _typedef in _rawtypedef
+        ]
 
         for _term in _rawterms:
             synonyms = set()
@@ -229,7 +231,7 @@ class OboParser(BaseParser):
             desc = Description.from_obo(_desc) if _desc else Description("")
 
             terms[_id] = Term(_id, _name, desc, dict(_relations), synonyms, dict(_term))
-        return terms
+        return terms, typedefs
 
 
 OboParser()

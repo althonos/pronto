@@ -69,7 +69,7 @@ class Ontology(collections.Mapping):
 
     """
 
-    __slots__ = ("path", "meta", "terms", "imports", "_parsed_by")
+    __slots__ = ("path", "meta", "terms", "imports", "_parsed_by", "typedefs")
 
     def __init__(self, handle=None, imports=True, import_depth=-1, timeout=2, parser=None):
         """Create an `Ontology` instance from a file handle or a path.
@@ -221,7 +221,7 @@ class Ontology(collections.Mapping):
 
         for p in parsers:
             if p.hook(path=self.path, force=force, lookup=lookup):
-                self.meta, self.terms, self.imports = p.parse(stream)
+                self.meta, self.terms, self.imports, self.typedefs = p.parse(stream)
                 self._parsed_by = p.__name__
                 break
 
@@ -545,10 +545,14 @@ class Ontology(collections.Mapping):
 
         try: # if 'namespace' in self.meta:
             return newline.join( meta + [
+                r.obo for r in self.typedefs
+            ] + [
                 t.obo for t in self
                     if t.id.startswith(self.meta['namespace'][0])
             ])
         except KeyError:
             return newline.join( meta + [
+                r.obo for r in self.typedefs
+            ] + [
                 t.obo for t in self
             ])

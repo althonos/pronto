@@ -2,22 +2,30 @@ sudo: false
 language: python
 cache: pip
 
-python:
-- '2.7'
-- '3.3'
-- '3.4'
-- '3.5'
-- '3.6'
-- 'pypy'
-- 'pypy3'
-
 matrix:
+  include:
+  - python: "2.7"
+    env: SETUPTOOLS=setuptools
+  - python: "3.3"
+    env: SETUPTOOLS=setuptools~=39.2
+  - python: "3.4"
+    env: SETUPTOOLS=setuptools
+  - python: "3.5"
+    env: SETUPTOOLS=setuptools
+  - python: "3.6"
+    env: SETUPTOOLS=setuptools
+  - python: "pypy"
+    env: SETUPTOOLS=setuptools
+  - python: "pypy3"
+    env: SETUPTOOLS=setuptools
   allow_failures:
-  - python: 'pypy'
-  - python: 'pypy3'
+  - python: "pypy"
+    env: SETUPTOOLS=setuptools
+  - python: "pypy3"
+    env: SETUPTOOLS=setuptools
 
 before_install:
-- pip install -U wheel setuptools pip
+- pip install -U wheel $SETUPTOOLS pip
 
 install:
 - pip install .[dev,test]

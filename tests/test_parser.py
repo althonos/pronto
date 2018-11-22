@@ -73,6 +73,18 @@ class TestProntoParser(unittest.TestCase):
         return m,t,i,tpd
 
 
+class TestProntoOboParser(TestProntoParser):
+    parser = pronto.parser.obo.OboParser
+
+    def test_inline_comment(self):
+        m, t, i, _ = self._parse(
+            self.parser(), os.path.join(self.resources_dir, 'krassowski.obo')
+        )
+
+        self.assertEqual(t['CVCL_KA96'].other['xref'][0], "NCBI_TaxID:10090")
+        self.assertEqual(m['format-version'][0], '1.2')
+        self.assertEqual(t['CVCL_KA96'].other['subset'][0], "Hybridoma")
+
 
 @six.add_metaclass(abc.ABCMeta)
 class _TestProntoOwlParser(object):

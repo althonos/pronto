@@ -53,10 +53,10 @@ class OboParser(BaseParser):
         for streamline in stream:
 
             # manage encoding && cleaning of line
-            streamline = streamline.decode('utf-8')
-            if streamline[0] in string.whitespace:
+            streamline = cls._strip_comment(streamline.decode('utf-8'))
+            if streamline[:1] in string.whitespace:
                 continue
-            elif streamline[0] == "[":
+            elif streamline[:1] == "[":
                 _section = cls._check_section(streamline, _section)
 
             if _section is OboSection.meta:
@@ -71,6 +71,16 @@ class OboParser(BaseParser):
         imports = set(meta['import']) if 'import' in meta else set()
 
         return dict(meta), terms, imports, typedefs
+
+    @staticmethod
+    def _strip_comment(line):
+        in_quote = False
+        for i, char in enumerate(line):
+            if char == '"':
+                in_quote = not in_quote
+            elif not in_quote and char == '!':
+                return line[:i]
+        return line
 
     @staticmethod
     def _check_section(line, section):

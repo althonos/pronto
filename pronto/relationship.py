@@ -15,9 +15,11 @@ class Relationship(object):
 
     The Relationship class actually behaves as a factory, creating new
     relationships via the default Python syntax only if no relationship
-    of the same name are present in the class py:attribute:: _instances
+    of the same name are present in the class py:attribute::`_instances`
     (a dictionnary containing memoized relationships).
 
+    Relationships are each singletons, so you can use the ``is`` operator
+    to check for equality between relationships.
 
     Note:
        Relationships are pickable and always refer to the same adress even
@@ -237,6 +239,34 @@ class Relationship(object):
 
         return Relationship(d['id'], symmetry=symmetry, transitivity=transitivity,
                             reflexivity=reflexivity, complementary=complementary)
+
+    @property
+    @output_str
+    def obo(self):
+        """str: the `Relationship` serialized in an ``[Typedef]`` stanza.
+
+        Note:
+            The following guide was used:
+            ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
+        """
+
+        lines = [
+            "[Typedef]",
+            "id: {}".format(self.obo_name),
+            "name: {}".format(self.obo_name)
+        ]
+        if self.complementary is not None:
+            lines.append("inverse_of: {}".format(self.complementary))
+        if self.symmetry is not None:
+            lines.append("is_symmetric: {}".format(self.symmetry).lower())
+        if self.transitivity is not None:
+            lines.append("is_transitive: {}".format(self.transitivity).lower())
+        if self.reflexivity is not None:
+            lines.append("is_reflexive: {}".format(self.reflexivity).lower())
+        if self.comment:
+            lines.append("comment: {}".format(self.comment))
+        return "\n".join(lines)
+
 
 
 

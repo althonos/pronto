@@ -81,7 +81,7 @@ class OwlXMLParser(BaseParser):
         meta = cls._relabel_to_obo(meta)
         meta.setdefault('imports', [])
 
-        return meta, terms, set(meta['imports'])
+        return meta, terms, set(meta['imports']), []
 
     @classmethod
     def _annotate(cls, terms, tree):

@@ -43,6 +43,7 @@ class OboParser(BaseParser):
 
         _section    = OboSection.meta
         meta        = collections.defaultdict(list)
+        typedefs    = []
         _rawterms   = []
         _rawtypedef = []
 
@@ -52,10 +53,10 @@ class OboParser(BaseParser):
         for streamline in stream:
 
             # manage encoding && cleaning of line
-            streamline = streamline.decode('utf-8')
-            if streamline[0] in string.whitespace:
+            streamline = cls._strip_comment(streamline.decode('utf-8'))
+            if streamline[:1] in string.whitespace:
                 continue
-            elif streamline[0] == "[":
+            elif streamline[:1] == "[":
                 _section = cls._check_section(streamline, _section)
 
             if _section is OboSection.meta:
@@ -66,10 +67,20 @@ class OboParser(BaseParser):
                 _term_parser.send(streamline)
                 #_rawterms = cls._parse_term(streamline, _rawterms)
 
-        terms = cls._classify(_rawtypedef, _rawterms)
+        terms, typedefs = cls._classify(_rawtypedef, _rawterms)
         imports = set(meta['import']) if 'import' in meta else set()
 
-        return dict(meta), terms, imports
+        return dict(meta), terms, imports, typedefs
+
+    @staticmethod
+    def _strip_comment(line):
+        in_quote = False
+        for i, char in enumerate(line):
+            if char == '"':
+                in_quote = not in_quote
+            elif not in_quote and char == '!':
+                return line[:i]
+        return line
 
     @staticmethod
     def _check_section(line, section):
@@ -191,11 +202,12 @@ class OboParser(BaseParser):
         terms = collections.OrderedDict()
         _cached_synonyms = {}
 
-        for _typedef in _rawtypedef:
+        typedefs = [
             Relationship._from_obo_dict( # instantiate a new Relationship
                 {k:v for k,lv in six.iteritems(_typedef) for v in lv}
             )
-
+            for _typedef in _rawtypedef
+        ]
 
         for _term in _rawterms:
             synonyms = set()
@@ -229,7 +241,7 @@ class OboParser(BaseParser):
             desc = Description.from_obo(_desc) if _desc else Description("")
 
             terms[_id] = Term(_id, _name, desc, dict(_relations), synonyms, dict(_term))
-        return terms
+        return terms, typedefs
 
 
 OboParser()

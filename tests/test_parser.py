@@ -67,11 +67,23 @@ class TestProntoParser(unittest.TestCase):
         else:
             handle = open(path, 'rb')
         try:
-            m,t,i = parser.parse(handle)
+            m,t,i,tpd = parser.parse(handle)
         finally:
             handle.close()
-        return m,t,i
+        return m,t,i,tpd
 
+
+class TestProntoOboParser(TestProntoParser):
+    parser = pronto.parser.obo.OboParser
+
+    def test_inline_comment(self):
+        m, t, i, _ = self._parse(
+            self.parser(), os.path.join(self.resources_dir, 'krassowski.obo')
+        )
+
+        self.assertEqual(t['CVCL_KA96'].other['xref'][0], "NCBI_TaxID:10090")
+        self.assertEqual(m['format-version'][0], '1.2')
+        self.assertEqual(t['CVCL_KA96'].other['subset'][0], "Hybridoma")
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -88,7 +100,7 @@ class _TestProntoOwlParser(object):
     def test_inline_comment_lxml(self):
         try:
             with utils.mock.patch("pronto.parser.owl.etree", utils.lxml_etree):
-                tree_m, tree_t, tree_i = self._parse(
+                tree_m, tree_t, tree_i, tpd = self._parse(
                     pronto.parser.owl.OwlXMLParser(),
                     os.path.join(self.resources_dir, 'obi-small.owl'),
                 )
@@ -99,7 +111,7 @@ class _TestProntoOwlParser(object):
     def test_inline_comment_cElementTree(self):
         try:
             with utils.mock.patch("pronto.parser.owl.etree", utils.cxml_etree):
-                tree_m, tree_t, tree_i = self._parse(
+                tree_m, tree_t, tree_i, tpd = self._parse(
                     pronto.parser.owl.OwlXMLParser(),
                     os.path.join(self.resources_dir, 'obi-small.owl'),
                 )
@@ -109,7 +121,7 @@ class _TestProntoOwlParser(object):
     def test_inline_comment_ElementTree(self):
         try:
             with utils.mock.patch("pronto.parser.owl.etree", utils.xml_etree):
-                tree_m, tree_t, tree_i = self._parse(
+                tree_m, tree_t, tree_i, tpd = self._parse(
                     pronto.parser.owl.OwlXMLParser(),
                     os.path.join(self.resources_dir, 'obi-small.owl'),
                 )
@@ -123,7 +135,7 @@ class _TestProntoOwlParser(object):
     @unittest.skipIf(utils.lxml_etree is None, 'lxml unavailable')
     def test_with_lxml_etree(self):
         with utils.mock.patch("pronto.parser.owl.etree", utils.lxml_etree):
-            m,t,i = self._parse(
+            m,t,i, tpd = self._parse(
                 self.parser(),
                 os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
@@ -132,7 +144,7 @@ class _TestProntoOwlParser(object):
     @unittest.skipIf(utils.cxml_etree is None, 'cElementTree unavailable')
     def test_with_xml_cElementTree(self):
         with utils.mock.patch("pronto.parser.owl.etree", utils.cxml_etree):
-            m,t,i = self._parse(
+            m,t,i, tpd = self._parse(
                 self.parser(),
                 os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
@@ -140,7 +152,7 @@ class _TestProntoOwlParser(object):
 
     def test_with_xml_elementTree(self):
         with utils.mock.patch("pronto.parser.owl.etree", utils.xml_etree):
-            m,t,i = self._parse(
+            m,t,i, tpd = self._parse(
                 self.parser(),
                 os.path.join(self.resources_dir, 'cl.ont.gz'),
             )
@@ -153,7 +165,7 @@ class _TestProntoOwlParser(object):
     @unittest.skipIf(utils.lxml_etree is None, 'lxml unavailable')
     def test_with_lxml_etree_remote(self):
         with utils.mock.patch("pronto.parser.owl.etree", utils.lxml_etree):
-            m,t,i = self._parse(
+            m,t,i, tpd = self._parse(
                 self.parser(),
                 "http://localhost:8080/nmrCV.owl",
             )
@@ -162,7 +174,7 @@ class _TestProntoOwlParser(object):
     @unittest.skipIf(utils.cxml_etree is None, 'cElementTree unavailable')
     def test_with_xml_cElementTree_remote(self):
         with utils.mock.patch("pronto.parser.owl.etree", utils.cxml_etree):
-            m,t,i =  self._parse(
+            m,t,i, tpd =  self._parse(
                 self.parser(),
                 "http://localhost:8080/nmrCV.owl",
 
@@ -171,7 +183,7 @@ class _TestProntoOwlParser(object):
 
     def test_with_xml_elementTree_remote(self):
         with utils.mock.patch("pronto.parser.owl.etree", utils.xml_etree):
-            m,t,i = self._parse(
+            m,t,i, tpd = self._parse(
                 self.parser(),
                 "http://localhost:8080/nmrCV.owl",
             )

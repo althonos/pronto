@@ -2,22 +2,26 @@ sudo: false
 language: python
 cache: pip
 
-python:
-- '2.7'
-- '3.3'
-- '3.4'
-- '3.5'
-- '3.6'
-- 'pypy'
-- 'pypy3'
-
 matrix:
-  allow_failures:
-  - python: 'pypy'
-  - python: 'pypy3'
+  include:
+  - python: "2.7"
+    env: DEPS="wheel setuptools pip"
+  - python: "3.3"
+    env: DEPS="wheel setuptools<40.0 pip<18.0"
+  - python: "3.4"
+    env: DEPS="wheel setuptools pip"
+  - python: "3.5"
+    env: DEPS="wheel setuptools pip"
+  - python: "3.6"
+    env: DEPS="wheel setuptools pip"
+  - python: "pypy"
+    env: DEPS="wheel setuptools pip"
+  - python: "pypy3"
+    env: DEPS="wheel setuptools pip"
+
 
 before_install:
-- pip install -U wheel setuptools pip
+- pip install -U $DEPS
 
 install:
 - pip install .[dev,test]

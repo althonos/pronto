@@ -1,7 +1,7 @@
 **pronto** : Python frontend to Ontologies
 ==========================================
 
-|Version| |Py versions| |Build Status| |Dev repo| |Codacy grade| |License| |DOI| |coverage| |rtd|
+|PyPI| |Conda| |Py versions| |Build Status| |Dev repo| |Codacy grade| |License| |DOI| |coverage| |rtd|
 
 Overview
 ^^^^^^^^
@@ -14,12 +14,21 @@ own to work with the current API).
 Installation
 ^^^^^^^^^^^^
 
-Installing with pip is the easiest:
+Installing with ``pip`` is the easiest:
 
 .. code:: bash
 
     pip install pronto          # if you have the admin rights
     pip install pronto --user   # if you want to install it for only one user
+
+
+There is also a ``conda`` recipe in the `bioconda <https://bioconda.github.io/>`_
+channel:
+
+.. code:: bash
+
+	 conda install -c bioconda pronto
+
 
 If for some reason you do not like ``pip``, you can also clone the
 repository and install it with the setup script (still requires
@@ -30,6 +39,7 @@ repository and install it with the setup script (still requires
     git clone https://github.com/althonos/pronto
     cd pronto
     python setup.py install    # may also require admin rights
+
 
 Usage
 ^^^^^
@@ -56,6 +66,7 @@ Display an ontology in obo format and in json format:
     ont = pronto.Ontology('https://net.path.should/work/too.owl')
     print(ont.obo)
     print(ont.json)
+
 
 Merge two ontologies:
 '''''''''''''''''''''
@@ -111,28 +122,22 @@ to get a DOI or a BibTEX record).
 
 .. |Build Status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat&maxAge=3600
    :target: https://travis-ci.org/althonos/pronto
-
 .. |Py versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat&maxAge=3600
    :target: https://pypi.python.org/pypi/pronto/
-
-.. |Version| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat&maxAge=3600
+.. |PyPI| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat&maxAge=3600
    :target: https://pypi.python.org/pypi/pronto
-
-.. |Dev repo| image:: https://img.shields.io/badge/repository-GitHub-blue.svg?style=flat&maxAge=3600
+.. |Conda| image:: https://img.shields.io/conda/vn/bioconda/pronto.svg?style=flat&maxAge=2592000
+   :target: https://anaconda.org/bioconda/pronto
+.. |Dev repo| image:: https://img.shields.io/badge/source-GitHub-303030.svg?style=flat&maxAge=3600
    :target: https://github.com/althonos/pronto
-
 .. |License| image:: https://img.shields.io/pypi/l/pronto.svg?style=flat&maxAge=3600
    :target: https://choosealicense.com/licenses/mit/
-
 .. |Codacy Grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat&maxAge=3600
    :target: https://codacy.com/app/althonos/pronto
-
 .. |DOI| image:: https://zenodo.org/badge/62424052.svg
    :target: https://zenodo.org/badge/latestdoi/62424052
-
 .. |coverage| image:: https://img.shields.io/codacy/coverage/157b5fd24e5648ea80580f28399e79a4.svg?maxAge=3600
    :target: https://www.codacy.com/app/althonos/pronto/dashboard
-
 .. |rtd| image:: https://readthedocs.org/projects/pronto/badge/?version=latest
    :target: http://pronto.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status

@@ -12,6 +12,14 @@ Author
 |                                   | | martin.larralde@ens-cachan.fr              |
 +-----------------------------------+----------------------------------------------+
 
+Contributors
+------------
+
+The following developers contributed both code and time to this project:
+
+- tatsu (`@ttyskg <https://github.com/ttyskg>`_)
+
+
 Reference
 ---------
 

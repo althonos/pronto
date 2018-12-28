@@ -199,6 +199,7 @@ class Relationship(object):
             ...    print(r)
             Relationship('is_a')
             Relationship('part_of')
+            Relationship('develops_from')
 
         """
         return tuple(unique_everseen(r for r in cls._instances.values() if r.direction=='bottomup'))

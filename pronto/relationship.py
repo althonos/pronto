@@ -199,6 +199,7 @@ class Relationship(object):
             ...    print(r)
             Relationship('is_a')
             Relationship('part_of')
+            Relationship('develops_from')
 
         """
         return tuple(unique_everseen(r for r in cls._instances.values() if r.direction=='bottomup'))
@@ -290,3 +291,7 @@ Relationship('has_units', symmetry=False, transitivity=False,
                           reflexivity=None)
 
 Relationship('has_domain', symmetry=False, transitivity=False)
+
+Relationship('develops_from', symmetry=False, transitivity=True,
+                              reflexivity=True, complementary='can_be',
+                              direction='bottomup')

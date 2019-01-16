@@ -282,6 +282,10 @@ class Term(object):
             self._rparents[(level, intermediate)] = rparents
             return rparents
 
+    def __hash__(self):
+        """ Hash term """
+        return hash(self.id)
+
     def __eq__(self, other):
         """ Determine if two terms are equal
 
@@ -291,7 +295,7 @@ class Term(object):
         Returns:
             :obj:`bool`: :obj:`True` if the terms are the same
         """
-        return self.id == other.id
+        return self.__class__ == other.__class__ and self.id == other.id
 
 
 class TermList(list):

@@ -15,6 +15,7 @@ import gzip
 import os.path as op
 import warnings
 import textwrap
+import copy
 
 from . import utils
 import pronto
@@ -288,6 +289,21 @@ class TestProntoRemoteOntology(TestProntoOntology):
         """
         owl = pronto.Ontology("http://purl.obolibrary.org/obo/xao.owl")
         self.check_ontology(owl)
+
+
+class TermEqualityTestCase(unittest.TestCase):
+    def test(self):
+        obo = pronto.Ontology("http://purl.obolibrary.org/obo/doid.obo")
+        term = obo['DOID:0001816']
+        term_copy = copy.copy(term)
+        self.assertEqual(term, term_copy)
+
+        term_copy = copy.deepcopy(term)
+        self.assertEqual(term, term_copy)
+
+        obo_copy = pronto.Ontology("http://purl.obolibrary.org/obo/doid.obo")
+        term_copy = obo_copy['DOID:0001816']
+        self.assertEqual(term, term_copy)
 
 
 def setUpModule():

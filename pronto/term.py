@@ -282,6 +282,17 @@ class Term(object):
             self._rparents[(level, intermediate)] = rparents
             return rparents
 
+    def __eq__(self, other):
+        """ Determine if two terms are equal
+
+        Arguments:
+            other (:obj:`Term`): other term
+
+        Returns:
+            :obj:`bool`: :obj:`True` if the terms are the same
+        """
+        return self.id == other.id
+
 
 class TermList(list):
     """A list of `Term` instances.

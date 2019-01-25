@@ -80,7 +80,7 @@ class Synonym(object):
     """A synonym in an ontology.
     """
 
-    _RX_OBO_EXTRACTER = re.compile(r'\"(?P<desc>.*)\" *(?P<scope>EXACT|BROAD|NARROW|RELATED)? *(?P<syn_type>[^ ]+)? \[(?P<xref>.*)\]')
+    _RX_OBO_EXTRACTER = re.compile(r'\"(?P<desc>.*)\" *(?P<scope>EXACT |BROAD |NARROW |RELATED )? *(?P<syn_type>[^ ]+)? *\[(?P<xref>.*)\]')
 
     def __init__(self, desc, scope=None, syn_type=None, xref=None):
         """Create a new synonym.
@@ -134,6 +134,7 @@ class Synonym(object):
         if groupdict.get('xref', ''):
             groupdict['xref'] = [x.strip() for x in groupdict['xref'].split(',')]
         groupdict['syn_type'] = groupdict['syn_type'] or None
+        groupdict['scope'] = None if groupdict['scope'] is None else groupdict['scope'].rstrip()
 
         return cls(**groupdict)
 

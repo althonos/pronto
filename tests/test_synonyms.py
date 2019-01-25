@@ -68,6 +68,12 @@ class TestProntoSynonymType(unittest.TestCase):
         synonymtype = pronto.synonym.SynonymType.from_obo(obo_header)
         self.assertEqual(synonymtype.obo, "synonymtypedef: {}".format(obo_header))
 
+    def test_obo_modi_name(self):
+        obo_header = 'EXACT_MODE "Exact Mapping Mode"'
+        synonymtype = pronto.synonym.SynonymType.from_obo(obo_header)
+        self.assertEqual(synonymtype.name, "EXACT_MODE")
+        self.assertIs(synonymtype.scope, None)
+
 
 class TestProntoSynonym(unittest.TestCase):
 
@@ -159,3 +165,8 @@ class TestProntoSynonym(unittest.TestCase):
             synonym = pronto.synonym.Synonym(
                 "The other white meat", "BROAD", "WRONG_TYPE", ["MEAT:00324", "BACONBASE:03021"],
         )
+
+    def test_obo_modi_name(self):
+        synonymtype = pronto.synonym.SynonymType.from_obo('EXACT_MODE "Exact Mapping Mode"')
+        synonym = pronto.synonym.Synonym.from_obo('"Second Synonym" EXACT_MODE []')
+        self.assertIs(synonym.syn_type, synonymtype)

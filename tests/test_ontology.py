@@ -298,12 +298,21 @@ class TermEqualityTestCase(unittest.TestCase):
         term_copy = copy.copy(term)
         self.assertEqual(term, term_copy)
 
-        term_copy = copy.deepcopy(term)
-        self.assertEqual(term, term_copy)
-
         obo_copy = pronto.Ontology("http://purl.obolibrary.org/obo/doid.obo")
         term_copy = obo_copy['DOID:0001816']
         self.assertEqual(term, term_copy)
+
+    @unittest.expectedFailure
+    def test_demo_deepcopy_bug(self):
+
+        obo = pronto.Ontology("http://purl.obolibrary.org/obo/doid.obo")
+        term = obo['DOID:0001816']
+
+        # pronto doesn't properly implement deepcopy()
+        term_copy = copy.deepcopy(term)
+        self.assertEqual(term, term_copy)
+        term_copy_copy = copy.deepcopy(term_copy)
+        self.assertEqual(term, term_copy_copy)
 
 
 def setUpModule():

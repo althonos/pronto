@@ -312,6 +312,7 @@ class TermEqualityTestCase(unittest.TestCase):
         term_copy = copy.deepcopy(term)
         self.assertEqual(term, term_copy)
         term_copy_copy = copy.deepcopy(term_copy)
+        # this assert should succeed, but it fails
         self.assertEqual(term, term_copy_copy)
 
 

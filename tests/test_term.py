@@ -32,20 +32,7 @@ class TestProntoTerm(unittest.TestCase):
 
         term = obo['DOID:0001816']
         term_copy = copy.deepcopy(term)
-
-        pprint(term.relations)
-        pprint(term_copy.relations)
-
         self.assertEqual(term, term_copy)
 
-
-
         term_copy_copy = copy.deepcopy(term_copy)
-
-
-        # pronto doesn't properly implement deepcopy()
-        # this assert should succeed, but it fails
         self.assertEqual(term, term_copy_copy)
-
-        pprint(term)
-        pprint(term_copy_copy)

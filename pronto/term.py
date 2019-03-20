@@ -4,6 +4,8 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+import copy
+
 import six
 
 from .description import Description
@@ -63,6 +65,46 @@ class Term(object):
         self._rparents = {}
         self._children = None
         self._parents = None
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return self.id == other.id \
+           and self.name == other.name \
+           and self.desc == other.desc \
+           and self.relations == other.relations \
+           and self.other == other.other \
+           and self.synonyms == other.synonyms
+
+    def __hash__(self):
+        return hash((
+            hash(self.id),
+            hash(self.name),
+            hash(self.desc),
+            hash(frozenset(self.relations)),
+            hash(frozenset(self.other)),
+            hash(frozenset(self.synonyms))
+        ))
+
+    def __copy__(self):
+        return Term(
+            self.id,
+            self.name,
+            self.desc,
+            self.relations,
+            self.synonyms,
+            self.other,
+        )
+
+    def __deepcopy__(self, memo):
+        return Term(
+            self.id,
+            self.name,
+            self.desc,
+            copy.copy(self.relations),
+            copy.copy(self.synonyms),
+            copy.copy(self.other),
+        )
 
     @output_str
     def __repr__(self):

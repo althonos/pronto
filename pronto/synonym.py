@@ -1,165 +1,195 @@
 # coding: utf-8
-"""Definition of the `SynonymType` and `Synonym` classes.
-"""
-from __future__ import unicode_literals
-from __future__ import absolute_import
 
-import re
-import six
-import collections
+import functools
+import typing
+import weakref
+from typing import Optional, Set
 
-from .utils import output_str
+import fastobo
 
+from .xref import Xref
+from .utils.repr import make_repr, roundrepr
 
+if typing.TYPE_CHECKING:
+    from .ontology import Ontology
+
+@functools.total_ordering
+@roundrepr
 class SynonymType(object):
-    """A synonym type in an ontology.
 
-    Attributes:
-        name(str): the name of the synonym type
-        scope(str, optional): the scope all synonyms of
-            that type will always have(either 'EXACT',
-            'BROAD', 'NARROW', 'RELATED', or None).
-        desc(Description): the description of the synonym type
+    id: str
+    description: str
+    scope: Optional[str]
 
-    """
+    __slots__ = ("__weakref__",) + tuple(__annotations__)
 
-    __slots__ = ['name', 'desc', 'scope']
-    _instances = collections.OrderedDict()
-    _RX_OBO_EXTRACTER = re.compile(r'(?P<name>[^ ]*)[ ]*\"(?P<desc>.*)\"[ ]*(?P<scope>BROAD|NARROW|EXACT|RELATED)?')
-
-    def __init__(self, name, desc, scope=None):
-        """Create a new synonym type.
-
-        Arguments:
-            name (str): the name of the synonym type.
-            desc (str): the description of the synonym type.
-            scope (str, optional): the scope modifier.
-        """
-        self.name = name
-        self.desc = desc
-        if scope in {'BROAD', 'NARROW', 'EXACT', 'RELATED', None}:
-            self.scope = scope
-        elif scope in {six.b('BROAD'), six.b('NARROW'), six.b('EXACT'), six.b('RELATED')}:
-            self.scope = scope.decode('utf-8')
-        else:
-            raise ValueError("scope must be 'NARROW', 'BROAD', 'EXACT', 'RELATED' or None")
-        self._register()
-
-    def _register(self):
-        self._instances[self.name] = self
-
-    @classmethod
-    def from_obo(cls, obo_header):
-        if isinstance(obo_header, six.binary_type):
-            obo_header = obo_header.decode('utf-8')
-
-        groupdict = cls._RX_OBO_EXTRACTER.search(obo_header).groupdict()
-        result = {k:v.strip() if v else None for k,v in six.iteritems(groupdict)}
-        return cls(**result)
-
-    @property
-    def obo(self):
-        """str: the synonym type serialized in obo format.
-        """
-        return ' '.join(['synonymtypedef:', self.name,
-                         '"{}"'.format(self.desc),
-                         self.scope or '']).strip()
-
-    @output_str
-    def __repr__(self):
-        return ''.join(['<SynonymType: ', self.name, ' ',
-                        '"{}"'.format(self.desc),
-                        ' {}>'.format(self.scope) \
-                        if self.scope else '>']).strip()
-
-    def __hash__(self):
-        return hash((self.name, self.desc, self.scope))
-
-
-class Synonym(object):
-    """A synonym in an ontology.
-    """
-
-    _RX_OBO_EXTRACTER = re.compile(r'\"(?P<desc>.*)\" *(?P<scope>EXACT |BROAD |NARROW |RELATED )? *(?P<syn_type>[^ ]+)? *\[(?P<xref>.*)\]')
-
-    def __init__(self, desc, scope=None, syn_type=None, xref=None):
-        """Create a new synonym.
-
-        Arguments:
-            desc (str): a description of the synonym.
-            scope (str, optional): the scope of the synonym (either
-                EXACT, BROAD, NARROW or RELATED).
-            syn_type (SynonymType, optional): the type of synonym if
-                relying on a synonym type defined in the *Typedef*
-                section of the ontology.
-            xref (list, optional): a list of cross-references for the
-                synonym.
-
-        """
-        if isinstance(desc, six.binary_type):
-            self.desc = desc.decode('utf-8')
-        elif isinstance(desc, six.text_type):
-            self.desc = desc
-        else:
-            raise ValueError("desc must be bytes or str, not {}".format(type(desc).__name__))
-
-        if isinstance(scope, six.binary_type):
-            self.scope = scope.decode('utf-8')
-        elif isinstance(scope, six.text_type):
-            self.scope = scope
-        elif scope is None:
-            self.scope = "RELATED"
-
-        if syn_type is not None:
-            try:
-                self.syn_type = SynonymType._instances[syn_type]
-                self.scope = self.syn_type.scope or self.scope or 'RELATED'
-            except KeyError as e:
-                raise ValueError("Undefined synonym type: {}".format(syn_type))
-        else:
-            self.syn_type = None
-
-        if self.scope not in {'EXACT', 'BROAD', 'NARROW', 'RELATED', None}:
-            raise ValueError("scope must be 'NARROW', 'BROAD', 'EXACT', 'RELATED' or None")
-
-        self.xref = xref or []
-
-    @classmethod
-    def from_obo(cls, obo_header, scope='RELATED'):
-
-        if isinstance(obo_header, six.binary_type):
-            obo_header = obo_header.decode('utf-8')
-
-        groupdict = cls._RX_OBO_EXTRACTER.search(obo_header).groupdict()
-        if groupdict.get('xref', ''):
-            groupdict['xref'] = [x.strip() for x in groupdict['xref'].split(',')]
-        groupdict['syn_type'] = groupdict['syn_type'] or None
-        groupdict['scope'] = None if groupdict['scope'] is None else groupdict['scope'].rstrip()
-
-        return cls(**groupdict)
-
-    @property
-    def obo(self):
-        """str: the synonym serialized in obo format.
-        """
-        return 'synonym: "{}" {} [{}]'.format(
-            self.desc,
-            ' '.join([self.scope, self.syn_type.name])\
-                if self.syn_type else self.scope,
-            ', '.join(self.xref)
-        )
-
-    @output_str
-    def __repr__(self):
-        return '<Synonym: "{}" {} [{}]>'.format(
-            self.desc,
-            ' '.join([self.scope, self.syn_type.name])\
-                if self.syn_type else self.scope,
-            ', '.join(self.xref)
-        )
+    def __init__(self, id: str, description: str, scope: Optional[str]=None):
+        if scope not in {'EXACT', 'RELATED', 'BROAD', 'NARROW'}:
+            raise ValueError(f"invalid synonym scope: {scope}")
+        self.id = id
+        self.description = description
+        self.scope = scope
 
     def __eq__(self, other):
-        return self.desc==other.desc and self.scope==other.scope and self.syn_type==other.syn_type and self.xref==other.xref
+        if not isinstance(other, _SynonymData):
+            return False
+        return all(
+            getattr(self, attr) == getattr(other, attr)
+            for attr in self.__slots__[1:]
+        )
+
+    def __lt__(self, other):
+        if not isinstance(other, _SynonymData):
+            return NotImplemented
+        if self.scope is not None and other.scope is not None:
+            return (self.id, self.description, self.scope) < (other.id, other.description, other.scope)
+        else:
+            return (self.id, self.description) < (other.id, other.description)
 
     def __hash__(self):
-        return hash((self.desc, self.scope, self.syn_type, tuple(self.xref)))
+        return hash((self.id, self.description, self.scope))
+
+
+@functools.total_ordering
+@roundrepr
+class _SynonymData(object):
+
+    description: str
+    scope: str
+    type: Optional[str]
+    xrefs: Set[Xref]
+
+    __slots__ = ("__weakref__",) + tuple(__annotations__)
+
+    def __eq__(self, other):
+        if not isinstance(other, _SynonymData):
+            return False
+        return all(
+            getattr(self, attr) == getattr(other, attr)
+            for attr in self.__slots__[1:]
+        )
+
+    def __lt__(self, other):
+        if not isinstance(other, _SynonymData):
+            return NotImplemented
+        if self.type is not None and other.type is not None:
+            return (self.description, self.scope, self.type, frozenset(self.xrefs)) \
+                 < (self.description, self.scope, other.type, frozenset(other.xrefs))
+        else:
+            return (self.description, self.scope, frozenset(self.xrefs)) \
+                 < (self.description, self.scope, frozenset(other.xrefs))
+
+    def __hash__(self):
+        return hash((self.description, self.scope, self.type, frozenset(self.xrefs)))
+
+    def __init__(
+        self,
+        description: str,
+        scope: Optional[str]=None,
+        type: Optional[str]=None,
+        xrefs: Set[Xref]=None
+    ):
+        self.description = description
+        self.scope = scope
+        self.type = type
+        self.xrefs = xrefs or set()
+
+    @classmethod
+    def _from_ast(cls, syn: fastobo.syn.Synonym):
+        xrefs =  {Xref._from_ast(x) for x in syn.xrefs}
+        type_ = str(syn.type) if syn.type is not None else None
+        return cls(syn.desc, syn.scope, type_, xrefs)
+
+    def _to_ast(self) -> fastobo.syn.Synonym:
+        return fastobo.syn.Synonym(
+            self.description,
+            self.scope,
+            fastobo.id.parse(self.type) if self.type is not None else None,
+            map(Xref._to_ast, self.xrefs),
+        )
+
+
+@functools.total_ordering
+class Synonym(object):
+
+    def _to_ast(self):
+        return self._syndata()._to_ast()
+
+    def __init__(self, ontology: 'Ontology', syndata: '_SynonymData'):
+        if syndata.type is not None:
+            synonyms = ontology.metadata.synonymtypedefs
+            if not any(s.id == syndata.type for s in synonyms):
+                raise ValueError(f"undeclared synonym type: {syndata.type}")
+
+        self._ontology = weakref.ref(ontology)
+        self._syndata = weakref.ref(syndata)
+
+    def __eq__(self, other):
+        if isinstance(other, Synonym):
+            return self._syndata() == other._syndata()
+        return False
+
+    def __lt__(self, other):
+        if not isinstance(other, Synonym):
+            return False
+        return self._syndata().__lt__(other._syndata())
+
+    def __hash__(self):
+        return hash(self._syndata())
+
+    def __repr__(self):
+        return make_repr(
+            "Synonym",
+            self.description,
+            scope=(self.scope, None),
+            type=(self.type, None),
+            xrefs=(self.xrefs, set()),
+        )
+
+    @property
+    def description(self) -> str:
+        return self._syndata().description
+
+    @description.setter
+    def description(self, description: str):
+        if __debug__:
+            if not isinstance(description, str):
+                msg = "'description' must be str, not {}"
+                raise TypeError(msg.format(type(description).__name__))
+        self._syndata().description = description
+
+    @property
+    def type(self) -> Optional[SynonymType]:
+        ontology, syndata = self._ontology(), self._syndata()
+        if syndata.type is not None:
+            return ontology.metadata.synonymtypedefs[syndata.type]
+        return None
+
+    @type.setter
+    def type(self, type_: Optional[SynonymType]):
+        if __debug__:
+            if type_ is not None and not isinstance(type, SynonymType):
+                msg = "'type' must be SynonymType or None, not {}"
+                raise TypeError(msg.format(type(type_).__name__))
+        synonyms = self._ontology().metadata.synonymtypedefs
+        if type is not None and type_.id not in synonyms:
+            raise ValueError(f"undeclared synonym type: {type_.id}")
+        self._syndata().type = type_.id if type_ is not None else None
+
+    @property
+    def scope(self) -> Optional[str]:
+        return self._syndata().scope
+
+    @scope.setter
+    def scope(self, scope: str):
+        if __debug__:
+            if scope is not None and not isinstance(scope, str):
+                msg = "'scope' must be str or None, not {}"
+                raise TypeError(msg.format(type(scope).__name__))
+        if scope not in {'EXACT', 'RELATED', 'BROAD', 'NARROW'}:
+            raise ValueError(f"invalid synonym scope: {scope}")
+        self._syndata().scope = scope
+
+    @property
+    def xrefs(self):
+        return self._syndata().xrefs

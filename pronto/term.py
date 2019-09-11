@@ -1,470 +1,372 @@
-# coding: utf-8
-"""Definition of the `Term` and `TermList` classes.
-"""
-from __future__ import unicode_literals
-from __future__ import absolute_import
+import datetime
+import typing
+import weakref
+from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 
-import copy
+import fastobo
 
-import six
-
-from .description import Description
+from .definition import Definition
+from .xref import Xref
+from .synonym import Synonym, _SynonymData
 from .relationship import Relationship
-from .utils import output_str, unique_everseen
+from .utils.repr import make_repr
+
+if typing.TYPE_CHECKING:
+    from .ontology import Ontology
+
+
+class _TermData():  # noqa: R0902, R0903
+    """Internal data storage of `Term` information.
+    """
+
+    id: str
+    anonymous: bool
+    name: Optional[str]
+    alternate_ids: Set[str]
+    definition: Optional[Definition]
+    comment: Optional[str]
+    synonyms: Set[_SynonymData]
+    subsets: Set[str]
+    namespace: Optional[str]
+    xrefs: Set[Xref]
+    intersection_of: Set[Union[str, Tuple[Relationship, str]]]
+    union_of: Set[str]
+    disjoint_from: Set[str]
+    relationships: Dict[str, Set[str]]
+    obsolete: bool
+    replaced_by: Set[str]
+    consider: Set[str]
+    builtin: bool
+    created_by: Optional[str]
+    creation_date: Optional[datetime.datetime]
+    annotations: Dict[str, List[str]]
+
+    __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
+
+    def __init__(
+        self,
+        id,
+        anonymous=False,
+        name=None,
+        alternate_ids=None,
+        definition=None,
+        comment=None,
+        synonyms=None,
+        subsets=None,
+        namespace=None,
+        xrefs=None,
+        intersection_of=None,
+        union_of=None,
+        disjoint_from=None,
+        relationships=None,
+        obsolete=False,
+        replaced_by=None,
+        consider=None,
+        builtin=False,
+        created_by=None,
+        creation_date=None,
+        annotations=None,
+    ):
+        self.id = id
+        self.anonymous = anonymous
+        self.name = name
+        self.alternate_ids = alternate_ids or set()
+        self.definition = definition
+        self.comment = comment
+        self.synonyms = synonyms or set()
+        self.subsets = subsets or set()
+        self.namespace = namespace or None
+        self.xrefs = xrefs or set()
+        self.intersection_of = intersection_of or set()
+        self.union_of = union_of or set()
+        self.disjoint_from = disjoint_from or set()
+        self.relationships = relationships or dict()
+        self.obsolete = obsolete
+        self.replaced_by = replaced_by or set()
+        self.consider = consider or set()
+        self.builtin = builtin
+        self.created_by = created_by
+        self.creation_date = creation_date
+        self.annotations = annotations or dict()
+
 
 class Term(object):
-    """A term in an ontology.
 
-    Example:
-        >>> ms = Ontology('tests/resources/psi-ms.obo')
-        >>> type(ms['MS:1000015'])
-        <class 'pronto.term.Term'>
+    __slots__  = ("__weakref__",) + tuple(__annotations__)   # noqa: E0602
 
-    """
+    def __init__(self, ontology: 'Ontology', termdata: '_TermData'):
+        self._ontology: Callable[[], 'Ontology'] = weakref.ref(ontology)
+        self._termdata: Callable[[], _TermData] = weakref.ref(termdata)
 
-    __slots__ = ['id', 'name', 'desc', 'relations', 'other', 'synonyms',
-                 '_children', '_parents', '_rchildren', '_rparents',
-                 '__weakref__']
+    @classmethod
+    def _from_ast(cls, frame: fastobo.term.TermFrame, ontology: 'Ontology'):
 
-    def __init__(self, id, name='', desc='', relations=None, synonyms=None, other=None):
-        """Create a new Term.
+        ontology._terms[str(frame.id)] = termdata = _TermData(str(frame.id))
+        term = cls(ontology, termdata)
 
-        Arguments:
-            id (str): the Term id (e.g. "MS:1000031")
-            name (str): the name of the Term in human language
-            desc (str): a description of the Term
-            relations (dict, optional): a dictionary containing the other
-                terms the Term is in a relationship with.
-            other (dict, optional): other information about the term
-            synonyms (set, optional): a list containing :obj:`pronto.synonym.Synonym`
-                objects relating to the term.
+        union_of = set()
+        intersection_of = set()
 
-        Example:
-            >>> new_term = Term('TR:001', 'new term', 'a new term')
-            >>> linked_term = Term('TR:002', 'other new', 'another term',
-            ...                    { Relationship('is_a'): 'TR:001'})
+        for clause in frame:
+            if clause.raw_tag() == "is_anonymous":
+                term.anonymous = clause.anonymous
+            elif clause.raw_tag() == "name":
+                term.name = clause.name
+            elif clause.raw_tag() == "alt_id":
+                term.alternate_ids.add(str(clause.alt_id))
+            elif clause.raw_tag() == "def":
+                term.definition = Definition._from_ast(clause)
+            elif clause.raw_tag() == "intersection_of":
+                pass # TODO in `fastobo-py`
+            elif clause.raw_tag() == "union_of":
+                union_of.add(str(clause.term))
+            elif clause.raw_tag() == "disjoint_from":
+                term.disjoint_from.add(str(clause.term))
+            elif clause.raw_tag() == "relationship":
+                pass # TODO in fastobo-py
+            elif clause.raw_tag() == "builtin":
+                term.builtin = clause.builtin
+            elif clause.raw_tag() == "comment":
+                term.comment = clause.comment
+            elif clause.raw_tag() == "consider":
+                pass # TODO in fastobo-py
+            elif clause.raw_tag() == "created_by":
+                pass # TODO in fastobo-py
+            elif clause.raw_tag() == "creation_date":
+                pass # TODO in fastobo-py
+            elif clause.raw_tag() == "equivalent_to":
+                term.equivalent_to.add(str(clause.term))
+            elif clause.raw_tag() == "is_a":
+                term.relationships.setdefault("is_a", set()).add(str(clause.term))
+            elif clause.raw_tag() == "is_obsolete":
+                term.obsolete = clause.obsolete
+            elif clause.raw_tag() == "namespace":
+                term.namespace = clause.namespace
+            elif clause.raw_tag() == "property_value":
+                pass  # TODO in here
+            elif clause.raw_tag() == "replaced_by":
+                pass  # TODO in fastobo-py
+            elif clause.raw_tag() == "subset":
+                term.subsets.add(clause.subset)
+            elif clause.raw_tag() == "synonym":
+                termdata.synonyms.add(_SynonymData._from_ast(clause.synonym))
+            elif clause.raw_tag() == "xref":
+                term.xrefs.add(Xref._from_ast(clause.xref))
+            else:
+                raise ValueError(f"unexpected clause: {clause}")
 
-        """
-        if not isinstance(id, six.text_type):
-            id = id.decode('utf-8')
-        if isinstance(desc, six.binary_type):
-            desc = desc.decode('utf-8')
-        if not isinstance(desc, Description):
-            desc = Description(desc)
-        if not isinstance(name, six.text_type):
-            name = name.decode('utf-8')
+        if len(union_of) == 1:
+            raise ValueError("'union_of' cannot have a cardinality of 1")
+        termdata.union_of = union_of
+        if len(intersection_of) == 1:
+            raise ValueError("'intersection_of' cannot have a cardinality of 1")
+        termdata.intersection_of = intersection_of
+        return term
 
-        self.id = id
-        self.name = name
-        self.desc = desc
-        self.relations = relations or {}
-        self.other = other or {}
-        self.synonyms = synonyms or set()
-
-        self._rchildren  = {}
-        self._rparents = {}
-        self._children = None
-        self._parents = None
-
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            return False
-        return self.id == other.id \
-           and self.name == other.name \
-           and self.desc == other.desc \
-           and self.relations == other.relations \
-           and self.other == other.other \
-           and self.synonyms == other.synonyms
-
-    def __hash__(self):
-        return hash((
-            hash(self.id),
-            hash(self.name),
-            hash(self.desc),
-            hash(frozenset(self.relations)),
-            hash(frozenset(self.other)),
-            hash(frozenset(self.synonyms))
-        ))
-
-    def __copy__(self):
-        return Term(
-            self.id,
-            self.name,
-            self.desc,
-            self.relations,
-            self.synonyms,
-            self.other,
-        )
-
-    def __deepcopy__(self, memo):
-        return Term(
-            self.id,
-            self.name,
-            self.desc,
-            copy.copy(self.relations),
-            copy.copy(self.synonyms),
-            copy.copy(self.other),
-        )
-
-    @output_str
-    def __repr__(self):
-        return "<{}: {}>".format(self.id, self.name)
-
-    @property
-    def parents(self):
-        """~TermList: The direct parents of the `Term`.
-        """
-        if self._parents is None:
-            bottomups = tuple(Relationship.bottomup())
-
-            self._parents = TermList()
-            self._parents.extend(
-                [ other
-                    for rship,others in six.iteritems(self.relations)
-                        for other in others
-                            if rship in bottomups
-                ]
-
-            )
-
-        return self._parents
-
-    @property
-    def children(self):
-        """~TermList: The direct children of the `Term`.
-        """
-        if self._children is None:
-            topdowns = tuple(Relationship.topdown())
-            self._children = TermList()
-            self._children.extend(
-                [ other
-                    for rship,others in six.iteritems(self.relations)
-                        for other in others
-                            if rship in topdowns
-                ]
-            )
-        return self._children
-
-    @property
-    @output_str
-    def obo(self):
-        """str: the `Term` serialized in an Obo ``[Term]`` stanza.
-
-        Note:
-            The following guide was used:
-            ftp://ftp.geneontology.org/pub/go/www/GO.format.obo-1_4.shtml
-        """
-        def add_tags(stanza_list, tags):
-            for tag in tags:
-                if tag in self.other:
-                    if isinstance(self.other[tag], list):
-                        for attribute in self.other[tag]:
-                            stanza_list.append("{}: {}".format(tag, attribute))
-                    else:
-                        stanza_list.append("{}: {}".format(tag, self.other[tag]))
-
-        # metatags = ["id", "is_anonymous", "name", "namespace","alt_id", "def","comment",
-        #             "subset","synonym","xref","builtin","property_value","is_a",
-        #             "intersection_of","union_of","equivalent_to","disjoint_from",
-        #             "relationship","created_by","creation_date","is_obsolete",
-        #             "replaced_by", "consider"]
-
-        stanza_list = ["[Term]"]
-
-        # id
-        stanza_list.append("id: {}".format(self.id))
-
-
-        # name
+    def _to_ast(self) -> fastobo.term.TermFrame:
+        frame = fastobo.term.TermFrame(fastobo.id.parse(self.id))
+        if self.anonymous:
+            frame.append(fastobo.term.IsAnonymousClause(True))
         if self.name is not None:
-            stanza_list.append("name: {}".format(self.name))
-        else:
-            stanza_list.append("name: ")
+            frame.append(fastobo.term.NameClause(self.name))
+        if self.namespace is not None:
+            frame.append(fastobo.term.NamespaceClause(self.namespace))
+        for id in sorted(self.alternate_ids):
+            frame.append(fastobo.term.AltIdClause(fastobo.id.parse(id)))
+        if self.definition is not None:
+            frame.append(self.definition._to_ast())
+        if self.comment is not None:
+            frame.append(fastobo.term.CommentClause(self.comment))
+        for subset in sorted(self.subsets):
+            frame.append(fastobo.term.SubsetClause(fastobo.id.parse(subset)))
+        for synonym in sorted(self.synonyms):
+            frame.append(fastobo.term.SynonymClause(synonym._to_ast()))
+        for xref in sorted(self.xrefs):
+            frame.append(fastobo.term.XrefClause(xref._to_ast()))
+        if self.builtin:
+            frame.append(fastobo.term.BuiltinClause(True))
+        # for annotations in self.annotations:
+        #     pass # TODO
+        for other in sorted(self.relationships.get('is_a', ())): # FIXME
+            frame.append(fastobo.term.IsAClause(fastobo.id.parse(other.id)))
+        # for other in sorted(self.intersection_of):
+        #     pass # TODO
+        for member in sorted(self.union_of):
+            frame.append(fastobo.term.UnionOfClause(member))
 
-        add_tags(stanza_list, ['is_anonymous', 'alt_id'])
+        return frame
 
-        # def
-        if self.desc:
-            stanza_list.append(self.desc.obo)
+    def __str__(self):
+        return str(self._to_ast())
 
-        # comment, subset
-        add_tags(stanza_list, ['comment', 'subset'])
+    def __repr__(self):
+        return make_repr("Term", self.id, name=(self.name, None))
 
-        # synonyms
-        for synonym in sorted(self.synonyms, key=str):
-            stanza_list.append(synonym.obo)
-
-        add_tags(stanza_list, ['xref'])
-
-        # is_a
-        if Relationship('is_a') in self.relations:
-            for companion in self.relations[Relationship('is_a')]:
-                stanza_list.append("is_a: {} ! {}".format(companion.id, companion.name))
-
-        add_tags(stanza_list, ['intersection_of', 'union_of', 'disjoint_from'])
-
-        for relation in self.relations:
-            if relation.direction=="bottomup" and relation is not Relationship('is_a'):
-                stanza_list.extend(
-                    "relationship: {} {} ! {}".format(
-                        relation.obo_name, companion.id, companion.name
-                    ) for companion in self.relations[relation]
-                )
-
-        add_tags(stanza_list, ['is_obsolete', 'replaced_by', 'consider',
-                               'builtin', 'created_by', 'creation_date'])
-
-        return "\n".join(stanza_list)
+    # --- Data descriptors ---------------------------------------------------
 
     @property
-    def __deref__(self):
-        """dict: the `Term` as a `dict` without circular references.
-        """
-        return {
-            'id': self.id,
-            'name': self.name,
-            'other': self.other,
-            'desc': self.desc,
-            'relations': {k.obo_name:v.id for k,v in six.iteritems(self.relations)}
-         }
+    def alternate_ids(self) -> Set[str]:
+        return self._termdata().alternate_ids
 
-    def __getstate__(self):
-        return (
-            self.id,
-            self.name,
-            tuple((k,v) for k,v in six.iteritems(self.other)),
-            self.desc,
-            tuple((k.obo_name,v.id) for k,v in six.iteritems(self.relations)),
-            frozenset(self.synonyms),
-        )
-
-    def __setstate__(self, state):
-        self.id = state[0]
-        self.name = state[1]
-        self.other = {k:v for (k,v) in state[2]}
-        self.desc = state[3]
-        self.relations = {Relationship(k):v for k,v in state[4]}
-        self.synonyms = set(state[5])
-        self._empty_cache()
-
-    def _empty_cache(self):
-        """Empty the cache of the Term's memoized functions.
-        """
-        self._children, self._parents = None, None
-        self._rchildren, self._rparents = {}, {}
-
-    def rchildren(self, level=-1, intermediate=True):
-        """Create a recursive list of children.
-
-        Parameters:
-            level (int): The depth level to continue fetching children from
-                (default is -1, to get children to the utter depths)
-            intermediate (bool): Also include the intermediate children
-                (default is True)
-
-        Returns:
-            :obj:`pronto.TermList`:
-            The recursive children of the Term following the parameters
-
-        """
-        try:
-            return self._rchildren[(level, intermediate)]
-
-        except KeyError:
-
-            rchildren = []
-
-            if self.children and level:
-
-                if intermediate or level==1:
-                    rchildren.extend(self.children)
-
-                for child in self.children:
-                    rchildren.extend(child.rchildren(level=level-1,
-                                                     intermediate=intermediate))
-
-            rchildren = TermList(unique_everseen(rchildren))
-            self._rchildren[(level, intermediate)] = rchildren
-            return rchildren
-
-    def rparents(self, level=-1, intermediate=True):
-        """Create a recursive list of children.
-
-        Note that the :param:`intermediate` can be used to include every
-        parents to the returned list, not only the most nested ones.
-
-        Parameters:
-            level (int): The depth level to continue fetching parents from
-                (default is -1, to get parents to the utter depths)
-            intermediate (bool): Also include the intermediate parents
-                (default is True)
-
-        Returns:
-            :obj:`pronto.TermList`:
-            The recursive children of the Term following the parameters
-
-        """
-        try:
-            return self._rparents[(level, intermediate)]
-
-        except KeyError:
-
-            rparents = []
-
-            if self.parents and level:
-
-                if intermediate or level==1:
-                    rparents.extend(self.parents)
-
-                for parent in self.parents:
-                    rparents.extend(parent.rparents(level=level-1,
-                                                     intermediate=intermediate))
-
-            rparents = TermList(unique_everseen(rparents))
-            self._rparents[(level, intermediate)] = rparents
-            return rparents
-
-
-class TermList(list):
-    """A list of `Term` instances.
-
-    TermList behaves exactly like a list, except it contains shortcuts to
-    generate lists of terms' attributes.
-
-    Example:
-        >>> nmr = Ontology('tests/resources/nmrCV.owl')
-        >>> type(nmr['NMR:1000031'].children)
-        <class 'pronto.term.TermList'>
-
-        >>> nmr['NMR:1000031'].children.id
-        [u'NMR:1000122', u'NMR:1000156', u'NMR:1000157', u'NMR:1000489']
-        >>> nmr['NMR:1400014'].relations[Relationship('is_a')]
-        [<NMR:1400011: cardinal part of NMR instrument>]
-
-
-    .. tip::
-        It is also possible to call Term methods on a TermList to
-        create another TermList::
-
-            >>> nmr['NMR:1000031'].rchildren(3, False).rparents(3, False).id
-            [u'NMR:1000031']
-
-    """
-
-    def __init__(self, elements=None):
-        """Create a new `TermList`.
-
-        Arguments:
-            elements (collections.Iterable, optional): an Iterable
-                that yields `Term` objects.
-
-        Raises:
-            TypeError: when the given ``elements`` are not instances
-                of `Term`.
-
-        """
-        super(TermList, self).__init__()
-        self._contents = set()
-        try:
-            for t in elements or []:
-                super(TermList, self).append(t)
-                self._contents.add(t.id)
-        except AttributeError:
-            raise TypeError('TermList can only contain Terms.')
-
-    def append(self, element):
-        if element not in self:
-            super(TermList, self).append(element)
-            try:
-                self._contents.add(element.id)
-            except AttributeError:
-                self._contents.add(element)
-
-    def extend(self, sequence):
-        for element in sequence:
-            self.append(element)
-
-    def rparents(self, level=-1, intermediate=True):
-        return TermList(unique_everseen(
-            y for x in self for y in x.rparents(level, intermediate)
-        ))
-
-    def rchildren(self, level=-1, intermediate=True):
-        return TermList(unique_everseen(
-            y for x in self for y in x.rchildren(level, intermediate)
-        ))
+    @alternate_ids.setter
+    def alternate_ids(self, ids: Set[str]):
+        if __debug__:
+            if not isinstance(ids, set) or any(not isinstance(x, str) for x in ids):
+                msg = "'name' must be a set of str, not {}"
+                raise TypeError(msg.format(type(ids).__name__))
+        self._termdata().alternate_ids = ids
 
     @property
-    def children(self):
-        """~TermList: the children of all the terms in the list.
-        """
-        return TermList(unique_everseen(
-            y for x in self for y in x.children
-        ))
+    def anonymous(self) -> bool:
+        return self._termdata().anonymous
+
+    @anonymous.setter
+    def anonymous(self, value: bool):
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'anonymous' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._termdata().anonymous = value
 
     @property
-    def parents(self):
-        """~TermList: the parents of all the terms in the list.
-        """
-        return TermList(unique_everseen(
-            y for x in self for y in x.parents
-        ))
+    def builtin(self) -> bool:
+        return self._termdata().builtin
+
+    @builtin.setter
+    def builtin(self, value: bool):
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'builtin' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._termdata().builtin = value
+
+    @property
+    def comment(self) -> Optional[str]:
+        return self._termdata().comment
+
+    @comment.setter
+    def comment(self, value: Optional[str]):
+        if __debug__:
+            if value is not None and not isinstance(value, str):
+                msg = "'comment' must be str or None, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._termdata().comment = value
+
+    @property
+    def definition(self) -> Optional[Definition]:
+        return self._termdata().definition
+
+    @definition.setter
+    def definition(self, definition: Optional[Definition]):
+        if __debug__:
+            if definition is not None and not isinstance(definition, Definition):
+                msg = "'definition' must be a Definition, not {}"
+                raise TypeError(msg.format(type(definition).__name__))
+        self._termdata().definition = definition
 
     @property
     def id(self):
-        """list: a list of id corresponding to each term of the list.
-        """
-        return [x.id for x in self]
+        return self._termdata().id
+
+    @id.setter
+    def id(self, value):
+        self._termdata().id = value
 
     @property
-    def name(self):
-        """list: the name of all the terms in the list.
-        """
-        return [x.name for x in self]
+    def name(self) -> Optional[str]:
+        return self._termdata().name
+
+    @name.setter
+    def name(self, value: Optional[str]):
+        if __debug__:
+            if value is not None and not isinstance(value, str):
+                msg = "'name' must be str or None, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._termdata().name = value
 
     @property
-    def desc(self):
-        """list: the description of all the terms in the list.
-        """
-        return [x.desc for x in self]
+    def namespace(self) -> Optional[str]:
+        return self._termdata().namespace
+
+    @namespace.setter
+    def namespace(self, ns: Optional[str]):
+        if __debug__:
+            if ns is not None and not isinstance(ns, str):
+                msg = "'namespace' must be str or None, not {}"
+                raise TypeError(msg.format(type(ns).__name__))
+        self._termdata().namespace = ns
 
     @property
-    def other(self):
-        """list: the "other" property of all the terms in the list.
-        """
-        return [x.other for x in self]
+    def obsolete(self) -> bool:
+        return self._termdata().obsolete
+
+    @obsolete.setter
+    def obsolete(self, value: bool):
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'obsolete' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._termdata().obsolete = value
 
     @property
-    def obo(self):
-        """list: all the terms in the term list serialized in obo.
-        """
-        return [x.obo for x in self]
+    def relationships(self):
+        # FIXME
+        ontology, termdata = self._ontology(), self._termdata()
+        return {k: ontology[v] for k,v in termdata.relationships.items()}
 
-    def __getstate__(self):
-        return tuple(x for x in self)
+    @property
+    def subsets(self) -> Set[str]:
+        return self._termdata().subsets
 
-    def __setstate__(self, state):
-        pass
+    @subsets.setter
+    def subsets(self, subsets: Set[str]):
+        if __debug__:
+            if not isinstance(subsets, set) or any(not isinstance(x, str) for x in subsets):
+                msg = "'subsets' must be a set of str, not {}"
+                raise TypeError(msg.format(type(subsets).__name__))
+        for subset in subsets:
+            subsetdefs = self._ontology().metadata.subsetdefs
+            if not any(subset == subsetdef.id for subsetdef in subsetdefs):
+                raise ValueError(f"undeclared subset: {subset!r}")
+        self._termdata().subsets = subsets
 
-    def __contains__(self, term):
-        """Check if the TermList contains a term.
+    @property
+    def synonyms(self) -> Set[Synonym]:
+        ontology, termdata = self._ontology(), self._termdata()
+        return {Synonym(ontology, syndata) for syndata in termdata.synonyms}
 
-        The method allows to check for the presence of a Term in a
-        TermList based on a Term object or on a term accession number.
+    @synonyms.setter
+    def synonyms(self, synonyms: Set[Synonym]):
+        if __debug__:
+            if not isinstance(synonyms, set) \
+            or any(not isinstance(x, Synonym) for x in synonyms):
+                msg = "'synonyms' must be a set of Synonym, not {}"
+                raise TypeError(msg.format(type(synonyms).__name__))
+        self._termdata().synonyms = synonyms
 
-        Example:
+    @property
+    def union_of(self) -> Set['Term']:
+        cls, termdata, ont = type(self), self._termdata(), self._ontology()
+        return set(cls(ont, id) for id in termdata.union_of)
 
-            >>> from pronto import *
-            >>> nmr = Ontology('tests/resources/nmrCV.owl')
-            >>> 'NMR:1000122' in nmr['NMR:1000031'].children
-            True
-            >>> nmr['NMR:1000122'] in nmr['NMR:1000031'].children
-            True
+    @union_of.setter
+    def union_of(self, union_of: Set['Term']):
+        if __debug__:
+            if not isinstance(union_of, set) or any(not isinstance(x, Term) for x in union_of):
+                msg = "'union_of' must be a set of Terms, not {}"
+                raise TypeError(msg.format(type(union_of).__name__))
+        if len(union_of) == 1:
+            raise ValueError("'union_of' cannot have a cardinality of 1")
+        self._termdata().union_of = {term.id for term in union_of}
 
-        """
-        try:
-            _id = term.id
-        except AttributeError:
-            _id = term
-        return _id in self._contents
-        #return any((t.id==_id if isinstance(t, Term) else t==_id for t in self))
+    @property
+    def xrefs(self) -> Set[Xref]:
+        return self._termdata().xrefs
+
+    @xrefs.setter
+    def xrefs(self, xrefs: Set[Xref]):
+        if __debug__:
+            if not isinstance(xrefs, set) or any(not isinstance(x, Xref) for x in xrefs):
+                msg = "'xrefs' must be a set of Xref, not {}"
+                raise TypeError(msg.format(type(xrefs).__name__))
+        self._termdata().xrefs = xrefs

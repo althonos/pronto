@@ -48,18 +48,7 @@ class Metadata(object):
 
     @classmethod
     def _from_ast(cls, header: fastobo.header.HeaderFrame) -> 'Metadata':
-        format_version: fastobo.header.FormatVersionClause = next(
-            (
-                clause
-                for clause in header
-                if isinstance(clause, fastobo.header.FormatVersionClause)
-            ),
-            None
-        )
-        if format_version is None:
-            raise ValueError("missing 'format_version' clause in header")
-
-        metadata = cls(format_version.version)
+        metadata = cls()
         for clause in header:
             if clause.raw_tag() == "format-version":
                 metadata.format_version = clause.version
@@ -84,12 +73,11 @@ class Metadata(object):
                 metadata.synonymtypedefs.add(type_)
             else:
                 print("TODO: {}", clause)
-
         return metadata
 
     def __init__(
         self,
-        format_version: str,
+        format_version: str = "1.4",
         data_version: Optional[str] = None,
         ontology: Optional[str] = None,
         date: Optional[datetime.datetime] = None,

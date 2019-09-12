@@ -1,5 +1,3 @@
-import pkg_resources
-
 __author__ = "Martin Larralde <martin.larralde@embl.de>"
 __license__ = "MIT"
 __version__ = (

@@ -55,7 +55,11 @@ class Ontology(Mapping[str, Term]):
 
         # Load the OBO AST using fastobo
         handle = decompress(handle)
-        doc = fastobo.load(handle)
+        try:
+            doc = fastobo.load(handle)
+        except SyntaxError as s:
+            location = self.path, s.lineno, s.offset, s.text
+            raise SyntaxError(s.args[0], location) from None
 
         # Extract data from the syntax tree
         self.metadata = Metadata._from_ast(doc.header)

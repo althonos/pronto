@@ -1,6 +1,6 @@
 
 import datetime
-from typing import Optional, Set
+from typing import Dict, Optional, Set
 
 import fastobo
 
@@ -43,7 +43,7 @@ class Metadata(object):
     subsetdefs: Set[Subset]
     imports: Set[str]
     synonymtypedefs: Set[SynonymType]
-    idspace: Optional[str]
+    idspaces: Dict[str, str]
     remark: Set[str]
 
     @classmethod
@@ -79,6 +79,7 @@ class Metadata(object):
             elif clause.raw_tag() == "import":
                 pass
             elif clause.raw_tag() == "synonymtypedef":
+                scope = str(clause)
                 type_ = SynonymType(str(clause.typedef), clause.description, clause.scope)
                 metadata.synonymtypedefs.add(type_)
             else:
@@ -97,7 +98,7 @@ class Metadata(object):
         subsetdefs: Set[Subset] = None,
         imports: Set[str] = None,
         synonymtypedefs: Set[SynonymType] = None,
-        idspace: Optional[str] = None,
+        idspace: Dict[str, str] = None,
         remark: Set[str] = None,
     ):
         self.format_version = format_version
@@ -109,5 +110,5 @@ class Metadata(object):
         self.subsetdefs = set(subsetdefs) if subsetdefs is not None else set()
         self.imports = set(imports) if imports is not None else set()
         self.synonymtypedefs = set(synonymtypedefs) if synonymtypedefs is not None else set()
-        self.idspace = idspace
+        self.idspace = idspace or {}
         self.remark = remark

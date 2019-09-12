@@ -29,7 +29,6 @@ def get_location(reader: BinaryIO) -> Optional[str]:
         or getattr(reader, 'geturl', lambda: None)()
     )
 
-
 def decompress(reader: BinaryIO, path: str=None) -> BinaryIO:
     """Given a binary file-handle, decompress it if it is compressed.
     """

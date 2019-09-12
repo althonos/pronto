@@ -1,18 +1,14 @@
 # coding: utf-8
-import threading
-import os
 
-try:
-    from http.server import HTTPServer
-    from http.server import SimpleHTTPRequestHandler
-except ImportError:
-    from BaseHTTPServer import HTTPServer
-    from SimpleHTTPServer import SimpleHTTPRequestHandler
+import http.server
+import os
+import threading
+
 
 class StubHTTPServer(threading.Thread):
     daemon = True
 
-    class _RequestHandler(SimpleHTTPRequestHandler):
+    class _RequestHandler(http.server.SimpleHTTPRequestHandler):
         def translate_path(self, path):
             return self._datadir + path
         def log_message(self, format, *args):
@@ -21,7 +17,8 @@ class StubHTTPServer(threading.Thread):
     def __init__(self, datadir):
         super(StubHTTPServer, self).__init__()
         self._RequestHandler._datadir = datadir
-        self.server = HTTPServer(("localhost", 8080), self._RequestHandler)
+        self.domain, self.port = address = "localhost", 8080
+        self.server = http.server.HTTPServer(address, self._RequestHandler)
 
     def run(self):
         self.server.serve_forever()

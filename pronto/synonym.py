@@ -24,8 +24,9 @@ class SynonymType(object):
     __slots__ = ("__weakref__",) + tuple(__annotations__)
 
     def __init__(self, id: str, description: str, scope: Optional[str]=None):
-        if scope not in {'EXACT', 'RELATED', 'BROAD', 'NARROW'}:
-            raise ValueError(f"invalid synonym scope: {scope}")
+        if scope is not None:
+            if scope not in {'EXACT', 'RELATED', 'BROAD', 'NARROW'}:
+                raise ValueError(f"invalid synonym scope: {scope}")
         self.id = id
         self.description = description
         self.scope = scope

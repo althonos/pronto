@@ -24,7 +24,7 @@ class Xref(object):
         >>> mp = pronto.Ontology("http://purl.obolibrary.org/obo/mp.obo")
         >>> mp["MP:0030151"].name
         'abnormal buccinator muscle morphology'
-        >>> mondo["MP:0030151"].xrefs
+        >>> mp["MP:0030151"].xrefs
         {Xref('https://en.wikipedia.org/wiki/Buccinator_muscle')}
 
     Todo:

@@ -1,0 +1,5 @@
+docutils
+Pygments
+coverage
+codecov
+codacy-coverage

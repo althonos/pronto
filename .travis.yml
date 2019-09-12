@@ -7,8 +7,11 @@ python:
 - 3.6
 - 3.7
 
+before_install:
+- pip install -r ci/requirements.txt
+
 install:
-- pip install .[dev,test]
+- pip install .
 
 script:
 - coverage run --source=pronto -m unittest discover -v

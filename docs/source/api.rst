@@ -8,7 +8,7 @@ The following classes are imported when running ``from pronto import *``:
 .. autosummary::
    :nosignatures:
    :template: summary.rst
-   :toctree: pronto/
+   :toctree: api/
 
    pronto.Ontology
    pronto.Definition

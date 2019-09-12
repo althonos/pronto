@@ -170,7 +170,7 @@ html_static_path = ["_static"]
 #
 html_sidebars = {
     "*": ["localtoc.html"],
-    os.path.join("api", "*"): ["localtoc.html"],
+    os.path.join("pronto", "*"): ["localtoc.html"],
 }
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -198,7 +198,7 @@ napoleon_use_admonition_for_references = True
 
 autoclass_content = "class"
 autodoc_member_order = 'bysource'
-autosummary_generate = ['pronto']
+autosummary_generate = ['api']
 
 # -- Options for intersphinx extension ---------------------------------------
 

@@ -144,13 +144,13 @@ class Term(object):
             elif clause.raw_tag() == "is_obsolete":
                 term.obsolete = clause.obsolete
             elif clause.raw_tag() == "namespace":
-                term.namespace = clause.namespace
+                term.namespace = str(clause.namespace)
             elif clause.raw_tag() == "property_value":
                 pass  # TODO in here
             elif clause.raw_tag() == "replaced_by":
                 pass  # TODO in fastobo-py
             elif clause.raw_tag() == "subset":
-                term.subsets.add(clause.subset)
+                term.subsets.add(str(clause.subset))
             elif clause.raw_tag() == "synonym":
                 termdata.synonyms.add(_SynonymData._from_ast(clause.synonym))
             elif clause.raw_tag() == "xref":
@@ -173,7 +173,8 @@ class Term(object):
         if self.name is not None:
             frame.append(fastobo.term.NameClause(self.name))
         if self.namespace is not None:
-            frame.append(fastobo.term.NamespaceClause(self.namespace))
+            ns = fastobo.id.parse(self.namespace)
+            frame.append(fastobo.term.NamespaceClause(ns))
         for id in sorted(self.alternate_ids):
             frame.append(fastobo.term.AltIdClause(fastobo.id.parse(id)))
         if self.definition is not None:

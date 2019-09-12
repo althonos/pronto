@@ -1,3 +1,5 @@
 include COPYING
+include CHANGELOG.md
 include README.rst
+include pronto/_version.txt
 recursive-exclude tests *

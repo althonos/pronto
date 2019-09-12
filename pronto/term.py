@@ -269,12 +269,19 @@ class Term(object):
         self._termdata().definition = definition
 
     @property
+    def disjoint_from(self) -> Set['Term']:
+        ontology, termdata = self._ontology(), self._termdata()
+        return {Term(ontology, ontology._terms[id]) for id in termdata.disjoint_from}
+
+
+    @property
     def id(self):
         return self._termdata().id
 
-    @id.setter
-    def id(self, value):
-        self._termdata().id = value
+    # @id.setter
+    # def id(self, value):
+    #     raise RuntimeError("cannot set `id` of terms")
+    #     self._termdata().id = value
 
     @property
     def name(self) -> Optional[str]:

@@ -196,8 +196,9 @@ napoleon_use_admonition_for_references = True
 
 # -- Options for autodoc extension -------------------------------------------
 
-autosummary_generate = ['pronto']
 autoclass_content = "class"
+autodoc_member_order = 'bysource'
+autosummary_generate = ['pronto']
 
 # -- Options for intersphinx extension ---------------------------------------
 

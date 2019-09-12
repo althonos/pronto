@@ -7,6 +7,7 @@ import six
 import sys
 import warnings
 import shutil
+from unittest import mock
 
 from . import utils
 import pronto
@@ -38,8 +39,8 @@ class TestProntoDocumentation(unittest.TestCase):
 
         @unittest.skipUnless(build_main, "Sphinx is not available")
         def _test(self):
-            with utils.mock.patch('sys.stderr', six.moves.StringIO()) as stderr:
-                with utils.mock.patch('sys.stdout', six.moves.StringIO()) as stdout:
+            with mock.patch('sys.stderr', six.moves.StringIO()) as stderr:
+                with mock.patch('sys.stdout', six.moves.StringIO()) as stdout:
                     self.assertEquals(0, build_main([
                         "-b{}".format(builder),
                         "-d{}".format(os.path.join(self.build_dir, 'doctrees')),

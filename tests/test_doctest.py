@@ -38,9 +38,7 @@ def load_tests(loader, tests, ignore):
         shutil.rmtree(self._rundir)
 
     globs = {
-        'Relationship': pronto.Relationship,
-        'Ontology':     pronto.Ontology,
-        'Term':         pronto.Term,
+        'pronto': pronto,
     }
 
     if not sys.argv[0].endswith('green'):

@@ -20,10 +20,10 @@ class Ontology(Mapping[str, Term]):
 
     def __init__(
         self,
-        handle: Union[BinaryIO, str, None]=None,
-        import_depth: int=-1,
-        timeout: float=2,
-        session: Optional[requests.Session]=None,
+        handle: Union[BinaryIO, str, None] = None,
+        import_depth: int = -1,
+        timeout: int = 2,
+        session: Optional[requests.Session] = None,
     ):
         self._default_session = session is None
         self.session = session or requests.Session()
@@ -43,7 +43,7 @@ class Ontology(Mapping[str, Term]):
             # Get the decompressed, binary stream
             if isinstance(handle, str):
                 self.path: str = handle
-                self.handle = ctx << get_handle(handle, self.session)
+                self.handle = ctx << get_handle(handle, self.session, timeout)
             elif hasattr(handle, 'read'):
                 self.path: str = get_location(handle)
                 self.handle = handle

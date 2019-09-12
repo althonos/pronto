@@ -11,10 +11,7 @@ from .synonym import SynonymType
 from .relationship import Relationship, _RelationshipData
 from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
-
-
-
-
+from .utils.repr import make_repr
 
 
 class Ontology(Mapping[str, Term]):
@@ -23,41 +20,43 @@ class Ontology(Mapping[str, Term]):
 
     def __init__(
         self,
-        handle: Union[BinaryIO, str],
-        imports: bool=True,
+        handle: Union[BinaryIO, str, None]=None,
         import_depth: int=-1,
         timeout: float=2,
         session: Optional[requests.Session]=None,
     ):
+        self._default_session = session is None
+        self.session = session or requests.Session()
+        self.import_depth = import_depth
+        self.timeout = timeout
+
         self._terms: Dict[str, _TermData] = {}
         self._relationships: Dict[str, _RelationshipData] = {}
-        # self._xrefs: Dict[str, _XrefData] = {}
-
-        self._parsed_by = None
-        self._session = session or requests.Session()
 
         # Creating an ontology from scratch is supported
         if handle is None:
-            self.path = None
+            self.path = self.handle = None
             return
 
-        # with contexter.Contexter() as ctx:
-        # Get the decompressed, binary stream
-        if isinstance(handle, str):
-            self.path: str = handle
-            handle = get_handle(handle, self._session)
-        elif hasattr(handle, 'read'):
-            self.path: str = get_location(handle)
-        else:
-            raise TypeError()  # TODO
+        # Get the path and the handle from arguments
+        with contexter.Contexter() as ctx:
+            # Get the decompressed, binary stream
+            if isinstance(handle, str):
+                self.path: str = handle
+                self.handle = ctx << get_handle(handle, self.session)
+            elif hasattr(handle, 'read'):
+                self.path: str = get_location(handle)
+                self.handle = handle
+            else:
+                raise TypeError()  # TODO
 
-        # Load the OBO AST using fastobo
-        handle = decompress(handle)
-        try:
-            doc = fastobo.load(handle)
-        except SyntaxError as s:
-            location = self.path, s.lineno, s.offset, s.text
-            raise SyntaxError(s.args[0], location) from None
+            # Load the OBO AST using fastobo
+            handle = decompress(self.handle)
+            try:
+                doc = fastobo.load(handle)
+            except SyntaxError as s:
+                location = self.path, s.lineno, s.offset, s.text
+                raise SyntaxError(s.args[0], location) from None
 
         # Extract data from the syntax tree
         self.metadata = Metadata._from_ast(doc.header)
@@ -76,6 +75,15 @@ class Ontology(Mapping[str, Term]):
 
     def __getitem__(self, id):
         return Term(self, self._terms[id])
+
+    def __repr__(self):
+        args = (self.path,) if self.path is not None else ()
+        kwargs = {
+            "session": (self.session, self._default_session and self.session),
+            "import_depth": (self.import_depth, -1),
+            "timeout": (self.timeout, 2),
+        }
+        return make_repr("Ontology", *args, **kwargs)
 
     # ------------------------------------------------------------------------
 

@@ -3,24 +3,9 @@ dist: xenial
 language: python
 cache: pip
 
-matrix:
-  include:
-  - python: "2.7"
-    env: DEPS="wheel setuptools pip"
-  - python: "3.4"
-    env: DEPS="wheel setuptools pip"
-  - python: "3.5"
-    env: DEPS="wheel setuptools pip"
-  - python: "3.6"
-    env: DEPS="wheel setuptools pip"
-  - python: "3.7"
-    env: DEPS="wheel setuptools pip"
-  - python: "pypy3.5"
-    env: DEPS="wheel setuptools pip"
-
-
-before_install:
-- pip install -U $DEPS
+python:
+- 3.6
+- 3.7
 
 install:
 - pip install .[dev,test]
@@ -32,9 +17,6 @@ script:
 after_success:
 - codecov
 - python-codacy-coverage -r coverage.xml
-
-before_deploy:
-- python setup.py check -rms
 
 deploy:
 - provider: pypi

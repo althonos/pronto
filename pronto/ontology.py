@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import datetime
 import typing
 from typing import BinaryIO, Dict, Mapping, Optional, Union
@@ -74,7 +72,7 @@ class Ontology(Mapping[str, Term]):
 
     def __iter__(self):
         for termdata in self._terms.values():
-            yield Term(self, termdata)
+            yield termdata.id
 
     def __getitem__(self, id):
         return Term(self, self._terms[id])

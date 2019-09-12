@@ -16,3 +16,4 @@ The following classes are imported when running ``from pronto import *``:
    pronto.Synonym
    pronto.SynonymType
    pronto.Term
+   pronto.Xref

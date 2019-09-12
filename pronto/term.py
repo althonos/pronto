@@ -92,11 +92,14 @@ class _TermData():  # noqa: R0902, R0903
 
 class Term(object):
 
+    _ontology: Callable[[], 'Ontology']
+    _termdata: Callable[[], _TermData]
+
     __slots__  = ("__weakref__",) + tuple(__annotations__)   # noqa: E0602
 
     def __init__(self, ontology: 'Ontology', termdata: '_TermData'):
-        self._ontology: Callable[[], 'Ontology'] = weakref.ref(ontology)
-        self._termdata: Callable[[], _TermData] = weakref.ref(termdata)
+        self._ontology = weakref.ref(ontology)
+        self._termdata = weakref.ref(termdata)
 
     @classmethod
     def _from_ast(cls, frame: fastobo.term.TermFrame, ontology: 'Ontology'):

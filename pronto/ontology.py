@@ -25,33 +25,33 @@ class Ontology(Mapping[str, Term]):
         timeout: int = 2,
         session: Optional[requests.Session] = None,
     ):
-        self._default_session = session is None
-        self.session = session or requests.Session()
-        self.import_depth = import_depth
-        self.timeout = timeout
-
-        self._terms: Dict[str, _TermData] = {}
-        self._relationships: Dict[str, _RelationshipData] = {}
-
-        # Creating an ontology from scratch is supported
-        if handle is None:
-            self.path = self.handle = None
-            return
-
-        # Get the path and the handle from arguments
         with contexter.Contexter() as ctx:
-            # Get the decompressed, binary stream
+            self._default_session = session is None
+            self.session = session or (ctx << requests.Session())
+            self.import_depth = import_depth
+            self.timeout = timeout
+
+            self._terms: Dict[str, _TermData] = {}
+            self._relationships: Dict[str, _RelationshipData] = {}
+
+            # Creating an ontology from scratch is supported
+            if handle is None:
+                self.path = self.handle = None
+                return
+
+            # Get the path and the handle from arguments
             if isinstance(handle, str):
                 self.path: str = handle
                 self.handle = ctx << get_handle(handle, self.session, timeout)
+                handle = ctx << decompress(self.handle)
             elif hasattr(handle, 'read'):
                 self.path: str = get_location(handle)
                 self.handle = handle
+                handle = decompress(self.handle)
             else:
                 raise TypeError()  # TODO
 
             # Load the OBO AST using fastobo
-            handle = decompress(self.handle)
             try:
                 doc = fastobo.load(handle)
             except SyntaxError as s:

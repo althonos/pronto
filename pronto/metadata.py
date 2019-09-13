@@ -38,13 +38,15 @@ class Metadata(object):
     data_version: Optional[str]
     ontology: Optional[str]
     date: Optional[datetime.datetime]
+    default_namespace: Optional[str]
     saved_by: Optional[str]
     auto_generated_by: Optional[str]
     subsetdefs: Set[Subset]
     imports: Set[str]
     synonymtypedefs: Set[SynonymType]
     idspaces: Dict[str, str]
-    remark: Set[str]
+    remarks: Set[str]
+    unreserved: Dict[str, Set[str]]
 
     @classmethod
     def _from_ast(cls, header: fastobo.header.HeaderFrame) -> 'Metadata':
@@ -66,13 +68,20 @@ class Metadata(object):
                 subsetdef = Subset(str(clause.subset), clause.description)
                 metadata.subsetdefs.add(subsetdef)
             elif clause.raw_tag() == "import":
-                pass
+                pass # TODO
             elif clause.raw_tag() == "synonymtypedef":
                 scope = str(clause)
                 type_ = SynonymType(str(clause.typedef), clause.description, clause.scope)
                 metadata.synonymtypedefs.add(type_)
+            elif clause.raw_tag() == "remark":
+                metadata.remarks.add(clause.remark)
+            elif clause.raw_tag() == "default-namespace":
+                metadata.default_namespace = str(clause.namespace)
+            elif clause.raw_tag() == "property_value":
+                pass # TODO
             else:
-                print("TODO: {}", clause)
+                tag, value = clause.raw_tag(), clause.raw_value()
+                metadata.unreserved.setdefault(tag, set()).add(value)
         return metadata
 
     def __init__(
@@ -81,22 +90,26 @@ class Metadata(object):
         data_version: Optional[str] = None,
         ontology: Optional[str] = None,
         date: Optional[datetime.datetime] = None,
+        default_namespace: Optional[str] = None,
         saved_by: Optional[str] = None,
         auto_generated_by: Optional[str] = None,
         subsetdefs: Set[Subset] = None,
         imports: Set[str] = None,
         synonymtypedefs: Set[SynonymType] = None,
         idspace: Dict[str, str] = None,
-        remark: Set[str] = None,
+        remarks: Set[str] = None,
+        **unreserved: Set[str],
     ):
         self.format_version = format_version
         self.data_version = data_version
         self.ontology = ontology
         self.date = date
+        self.default_namespace = default_namespace
         self.saved_by = saved_by
         self.auto_generated_by = auto_generated_by
         self.subsetdefs = set(subsetdefs) if subsetdefs is not None else set()
         self.imports = set(imports) if imports is not None else set()
         self.synonymtypedefs = set(synonymtypedefs) if synonymtypedefs is not None else set()
         self.idspace = idspace or {}
-        self.remark = remark
+        self.remarks = remarks or set()
+        self.unreserved = unreserved

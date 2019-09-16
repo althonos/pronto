@@ -152,7 +152,7 @@ class Relationship(Entity):
         self._data = weakref.ref(reldata)
 
     @classmethod
-    def _from_ast(cls, frame: fastobo.term.TermFrame, ontology: 'Ontology'):
+    def _from_ast(cls, frame: fastobo.typedef.TypedefFrame, ontology: 'Ontology'):
 
             rship = ontology.create_relationship(str(frame.id))
             rshipdata = rship._data()
@@ -181,13 +181,13 @@ class Relationship(Entity):
                 fastobo.typedef.CreatedByClause: copy("creator", "created_by"),
                 fastobo.typedef.CreationDateClause: copy("date", "creation_date"),
                 fastobo.typedef.DefClause:
-                    lambda c: setattr(term, "definition", Definition._from_ast(c)),
+                    lambda c: setattr(rship, "definition", Definition._from_ast(c)),
                 fastobo.typedef.DisjointFromClause:
                     add("typedef", "disjoint_from", cb=str),
                 fastobo.typedef.DisjointOverClause:
                     add("typedef", "disjoint_over", cb=str),
                 fastobo.typedef.DomainClause:
-                    copy("term", "domain", cb=str),
+                    copy("domain", cb=str),
                 fastobo.typedef.EquivalentToChainClause: todo(),
                 fastobo.typedef.EquivalentToClause: todo(),
                 fastobo.typedef.ExpandAssertionToClause: todo(),

@@ -1,5 +1,6 @@
 import datetime
 import typing
+import os
 import urllib.parse
 from typing import BinaryIO, Dict, Mapping, Optional, Union
 
@@ -32,7 +33,7 @@ class Ontology(Mapping[str, Term]):
             self.session = session or (ctx << requests.Session())
             self.import_depth = import_depth
             self.timeout = timeout
-            self.imports = set()
+            self.imports = dict()
 
             self._terms: Dict[str, _TermData] = {}
             self._relationships: Dict[str, _RelationshipData] = {}
@@ -61,15 +62,24 @@ class Ontology(Mapping[str, Term]):
                 location = self.path, s.lineno, s.offset, s.text
                 raise SyntaxError(s.args[0], location) from None
 
-        # Extract data from the syntax tree
+        # Extract metadata from the syntax tree
         self.metadata = Metadata._from_ast(doc.header)
-        if import_depth:
-            for url in self.metadata.imports:
-                p = urllib.parse.urlparse(url)
-                if p.scheme not in {"ftp", "http", "https"}:
-                    url = f"http://purl.obolibrary.org/obo/{url}.obo"
-                    self.imports.add(Ontology(url), import_depth-1, timeout, session)
 
+        # Import dependencies obtained from the header
+        if import_depth != 0:
+            for ref in self.metadata.imports:
+                s = urllib.parse.urlparse(ref).scheme
+                if s in {"ftp", "http", "https"} or os.path.exists(ref):
+                    url = ref
+                if os.path.exists(f"{ref}.obo"):
+                    url = f"{ref}.obo"
+                elif os.path.exists(f"{url}.json"):
+                    url = f"{ref}.json"
+                else:
+                    url = f"http://purl.obolibrary.org/obo/{ref}.obo"
+                self.imports[ref] = Ontology(url, import_depth-1, timeout, session)
+
+        # Extract frames from the current document.
         for frame in doc:
             if isinstance(frame, fastobo.term.TermFrame):
                 Term._from_ast(frame, self)
@@ -88,11 +98,11 @@ class Ontology(Mapping[str, Term]):
 
     def __repr__(self):
         args = (self.path,) if self.path is not None else ()
-        kwargs = {
-            "session": (self.session, self._default_session and self.session),
-            "import_depth": (self.import_depth, -1),
-            "timeout": (self.timeout, 2),
-        }
+        kwargs = {"timeout": (self.timeout, 2)}
+        if self.import_depth > 0:
+            kwargs["import_depth"] = (self.import_depth, -1)
+        if not self._default_session:
+            kwargs["session"] = (self.session, None)
         return make_repr("Ontology", *args, **kwargs)
 
     # ------------------------------------------------------------------------

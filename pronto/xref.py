@@ -30,7 +30,7 @@ class Xref(object):
         >>> mp["MP:0030151"].name
         'abnormal buccinator muscle morphology'
         >>> mp["MP:0030151"].xrefs
-        {Xref('https://en.wikipedia.org/wiki/Buccinator_muscle')}
+        frozenset({Xref('https://en.wikipedia.org/wiki/Buccinator_muscle')})
 
     Todo:
         Make sure to resolve header macros for xrefs expansion (such as

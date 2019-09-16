@@ -19,6 +19,12 @@ class EntityData():
 
 
 class Entity():
+    """An entity in the ontology graph.
+
+    With respects to the OBO semantics, an `Entity` is either a term or a
+    relationship in the ontology graph. Any entity has a unique identifier as
+    well as some common properties.
+    """
 
     _ontology: Callable[[], 'Ontology']
     _data: Callable[[], EntityData]

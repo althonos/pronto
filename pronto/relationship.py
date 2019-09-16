@@ -36,6 +36,7 @@ class _RelationshipData(object):
     antisymmetric: bool
     cyclic: bool
     reflexive: bool
+    asymmetric: bool
     symmetric: bool
     transitive: bool
     functional: bool
@@ -81,6 +82,7 @@ class _RelationshipData(object):
         antisymmetric: bool = False,
         cyclic: bool = False,
         reflexive: bool = False,
+        asymmetric: bool = False,
         symmetric: bool = False,
         transitive: bool = False,
         functional: bool = False,
@@ -122,6 +124,7 @@ class _RelationshipData(object):
         self.antisymmetric = antisymmetric
         self.cyclic = cyclic
         self.reflexive = reflexive
+        self.asymmetric = asymmetric
         self.symmetric = symmetric
         self.transitive = transitive
         self.functional = functional
@@ -149,6 +152,14 @@ class _RelationshipData(object):
 class Relationship(Entity):
 
     def __init__(self, ontology, reldata):
+        """Instantiate a new `Relationship`.
+
+        Important:
+            Do not use directly, as this API does some black magic to reduce
+            memory usage and improve consistentcy in the data model. Use
+            `Ontology.create_relationship` or `Ontology.get_relationship`
+            depending on your needs to obtain a `Relationship` instance.
+        """
         self._ontology = weakref.ref(ontology)
         self._data = weakref.ref(reldata)
 
@@ -196,7 +207,8 @@ class Relationship(Entity):
                 fastobo.typedef.HoldsOverChainClause: todo(),
                 fastobo.typedef.IntersectionOfClause:
                     lambda c: intersection_of.add(str(c.typedef)),
-                fastobo.typedef.InverseOfClause: copy("typedef", "inverse_of", cb=str),
+                fastobo.typedef.InverseOfClause:
+                    lambda c: setattr(rshipdata, "inverse_of", str(c.typedef)),
                 fastobo.typedef.IsAClause:
                     lambda c: rshipdata.relationships.setdefault("is_a", set()).add(str(c.typedef)),
                 fastobo.typedef.IsAnonymousClause: copy("anonymous"),
@@ -223,7 +235,8 @@ class Relationship(Entity):
                 fastobo.typedef.ReplacedByClause: todo(),
                 fastobo.typedef.SubsetClause: todo(),
                 fastobo.typedef.SynonymClause: todo(),
-                fastobo.typedef.TransitiveOverClause: todo(),
+                fastobo.typedef.TransitiveOverClause:
+                    lambda c: rshipdata.transitive_over.add(str(c.typedef)),
                 fastobo.typedef.UnionOfClause:
                     lambda c: union_of.add(str(c.typedef)),
                 fastobo.typedef.XrefClause:
@@ -268,6 +281,23 @@ class Relationship(Entity):
             for rel, rels in reldata.relationships.items()
         }
 
+    @property
+    def inverse_of(self) -> Optional['Relationship']:
+        ont, reldata = self._ontology(), self._data()
+        if reldata.inverse_of is not None:
+            return ont.get_relationship(reldata.inverse_of)
+        return None
+
+    @inverse_of.setter
+    def inverse_of(self, value: Optional['Relationship']):
+        self._data().inverse_of = None if value is None else value.id
+
+    @property
+    def transitive_over(self) -> FrozenSet['Relationship']:
+        ont, reldata = self._ontology(), self._data()
+        return frozenset(ont.get_relationship(x) for x in reldata.transitive_over)
+
+
 
 _BUILTINS = {
     "is_a": _RelationshipData(
@@ -292,6 +322,7 @@ _BUILTINS = {
         antisymmetric = True,
         cyclic = True,
         reflexive = True,
+        asymmetric = False,
         symmetric = False,
         transitive = True,
         functional = False,
@@ -301,6 +332,51 @@ _BUILTINS = {
         equivalent_to = None,
         disjoint_from = None,
         inverse_of = None,
+        transitive_over = None,
+        equivalent_to_chain = None,
+        disjoint_over = None,
+        relationships = None,
+        obsolete = False,
+        created_by = None,
+        creation_date = None,
+        replaced_by = None,
+        consider = None,
+        expand_assertion_to = None, # TODO
+        expand_expression_to = None, # TODO
+        metadata_tag = False,
+        class_level = True,
+    ),
+    "has_subclass": _RelationshipData(
+        id = "has_subclass",
+        anonymous = False,
+        name = "has subclass",
+        namespace = None,
+        alternate_ids = None,
+        definition = Definition(
+            "A superclassing relationship between one term and another",
+        ),
+        comment = None,
+        subsets = None,
+        synonyms = None,
+        xrefs = None,
+        annotations = None,
+        domain = None,
+        range = None,
+        builtin = True,
+        holds_over_chain = None,
+        antisymmetric = True,
+        asymmetric = False,
+        cyclic = True,
+        reflexive = True,
+        symmetric = False,
+        transitive = True,
+        functional = False,
+        inverse_functional = False,
+        intersection_of = None,
+        union_of = None,
+        equivalent_to = None,
+        disjoint_from = None,
+        inverse_of = "is_a",
         transitive_over = None,
         equivalent_to_chain = None,
         disjoint_over = None,

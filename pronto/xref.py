@@ -17,6 +17,11 @@ class Xref(object):
     entities, synonyms, or to link ontological entities to other resources
     they may have been derived from.
 
+    Caution:
+        ``Xref``s compare only using their identifiers; this means it is not
+        possible to have several cross-references with the same identifier and
+        different descriptions in the same set.
+
     Example:
         A cross-reference in the Mammalian Phenotype ontology linking a term
         to some related Web resource:
@@ -67,7 +72,7 @@ class Xref(object):
 
     def __eq__(self, other):
         if isinstance(other, Xref):
-            return self.id == other.id and self.description == other.description
+            return self.id == other.id
         return False
 
     def __lt__(self, other):
@@ -77,4 +82,4 @@ class Xref(object):
             or (self.id == other.id and self.description < other.description )
 
     def __hash__(self):
-        return hash((self.id, self.description))
+        return hash(self.id)

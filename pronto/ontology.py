@@ -1,11 +1,13 @@
 import datetime
 import typing
+import urllib.parse
 from typing import BinaryIO, Dict, Mapping, Optional, Union
 
 import contexter
 import fastobo
 import requests
 
+from . import relationship
 from .term import Term, _TermData
 from .synonym import SynonymType
 from .relationship import Relationship, _RelationshipData
@@ -30,6 +32,7 @@ class Ontology(Mapping[str, Term]):
             self.session = session or (ctx << requests.Session())
             self.import_depth = import_depth
             self.timeout = timeout
+            self.imports = set()
 
             self._terms: Dict[str, _TermData] = {}
             self._relationships: Dict[str, _RelationshipData] = {}
@@ -60,6 +63,13 @@ class Ontology(Mapping[str, Term]):
 
         # Extract data from the syntax tree
         self.metadata = Metadata._from_ast(doc.header)
+        if import_depth:
+            for url in self.metadata.imports:
+                p = urllib.parse.urlparse(url)
+                if p.scheme not in {"ftp", "http", "https"}:
+                    url = f"http://purl.obolibrary.org/obo/{url}.obo"
+                    self.imports.add(Ontology(url), import_depth-1, timeout, session)
+
         for frame in doc:
             if isinstance(frame, fastobo.term.TermFrame):
                 Term._from_ast(frame, self)
@@ -90,5 +100,21 @@ class Ontology(Mapping[str, Term]):
     def create_term(self, id: str) -> Term:
         """Create a new term with the given identifier.
         """
+        if id in self._terms or id in self._relationships:
+            raise ValueError(f"identifier already in use: {id}")
         self._terms[id] = termdata = _TermData(id)
         return Term(self, termdata)
+
+    def create_relationship(self, id: str) -> Relationship:
+        if id in self._terms or id in self._relationships:
+            raise ValueError(f"identifier already in use: {id}")
+        self._relationships[id] = reldata = _RelationshipData(id)
+        return Relationship(self, reldata)
+
+    def get_term(self, id: str) -> Term:
+        return Term(self, self._terms[id])
+
+    def get_relationship(self, id: str) -> Relationship:
+        if id in relationship._BUILTINS:
+            return Relationship(self, relationship._BUILTINS[id])
+        return Relationship(self, self._relationships[id])

@@ -9,18 +9,12 @@ from .utils.repr import roundrepr
 
 
 @roundrepr
-@functools.total_ordering
 class Xref(object):
     """A cross-reference to another document or resource.
 
     Cross-references (xrefs for short) can be used to back-up definitions of
     entities, synonyms, or to link ontological entities to other resources
     they may have been derived from.
-
-    Caution:
-        ``Xref``s compare only using their identifiers; this means it is not
-        possible to have several cross-references with the same identifier and
-        different descriptions in the same set.
 
     Example:
         A cross-reference in the Mammalian Phenotype ontology linking a term
@@ -31,6 +25,11 @@ class Xref(object):
         'abnormal buccinator muscle morphology'
         >>> mp["MP:0030151"].xrefs
         frozenset({Xref('https://en.wikipedia.org/wiki/Buccinator_muscle')})
+
+    Caution:
+        `Xref` instances compare only using their identifiers; this means it
+        is not possible to have several cross-references with the same
+        identifier and different descriptions in the same set.
 
     Todo:
         Make sure to resolve header macros for xrefs expansion (such as
@@ -75,11 +74,25 @@ class Xref(object):
             return self.id == other.id
         return False
 
+    def __gt__(self, other):
+        if isinstance(other, Xref):
+            return self.id > other.id
+        return NotImplemented
+
+    def __ge__(self, other):
+        if isinstance(other, Xref):
+            return self.id >= other.id
+        return NotImplemented
+
     def __lt__(self, other):
-        if not isinstance(other, Xref):
-            return NotImplemented
-        return self.id < other.id \
-            or (self.id == other.id and self.description < other.description )
+        if isinstance(other, Xref):
+            return self.id < other.id
+        return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, Xref):
+            return self.id <= other.id
+        return NotImplemented
 
     def __hash__(self):
         return hash(self.id)

@@ -96,8 +96,18 @@ class _TermData():  # noqa: R0902, R0903
 
 
 class Term(Entity):
+    """A term, corresponding to a node in the ontology graph.
+    """
 
     def __init__(self, ontology: 'Ontology', termdata: '_TermData'):
+        """Instantiate a new `Term`.
+
+        Important:
+            Do not use directly, as this API does some black magic to reduce
+            memory usage and improve consistentcy in the data model. Use
+            `Ontology.create_term` or `Ontology.get_term` depending on your
+            needs to obtain a `Term` instance.    
+        """
         self._ontology = weakref.ref(ontology)
         self._data = weakref.ref(termdata)
 

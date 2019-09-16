@@ -7,9 +7,23 @@ __version__ = (
     .strip()
 )
 
-from .ontology import Ontology  # noqa: F401
-from .term import Term  # noqa: F401
-from .definition import Definition  # noqa: F401
-from .relationship import Relationship  # noqa: F401
-from .synonym import Synonym, SynonymType  # noqa: F401
-from .xref import Xref  # noqa: F401
+from .ontology import Ontology
+from .term import Term
+from .definition import Definition
+from .relationship import Relationship
+from .synonym import Synonym, SynonymType
+from .pv import PropertyValue, LiteralPropertyValue, ResourcePropertyValue
+from .xref import Xref
+
+__all__ = [
+    Ontology.__name__,
+    Term.__name__,
+    Definition.__name__,
+    Relationship.__name__,
+    Synonym.__name__,
+    SynonymType.__name__,
+    PropertyValue.__name__,
+    LiteralPropertyValue.__name__,
+    ResourcePropertyValue.__name__,
+    Xref.__name__,
+]

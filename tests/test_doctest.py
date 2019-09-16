@@ -15,7 +15,7 @@ import pronto
 from . import utils
 
 
-def _load_tests_from_module(tests, module, globs, setUp, tearDown):
+def _load_tests_from_module(tests, module, globs, setUp=None, tearDown=None):
     """Load tests from module, iterating through submodules"""
     for attr in (getattr(module, x) for x in dir(module) if not x.startswith('_')):
         if isinstance(attr, types.ModuleType):
@@ -26,23 +26,9 @@ def _load_tests_from_module(tests, module, globs, setUp, tearDown):
 
 def load_tests(loader, tests, ignore):
     """load_test function used by unittest to find the doctests"""
-
-    def _setUp(self):
-        self._starting_dir = os.getcwd()
-        os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        self._rundir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'run')
-        os.mkdir(self._rundir)
-
-    def _tearDown(self):
-        os.chdir(self._starting_dir)
-        shutil.rmtree(self._rundir)
-
-    globs = {
-        'pronto': pronto,
-    }
-
+    globs = {'pronto': pronto}
     if not sys.argv[0].endswith('green'):
-        tests = _load_tests_from_module(tests, pronto, globs, _setUp, _tearDown)
+        tests = _load_tests_from_module(tests, pronto, globs)
     return tests
 
 

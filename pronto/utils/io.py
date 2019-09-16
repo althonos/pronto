@@ -30,7 +30,7 @@ def get_handle(path: str, session: requests.Session, timeout: int=2) -> BinaryIO
         res = session.get(path, stream=True, headers=headers)
         if not res.raw.status == 200:
             raise ValueError("could not open {}: {}", res.reason) from err
-        if res.raw.headers.get('Content-Encoding') == 'gzip':
+        if res.raw.headers.get('Content-Encoding') in {'gzip', 'deflate'}:
             return gzip.GzipFile(filename=res.url, mode="rb", fileobj=res.raw)
         return res.raw
 

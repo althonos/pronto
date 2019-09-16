@@ -30,6 +30,8 @@ def get_handle(path: str, session: requests.Session, timeout: int=2) -> BinaryIO
         res = session.get(path, stream=True, headers=headers)
         if not res.raw.status == 200:
             raise ValueError("could not open {}: {}", res.reason) from err
+        if res.raw.headers.get('Content-Encoding') == 'gzip':
+            return gzip.GzipFile(filename=res.url, mode="rb", fileobj=res.raw)
         return res.raw
 
 def get_location(reader: BinaryIO) -> Optional[str]:
@@ -48,7 +50,7 @@ def decompress(reader: BinaryIO, path: str=None) -> BinaryIO:
     buffered = BufferedReader(reader)
 
     # TODO: more compression algorithms
-    if buffered.peek(2) == MAGIC_GZIP:
+    if buffered.peek()[:2] == MAGIC_GZIP:
         return gzip.GzipFile(mode="rb", fileobj=buffered)
     else:
         return buffered

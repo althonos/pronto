@@ -1,8 +1,6 @@
 import inspect
 import collections
 
-import six
-
 
 def roundrepr(cls):
     """A class-decorator to build a minimal `__repr__` method that roundtrips.

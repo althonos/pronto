@@ -5,6 +5,7 @@ from typing import Dict, Optional, Set
 import fastobo
 
 from .synonym import SynonymType
+from .pv import PropertyValue
 
 
 class Subset(object):
@@ -46,6 +47,7 @@ class Metadata(object):
     synonymtypedefs: Set[SynonymType]
     idspaces: Dict[str, str]
     remarks: Set[str]
+    annotations: Set[PropertyValue]
     unreserved: Dict[str, Set[str]]
 
     @classmethod
@@ -81,7 +83,11 @@ class Metadata(object):
             fastobo.header.ImportClause: add("reference", "imports"),
             fastobo.header.OntologyClause: copy("ontology"),
             fastobo.header.OwlAxiomsClause: todo(),
-            fastobo.header.PropertyValueClause: todo(),
+            fastobo.header.PropertyValueClause: (lambda c: (
+                metadata.annotations.add(
+                    PropertyValue._from_ast(c.property_value)
+                )
+            )),
             fastobo.header.RemarkClause: add("remark", "remarks"),
             fastobo.header.SavedByClause: copy("name", "saved_by"),
             fastobo.header.SubsetdefClause: (lambda c: (
@@ -127,6 +133,7 @@ class Metadata(object):
         synonymtypedefs: Set[SynonymType] = None,
         idspace: Dict[str, str] = None,
         remarks: Set[str] = None,
+        annotations: Set[PropertyValue] = None,
         **unreserved: Set[str],
     ):
         self.format_version = format_version
@@ -141,4 +148,5 @@ class Metadata(object):
         self.synonymtypedefs = set(synonymtypedefs) if synonymtypedefs is not None else set()
         self.idspace = idspace or {}
         self.remarks = remarks or set()
+        self.annotations = annotations or set()
         self.unreserved = unreserved

@@ -10,6 +10,7 @@ from .definition import Definition
 from .xref import Xref
 from .synonym import Synonym, _SynonymData
 from .relationship import Relationship
+from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
 from .utils.repr import make_repr
 
 if typing.TYPE_CHECKING:
@@ -41,7 +42,7 @@ class _TermData():  # noqa: R0902, R0903
     created_by: Optional[str]
     creation_date: Optional[datetime.datetime]
     equivalent_to: Set[str]
-    annotations: Dict[str, List[str]]
+    annotations: Set[PropertyValue]
 
     __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
 
@@ -91,7 +92,7 @@ class _TermData():  # noqa: R0902, R0903
         self.created_by = created_by
         self.creation_date = creation_date
         self.equivalent_to = equivalent_to or set()
-        self.annotations = annotations or dict()
+        self.annotations = annotations or set()
 
 
 class Term(Entity):
@@ -150,7 +151,11 @@ class Term(Entity):
             fastobo.term.SynonymClause:
                 lambda c: termdata.synonyms.add(_SynonymData._from_ast(c.synonym)),
             fastobo.term.DisjointFromClause: add("term", "disjoint_from", cb=str),
-            fastobo.term.PropertyValueClause: todo(),
+            fastobo.term.PropertyValueClause: (lambda c: (
+                termdata.annotations.add(
+                    PropertyValue._from_ast(c.property_value)
+                )
+            )),
             fastobo.term.ReplacedByClause: add("term", "replaced_by", cb=str),
             fastobo.term.XrefClause: add("xref", "xrefs", cb=Xref._from_ast),
         }

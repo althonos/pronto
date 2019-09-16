@@ -5,6 +5,7 @@ from typing import Callable, Optional, FrozenSet
 
 from .definition import Definition
 from .synonym import Synonym
+from .pv import PropertyValue
 from .xref import Xref
 
 from .utils.repr import make_repr
@@ -76,6 +77,10 @@ class Entity():
             for x in (x for x in ids if isinstance(x, str)):
                 raise TypeError(msg.format(type(x).__name__))
         self._data().alternate_ids = set(ids)
+
+    @property
+    def annotations(self) -> FrozenSet[PropertyValue]:
+        return frozenset(self._data().annotations)
 
     @property
     def anonymous(self) -> bool:

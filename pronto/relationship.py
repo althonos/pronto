@@ -10,6 +10,7 @@ from .entity import Entity
 from .definition import Definition
 from .synonym import Synonym
 from .xref import Xref
+from .pv import PropertyValue
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -212,7 +213,11 @@ class Relationship(Entity):
                 fastobo.typedef.IsTransitiveClause: copy("transitive"),
                 fastobo.typedef.NameClause: copy("name"),
                 fastobo.typedef.NamespaceClause: copy("namespace", cb=str),
-                fastobo.typedef.PropertyValueClause: todo(),
+                fastobo.typedef.PropertyValueClause: (lambda c: (
+                    rshipdata.annotations.add(
+                        PropertyValue._from_ast(c.property_value)
+                    )
+                )),
                 fastobo.typedef.RangeClause: todo(),
                 fastobo.typedef.RelationshipClause: todo(),
                 fastobo.typedef.ReplacedByClause: todo(),

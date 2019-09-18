@@ -55,36 +55,36 @@ class Ontology(Mapping[str, Term]):
             else:
                 raise TypeError()  # TODO
 
-            # Load the OBO AST using fastobo
+            # Load the OBO document through an iterator using fastobo
+            doc = fastobo.iter(handle)
+
+            # Extract metadata from the syntax tree
+            self.metadata = Metadata._from_ast(doc.header())
+
+            # Import dependencies obtained from the header
+            if import_depth != 0:
+                for ref in self.metadata.imports:
+                    s = urllib.parse.urlparse(ref).scheme
+                    if s in {"ftp", "http", "https"} or os.path.exists(ref):
+                        url = ref
+                    if os.path.exists(f"{ref}.obo"):
+                        url = f"{ref}.obo"
+                    elif os.path.exists(f"{url}.json"):
+                        url = f"{ref}.json"
+                    else:
+                        url = f"http://purl.obolibrary.org/obo/{ref}.obo"
+                    self.imports[ref] = Ontology(url, import_depth-1, timeout, session)
+
+            # Extract frames from the current document.
             try:
-                doc = fastobo.load(handle)
+                for frame in doc:
+                    if isinstance(frame, fastobo.term.TermFrame):
+                        Term._from_ast(frame, self)
+                    elif isinstance(frame, fastobo.typedef.TypedefFrame):
+                        Relationship._from_ast(frame, self)
             except SyntaxError as s:
                 location = self.path, s.lineno, s.offset, s.text
                 raise SyntaxError(s.args[0], location) from None
-
-        # Extract metadata from the syntax tree
-        self.metadata = Metadata._from_ast(doc.header)
-
-        # Import dependencies obtained from the header
-        if import_depth != 0:
-            for ref in self.metadata.imports:
-                s = urllib.parse.urlparse(ref).scheme
-                if s in {"ftp", "http", "https"} or os.path.exists(ref):
-                    url = ref
-                if os.path.exists(f"{ref}.obo"):
-                    url = f"{ref}.obo"
-                elif os.path.exists(f"{url}.json"):
-                    url = f"{ref}.json"
-                else:
-                    url = f"http://purl.obolibrary.org/obo/{ref}.obo"
-                self.imports[ref] = Ontology(url, import_depth-1, timeout, session)
-
-        # Extract frames from the current document.
-        for frame in doc:
-            if isinstance(frame, fastobo.term.TermFrame):
-                Term._from_ast(frame, self)
-            elif isinstance(frame, fastobo.typedef.TypedefFrame):
-                Relationship._from_ast(frame, self)
 
     def __len__(self):
         return len(self._terms)

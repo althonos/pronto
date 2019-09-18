@@ -40,6 +40,7 @@ class Metadata(object):
     ontology: Optional[str]
     date: Optional[datetime.datetime]
     default_namespace: Optional[str]
+    namespace_id_rule: Optional[str]
     saved_by: Optional[str]
     auto_generated_by: Optional[str]
     subsetdefs: Set[Subset]
@@ -104,6 +105,8 @@ class Metadata(object):
             fastobo.header.TreatXrefsAsIsAClause: todo(),
             fastobo.header.TreatXrefsAsRelationshipClause: todo(),
             fastobo.header.TreatXrefsAsReverseGenusDifferentiaClause: todo(),
+            fastobo.header.NamespaceIdRuleClause:
+                copy("rule", "namespace_id_rule"),
             fastobo.header.UnreservedClause: (lambda c: (
                 metadata.unreserved
                     .setdefault(c.raw_tag(), set())
@@ -126,6 +129,7 @@ class Metadata(object):
         ontology: Optional[str] = None,
         date: Optional[datetime.datetime] = None,
         default_namespace: Optional[str] = None,
+        namespace_id_rule: Optional[str] = None,
         saved_by: Optional[str] = None,
         auto_generated_by: Optional[str] = None,
         subsetdefs: Set[Subset] = None,
@@ -141,6 +145,7 @@ class Metadata(object):
         self.ontology = ontology
         self.date = date
         self.default_namespace = default_namespace
+        self.namespace_id_rule = namespace_id_rule
         self.saved_by = saved_by
         self.auto_generated_by = auto_generated_by
         self.subsetdefs = set(subsetdefs) if subsetdefs is not None else set()

@@ -74,7 +74,7 @@ class _RelationshipData(object):
         subsets: Optional[Set[str]] = None,
         synonyms: Optional[Set[Synonym]] = None,
         xrefs: Optional[Set[Xref]] = None,
-        annotations: Optional[Dict[str, List[str]]] = None,
+        annotations: Optional[Set[PropertyValue]] = None,
         domain: Optional[str] = None,
         range: Optional[str] = None,
         builtin: bool = False,
@@ -116,7 +116,7 @@ class _RelationshipData(object):
         self.subsets = subsets or set()
         self.synonyms = synonyms or set()
         self.xrefs = xrefs or set()
-        self.annotations = annotations or dict()
+        self.annotations = annotations or set()
         self.domain = domain
         self.range = range
         self.builtin = builtin

@@ -1,4 +1,4 @@
-
+import datetime
 import weakref
 import typing
 from typing import Any, Callable, Optional, FrozenSet
@@ -7,7 +7,6 @@ from .definition import Definition
 from .synonym import Synonym
 from .pv import PropertyValue
 from .xref import Xref
-
 from .utils.repr import make_repr
 
 if typing.TYPE_CHECKING:
@@ -123,6 +122,30 @@ class Entity():
                 msg = "'comment' must be str or None, not {}"
                 raise TypeError(msg.format(type(value).__name__))
         self._data().comment = value
+
+    @property
+    def created_by(self) -> Optional[str]:
+        return self._data().created_by
+
+    @created_by.setter
+    def created_by(self, value: Optional[str]):
+        if __debug__:
+            if value is not None and not isinstance(value, str):
+                msg = "'created_by' must be str or None, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().created_by = value
+
+    @property
+    def creation_date(self) -> Optional[datetime.datetime]:
+        return self._data().creation_date
+
+    @creation_date.setter
+    def creation_date(self, value: Optional[datetime.datetime]):
+        if __debug__:
+            if value is not None and not isinstance(value, datetime.datetime):
+                msg = "'creation_date' must be datetime or None, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().creation_date = value
 
     @property
     def definition(self) -> Optional[Definition]:

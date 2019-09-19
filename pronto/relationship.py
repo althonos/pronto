@@ -6,7 +6,7 @@ from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
 import fastobo
 
-from .entity import Entity
+from .entity import Entity, EntityData
 from .definition import Definition
 from .synonym import Synonym, _SynonymData
 from .xref import Xref
@@ -14,9 +14,10 @@ from .pv import PropertyValue
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
+    from .term import Term
 
 
-class _RelationshipData(object):
+class _RelationshipData(EntityData):
 
     id: str
     anonymous: bool
@@ -28,7 +29,7 @@ class _RelationshipData(object):
     subsets: Set[str]
     synonyms: Set[Synonym]
     xrefs: Set[Xref]
-    annotations: Dict[str, List[str]]
+    annotations: Set[PropertyValue]
     domain: Optional[str]
     range: Optional[str]
     builtin: bool
@@ -101,8 +102,8 @@ class _RelationshipData(object):
         creation_date: Optional[datetime.datetime] = None,
         replaced_by: Optional[Set[str]] = None,
         consider: Optional[Set[str]] = None,
-        expand_assertion_to: Set[Definition] = None, # TODO
-        expand_expression_to: Set[Definition] = None, # TODO
+        expand_assertion_to: Optional[Set[Definition]] = None,
+        expand_expression_to: Optional[Set[Definition]] = None,
         metadata_tag: bool = False,
         class_level: bool = False,
     ):

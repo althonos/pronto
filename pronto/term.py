@@ -9,7 +9,7 @@ import fastobo
 import frozendict
 import networkx
 
-from .entity import Entity
+from .entity import Entity, EntityData
 from .definition import Definition
 from .xref import Xref
 from .synonym import Synonym, _SynonymData
@@ -21,7 +21,7 @@ if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
 
-class _TermData():  # noqa: R0902, R0903
+class _TermData(EntityData):  # noqa: R0902, R0903
     """Internal data storage of `Term` information.
     """
 
@@ -102,6 +102,9 @@ class _TermData():  # noqa: R0902, R0903
 class Term(Entity):
     """A term, corresponding to a node in the ontology graph.
     """
+
+    _ontology: 'weakref.ReferenceType[Ontology]'
+    _data: 'weakref.ReferenceType[_TermData]'
 
     def __init__(self, ontology: 'Ontology', termdata: '_TermData'):
         """Instantiate a new `Term`.

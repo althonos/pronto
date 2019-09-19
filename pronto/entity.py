@@ -1,7 +1,7 @@
 
 import weakref
 import typing
-from typing import Callable, Optional, FrozenSet
+from typing import Any, Callable, Optional, FrozenSet
 
 from .definition import Definition
 from .synonym import Synonym
@@ -26,41 +26,41 @@ class Entity():
     well as some common properties.
     """
 
-    _ontology: Callable[[], 'Ontology']
-    _data: Callable[[], EntityData]
+    _ontology: 'weakref.ReferenceType[Ontology]'
+    _data: 'weakref.ReferenceType[EntityData]'
 
     __slots__ = ("__weakref__", "_ontology", "_data")
 
-    def __init__(self, ontology: 'Ontology', data):
+    def __init__(self, ontology: 'Ontology', data: 'EntityData'):
         self._ontology = weakref.ref(ontology)
         self._data = weakref.ref(data)
 
     # --- Magic Methods ------------------------------------------------------
 
-    def __eq__(self, other):
-        if not isinstance(other, Entity):
-            return False
-        return self.id == other.id
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, Entity):
+            return self.id == other.id
+        return False
 
     def __lt__(self, other):
-        if not isinstance(other, Entity):
-            return NotImplemented
-        return self.id < other.id
+        if isinstance(other, Entity):
+            return self.id < other.id
+        return NotImplemented
 
     def __le__(self, other):
-        if not isinstance(other, Entity):
-            return NotImplemented
-        return self.id <= other.id
+        if isinstance(other, Entity):
+            return self.id <= other.id
+        return NotImplemented
 
     def __gt__(self, other):
-        if not isinstance(other, Entity):
-            return NotImplemented
-        return self.id > other.id
+        if isinstance(other, Entity):
+            return self.id > other.id
+        return NotImplemented
 
     def __ge__(self, other):
-        if not isinstance(other, Entity):
-            return NotImplemented
-        return self.id >= other.id
+        if isinstance(other, Entity):
+            return self.id >= other.id
+        return NotImplemented
 
     def __hash__(self):
         return hash((self.id))
@@ -223,6 +223,6 @@ class Entity():
             msg = "'xrefs' must be a set of Xref, not {}"
             if not isinstance(xrefs, (set, frozenset)):
                 raise TypeError(msg.format(type(xrefs).__name__))
-            for x in (x for x in synonyms if not isinstance(x, Xref)):
+            for x in (x for x in xrefs if not isinstance(x, Xref)):
                 raise TypeError(msg.format(type(x).__name__))
         self._data().xrefs = set(xrefs)

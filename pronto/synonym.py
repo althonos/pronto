@@ -56,7 +56,7 @@ class SynonymType(object):
 class _SynonymData(object):
 
     description: str
-    scope: str
+    scope: Optional[str]
     type: Optional[str]
     xrefs: Set[Xref]
 
@@ -112,6 +112,9 @@ class _SynonymData(object):
 
 @functools.total_ordering
 class Synonym(object):
+
+    _ontology: 'weakref.ReferenceType[Ontology]'
+    _syndata: 'weakref.ReferenceType[_SynonymData]'
 
     def _to_ast(self):
         return self._syndata()._to_ast()

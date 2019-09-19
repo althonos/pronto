@@ -24,6 +24,11 @@ class Ontology(Mapping[str, Term]):
     """An ontology.
     """
 
+    session: requests.Session
+    import_depth: int
+    timeout: int
+    imports: Dict[str, 'Ontology']
+
     def __init__(
         self,
         handle: Union[BinaryIO, str, None] = None,
@@ -93,6 +98,7 @@ class Ontology(Mapping[str, Term]):
         return len(self._terms) + len(self._relationships) + sum(map(len, self.imports))
 
     def __iter__(self) -> SizedIterator[str]:
+        terms, relationships = self.terms(), self.relationships()
         return SizedIterator(
             (entity.id for entity in itertools.chain(terms, relationships)),
             length=len(terms) + len(relationships),
@@ -133,7 +139,7 @@ class Ontology(Mapping[str, Term]):
                     for t in ref.terms()
                 ),
                 (
-                    self._get_term(t) for t in self._terms
+                    Term(self, t) for t in self._terms.values()
                 ),
             ),
             length=(
@@ -153,10 +159,10 @@ class Ontology(Mapping[str, Term]):
                 (
                     Relationship(self, r._data())
                     for ref in self.imports.values()
-                    for t in ref.relationships()
+                    for r in ref.relationships()
                 ),
                 (
-                    self._get_relationship(r) for r in self._relationships
+                    self.get_relationship(r) for r in self._relationships
                 ),
             ),
             length=(

@@ -1,5 +1,6 @@
 import contextlib
 import datetime
+import itertools
 import typing
 import os
 import urllib.parse
@@ -16,6 +17,7 @@ from .relationship import Relationship, _RelationshipData
 from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
 from .utils.repr import make_repr
+from .utils.iter import SizedIterator
 
 
 class Ontology(Mapping[str, Term]):
@@ -90,9 +92,11 @@ class Ontology(Mapping[str, Term]):
     def __len__(self):
         return len(self._terms) + len(self._relationships) + sum(map(len, self.imports))
 
-    def __iter__(self):
-        yield from self.terms()
-        yield from self.relationships()
+    def __iter__(self) -> SizedIterator[str]:
+        return SizedIterator(
+            (entity.id for entity in itertools.chain(terms, relationships)),
+            length=len(terms) + len(relationships),
+        )
 
     def __getitem__(self, id):
         """Get any entity in the ontology graph with the given identifier.
@@ -118,21 +122,48 @@ class Ontology(Mapping[str, Term]):
 
     # ------------------------------------------------------------------------
 
-    def terms(self) -> Iterator[Term]:
+    def terms(self) -> SizedIterator[Term]:
         """Iterate over the terms of the ontology graph.
         """
-        for ref in self.imports.values():
-            for term in ref.terms():
-                yield Term(self, term._data())
-        yield from map(self.get_term, self._terms)
+        return SizedIterator(
+            itertools.chain(
+                (
+                    Term(self, t._data())
+                    for ref in self.imports.values()
+                    for t in ref.terms()
+                ),
+                (
+                    self._get_term(t) for t in self._terms
+                ),
+            ),
+            length=(
+                sum(len(r.terms()) for r in self.imports.values())
+                + len(self._terms)
+            ),
+        )
 
-    def relationships(self) -> Iterator[Term]:
+    def relationships(self) -> SizedIterator[Term]:
         """Iterate over the relationships of the ontology graph.
+
+        Builtin ontologies (``is_a`` and ``has_subclass``) are not part of the
+        returned sequence.
         """
-        for ref in self.imports.values():
-            for rel in ref.relationships():
-                yield Relationship(self, rel._data())
-        yield from map(self.get_relationship, self._relationships)
+        return SizedIterator(
+            itertools.chain(
+                (
+                    Relationship(self, r._data())
+                    for ref in self.imports.values()
+                    for t in ref.relationships()
+                ),
+                (
+                    self._get_relationship(r) for r in self._relationships
+                ),
+            ),
+            length=(
+                sum(len(r.relationships()) for r in self.imports.values())
+                + len(self._relationships)
+            ),
+        )
 
     def create_term(self, id: str) -> Term:
         """Create a new term with the given identifier.
@@ -175,6 +206,9 @@ class Ontology(Mapping[str, Term]):
 
     def get_relationship(self, id: str) -> Relationship:
         """Get a relationship in the ontology graph from the given identifier.
+
+        Builtin ontologies (``is_a`` and ``has_subclass``) can be accessed
+        with this method.
 
         Raises:
             KeyError: if the provided ``id`` cannot be found in the

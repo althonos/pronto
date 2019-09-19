@@ -101,8 +101,8 @@ class _RelationshipData(object):
         creation_date: Optional[datetime.datetime] = None,
         replaced_by: Optional[Set[str]] = None,
         consider: Optional[Set[str]] = None,
-        expand_assertion_to: Any = None, # TODO
-        expand_expression_to: Any = None, # TODO
+        expand_assertion_to: Set[Definition] = None, # TODO
+        expand_expression_to: Set[Definition] = None, # TODO
         metadata_tag: bool = False,
         class_level: bool = False,
     ):
@@ -143,8 +143,8 @@ class _RelationshipData(object):
         self.creation_date = creation_date
         self.replaced_by = replaced_by or set()
         self.consider = consider or set()
-        self.expand_assertion_to = expand_assertion_to
-        self.expand_expression_to = expand_expression_to
+        self.expand_assertion_to = expand_assertion_to or set()
+        self.expand_expression_to = expand_expression_to or set()
         self.metadata_tag = metadata_tag
         self.class_level = class_level
 
@@ -202,9 +202,15 @@ class Relationship(Entity):
                     lambda c: setattr(rshipdata, "domain", str(c.domain)),
                 fastobo.typedef.EquivalentToChainClause: todo(),
                 fastobo.typedef.EquivalentToClause: todo(),
-                fastobo.typedef.ExpandAssertionToClause: todo(),
-                fastobo.typedef.ExpandExpressionToClause: todo(),
-                fastobo.typedef.HoldsOverChainClause: todo(),
+                fastobo.typedef.ExpandAssertionToClause: (lambda c:
+                    rshipdata.expand_assertion_to.add(Definition._from_ast(c))
+                ),
+                fastobo.typedef.ExpandExpressionToClause: (lambda c:
+                    rshipdata.expand_expression_to.add(Definition._from_ast(c))
+                ),
+                fastobo.typedef.HoldsOverChainClause: (lambda c:
+                    rshipdata.holds_over_chain.add((str(c.first), str(c.last)))
+                ),
                 fastobo.typedef.IntersectionOfClause:
                     lambda c: intersection_of.add(str(c.typedef)),
                 fastobo.typedef.InverseOfClause:

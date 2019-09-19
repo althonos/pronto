@@ -227,7 +227,7 @@ class Term(Entity):
         """Iterate over the terms ``t`` verifying ``self · r · t``.
 
         Example:
-            >>> go = pronto.Ontology("tests/data/go.obo")
+            >>> go = pronto.Ontology("go.obo.gz")
             >>> go['GO:0048870']
             Term('GO:0048870', name='cell motility')
             >>> list(go['GO:0048870'].objects(go['part_of']))

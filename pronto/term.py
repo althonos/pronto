@@ -1,9 +1,13 @@
+import collections
 import datetime
+import itertools
 import typing
 import weakref
-from typing import Callable, Dict, List, Optional, Set, Tuple, Union, FrozenSet
+from typing import Callable, Dict, Iterator, List, Mapping, Optional, Set, Tuple, Union, FrozenSet
 
 import fastobo
+import frozendict
+import networkx
 
 from .entity import Entity
 from .definition import Definition
@@ -106,7 +110,7 @@ class Term(Entity):
             Do not use directly, as this API does some black magic to reduce
             memory usage and improve consistentcy in the data model. Use
             `Ontology.create_term` or `Ontology.get_term` depending on your
-            needs to obtain a `Term` instance.    
+            needs to obtain a `Term` instance.
         """
         self._ontology = weakref.ref(ontology)
         self._data = weakref.ref(termdata)
@@ -217,24 +221,112 @@ class Term(Entity):
 
         return frame
 
-    @property
-    def disjoint_from(self) -> Set['Term']:
-        ontology, termdata = self._ontology(), self._data()
-        return {
-            Term(ontology, ontology.get_term(id))
-            for id in termdata.disjoint_from
-        }
+    # --- Methods ------------------------------------------------------------
+
+    def objects(self, r: Relationship) -> Iterator['Term']:
+        """Iterate over the terms ``t`` verifying ``self · r · t``.
+
+        Example:
+            >>> go = pronto.Ontology("tests/data/go.obo")
+            >>> go['GO:0048870']
+            Term('GO:0048870', name='cell motility')
+            >>> list(go['GO:0048870'].objects(go['part_of']))
+            [Term('GO:0051674', name='localization of cell')]
+
+        Todo:
+            Make `Term.objects` take in account ``holds_over_chain`` and
+            ``transitive_over`` values of the relationship it is building an
+            iterator with.
+
+        """
+
+        g = networkx.MultiDiGraph()
+        ont = self._ontology()
+
+        # Build the graph
+        for t in ont.terms():
+            for (rel, terms) in t.relationships.items():
+                for t2 in terms:
+                    g.add_edge(t.id, t2.id, key=rel.id)
+                    if rel.symmetric:
+                        g.add_edge(t2.id, t.id, key=rel.id)
+                    elif rel.inverse_of is not None:
+                        g.add_edge(t2.id, t.id, key=rel.inverse_of.id)
+
+        # Search objects terms
+        red, done = set(), set()
+        is_red = red.__contains__
+        frontier = { self.id }
+
+        # Initial connected components
+        if r.reflexive:
+            red.add(self.id)
+            yield self
+        for other in g.neighbors(self.id):
+            if r.id in g.get_edge_data(self.id, other):
+                red.add(other)
+                yield ont.get_term(other)
+
+        # Explore the graph
+        while frontier:
+            node = frontier.pop()
+            frontier.update(n for n in g.neighbors(node) if n not in done)
+            if is_red(node) and r.transitive:
+                for other in itertools.filterfalse(is_red, g.neighbors(node)):
+                    if r.id in g.get_edge_data(node, other):
+                        red.add(other)
+                        yield ont.get_term(other)
+            done.add(node)
+
+    def subclasses(self) -> Iterator['Term']:
+        """Get an iterator over the subclasses of this `Term`.
+
+        In order to follow the semantics of ``rdf:subClassOf``, which in turn
+        respects the mathematical inclusion of subset inclusion, ``is_a`` is
+        defined as a transitive relationship, hence ``has_subclass`` is also
+        transitive by closure property. Therefore is ``self`` always yielded
+        first when calling this method.
+
+        Example:
+            >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")
+            >>> sub = ms['MS:1000143'].subclasses()
+            >>> next(sub)
+            Term('MS:1000143', name='API 150EX')
+            >>> next(sub)
+            Term('MS:1000121', name='SCIEX instrument model')
+            >>> next(sub)
+            Term('MS:1000031', name='instrument model')
+
+        See Also:
+            The `RDF Schema 1.1 <https://www.w3.org/TR/rdf-schema/>`_
+            specification, defining the ``rdfs:subClassOf`` property, which
+            the ``is_a`` relationship is translated to in OWL2 language.
+
+        """
+        return self.objects(self._ontology().get_relationship('is_a'))
+
+
+
+    # --- Attributes ---------------------------------------------------------
 
     @property
-    def relationships(self) -> Dict[Relationship, FrozenSet['Term']]:
+    def disjoint_from(self) -> FrozenSet['Term']:
+        ontology, termdata = self._ontology(), self._data()
+        return frozenset({
+            Term(ontology, ontology.get_term(id))
+            for id in termdata.disjoint_from
+        })
+
+    @property
+    def relationships(self) -> Mapping[Relationship, FrozenSet['Term']]:
         ont, termdata = self._ontology(), self._data()
-        return {
+        return frozendict.frozendict({
             Relationship(ont, ont.get_relationship(rel)._data()): frozenset(
                 Term(ont, ont.get_term(term)._data())
                 for term in terms
             )
             for rel,terms in termdata.relationships.items()
-        }
+        })
 
     @property
     def union_of(self) -> Set['Term']:

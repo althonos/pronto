@@ -1,6 +1,6 @@
 
 import datetime
-from typing import Dict, Optional, Set
+from typing import Dict, List, Optional, Set
 
 import fastobo
 
@@ -41,6 +41,7 @@ class Metadata(object):
     date: Optional[datetime.datetime]
     default_namespace: Optional[str]
     namespace_id_rule: Optional[str]
+    owl_axioms: List[str]
     saved_by: Optional[str]
     auto_generated_by: Optional[str]
     subsetdefs: Set[Subset]
@@ -83,7 +84,8 @@ class Metadata(object):
             )),
             fastobo.header.ImportClause: add("reference", "imports"),
             fastobo.header.OntologyClause: copy("ontology"),
-            fastobo.header.OwlAxiomsClause: todo(),
+            fastobo.header.OwlAxiomsClause:
+                lambda c: metadata.owl_axioms.append(c.axioms),
             fastobo.header.PropertyValueClause: (lambda c: (
                 metadata.annotations.add(
                     PropertyValue._from_ast(c.property_value)
@@ -130,6 +132,7 @@ class Metadata(object):
         date: Optional[datetime.datetime] = None,
         default_namespace: Optional[str] = None,
         namespace_id_rule: Optional[str] = None,
+        owl_axioms: Optional[List[str]] = None,
         saved_by: Optional[str] = None,
         auto_generated_by: Optional[str] = None,
         subsetdefs: Set[Subset] = None,
@@ -146,6 +149,7 @@ class Metadata(object):
         self.date = date
         self.default_namespace = default_namespace
         self.namespace_id_rule = namespace_id_rule
+        self.owl_axioms = owl_axioms or list()
         self.saved_by = saved_by
         self.auto_generated_by = auto_generated_by
         self.subsetdefs = set(subsetdefs) if subsetdefs is not None else set()

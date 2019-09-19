@@ -8,7 +8,7 @@ import fastobo
 
 from .entity import Entity
 from .definition import Definition
-from .synonym import Synonym
+from .synonym import Synonym, _SynonymData
 from .xref import Xref
 from .pv import PropertyValue
 
@@ -199,7 +199,7 @@ class Relationship(Entity):
                 fastobo.typedef.DisjointOverClause:
                     add("typedef", "disjoint_over", cb=str),
                 fastobo.typedef.DomainClause:
-                    copy("domain", cb=str),
+                    lambda c: setattr(rshipdata, "domain", str(c.domain)),
                 fastobo.typedef.EquivalentToChainClause: todo(),
                 fastobo.typedef.EquivalentToClause: todo(),
                 fastobo.typedef.ExpandAssertionToClause: todo(),
@@ -230,11 +230,13 @@ class Relationship(Entity):
                         PropertyValue._from_ast(c.property_value)
                     )
                 )),
-                fastobo.typedef.RangeClause: todo(),
+                fastobo.typedef.RangeClause:
+                    lambda c: setattr(rshipdata, "range", str(c.range)),
                 fastobo.typedef.RelationshipClause: todo(),
                 fastobo.typedef.ReplacedByClause: todo(),
                 fastobo.typedef.SubsetClause: todo(),
-                fastobo.typedef.SynonymClause: todo(),
+                fastobo.typedef.SynonymClause:
+                    lambda c: rshipdata.synonyms.add(_SynonymData._from_ast(c.synonym)),
                 fastobo.typedef.TransitiveOverClause:
                     lambda c: rshipdata.transitive_over.add(str(c.typedef)),
                 fastobo.typedef.UnionOfClause:
@@ -257,6 +259,40 @@ class Relationship(Entity):
             return rship
 
     # --- Data descriptors ---------------------------------------------------
+
+    @property
+    def domain(self) -> Optional['Term']:
+        rshipdata, ontology = self._data(), self._ontology()
+        if rshipdata.domain is not None:
+            return ontology.get_term(rshipdata.domain)
+        return None
+
+    @domain.setter
+    def domain(self, value: Optional['Term']):
+        rshipdata, ontology = self._data(), self._ontology()
+        if value is not None:
+            try:
+                ontology.get_term(value.id)
+            except KeyError:
+                raise ValueError(f"{value} is not in {ontology}")
+        rshipdata.domain = value.id if value is not None else None
+
+    @property
+    def domain(self) -> Optional['Term']:
+        rshipdata, ontology = self._data(), self._ontology()
+        if rshipdata.domain is not None:
+            return ontology.get_term(rshipdata.domain)
+        return None
+
+    @domain.setter
+    def domain(self, value: Optional['Term']):
+        rshipdata, ontology = self._data(), self._ontology()
+        if value is not None:
+            try:
+                ontology.get_term(value.id)
+            except KeyError:
+                raise ValueError(f"{value} is not in {ontology}")
+        rshipdata.domain = value.id if value is not None else None
 
     @property
     def metadata_tag(self) -> bool:
@@ -293,9 +329,47 @@ class Relationship(Entity):
         self._data().inverse_of = None if value is None else value.id
 
     @property
+    def reflexive(self) -> bool:
+        return self._data().reflexive
+
+    @reflexive.setter
+    def reflexive(self, value: bool):
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'reflexive' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().reflexive = value
+
+    @property
+    def symmetric(self) -> bool:
+        return self._data().symmetric
+
+    @symmetric.setter
+    def symmetric(self, value: bool):
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'symmetric' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().symmetric = value
+
+
+    @property
+    def transitive(self) -> bool:
+        return self._data().transitive
+
+    @transitive.setter
+    def transitive(self, value: bool):
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'transitive' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().transitive = value
+
+    @property
     def transitive_over(self) -> FrozenSet['Relationship']:
         ont, reldata = self._ontology(), self._data()
         return frozenset(ont.get_relationship(x) for x in reldata.transitive_over)
+
 
 
 
@@ -331,7 +405,7 @@ _BUILTINS = {
         union_of = None,
         equivalent_to = None,
         disjoint_from = None,
-        inverse_of = None,
+        inverse_of = "has_subclass",
         transitive_over = None,
         equivalent_to_chain = None,
         disjoint_over = None,

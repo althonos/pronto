@@ -41,7 +41,7 @@ class Xref(object):
     id: str
     description: typing.Optional[str]
 
-    __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
+    __slots__ = ("__weakref__", "id", "description") # noqa: E0602
 
     @classmethod
     def _from_ast(cls, xref: fastobo.xref.Xref) -> 'Xref':

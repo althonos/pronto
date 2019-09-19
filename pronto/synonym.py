@@ -3,7 +3,7 @@
 import functools
 import typing
 import weakref
-from typing import Optional, Set
+from typing import Optional, Set, FrozenSet, Iterable
 
 import fastobo
 
@@ -21,7 +21,7 @@ class SynonymType(object):
     description: str
     scope: Optional[str]
 
-    __slots__ = ("__weakref__",) + tuple(__annotations__)
+    __slots__ = ("__weakref__", "id", "description", "scope")
 
     def __init__(self, id: str, description: str, scope: Optional[str]=None):
         if scope is not None:
@@ -60,7 +60,7 @@ class _SynonymData(object):
     type: Optional[str]
     xrefs: Set[Xref]
 
-    __slots__ = ("__weakref__",) + tuple(__annotations__)
+    __slots__ = ("__weakref__", "description", "type", "xrefs", "scope")
 
     def __eq__(self, other):
         if not isinstance(other, _SynonymData):
@@ -88,12 +88,12 @@ class _SynonymData(object):
         description: str,
         scope: Optional[str]=None,
         type: Optional[str]=None,
-        xrefs: Set[Xref]=None
+        xrefs: Optional[Iterable[Xref]]=None
     ):
         self.description = description
         self.scope = scope
         self.type = type
-        self.xrefs = xrefs or set()
+        self.xrefs = set(xrefs) if xrefs is not None else set()
 
     @classmethod
     def _from_ast(cls, syn: fastobo.syn.Synonym):
@@ -195,5 +195,5 @@ class Synonym(object):
         self._syndata().scope = scope
 
     @property
-    def xrefs(self):
-        return self._syndata().xrefs
+    def xrefs(self) -> FrozenSet[Xref]:
+        return frozenset(self._syndata().xrefs)

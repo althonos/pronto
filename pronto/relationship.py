@@ -61,7 +61,7 @@ class _RelationshipData(EntityData):
     metadata_tag: bool
     class_level: bool
 
-    __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
+    __slots__ = tuple(__annotations__)  # noqa: E0602
 
     def __init__(
         self,

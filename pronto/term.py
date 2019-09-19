@@ -48,7 +48,7 @@ class _TermData(EntityData):  # noqa: R0902, R0903
     equivalent_to: Set[str]
     annotations: Set[PropertyValue]
 
-    __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
+    __slots__ = tuple(__annotations__)  # noqa: E0602
 
     def __init__(
         self,

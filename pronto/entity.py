@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
 
 
 class EntityData():
-    pass
+    __slots__ = ("__weakref__",)
 
 
 class Entity():

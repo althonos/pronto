@@ -119,12 +119,16 @@ class Ontology(Mapping[str, Term]):
     # ------------------------------------------------------------------------
 
     def terms(self) -> Iterator[Term]:
+        """Iterate over the terms of the ontology graph.
+        """
         for ref in self.imports.values():
             for term in ref.terms():
                 yield Term(self, term._data())
         yield from map(self.get_term, self._terms)
 
     def relationships(self) -> Iterator[Term]:
+        """Iterate over the relationships of the ontology graph.
+        """
         for ref in self.imports.values():
             for rel in ref.relationships():
                 yield Relationship(self, rel._data())
@@ -148,7 +152,7 @@ class Ontology(Mapping[str, Term]):
 
         Raises:
             ValueError: if the provided ``id`` already identifies an entity
-                in the current ontology.
+                in the ontology graph.
 
         """
         if id in self._relationships or id in relationship._BUILTINS:
@@ -157,7 +161,12 @@ class Ontology(Mapping[str, Term]):
         return Relationship(self, reldata)
 
     def get_term(self, id: str) -> Term:
-        """Get
+        """Get a term in the ontology graph from the given identifier.
+
+        Raises:
+            KeyError: if the provided ``id`` cannot be found in the terms of
+                the ontology graph.
+
         """
         for dep in self.imports.values():
             with contextlib.suppress(KeyError):
@@ -165,6 +174,13 @@ class Ontology(Mapping[str, Term]):
         return Term(self, self._terms[id])
 
     def get_relationship(self, id: str) -> Relationship:
+        """Get a relationship in the ontology graph from the given identifier.
+
+        Raises:
+            KeyError: if the provided ``id`` cannot be found in the
+                relationships of the ontology graph.
+
+        """
         if id in relationship._BUILTINS:
             return Relationship(self, relationship._BUILTINS[id])
         for dep in self.imports.values():

@@ -97,7 +97,7 @@ class _SynonymData(object):
 
     @classmethod
     def _from_ast(cls, syn: fastobo.syn.Synonym):
-        xrefs =  {Xref._from_ast(x) for x in syn.xrefs}
+        xrefs = set(Xref._from_ast(x) for x in syn.xrefs)
         type_ = str(syn.type) if syn.type is not None else None
         return cls(syn.desc, syn.scope, type_, xrefs)
 

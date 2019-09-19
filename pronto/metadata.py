@@ -155,7 +155,7 @@ class Metadata(object):
         self.subsetdefs = set(subsetdefs) if subsetdefs is not None else set()
         self.imports = set(imports) if imports is not None else set()
         self.synonymtypedefs = set(synonymtypedefs) if synonymtypedefs is not None else set()
-        self.idspace = idspace or {}
+        self.idspace = idspace or dict()
         self.remarks = remarks or set()
         self.annotations = annotations or set()
         self.unreserved = unreserved

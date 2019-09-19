@@ -389,7 +389,7 @@ _BUILTINS = {
         alternate_ids = None,
         definition = Definition(
             "A subclassing relationship between one term and another",
-            xrefs={Xref("http://owlcollab.github.io/oboformat/doc/GO.format.obo-1_4.html")},
+            xrefs=set({Xref("http://owlcollab.github.io/oboformat/doc/GO.format.obo-1_4.html")}),
         ),
         comment = None,
         subsets = None,

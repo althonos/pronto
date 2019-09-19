@@ -334,7 +334,7 @@ class Term(Entity):
     @property
     def union_of(self) -> Set['Term']:
         cls, termdata, ont = type(self), self._data(), self._ontology()
-        return {cls(ont, id) for id in termdata.union_of}
+        return set(cls(ont, id) for id in termdata.union_of)
 
     @union_of.setter
     def union_of(self, union_of: Set['Term']):
@@ -344,7 +344,7 @@ class Term(Entity):
                 raise TypeError(msg.format(type(union_of).__name__))
         if len(union_of) == 1:
             raise ValueError("'union_of' cannot have a cardinality of 1")
-        self._data().union_of = {term.id for term in union_of}
+        self._data().union_of = set(term.id for term in union_of)
 
     @property
     def consider(self) -> FrozenSet['Term']:

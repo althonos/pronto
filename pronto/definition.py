@@ -36,12 +36,16 @@ class Definition(str):
         Some ontologies use the xrefs of a description to attribute the
         authorship of that definition:
 
-        >>> mp = pronto.Ontology("http://purl.obolibrary.org/obo/mp.obo")
-        >>> sorted(mp['MP:3000003'].definition.xrefs)
-        [Xref('GOC:TermGenie'), Xref('MGI:Anna')]
+        >>> cio = pronto.Ontology("http://purl.obolibrary.org/obo/cio.obo")
+        >>> sorted(cio['CIO:0000011'].definition.xrefs)
+        [Xref('Bgee:fbb')]
 
         The common usecase however is to refer to the source of a definition
-        using persistent identifiers like ISBN book numbers, or
+        using persistent identifiers like ISBN book numbers or PubMed IDs.
+
+        >> plana = pronto.Ontology("http://purl.obolibrary.org/obo/plana.obo")
+        >> sorted(plana['PLANA:0007518'].definition.xrefs)
+        [Xref('ISBN:0-71677033-4'), Xref('PMID:4853064')]
 
     """
 

@@ -1,8 +1,9 @@
+import contextlib
 import datetime
 import typing
 import os
 import urllib.parse
-from typing import BinaryIO, Dict, Mapping, Optional, Union
+from typing import BinaryIO, Dict, Iterator, Mapping, Optional, Union
 
 import contexter
 import fastobo
@@ -67,7 +68,7 @@ class Ontology(Mapping[str, Term]):
                     s = urllib.parse.urlparse(ref).scheme
                     if s in {"ftp", "http", "https"} or os.path.exists(ref):
                         url = ref
-                    if os.path.exists(f"{ref}.obo"):
+                    elif os.path.exists(f"{ref}.obo"):
                         url = f"{ref}.obo"
                     elif os.path.exists(f"{url}.json"):
                         url = f"{ref}.json"
@@ -87,14 +88,24 @@ class Ontology(Mapping[str, Term]):
                 raise SyntaxError(s.args[0], location) from None
 
     def __len__(self):
-        return len(self._terms)
+        return len(self._terms) + len(self._relationships) + sum(map(len, self.imports))
 
     def __iter__(self):
-        for termdata in self._terms.values():
-            yield termdata.id
+        yield from self.terms()
+        yield from self.relationships()
 
     def __getitem__(self, id):
-        return Term(self, self._terms[id])
+        """Get any entity in the ontology graph with the given identifier.
+        """
+        try:
+            return self.get_relationship(id)
+        except KeyError:
+            pass
+        try:
+            return self.get_term(id)
+        except KeyError:
+            pass
+        raise KeyError(f"could not find entity: {id}")
 
     def __repr__(self):
         args = (self.path,) if self.path is not None else ()
@@ -107,24 +118,56 @@ class Ontology(Mapping[str, Term]):
 
     # ------------------------------------------------------------------------
 
+    def terms(self) -> Iterator[Term]:
+        for ref in self.imports.values():
+            for term in ref.terms():
+                yield Term(self, term._data())
+        yield from map(self.get_term, self._terms)
+
+    def relationships(self) -> Iterator[Term]:
+        for ref in self.imports.values():
+            for rel in ref.relationships():
+                yield Relationship(self, rel._data())
+        yield from map(self.get_relationship, self._relationships)
+
     def create_term(self, id: str) -> Term:
         """Create a new term with the given identifier.
+
+        Raises:
+            ValueError: if the provided ``id`` already identifies an entity
+                in the ontology graph.
+
         """
-        if id in self._terms or id in self._relationships:
-            raise ValueError(f"identifier already in use: {id}")
+        with contextlib.suppress(KeyError):
+            raise ValueError(f"identifier already in use: {id} ({self[id]})")
         self._terms[id] = termdata = _TermData(id)
         return Term(self, termdata)
 
     def create_relationship(self, id: str) -> Relationship:
-        if id in self._terms or id in self._relationships:
+        """Create a new relationship with the given identifier.
+
+        Raises:
+            ValueError: if the provided ``id`` already identifies an entity
+                in the current ontology.
+
+        """
+        if id in self._relationships or id in relationship._BUILTINS:
             raise ValueError(f"identifier already in use: {id}")
         self._relationships[id] = reldata = _RelationshipData(id)
         return Relationship(self, reldata)
 
     def get_term(self, id: str) -> Term:
+        """Get
+        """
+        for dep in self.imports.values():
+            with contextlib.suppress(KeyError):
+                return Term(self, dep.get_term(id)._data())
         return Term(self, self._terms[id])
 
     def get_relationship(self, id: str) -> Relationship:
         if id in relationship._BUILTINS:
             return Relationship(self, relationship._BUILTINS[id])
+        for dep in self.imports.values():
+            with contextlib.suppress(KeyError):
+                return Relationship(self, dep.get_relationship(id)._data())
         return Relationship(self, self._relationships[id])

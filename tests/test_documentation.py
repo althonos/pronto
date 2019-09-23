@@ -22,7 +22,7 @@ class TestProntoDocumentation(unittest.TestCase):
     def setUpClass(cls):
         cls.build_dir = os.path.join(utils.TESTDIR, "run", "build")
         cls.source_dir = os.path.join(utils.DOCSDIR, "source")
-        os.mkdir(os.path.join(utils.TESTDIR, "run"))
+        os.makedirs(os.path.join(utils.TESTDIR, "run"), exist_ok=True)
 
     @classmethod
     def tearDownClass(cls):

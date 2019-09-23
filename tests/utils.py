@@ -7,8 +7,7 @@ import sys
 TESTDIR = os.path.dirname(os.path.abspath(__file__))
 MAINDIR = os.path.dirname(TESTDIR)
 DOCSDIR = os.path.join(MAINDIR, "docs")
-DATADIR = os.path.join(TESTDIR, "resources")
-RUNDIR = os.path.join(TESTDIR, "run")
+DATADIR = os.path.join(TESTDIR, "data")
 
 # Shortcut to try import modules/functions
 def try_import(*paths):

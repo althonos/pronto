@@ -1,12 +1,16 @@
+import bz2
 import io
 import gzip
+import lzma
 import typing
 from typing import BinaryIO, Optional
 
 import requests
 
 
-MAGIC_GZIP = b'\x1f\x8b'
+MAGIC_GZIP = bytearray([0x1F, 0x8B])
+MAGIC_LZMA = bytearray([0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00, 0x00])
+MAGIC_BZIP2 = bytearray([0x42, 0x5A, 0x68])
 
 
 class BufferedReader(io.BufferedReader):
@@ -50,7 +54,11 @@ def decompress(reader: BinaryIO, path: str=None) -> BinaryIO:
     buffered = BufferedReader(reader)
 
     # TODO: more compression algorithms
-    if buffered.peek()[:2] == MAGIC_GZIP:
+    if buffered.peek().startswith(MAGIC_GZIP):
         return gzip.GzipFile(mode="rb", fileobj=buffered)
+    elif buffered.peek().startswith(MAGIC_LZMA):
+        return lzma.LZMAFile(buffered, mode="rb")
+    elif buffered.peek().startswith(MAGIC_BZIP2):
+        return bz2.BZ2File(buffered, mode="rb")
     else:
         return buffered

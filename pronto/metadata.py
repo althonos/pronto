@@ -23,8 +23,7 @@ class Subset(object):
     def __eq__(self, other):
         if isinstance(other, Subset):
             return (self.name, self.description) == (other.name, other.description)
-        else:
-            return False
+        return False
 
     def __lt__(self, other):
         if not isinstance(other, Subset):

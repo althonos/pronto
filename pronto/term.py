@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 import datetime
 import itertools
 import typing
@@ -340,9 +340,12 @@ class Term(Entity):
     @union_of.setter
     def union_of(self, union_of: Set['Term']):
         if __debug__:
-            if not isinstance(union_of, set) or any(not isinstance(x, Term) for x in union_of):
-                msg = "'union_of' must be a set of Terms, not {}"
+            if not isinstance(union_of, collections.abc.Set):
+                msg = "'union_of' must be a set, not {}"
                 raise TypeError(msg.format(type(union_of).__name__))
+            for x in (x for x in union_of if not isinstance(x, Term)):
+                msg = "'union_of' must contain only Term, not {}"
+                raise TypeError(msg.format(type(x).__name__))
         if len(union_of) == 1:
             raise ValueError("'union_of' cannot have a cardinality of 1")
         self._data().union_of = set(term.id for term in union_of)

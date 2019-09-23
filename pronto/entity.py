@@ -1,3 +1,4 @@
+import collections.abc
 import datetime
 import weakref
 import typing
@@ -78,7 +79,7 @@ class Entity():
     def alternate_ids(self, ids: FrozenSet[str]):
         if __debug__:
             msg = "'alternate_ids' must be a set of str, not {}"
-            if not isinstance(ids, (set, frozenset)):
+            if not isinstance(ids, collections.abc.FrozenSet):
                 raise TypeError(msg.format(type(ids).__name__))
             for x in (x for x in ids if isinstance(x, str)):
                 raise TypeError(msg.format(type(x).__name__))
@@ -212,7 +213,7 @@ class Entity():
     def subsets(self, subsets: FrozenSet[str]):
         if __debug__:
             msg = "'subsets' must be a set of str, not {}"
-            if not isinstance(subsets, (set, frozenset)):
+            if not isinstance(subsets, collections.abc.Set):
                 raise TypeError(msg.format(type(subsets).__name__))
             for x in (x for x in subsets if not isinstance(x, str)):
                 raise TypeError(msg.format(type(x).__name__))
@@ -231,7 +232,7 @@ class Entity():
     def synonyms(self, synonyms: FrozenSet[Synonym]):
         if __debug__:
             msg = "'synonyms' must be a set of Synonym, not {}"
-            if not isinstance(synonyms, (set, frozenset)):
+            if not isinstance(synonyms, collections.abc.Set):
                 raise TypeError(msg.format(type(synonyms).__name__))
             for x in (x for x in synonyms if not isinstance(x, Synonym)):
                 raise TypeError(msg.format(type(x).__name__))
@@ -245,7 +246,7 @@ class Entity():
     def xrefs(self, xrefs: FrozenSet[Xref]):
         if __debug__:
             msg = "'xrefs' must be a set of Xref, not {}"
-            if not isinstance(xrefs, (set, frozenset)):
+            if not isinstance(xrefs, collections.abc.Set):
                 raise TypeError(msg.format(type(xrefs).__name__))
             for x in (x for x in xrefs if not isinstance(x, Xref)):
                 raise TypeError(msg.format(type(x).__name__))

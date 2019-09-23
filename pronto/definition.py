@@ -6,6 +6,7 @@ from operator import attrgetter
 
 from .xref import Xref
 from .utils.repr import make_repr
+from .utils.set import set
 
 
 class Definition(str):

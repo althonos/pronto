@@ -9,6 +9,7 @@ import fastobo
 
 from .xref import Xref
 from .utils.repr import make_repr, roundrepr
+from .utils.set import set
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology

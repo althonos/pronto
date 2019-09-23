@@ -6,6 +6,7 @@ import fastobo
 
 from .synonym import SynonymType
 from .pv import PropertyValue
+from .utils.set import set
 
 
 class Subset(object):

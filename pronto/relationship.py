@@ -1,4 +1,3 @@
-
 import datetime
 import typing
 import weakref
@@ -11,6 +10,7 @@ from .definition import Definition
 from .synonym import Synonym, _SynonymData
 from .xref import Xref
 from .pv import PropertyValue
+from .utils.set import set
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology

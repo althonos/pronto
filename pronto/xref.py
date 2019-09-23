@@ -6,6 +6,7 @@ import typing
 import fastobo
 
 from .utils.repr import roundrepr
+from .utils.set import set
 
 
 @roundrepr

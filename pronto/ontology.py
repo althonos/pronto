@@ -16,8 +16,9 @@ from .synonym import SynonymType
 from .relationship import Relationship, _RelationshipData
 from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
-from .utils.repr import make_repr
 from .utils.iter import SizedIterator
+from .utils.repr import make_repr
+from .utils.set import set
 
 
 class Ontology(Mapping[str, Term]):

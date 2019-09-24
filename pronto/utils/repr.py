@@ -12,9 +12,13 @@ def roundrepr(cls):
         raise TypeError("cannot use `roundrepr` on a class with variadic `__init__`")
 
     # Separate positional and default arguments
-    defaults = len(spec.defaults) if spec.defaults else 0
-    mandatory = spec.args[1:-defaults]
-    optional = [(k, v) for (k, v) in zip(spec.args[-defaults:], spec.defaults or ())]
+    d = len(spec.defaults) if spec.defaults is not None else 0
+    if d != 0:
+        mandatory = spec.args[1:-d]
+        optional = [(k, v) for (k, v) in zip(spec.args[-d:], spec.defaults or ())]
+    else:
+        mandatory = spec.args[1:]
+        optional = []
 
     # Derive the __repr__ implementation
     def __repr__(self):

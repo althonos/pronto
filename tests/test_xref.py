@@ -61,11 +61,11 @@ class TestXref(unittest.TestCase):
 
     def test_from_ast(self):
         ast1 = fastobo.xref.Xref(fastobo.id.parse("GO:0099545"))
-        x1 = Xref._from_ast(ast1)
+        x1 = pronto.Xref._from_ast(ast1)
         self.assertEqual(x1.id, "GO:0099545")
         self.assertIs(x1.description, None)
 
         ast2 = fastobo.xref.Xref(fastobo.id.parse("GO:0099545"), "positive regulation of granuloma formation")
-        x2 = Xref._from_ast(ast2)
+        x2 = pronto.Xref._from_ast(ast2)
         self.assertEqual(x2.id, "GO:0099545")
-        self.assertIs(x2.description, "positive regulation of granuloma formation")
+        self.assertEqual(x2.description, "positive regulation of granuloma formation")

@@ -160,7 +160,7 @@ class Term(Entity):
             fastobo.term.ConsiderClause: add("term", "consider", cb=str),
             fastobo.term.CreatedByClause: copy("creator", "created_by"),
             fastobo.term.CreationDateClause: copy("date", "creation_date"),
-            fastobo.term.EquivalentToClause: add("equivalent_to", cb=str),
+            fastobo.term.EquivalentToClause: add("term", "equivalent_to", cb=str),
             fastobo.term.IsAClause:
                 lambda c: termdata.relationships.setdefault("is_a", set()).add(str(c.term)),
             fastobo.term.IsObsoleteClause: copy("obsolete"),

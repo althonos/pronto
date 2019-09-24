@@ -7,6 +7,8 @@ from .utils.set import set
 class PropertyValue(object):
     property: str
 
+    __slots__ = ("__weakref__", "property")
+
     @classmethod
     def _from_ast(cls, pv: fastobo.pv.AbstractPropertyValue) -> 'PropertyValue':
         if isinstance(pv, fastobo.pv.LiteralPropertyValue):
@@ -18,13 +20,13 @@ class PropertyValue(object):
             raise TypeError(msg.format(type(pv).__name__))
 
 
-
-
 @roundrepr
 class LiteralPropertyValue(PropertyValue):
     property: str
     literal: str
     datatype: str
+
+    __slots__ = ("literal", "datatype")
 
     def __init__(self, property: str, literal: str, datatype: str = "xsd:string"):
         self.property = str(fastobo.id.parse(property))
@@ -40,6 +42,8 @@ class LiteralPropertyValue(PropertyValue):
 class ResourcePropertyValue(PropertyValue):
     property: str
     resource: str
+
+    __slots__ = ("resource",)
 
     def __init__(self, property: str, resource: str):
         self.property = str(fastobo.id.parse(property))

@@ -52,7 +52,7 @@ class Definition(str):
 
     xrefs: typing.Set[Xref]
 
-    __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
+    __slots__ = ("__weakref__", "xrefs")
 
     @classmethod
     def _from_ast(cls, clause: fastobo.term.DefClause):

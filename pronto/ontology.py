@@ -1,6 +1,7 @@
 import contextlib
 import datetime
 import itertools
+import io
 import typing
 import os
 import urllib.parse
@@ -19,9 +20,10 @@ from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
 from .utils.repr import make_repr
 from .utils.set import set
+from .parsers import BaseParser
 
 
-class Ontology(Mapping[str, Term]):
+class Ontology(Mapping[str, Union[Term, Relationship]]):
     """An ontology.
     """
 
@@ -56,46 +58,24 @@ class Ontology(Mapping[str, Term]):
             if isinstance(handle, str):
                 self.path: str = handle
                 self.handle = ctx << get_handle(handle, self.session, timeout)
-                handle = ctx << decompress(self.handle)
+                _handle = ctx << decompress(self.handle)
             elif hasattr(handle, 'read'):
                 self.path: str = get_location(handle)
                 self.handle = handle
-                handle = decompress(self.handle)
+                _handle = decompress(self.handle)
             else:
-                raise TypeError()  # TODO
+                raise TypeError(f"could not parse ontology from {handle!r}")
 
-            # Load the OBO document through an iterator using fastobo
-            doc = fastobo.iter(handle)
+            # Parse the ontology using the appropriate parser
+            buffer = _handle.peek(io.DEFAULT_BUFFER_SIZE)
+            for parser in BaseParser.__subclasses__():
+                if parser.can_parse(typing.cast(str, self.path), buffer):
+                    parser.parse_into(_handle, self)
+                    break
+            else:
+                ValueError(f"could not find a parser to parse {handle!r}")
 
-            # Extract metadata from the syntax tree
-            self.metadata = Metadata._from_ast(doc.header())
-
-            # Import dependencies obtained from the header
-            if import_depth != 0:
-                for ref in self.metadata.imports:
-                    s = urllib.parse.urlparse(ref).scheme
-                    if s in {"ftp", "http", "https"} or os.path.exists(ref):
-                        url = ref
-                    elif os.path.exists(f"{ref}.obo"):
-                        url = f"{ref}.obo"
-                    elif os.path.exists(f"{url}.json"):
-                        url = f"{ref}.json"
-                    else:
-                        url = f"http://purl.obolibrary.org/obo/{ref}.obo"
-                    self.imports[ref] = Ontology(url, import_depth-1, timeout, session)
-
-            # Extract frames from the current document.
-            try:
-                for frame in doc:
-                    if isinstance(frame, fastobo.term.TermFrame):
-                        Term._from_ast(frame, self)
-                    elif isinstance(frame, fastobo.typedef.TypedefFrame):
-                        Relationship._from_ast(frame, self)
-            except SyntaxError as s:
-                location = self.path, s.lineno, s.offset, s.text
-                raise SyntaxError(s.args[0], location) from None
-
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._terms) + len(self._relationships) + sum(map(len, self.imports))
 
     def __iter__(self) -> SizedIterator[str]:
@@ -105,7 +85,13 @@ class Ontology(Mapping[str, Term]):
             length=len(terms) + len(relationships),
         )
 
-    def __getitem__(self, id):
+    def __contains__(self, item: str) -> bool:
+        return any(item in i for i in self.imports.values()) \
+            or item in self._terms \
+            or item in self._relationships \
+            or item in relationship._BUILTINS
+
+    def __getitem__(self, id: str) -> Union[Term, Relationship]:
         """Get any entity in the ontology graph with the given identifier.
         """
         try:
@@ -149,7 +135,7 @@ class Ontology(Mapping[str, Term]):
             ),
         )
 
-    def relationships(self) -> SizedIterator[Term]:
+    def relationships(self) -> SizedIterator[Relationship]:
         """Iterate over the relationships of the ontology graph.
 
         Builtin ontologies (``is_a`` and ``has_subclass``) are not part of the

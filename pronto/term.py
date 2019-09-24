@@ -282,8 +282,8 @@ class Term(Entity):
                         yield ont.get_term(other)
             done.add(node)
 
-    def subclasses(self) -> Iterator['Term']:
-        """Get an iterator over the subclasses of this `Term`.
+    def superclasses(self) -> Iterator['Term']:
+        """Get an iterator over the superclasses of this `Term`.
 
         In order to follow the semantics of ``rdf:subClassOf``, which in turn
         respects the mathematical inclusion of subset inclusion, ``is_a`` is
@@ -293,7 +293,7 @@ class Term(Entity):
 
         Example:
             >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")
-            >>> sub = ms['MS:1000143'].subclasses()
+            >>> sub = ms['MS:1000143'].superclasses()
             >>> next(sub)
             Term('MS:1000143', name='API 150EX')
             >>> next(sub)

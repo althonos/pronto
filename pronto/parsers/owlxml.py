@@ -3,7 +3,6 @@ import itertools
 import re
 import typing
 import warnings
-from xml.etree import ElementTree as etree
 from typing import Optional
 
 import dateutil.parser
@@ -16,6 +15,7 @@ from ..synonym import Synonym, _SynonymData
 from ..relationship import Relationship
 from ..pv import ResourcePropertyValue, LiteralPropertyValue
 from ..xref import Xref
+from ..utils.impl import etree
 
 if typing.TYPE_CHECKING:
     from ..ontology import Ontology

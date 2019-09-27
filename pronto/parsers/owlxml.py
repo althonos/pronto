@@ -29,6 +29,9 @@ class Namespace(object):
     def __getitem__(self, item: str) -> str:
         return f"{{{self.base}}}{item}"
 
+    def raw(self, item: str) -> str:
+        return f"{self.base}{item}"
+
 
 _NS = {
     'dc':       Namespace("http://purl.org/dc/elements/1.1/"),
@@ -45,6 +48,13 @@ _NS = {
     'ubprop':   Namespace("http://purl.obolibrary.org/obo/ubprop#"),
     'uberon':   Namespace("http://purl.obolibrary.org/obo/uberon#"),
     'xsd':      Namespace("http://www.w3.org/2001/XMLSchema#"),
+}
+
+_SYNONYMS = {
+    _NS['oboInOwl'].raw('hasExactSynonym'): 'EXACT',
+    _NS['oboInOwl'].raw('hasBroadSynonym'): 'BROAD',
+    _NS['oboInOwl'].raw('hasNarrowSynonym'): 'NARROW',
+    _NS['oboInOwl'].raw('hasRelatedSynonym'): 'RELATED',
 }
 
 
@@ -68,6 +78,10 @@ class OwlXMLParser(BaseParser):
 
         for class_ in tree.iterfind(_NS['owl']['Class']):
             self._extract_term(class_)
+        # for class_ in tree.iterfind(_NS['owl']['ObjectProperty']):
+        #     self._extract_relationship(class_)
+        for axiom in tree.iterfind(_NS['owl']['Axiom']):
+            self._process_axiom(axiom)
 
     def _compact_id(self, iri: str) -> str:
         match = re.match('^http://purl.obolibrary.org/obo/([^_]+)_(.*)$', iri)
@@ -207,3 +221,55 @@ class OwlXMLParser(BaseParser):
                     termdata.annotations.add(self._extract_literal_pv(child))
                 else:
                     warnings.warn(f'unknown element in `owl:Class`: {child}')
+
+    def _process_axiom(self, elem: etree.Element):
+        _resource = _NS['rdf']['resource']
+
+        elem_source = elem.find(_NS['owl']['annotatedSource'])
+        elem_property = elem.find(_NS['owl']['annotatedProperty'])
+        elem_target = elem.find(_NS['owl']['annotatedTarget'])
+
+        if elem_property is None or _resource not in elem_property.attrib:
+            return
+        if elem_source is None or _resource not in elem_source.attrib:
+            return
+        if elem_target is None:
+            return
+
+        property = elem_property.attrib[_resource]
+        if property == _NS['obo'].raw("IAO_0000115") and elem_target.text is not None:
+            entity = self.ont[self._compact_id(elem_source.attrib[_resource])]
+            entity.definition = d = Definition(elem_target.text)
+            for child in elem.iterfind(_NS['oboInOwl']['hasDbXref']):
+                if child.text is not None:
+                    d.xrefs.add(Xref(child.text))
+                else:
+                    warnings.warn("`oboInOwl:hasDbXref` element has no text")
+
+        elif property == _NS['oboInOwl'].raw('hasDbXref') and elem_target.text is not None:
+            entity = self.ont[self._compact_id(elem_source.attrib[_resource])]
+            label = elem.find(_NS['rdfs']['label'])
+            if label is not None and label.text is not None:
+                entity._data().xrefs.add(Xref(elem_target.text, label.text))
+            else:
+                entity._data().xrefs.add(Xref(elem_target.text))
+
+        elif property in _SYNONYMS:
+            entity = self.ont[self._compact_id(elem_source.attrib[_resource])]
+            try:
+                s = next(s for s in entity.synonyms if s.description == elem_target.text)
+                synonym = s._data()
+                if synonym.scope != _SYNONYMS[property]:
+                    msg = "synonym {} contains different scopes in axiom and class: {} != {}"
+                    raise ValueError(msg.format(elem_target.text, synonym.scope, _SYNONYMS[property]))
+            except StopIteration:
+                synonym = _SynonymData(elem_target.text, scope=_SYNONYMS[property])
+                entity._data().synonyms.add(synonym)
+            for child in elem.iterfind(_NS['oboInOwl']['hasDbXref']):
+                if child.text is not None:
+                    synonym.xrefs.add(Xref(child.text))
+                else:
+                    warnings.warn("`oboInOwl:hasDbXref` element has no text")
+
+        else:
+            warnings.warn(f"unknown axiom property: {property}")

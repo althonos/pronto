@@ -64,14 +64,11 @@ class _SynonymData(object):
     __slots__ = ("__weakref__", "description", "type", "xrefs", "scope")
 
     def __eq__(self, other):
-        if not isinstance(other, _SynonymData):
-            return False
-        return all(
-            getattr(self, attr) == getattr(other, attr)
-            for attr in self.__slots__[1:]
-        )
+        if isinstance(other, _SynonymData):
+            return self.description == other.description and self.scope == other.scope
+        return False
 
-    def __lt__(self, other):
+    def __lt__(self, other):  # FIXME?
         if not isinstance(other, _SynonymData):
             return NotImplemented
         if self.type is not None and other.type is not None:
@@ -82,7 +79,7 @@ class _SynonymData(object):
                  < (self.description, self.scope, frozenset(other.xrefs))
 
     def __hash__(self):
-        return hash((self.description, self.scope, self.type, frozenset(self.xrefs)))
+        return hash((self.description, self.scope))
 
     def __init__(
         self,

@@ -1,10 +1,12 @@
 import bz2
+import codecs
 import io
 import gzip
 import lzma
 import typing
 from typing import BinaryIO, Optional
 
+import chardet
 import requests
 
 
@@ -22,6 +24,37 @@ class BufferedReader(io.BufferedReader):
             return super(BufferedReader, self).read(size)
         except ValueError:
             return b''
+
+
+class EncodedFile(codecs.StreamRecoder):
+
+    def __init__(self, file, data_encoding, file_encoding=None, errors='strict'):
+        if file_encoding is None:
+            file_encoding = data_encoding
+        data_info = codecs.lookup(data_encoding)
+        file_info = codecs.lookup(file_encoding)
+        super().__init__(
+            file,
+            data_info.encode,
+            data_info.decode,
+            file_info.streamreader,
+            file_info.streamwriter,
+            errors
+        )
+        # Add attributes to simplify introspection
+        self.data_encoding = data_encoding
+        self.file_encoding = file_encoding
+
+    def read(self, size=-1):
+        chunk = super().read(size)
+        return chunk.replace(b'\r\n', b'\n')
+
+    def readinto(self, buffer):
+        chunk = self.read(len(buffer))
+        buffer[:len(chunk)] = chunk
+        return len(chunk)
+
+
 
 
 def get_handle(path: str, session: requests.Session, timeout: int=2) -> BinaryIO:
@@ -47,18 +80,33 @@ def get_location(reader: BinaryIO) -> Optional[str]:
         or getattr(reader, 'geturl', lambda: None)()
     )
 
-def decompress(reader: BinaryIO, path: str=None) -> BinaryIO:
+def decompress(
+        reader: io.BufferedReader,
+        path: Optional[str] = None,
+        encoding: Optional[str] = None
+) -> BinaryIO:
     """Given a binary file-handle, decompress it if it is compressed.
     """
 
     buffered = BufferedReader(reader)
 
-    # TODO: more compression algorithms
+    # Decompress the stream if it is compressed
     if buffered.peek().startswith(MAGIC_GZIP):
-        return gzip.GzipFile(mode="rb", fileobj=buffered)
+        decompressed = BufferedReader(gzip.GzipFile(mode="rb", fileobj=buffered))
     elif buffered.peek().startswith(MAGIC_LZMA):
-        return lzma.LZMAFile(buffered, mode="rb")
+        decompressed = BufferedReader(lzma.LZMAFile(buffered, mode="rb"))
     elif buffered.peek().startswith(MAGIC_BZIP2):
-        return bz2.BZ2File(buffered, mode="rb")
+        decompressed = BufferedReader(bz2.BZ2File(buffered, mode="rb"))
     else:
-        return buffered
+        decompressed = buffered
+
+    # Attempt to detect the encoding and decode the stream
+    if encoding is not None:
+        det = dict(encoding=encoding, confidence=1.0)
+    else:
+        det = chardet.detect(decompressed.peek())
+    if det['confidence'] == 1.0:
+        return BufferedReader(EncodedFile(decompressed, 'UTF-8', det['encoding']))
+    else:
+        warnings.warn('could not find encoding, assuming UTF-8')
+        return decompressed

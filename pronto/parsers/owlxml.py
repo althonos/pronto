@@ -76,10 +76,11 @@ class OwlXMLParser(BaseParser):
         self._extract_meta(owl_ontology)
         self.process_imports()
 
-        for class_ in tree.iterfind(_NS['owl']['Class']):
-            self._extract_term(class_)
+        # TODO
         # for class_ in tree.iterfind(_NS['owl']['ObjectProperty']):
         #     self._extract_relationship(class_)
+        for class_ in tree.iterfind(_NS['owl']['Class']):
+            self._extract_term(class_)
         for axiom in tree.iterfind(_NS['owl']['Axiom']):
             self._process_axiom(axiom)
 
@@ -204,8 +205,11 @@ class OwlXMLParser(BaseParser):
             elif child.tag == _NS['oboInOwl']['hasAlternativeId']:
                 termdata.alternate_ids.add(child.text)
             elif child.tag == _NS['owl']['disjointWith']:
-                iri = child.attrib[_NS['rdf']['resource']]
-                termdata.disjoint_from.add(self._compact_id(iri))
+                if _NS['rdf']['resource'] in child.attrib:
+                    iri = child.attrib[_NS['rdf']['resource']]
+                    termdata.disjoint_from.add(self._compact_id(iri))
+                else:
+                    warnings.warn('`owl:disjointWith` element without `rdf:resource`')
             elif child.tag == _NS['obo']['IAO_0100001']:
                 if _NS['rdf']['resource'] in child.attrib :
                     iri = child.attrib[_NS['rdf']['resource']]

@@ -293,12 +293,12 @@ class Term(Entity):
 
         Example:
             >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")
-            >>> sub = ms['MS:1000143'].superclasses()
-            >>> next(sub)
+            >>> sup = ms['MS:1000143'].superclasses()
+            >>> next(sup)
             Term('MS:1000143', name='API 150EX')
-            >>> next(sub)
+            >>> next(sup)
             Term('MS:1000121', name='SCIEX instrument model')
-            >>> next(sub)
+            >>> next(sup)
             Term('MS:1000031', name='instrument model')
 
         See Also:
@@ -309,7 +309,57 @@ class Term(Entity):
         """
         return self.objects(self._ontology().get_relationship('is_a'))
 
+    def subclasses(self) -> Iterator['Term']:
+        """Get an iterator over the subclasses of this `Term`.
 
+        Example:
+            >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")
+            >>> sub = ms['MS:1000031'].subclasses()
+            >>> next(sub)
+            Term('MS:1000031', name='instrument model')
+            >>> next(sub)
+            Term('MS:1000121', name='SCIEX instrument model')
+            >>> next(sub)
+            Term('MS:1000122', name='Bruker Daltonics instrument model')
+
+        """
+
+        g = networkx.MultiDiGraph()
+        ont = self._ontology()
+        has_subclass = ont.get_relationship('has_subclass')
+
+        # Build the graph
+        for t in ont.terms():
+            for rel in (has_subclass, has_subclass.inverse_of):
+                for t2 in t.relationships.get(rel, ()):
+                    g.add_edge(t.id, t2.id, key=rel.id)
+                    g.add_edge(t2.id, t.id, key=rel.inverse_of.id)
+
+        # Search objects terms
+        sub, done = set(), set()
+        is_sub = sub.__contains__
+        frontier = { self.id }
+
+        # Self subclass of self
+        sub.add(self.id)
+        yield self
+
+        # Initial connected components
+        for other in g.neighbors(self.id):
+            if has_subclass.id in g.get_edge_data(self.id, other):
+                sub.add(other)
+                yield ont.get_term(other)
+
+        # Explore the graph
+        while frontier:
+            node = frontier.pop()
+            frontier.update(n for n in g.neighbors(node) if n not in done)
+            if is_sub(node):
+                for other in itertools.filterfalse(is_sub, g.neighbors(node)):
+                    if has_subclass.id in g.get_edge_data(node, other):
+                        sub.add(other)
+                        yield ont.get_term(other)
+            done.add(node)
 
     # --- Attributes ---------------------------------------------------------
 

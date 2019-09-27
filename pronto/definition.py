@@ -3,6 +3,7 @@
 import fastobo
 import typing
 from operator import attrgetter
+from typing import Optional, Iterable
 
 from .xref import Xref
 from .utils.repr import make_repr
@@ -65,7 +66,7 @@ class Definition(str):
     def __new__(cls, text, xrefs=None):
         return super(Definition, cls).__new__(cls, text)
 
-    def __init__(self, text, xrefs=None):
+    def __init__(self, text: str, xrefs: Optional[Iterable[Xref]] = None):
         self.xrefs = set(xrefs) if xrefs is not None else set()
 
     def __repr__(self):

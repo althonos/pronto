@@ -51,6 +51,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
             # Creating an ontology from scratch is supported
             if handle is None:
+                self.metadata = Metadata()
                 self.path = self.handle = None
                 return
 
@@ -68,9 +69,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
             # Parse the ontology using the appropriate parser
             buffer = _handle.peek(io.DEFAULT_BUFFER_SIZE)
-            for parser in BaseParser.__subclasses__():
-                if parser.can_parse(typing.cast(str, self.path), buffer):
-                    parser.parse_into(_handle, self)
+            for cls in BaseParser.__subclasses__():
+                if cls.can_parse(typing.cast(str, self.path), buffer):
+                    cls(self).parse_from(_handle)
                     break
             else:
                 ValueError(f"could not find a parser to parse {handle!r}")

@@ -74,7 +74,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                     cls(self).parse_from(_handle)
                     break
             else:
-                ValueError(f"could not find a parser to parse {handle!r}")
+                raise ValueError(f"could not find a parser to parse {handle!r}")
 
     def __len__(self) -> int:
         return len(self._terms) + len(self._relationships) + sum(map(len, self.imports))

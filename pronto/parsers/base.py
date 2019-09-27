@@ -31,7 +31,7 @@ class BaseParser(abc.ABC):
                     url = ref
                 elif os.path.exists(f"{ref}.obo"):
                     url = f"{ref}.obo"
-                elif os.path.exists(f"{url}.json"):
+                elif os.path.exists(f"{ref}.json"):
                     url = f"{ref}.json"
                 else:
                     url = f"http://purl.obolibrary.org/obo/{ref}.obo"

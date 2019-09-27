@@ -112,10 +112,10 @@ class _SynonymData(object):
 class Synonym(object):
 
     _ontology: 'weakref.ReferenceType[Ontology]'
-    _syndata: 'weakref.ReferenceType[_SynonymData]'
+    _data: 'weakref.ReferenceType[_SynonymData]'
 
     def _to_ast(self):
-        return self._syndata()._to_ast()
+        return self._data()._to_ast()
 
     def __init__(self, ontology: 'Ontology', syndata: '_SynonymData'):
         if syndata.type is not None:
@@ -123,21 +123,22 @@ class Synonym(object):
             if not any(s.id == syndata.type for s in synonyms):
                 raise ValueError(f"undeclared synonym type: {syndata.type}")
 
+
         self._ontology = weakref.ref(ontology)
-        self._syndata = weakref.ref(syndata)
+        self._data = weakref.ref(syndata)
 
     def __eq__(self, other):
         if isinstance(other, Synonym):
-            return self._syndata() == other._syndata()
+            return self._data() == other._data()
         return False
 
     def __lt__(self, other):
         if not isinstance(other, Synonym):
             return False
-        return self._syndata().__lt__(other._syndata())
+        return self._data().__lt__(other._data())
 
     def __hash__(self):
-        return hash(self._syndata())
+        return hash(self._data())
 
     def __repr__(self):
         return make_repr(
@@ -150,7 +151,7 @@ class Synonym(object):
 
     @property
     def description(self) -> str:
-        return self._syndata().description
+        return self._data().description
 
     @description.setter
     def description(self, description: str):
@@ -158,11 +159,11 @@ class Synonym(object):
             if not isinstance(description, str):
                 msg = "'description' must be str, not {}"
                 raise TypeError(msg.format(type(description).__name__))
-        self._syndata().description = description
+        self._data().description = description
 
     @property
     def type(self) -> Optional[SynonymType]:
-        ontology, syndata = self._ontology(), self._syndata()
+        ontology, syndata = self._ontology(), self._data()
         if syndata.type is not None:
             return ontology.metadata.synonymtypedefs[syndata.type]
         return None
@@ -176,11 +177,11 @@ class Synonym(object):
         synonyms = self._ontology().metadata.synonymtypedefs
         if type is not None and type_.id not in synonyms:
             raise ValueError(f"undeclared synonym type: {type_.id}")
-        self._syndata().type = type_.id if type_ is not None else None
+        self._data().type = type_.id if type_ is not None else None
 
     @property
     def scope(self) -> Optional[str]:
-        return self._syndata().scope
+        return self._data().scope
 
     @scope.setter
     def scope(self, scope: str):
@@ -190,8 +191,8 @@ class Synonym(object):
                 raise TypeError(msg.format(type(scope).__name__))
         if scope not in {'EXACT', 'RELATED', 'BROAD', 'NARROW'}:
             raise ValueError(f"invalid synonym scope: {scope}")
-        self._syndata().scope = scope
+        self._data().scope = scope
 
     @property
     def xrefs(self) -> FrozenSet[Xref]:
-        return frozenset(self._syndata().xrefs)
+        return frozenset(self._data().xrefs)

@@ -19,7 +19,7 @@ from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
 from .utils.repr import make_repr
-from .utils.set import set
+from .utils.impl import set
 from .parsers import BaseParser
 
 

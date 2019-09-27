@@ -7,7 +7,7 @@ from typing import Optional, Iterable
 
 from .xref import Xref
 from .utils.repr import make_repr
-from .utils.set import set
+from .utils.impl import set
 
 
 class Definition(str):

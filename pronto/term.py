@@ -16,7 +16,7 @@ from .synonym import Synonym, _SynonymData
 from .relationship import Relationship
 from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
 from .utils.repr import make_repr
-from .utils.set import set
+from .utils.impl import set
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology

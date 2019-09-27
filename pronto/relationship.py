@@ -10,7 +10,7 @@ from .definition import Definition
 from .synonym import Synonym, _SynonymData
 from .xref import Xref
 from .pv import PropertyValue
-from .utils.set import set
+from .utils.impl import set
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology

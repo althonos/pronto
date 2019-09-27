@@ -1,7 +1,7 @@
 import fastobo
 
 from .utils.repr import roundrepr
-from .utils.set import set
+from .utils.impl import set
 
 
 class PropertyValue(object):

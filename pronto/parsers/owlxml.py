@@ -97,7 +97,7 @@ class OwlXMLParser(BaseParser):
     def _extract_literal_pv(self, elem: etree.Element) -> LiteralPropertyValue:
         property = re.sub('{|}', '', elem.tag)
         datatype = elem.attrib[_NS['rdf']['datatype']]
-        return LiteralPropertyValue(property, elem.text, datatype)
+        return LiteralPropertyValue(property, typing.cast(str, elem.text), datatype)
 
     def _extract_meta(self, elem: etree.Element):
         """Extract the metadata from an `owl:Ontology` element.
@@ -142,7 +142,7 @@ class OwlXMLParser(BaseParser):
                 meta.data_version = iri if match is None else match.group(1)
             elif _NS['rdf']['resource'] in child.attrib:
                 meta.annotations.add(self._extract_resource_pv(child))
-            elif _NS['rdf']['datatype'] in child.attrib:
+            elif _NS['rdf']['datatype'] in child.attrib and child.text is not None:
                 meta.annotations.add(self._extract_literal_pv(child))
             else:
                 warnings.warn(f'unknown element in `owl:Ontology`: {child}')
@@ -217,7 +217,7 @@ class OwlXMLParser(BaseParser):
             elif child.tag != _NS['oboInOwl']['id']:
                 if _NS['rdf']['resource'] in child.attrib:
                     termdata.annotations.add(self._extract_resource_pv(child))
-                elif _NS['rdf']['datatype']:
+                elif _NS['rdf']['datatype'] and child.text is not None:
                     termdata.annotations.add(self._extract_literal_pv(child))
                 else:
                     warnings.warn(f'unknown element in `owl:Class`: {child}')

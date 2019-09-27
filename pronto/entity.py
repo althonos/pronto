@@ -9,7 +9,7 @@ from .synonym import Synonym
 from .pv import PropertyValue
 from .xref import Xref
 from .utils.repr import make_repr
-from .utils.set import set
+from .utils.impl import set
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology

@@ -1,0 +1,20 @@
+﻿format-version: 1.4
+
+[Term]
+id: ONT0:CHILD_0
+name: child_0
+is_a: ONT0:ROOT ! root
+
+[Term]
+id: ONT0:CHILD_1
+name: child_1
+is_a: ONT0:ROOT ! root
+
+[Term]
+id: ONT0:CHILD_2
+name: child_2
+is_a: ONT0:ROOT ! root
+
+[Term]
+id: ONT0:ROOT
+name: root

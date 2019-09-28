@@ -9,6 +9,7 @@ import fastobo
 import frozendict
 import networkx
 
+from . import relationship
 from .entity import Entity, EntityData
 from .definition import Definition
 from .xref import Xref
@@ -244,6 +245,9 @@ class Term(Entity):
 
         """
 
+        if r._data() is relationship._BUILTINS['is_a']:
+            return self.superclasses()
+
         g = networkx.MultiDiGraph()
         ont = self._ontology()
 
@@ -291,6 +295,10 @@ class Term(Entity):
         transitive by closure property. Therefore is ``self`` always yielded
         first when calling this method.
 
+        Yields:
+            Superclasses of the selected term, breadth-first. The first element
+            is always the term itself, use `itertools.islice` to skip it.
+
         Example:
             >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")
             >>> sup = ms['MS:1000143'].superclasses()
@@ -301,16 +309,51 @@ class Term(Entity):
             >>> next(sup)
             Term('MS:1000031', name='instrument model')
 
+        Note:
+            The runtime for this algorithm is :math:`O(n)`, where :math:`n` is
+            the number of terms in the source ontology.
+
         See Also:
             The `RDF Schema 1.1 <https://www.w3.org/TR/rdf-schema/>`_
             specification, defining the ``rdfs:subClassOf`` property, which
             the ``is_a`` relationship is translated to in OWL2 language.
 
         """
+        ont = self._ontology()
+
+        # Search objects terms
+        sup, done = set(), set()
+        frontier = { self.id }
+
+        # RDF semantics state that self is a subclass of self
+        sup.add(self.id)
+        yield self
+
+        # Initial connected components
+        for other in self.relationships.get(ont.get_relationship('is_a'), ()):
+            sup.add(other.id)
+            yield other
+
+        # Explore the graph
+        for node in iter(lambda: frontier.pop() if frontier else None, None):
+            if node in sub:
+                neighbors = set(g.neighbors())
+                frontier.update(neighbors - set)
+                for other in neighbors - sub:
+                    sub.add(other)
+                    yield ont.get_term(other)
+            done.add(node)
+
+
+
         return self.objects(self._ontology().get_relationship('is_a'))
 
     def subclasses(self) -> Iterator['Term']:
         """Get an iterator over the subclasses of this `Term`.
+
+        Yields:
+            Subclasses of the selected term, breadth-first. The first element
+            is always the term itself, use `itertools.islice` to skip it.
 
         Example:
             >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")
@@ -322,43 +365,41 @@ class Term(Entity):
             >>> next(sub)
             Term('MS:1000122', name='Bruker Daltonics instrument model')
 
+        Note:
+            This method has a runtime of :math:`O(n^2)` where :math:`n` is the
+            number of terms in the source ontology. This is due to the fact
+            that OBO and OWL only explicit *superclassing* relationship, so
+            we have to build the graph of *subclasses* from the knowledge
+            graph.
         """
 
-        g = networkx.MultiDiGraph()
+        g = networkx.DiGraph()
         ont = self._ontology()
-        has_subclass = ont.get_relationship('has_subclass')
 
-        # Build the graph
+        # Build the directed graph
         for t in ont.terms():
-            for rel in (has_subclass, has_subclass.inverse_of):
-                for t2 in t.relationships.get(rel, ()):
-                    g.add_edge(t.id, t2.id, key=rel.id)
-                    g.add_edge(t2.id, t.id, key=rel.inverse_of.id)
+            for t2 in t.relationships.get(ont.get_relationship('is_a'), []):
+                g.add_edge(t2.id, t.id)
 
         # Search objects terms
-        sub, done = set(), set()
-        is_sub = sub.__contains__
-        frontier = { self.id }
+        done = set()
+        frontier = set()
 
-        # Self subclass of self
-        sub.add(self.id)
+        # RDF semantics state that self is a subclass of self
+        frontier.add(self.id)
         yield self
 
         # Initial connected components
         for other in g.neighbors(self.id):
-            if has_subclass.id in g.get_edge_data(self.id, other):
-                sub.add(other)
-                yield ont.get_term(other)
+            frontier.add(other)
+            yield ont.get_term(other)
 
         # Explore the graph
-        while frontier:
-            node = frontier.pop()
-            frontier.update(n for n in g.neighbors(node) if n not in done)
-            if is_sub(node):
-                for other in itertools.filterfalse(is_sub, g.neighbors(node)):
-                    if has_subclass.id in g.get_edge_data(node, other):
-                        sub.add(other)
-                        yield ont.get_term(other)
+        for node in iter(lambda: frontier.pop() if frontier else None, None):
+            neighbors = set(g.neighbors(node))
+            frontier.update(neighbors - done)
+            for other in neighbors:
+                yield ont.get_term(other)
             done.add(node)
 
     # --- Attributes ---------------------------------------------------------

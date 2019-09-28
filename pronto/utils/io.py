@@ -54,7 +54,7 @@ class EncodedFile(codecs.StreamRecoder):
         return chunk.replace(b'\r\n', b'\n')
 
     def readinto(self, buffer):
-        chunk = self.read(len(buffer)-1)
+        chunk = self.read(len(buffer)//2)
         buffer[:len(chunk)] = chunk
         return len(chunk)
 

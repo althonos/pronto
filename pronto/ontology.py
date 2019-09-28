@@ -102,7 +102,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         raise KeyError(f"could not find entity: {id}")
 
     def __repr__(self):
-        args = (self.path,) if self.path is not None else ()
+        args = (self.path,) if self.path is not None else (self.handle,)
         kwargs = {"timeout": (self.timeout, 2)}
         if self.import_depth > 0:
             kwargs["import_depth"] = (self.import_depth, -1)

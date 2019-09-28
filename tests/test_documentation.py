@@ -28,26 +28,28 @@ class TestProntoDocumentation(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(os.path.join(utils.TESTDIR, "run"))
 
-    @classmethod
-    def register_tests(cls):
-        """Register tests for most sphinx builders"""
-        for builder in ('html', 'json', 'man', 'xml'):
-            cls.add_test(builder)
+    def assertBuilds(self, format):
+        with mock.patch('sys.stderr', six.moves.StringIO()) as stderr:
+            with mock.patch('sys.stdout', six.moves.StringIO()) as stdout:
+                self.assertEquals(0, build_main([
+                    "-b{}".format(format),
+                    "-d{}".format(os.path.join(self.build_dir, 'doctrees')),
+                    self.source_dir,
+                    os.path.join(self.build_dir, format)]),
+                    "sphinx exited with non-zero return code",
+                )
 
-    @classmethod
-    def add_test(cls, builder):
+    def test_html(self):
+        self.assertBuilds("html")
 
-        @unittest.skipUnless(build_main, "Sphinx is not available")
-        def _test(self):
-            with mock.patch('sys.stderr', six.moves.StringIO()) as stderr:
-                with mock.patch('sys.stdout', six.moves.StringIO()) as stdout:
-                    self.assertEquals(0, build_main([
-                        "-b{}".format(builder),
-                        "-d{}".format(os.path.join(self.build_dir, 'doctrees')),
-                        self.source_dir,
-                        os.path.join(self.build_dir, builder)])
-                    )
-        setattr(cls, "test_{}".format(builder), _test)
+    def test_json(self):
+        self.assertBuilds("json")
+
+    def test_man(self):
+        self.assertBuilds("man")
+
+    def test_xml(self):
+        self.assertBuilds("xml")
 
 
 def setUpModule():
@@ -55,9 +57,3 @@ def setUpModule():
 
 def tearDownModule():
     warnings.simplefilter(warnings.defaultaction)
-
-def load_tests(loader, tests, pattern):
-
-    TestProntoDocumentation.register_tests()
-    tests.addTests(loader.loadTestsFromTestCase(TestProntoDocumentation))
-    return tests

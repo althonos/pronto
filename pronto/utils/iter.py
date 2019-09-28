@@ -1,11 +1,11 @@
 import typing
 from typing import TypeVar, Generic, Iterator, Sized
 
-
+S = TypeVar('S')
 T = TypeVar('T')
 
 
-class SizedIterator(Iterator[T], Sized, Generic[T]):
+class SizedIterator(Generic[T], Iterator[T], Sized):
 
     def __init__(self, it: Iterator[T], length: int):
         self._it = it
@@ -17,7 +17,7 @@ class SizedIterator(Iterator[T], Sized, Generic[T]):
     def __length_hint__(self) -> int:
         return self._length
 
-    def __iter__(self) -> 'SizedIterator[T]':
+    def __iter__(self: S) -> S:
         return self
 
     def __next__(self) -> T:

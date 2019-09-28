@@ -114,5 +114,5 @@ def decompress(
     if det['confidence'] == 1.0:
         return BufferedReader(EncodedFile(decompressed, 'UTF-8', det['encoding']))
     else:
-        warnings.warn('could not find encoding, assuming UTF-8', UnicodeWarning, stacklevel=2)
+        warnings.warn('could not find encoding, assuming UTF-8', UnicodeWarning, stacklevel=3)
         return decompressed

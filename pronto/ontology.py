@@ -73,6 +73,22 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 raise ValueError(f"could not find a parser to parse {handle!r}")
 
     def __len__(self) -> int:
+        """Return the number of entities in the ontology.
+
+        This method takes into accounts the terms and the relationships defined
+        in the current ontology as well as all of its imports. To only count
+        terms or relationships, use `len` on the iterator returned by the
+        dedicated methods (e.g. `len(ontology.terms())`).
+
+        Example:
+            >>> ms = pronto.Ontology("ms.obo.xz")
+            >>> len(ms)
+            2961
+            >>> len(ms.terms())
+            2956
+            >>> len(ms.relationships())
+            5
+        """
         return len(self._terms) + len(self._relationships) + sum(map(len, self.imports.values()))
 
     def __iter__(self) -> SizedIterator[str]:

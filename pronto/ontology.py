@@ -73,7 +73,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 raise ValueError(f"could not find a parser to parse {handle!r}")
 
     def __len__(self) -> int:
-        return len(self._terms) + len(self._relationships) + sum(map(len, self.imports))
+        return len(self._terms) + len(self._relationships) + sum(map(len, self.imports.values()))
 
     def __iter__(self) -> SizedIterator[str]:
         terms, relationships = self.terms(), self.relationships()

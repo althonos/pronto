@@ -319,34 +319,33 @@ class Term(Entity):
             the ``is_a`` relationship is translated to in OWL2 language.
 
         """
-        ont = self._ontology()
+        ont: 'Ontology' = typing.cast('Ontology', self._ontology())
 
         # Search objects terms
-        sup, done = set(), set()
-        frontier = { self.id }
+        sup: Set[Term] = set()
+        done: Set[Term] = set()
+        frontier: Set[Term] = { self }
 
         # RDF semantics state that self is a subclass of self
-        sup.add(self.id)
+        sup.add(self)
         yield self
 
         # Initial connected components
         for other in self.relationships.get(ont.get_relationship('is_a'), ()):
-            sup.add(other.id)
+            sup.add(other)
             yield other
 
         # Explore the graph
-        for node in iter(lambda: frontier.pop() if frontier else None, None):
-            if node in sub:
-                neighbors = set(g.neighbors())
-                frontier.update(neighbors - set)
-                for other in neighbors - sub:
-                    sub.add(other)
-                    yield ont.get_term(other)
+        while frontier:
+            node: Term = frontier.pop()
+            if node in sup:
+                neighbors: Set[Term] = set(node.relationships.get(ont.get_relationship('is_a'), ()))
+                frontier.update(neighbors - done)
+                for neighbor in neighbors - sup:
+                    sup.add(neighbor)
+                    yield neighbor
             done.add(node)
 
-
-
-        return self.objects(self._ontology().get_relationship('is_a'))
 
     def subclasses(self) -> Iterator['Term']:
         """Get an iterator over the subclasses of this `Term`.
@@ -378,28 +377,34 @@ class Term(Entity):
 
         # Build the directed graph
         for t in ont.terms():
+            g.add_node(t.id)
             for t2 in t.relationships.get(ont.get_relationship('is_a'), []):
                 g.add_edge(t2.id, t.id)
 
         # Search objects terms
-        done = set()
-        frontier = set()
+        sub: Set[str] = set()
+        done: Set[str] = set()
+        frontier: Set[str] = set()
 
         # RDF semantics state that self is a subclass of self
         frontier.add(self.id)
+        sub.add(self.id)
         yield self
 
         # Initial connected components
         for other in g.neighbors(self.id):
+            sub.add(other)
             frontier.add(other)
             yield ont.get_term(other)
 
         # Explore the graph
-        for node in iter(lambda: frontier.pop() if frontier else None, None):
-            neighbors = set(g.neighbors(node))
+        while frontier:
+            node: str = frontier.pop()
+            neighbors: Set[str] = set(g.neighbors(node))
             frontier.update(neighbors - done)
-            for other in neighbors:
-                yield ont.get_term(other)
+            for neighbor in neighbors - sub:
+                sub.add(neighbor)
+                yield ont.get_term(neighbor)
             done.add(node)
 
     # --- Attributes ---------------------------------------------------------

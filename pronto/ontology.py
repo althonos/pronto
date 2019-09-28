@@ -27,7 +27,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     """An ontology.
     """
 
-    session: requests.Session
     import_depth: int
     timeout: int
     imports: Dict[str, 'Ontology']
@@ -37,11 +36,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         handle: Union[BinaryIO, str, None] = None,
         import_depth: int = -1,
         timeout: int = 2,
-        session: Optional[requests.Session] = None,
     ):
         with contexter.Contexter() as ctx:
-            self._default_session = session is None
-            self.session = session or (ctx << requests.Session())
             self.import_depth = import_depth
             self.timeout = timeout
             self.imports = dict()
@@ -58,7 +54,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             # Get the path and the handle from arguments
             if isinstance(handle, str):
                 self.path: str = handle
-                self.handle = ctx << get_handle(handle, self.session, timeout)
+                self.handle = ctx << get_handle(handle, timeout)
                 _handle = ctx << decompress(self.handle)
             elif hasattr(handle, 'read'):
                 self.path: str = get_location(handle)
@@ -110,8 +106,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         kwargs = {"timeout": (self.timeout, 2)}
         if self.import_depth > 0:
             kwargs["import_depth"] = (self.import_depth, -1)
-        if not self._default_session:
-            kwargs["session"] = (self.session, None)
         return make_repr("Ontology", *args, **kwargs)
 
     # ------------------------------------------------------------------------

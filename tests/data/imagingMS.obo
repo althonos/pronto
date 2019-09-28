@@ -12,8 +12,8 @@ remark: 091123 Added attributes for imaging laser shot method. Attribute "one wa
 remark: 091207 Added attributes for SIMS experiments
 remark: "subimage positions" parameters added for images which are composed of several subimages!
 remark: creator: Thorsten Schramm <thorsten.schramm@anorg.chemie.uni-giessen.de>
-import: Unit.obo
-import: psi-ms.obo
+import: uo
+import: ms
 
 [Term]
 id: IMS:0000000

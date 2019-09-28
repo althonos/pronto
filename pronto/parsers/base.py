@@ -39,5 +39,4 @@ class BaseParser(abc.ABC):
                     url,
                     max(self.ont.import_depth-1, 0),
                     self.ont.timeout,
-                    self.ont.session
                 )

@@ -1,0 +1,4 @@
+
+
+class NotImplementedWarning(UserWarning):
+    pass

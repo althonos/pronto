@@ -2,6 +2,7 @@ import collections.abc
 import datetime
 import itertools
 import typing
+import warnings
 import weakref
 from typing import Callable, Dict, Iterator, List, Mapping, Optional, Set, Tuple, Union, FrozenSet
 
@@ -18,6 +19,7 @@ from .relationship import Relationship
 from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
 from .utils.repr import make_repr
 from .utils.impl import set
+from .utils.warnings import NotImplementedWarning
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -140,7 +142,7 @@ class Term(Entity):
             return lambda c: getattr(termdata, dst).add(cb(getattr(c, src)))
 
         def todo():
-            return lambda c: print("todo", c)
+            return lambda c: warnings.warn(f"cannot process `{c}`", NotImplementedWarning, stacklevel=3)
 
         _callbacks = {
             fastobo.term.IsAnonymousClause: copy("anonymous"),

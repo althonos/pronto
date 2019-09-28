@@ -1,5 +1,6 @@
 import datetime
 import typing
+import warnings
 import weakref
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
@@ -11,6 +12,7 @@ from .synonym import Synonym, _SynonymData
 from .xref import Xref
 from .pv import PropertyValue
 from .utils.impl import set
+from .utils.warnings import NotImplementedWarning
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -184,7 +186,7 @@ class Relationship(Entity):
                 return lambda c: getattr(rshipdata, dst).add(cb(getattr(c, src)))
 
             def todo():
-                return lambda c: print("todo", c)
+                return lambda c: warnings.warn(f"cannot process `{c}`", NotImplementedWarning, stacklevel=3)
 
             _callbacks = {
                 fastobo.typedef.AltIdClause: add("alt_id", "alternate_ids", cb=str),
@@ -202,7 +204,7 @@ class Relationship(Entity):
                 fastobo.typedef.DomainClause:
                     lambda c: setattr(rshipdata, "domain", str(c.domain)),
                 fastobo.typedef.EquivalentToChainClause: todo(),
-                fastobo.typedef.EquivalentToClause: todo(),
+                fastobo.typedef.EquivalentToClause: add("typedef", "equivalent_to", cb=str),
                 fastobo.typedef.ExpandAssertionToClause: (lambda c:
                     rshipdata.expand_assertion_to.add(Definition._from_ast(c))
                 ),
@@ -240,8 +242,8 @@ class Relationship(Entity):
                 fastobo.typedef.RangeClause:
                     lambda c: setattr(rshipdata, "range", str(c.range)),
                 fastobo.typedef.RelationshipClause: todo(),
-                fastobo.typedef.ReplacedByClause: todo(),
-                fastobo.typedef.SubsetClause: todo(),
+                fastobo.typedef.ReplacedByClause: add("typedef", "replaced_by", cb=str),
+                fastobo.typedef.SubsetClause: add("subset", "subsets", cb=str),
                 fastobo.typedef.SynonymClause:
                     lambda c: rshipdata.synonyms.add(_SynonymData._from_ast(c.synonym)),
                 fastobo.typedef.TransitiveOverClause:

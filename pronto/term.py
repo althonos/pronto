@@ -129,7 +129,7 @@ class Term(Entity):
         def copy(src, dst=None, cb=None):
             cb = cb or (lambda x: x)
             dst = dst or src
-            return lambda c: setattr(term, dst, cb(getattr(c, src)))
+            return lambda c: setattr(termdata, dst, cb(getattr(c, src)))
 
         def add(src, dst=None, cb=None):
             cb = cb or (lambda x: x)

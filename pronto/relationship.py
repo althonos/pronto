@@ -179,7 +179,7 @@ class Relationship(Entity):
         def copy(src, dst=None, cb=None):
             cb = cb or (lambda x: x)
             dst = dst or src
-            return lambda c: setattr(rship, dst, cb(getattr(c, src)))
+            return lambda c: setattr(rshipdata, dst, cb(getattr(c, src)))
 
         def add(src, dst=None, cb=None):
             cb = cb or (lambda x: x)

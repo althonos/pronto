@@ -62,7 +62,6 @@ class typechecked(object):
         return newfunc
 
 
-
 class roundrepr(object):
     """A class-decorator to build a minimal `__repr__` method that roundtrips.
     """
@@ -102,14 +101,15 @@ class roundrepr(object):
         )
         return "{}({})".format(class_name, ", ".join(arguments))
 
-    def __new__(self, property):
-        if isinstance(property, type):
-            return super().__new__(self)(property)
+    def __new__(self, cls):
         obj = super().__new__(self)
         obj.__init__()
+        if isinstance(cls, type):
+            return obj(cls)
         return obj
 
     def __call__(self, cls):
+
         # Extract signature of `__init__`
         sig = inspect.signature(cls.__init__)
         if not all(p.kind is p.POSITIONAL_OR_KEYWORD for p in sig.parameters.values()):
@@ -120,10 +120,10 @@ class roundrepr(object):
             args, kwargs = [], {}
             for name, param in itertools.islice(sig.parameters.items(), 1, None):
                 if param.default is inspect.Parameter.empty:
-                    args.append(getattr(self, name))
+                    args.append(getattr(self_, name))
                 else:
-                    kwargs[name] = (getattr(self, name), param.default)
-            return self.make_repr(cls.__name__, *args, **kwargs)
+                    kwargs[name] = (getattr(self_, name), param.default)
+            return self.make(cls.__name__, *args, **kwargs)
 
         # Hotpatch the class and return it
         cls.__repr__ = __repr__

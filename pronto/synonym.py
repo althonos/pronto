@@ -8,8 +8,8 @@ from typing import Optional, Set, FrozenSet, Iterable
 import fastobo
 
 from .xref import Xref
-from .utils.repr import make_repr, roundrepr
 from .utils.impl import set
+from .utils.meta import roundrepr
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -141,7 +141,7 @@ class Synonym(object):
         return hash(self._data())
 
     def __repr__(self):
-        return make_repr(
+        return roundrepr.make(
             "Synonym",
             self.description,
             scope=(self.scope, None),

@@ -13,6 +13,7 @@ from .synonym import Synonym, _SynonymData
 from .xref import Xref
 from .pv import PropertyValue
 from .utils.impl import set
+from .utils.meta import typechecked
 from .utils.warnings import NotImplementedWarning
 
 if typing.TYPE_CHECKING:
@@ -279,11 +280,8 @@ class Relationship(Entity):
         return self._data().antisymmetric
 
     @antisymmetric.setter
+    @typechecked(property=True)
     def antisymmetric(self, value: bool) -> None:
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'antisymmetric' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().antisymmetric = value
 
     @property
@@ -291,11 +289,8 @@ class Relationship(Entity):
         return self._data().asymmetric
 
     @asymmetric.setter
+    @typechecked(property=True)
     def asymmetric(self, value: bool) -> None:
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'asymmetric' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().asymmetric = value
 
     @property
@@ -303,11 +298,8 @@ class Relationship(Entity):
         return self._data().class_level
 
     @class_level.setter
+    @typechecked(property=True)
     def class_level(self, value: bool) -> None:
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'class_level' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().class_level = value
 
     @property
@@ -337,13 +329,14 @@ class Relationship(Entity):
         return None
 
     @domain.setter
+    #@typechecked(property=True)
     def domain(self, value: Optional['Term']) -> None:
         rshipdata, ontology = self._data(), self._ontology()
         if value is not None:
             try:
                 ontology.get_term(value.id)
             except KeyError:
-                raise ValueError(f"{value} is not in {ontology}")
+                raise ValueError(f"{value} is not a term in {ontology}")
         rshipdata.domain = value.id if value is not None else None
 
     @property
@@ -357,7 +350,7 @@ class Relationship(Entity):
             try:
                 self._ontology().get_term(value.id)
             except KeyError:
-                raise ValueError(f"{value} is not in {self._ontology()}")
+                raise ValueError(f"{value} is not a term in {self._ontology()}")
         self._data().domain = value.id if value is not None else None
 
     @property
@@ -380,11 +373,8 @@ class Relationship(Entity):
         return self._data().functional
 
     @functional.setter
+    @typechecked(property=True)
     def functional(self, value: bool) -> None:
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'functional' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().functional = value
 
     @property
@@ -392,11 +382,8 @@ class Relationship(Entity):
         return self._data().inverse_functional
 
     @inverse_functional.setter
+    @typechecked(property=True)
     def inverse_functional(self, value: bool) -> None:
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'inverse_functional' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().inverse_functional = value
 
     @property
@@ -404,11 +391,8 @@ class Relationship(Entity):
         return self._data().metadata_tag
 
     @metadata_tag.setter
+    @typechecked(property=True)
     def metadata_tag(self, value: bool):
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'metadata_tag' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().metadata_tag = value
 
     @property
@@ -468,11 +452,8 @@ class Relationship(Entity):
         return self._data().reflexive
 
     @reflexive.setter
+    @typechecked(property=True)
     def reflexive(self, value: bool):
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'reflexive' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().reflexive = value
 
     @property
@@ -485,11 +466,8 @@ class Relationship(Entity):
         return self._data().symmetric
 
     @symmetric.setter
+    @typechecked(property=True)
     def symmetric(self, value: bool):
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'symmetric' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().symmetric = value
 
     @property
@@ -497,11 +475,8 @@ class Relationship(Entity):
         return self._data().transitive
 
     @transitive.setter
+    @typechecked(property=True)
     def transitive(self, value: bool):
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'transitive' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().transitive = value
 
     @property

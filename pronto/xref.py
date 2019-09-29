@@ -5,9 +5,8 @@ import typing
 
 import fastobo
 
-from .utils.repr import roundrepr
 from .utils.impl import set
-from .utils.meta import typechecked
+from .utils.meta import roundrepr, typechecked
 
 
 @roundrepr

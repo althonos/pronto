@@ -1,6 +1,6 @@
 import fastobo
 
-from .utils.repr import roundrepr
+from .utils.meta import roundrepr
 from .utils.impl import set
 
 

@@ -35,7 +35,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         self,
         handle: Union[BinaryIO, str, None] = None,
         import_depth: int = -1,
-        timeout: int = 2,
+        timeout: int = 5,
     ):
         with contexter.Contexter() as ctx:
             self.import_depth = import_depth

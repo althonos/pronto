@@ -193,6 +193,7 @@ napoleon_include_private_with_doc = True
 napoleon_use_admonition_for_examples = True
 napoleon_use_admonition_for_notes = True
 napoleon_use_admonition_for_references = True
+napoleon_use_rtype = False
 
 # -- Options for autodoc extension -------------------------------------------
 
@@ -205,7 +206,6 @@ autosummary_generate = ['api']
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
-    "requests": ("https://requests.readthedocs.io/en/master/", None),
     "fastobo": ("https://fastobo.readthedocs.io/en/latest/", None),
 }
 

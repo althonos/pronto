@@ -9,7 +9,6 @@ from typing import BinaryIO, Dict, Iterator, Mapping, Optional, Union
 
 import contexter
 import fastobo
-import requests
 
 from . import relationship
 from .term import Term, _TermData

@@ -8,7 +8,7 @@ from typing import Callable, ClassVar, Optional, Union, Tuple
 
 
 T = typing.TypeVar('T')
-F = typing.TypeVar('F')
+F = typing.TypeVar('F', bound=Callable)
 
 
 class typechecked(object):
@@ -24,6 +24,20 @@ class typechecked(object):
         # typing.Any is always true
         if getattr(hint, '_name', None) == 'typing.Any':
             return (True, None)
+        # typing.Set needs to check member types
+        if getattr(hint, '__origin__', None) is set:
+            if not isinstance(value, collections.abc.MutableSet):
+                return (False, f"set of { hint.__args__ }")
+            for arg in value:
+                if not cls.check_type(hint.__args__, value):
+                    return (False, f"set of { hint.__args__ }")
+        # typing.FrozenSet needs to check member types
+        if getattr(hint, '__origin__', None) is frozenset:
+            if not isinstance(value, collections.abc.Set):
+                return (False, f"frozen set of { hint.__args__ }")
+            for arg in value:
+                if not cls.check_type(hint.__args__, value):
+                    return (False, f"frozen set of { hint.__args__ }")
         # typing.Union needs to be a valid type
         if getattr(hint, '__origin__', None) == typing.Union:
             results = {}
@@ -34,11 +48,11 @@ class typechecked(object):
         return (False, "something")
 
     @typing.overload
-    def __new__(self, property: bool) -> 'typechecked':
+    def __new__(self, property: F) -> F:
         pass
 
     @typing.overload
-    def __new__(self, property: F) -> F:
+    def __new__(self, property: bool) -> 'typechecked':
         pass
 
     def __new__(self, property):
@@ -81,7 +95,7 @@ class roundrepr(object):
     """
 
     @staticmethod
-    def make(class_name, *args, **kwargs):
+    def make(class_name: str, *args, **kwargs):
         """Generate a repr string.
 
         Positional arguments should be the positional arguments used to
@@ -115,14 +129,14 @@ class roundrepr(object):
         )
         return "{}({})".format(class_name, ", ".join(arguments))
 
-    def __new__(self, cls):
+    def __new__(self, cls: T) -> T:
         obj = super().__new__(self)
         obj.__init__()
         if isinstance(cls, type):
             return obj(cls)
         return obj
 
-    def __call__(self, cls):
+    def __call__(self, cls: T) -> T:
 
         # Extract signature of `__init__`
         sig = inspect.signature(cls.__init__)

@@ -294,7 +294,7 @@ class Term(Entity):
         In order to follow the semantics of ``rdf:subClassOf``, which in turn
         respects the mathematical inclusion of subset inclusion, ``is_a`` is
         defined as a transitive relationship, hence ``has_subclass`` is also
-        transitive by closure property. Therefore is ``self`` always yielded
+        transitive by closure property. Therefore ``self`` is always yielded
         first when calling this method.
 
         Yields:
@@ -313,8 +313,8 @@ class Term(Entity):
             Term('MS:1000031', name='instrument model')
 
         Note:
-            The runtime for this algorithm is :math:`O(n)`, where :math:`n` is
-            the number of terms in the source ontology.
+            The time complexity for this algorithm is in :math:`O(n)`, where
+            :math:`n` is the number of terms in the source ontology.
 
         See Also:
             The `RDF Schema 1.1 <https://www.w3.org/TR/rdf-schema/>`_

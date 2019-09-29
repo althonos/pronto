@@ -1,38 +1,42 @@
 
 import datetime
+import typing
 import warnings
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Union
 
 import fastobo
 
 from .synonym import SynonymType
 from .pv import PropertyValue
 from .utils.impl import set
+from .utils.meta import roundrepr, typechecked
 from .utils.warnings import NotImplementedWarning
 
 
+@roundrepr
 class Subset(object):
 
     name: str
     description: str
 
-    __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
+    __slots__ = ("__weakref__", "name", "description")
 
+    @typechecked(property=False)
     def __init__(self, name: str, description: str):
         self.name: str = name
         self.description: str = description
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Subset):
             return (self.name, self.description) == (other.name, other.description)
         return False
 
-    def __lt__(self, other):
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, Subset):
-            return NotImplemented
+            return typing.cast(bool, NotImplemented)
         return (self.name, self.description) < (other.name, other.description)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.name, self.description))
 
 
@@ -127,24 +131,35 @@ class Metadata(object):
         return metadata
 
     def __init__(
-        self,
-        format_version: str = "1.4",
-        data_version: Optional[str] = None,
-        ontology: Optional[str] = None,
-        date: Optional[datetime.datetime] = None,
-        default_namespace: Optional[str] = None,
-        namespace_id_rule: Optional[str] = None,
-        owl_axioms: Optional[List[str]] = None,
-        saved_by: Optional[str] = None,
-        auto_generated_by: Optional[str] = None,
-        subsetdefs: Set[Subset] = None,
-        imports: Optional[Dict[str, str]] = None,
-        synonymtypedefs: Set[SynonymType] = None,
-        idspace: Dict[str, str] = None,
-        remarks: Set[str] = None,
-        annotations: Set[PropertyValue] = None,
-        **unreserved: Set[str],
+            self,
+            format_version: str = "1.4",
+            data_version: Optional[str] = None,
+            ontology: Optional[str] = None,
+            date: Optional[datetime.datetime] = None,
+            default_namespace: Optional[str] = None,
+            namespace_id_rule: Optional[str] = None,
+            owl_axioms: Optional[List[str]] = None,
+            saved_by: Optional[str] = None,
+            auto_generated_by: Optional[str] = None,
+            subsetdefs: Set[Subset] = None,
+            imports: Optional[Dict[str, str]] = None,
+            synonymtypedefs: Set[SynonymType] = None,
+            idspace: Dict[str, str] = None,
+            remarks: Set[str] = None,
+            annotations: Set[PropertyValue] = None,
+            **unreserved: Set[str],
     ):
+        """Create a new `Metadata` instance.
+
+        Arguments:
+            format_version (str): the OBO format version of the referenced
+                ontology. **1.4** is the default since ``pronto`` can only
+                parse and write OBO documents of that format version.
+            data_version (str or None): the OBO data version of the ontology,
+                which is then expanded to the ``versionIRI`` if translated to
+                OWL.
+
+        """
         self.format_version = format_version
         self.data_version = data_version
         self.ontology = ontology

@@ -18,13 +18,25 @@ from .relationship import Relationship, _RelationshipData
 from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
-from .utils.meta import roundrepr
+from .utils.meta import roundrepr, typechecked
 from .utils.impl import set
 from .parsers import BaseParser
 
 
 class Ontology(Mapping[str, Union[Term, Relationship]]):
     """An ontology.
+
+    Ontologies can be loaded with ``pronto`` if they are serialized in any of
+    the following ontology languages and formats at the moment:
+
+    - `Ontology Web Language 2 <https://www.w3.org/TR/owl2-overview/>`_
+      in `RDF/XML format
+      <https://www.w3.org/TR/2012/REC-owl2-mapping-to-rdf-20121211/>`_.
+    - `Open Biomedical Ontologies 1.4
+      <http://owlcollab.github.io/oboformat/doc/obo-syntax.html>`_.
+    - `OBO graphs <https://github.com/geneontology/obographs>`_ in
+      `JSON <http://json.org/>`_ format.
+
     """
 
     import_depth: int
@@ -37,6 +49,28 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         import_depth: int = -1,
         timeout: int = 5,
     ):
+        """Create a new `Ontology` instance.
+
+        Arguments:
+            handle (str, ~typing.BinaryIO, or None): Either the path to a file
+                or a binary file handle that contains a serialized version of
+                the ontology. If `None` is given, an empty `Ontology` is
+                returned and can be populated manually.
+            import_depth (int): The maximum depth of imports to resolve in the
+                ontology tree. *Note that the library may not behave correctly
+                when not importing the complete dependency tree, so you should
+                probably use the default value and import everything*.
+            timeout (int): The timeout in seconds to use when performing
+                network I/O, for instance when connecting to the OBO library
+                to download imports.
+
+        Raises:
+            TypeError: when the given ``handle`` could not be used to parse
+                and ontology.
+            ValueError: when the given ``handle`` contains a serialized
+                ontology not supported by any of the builtin parsers.
+
+        """
         with contexter.Contexter() as ctx:
             self.import_depth = import_depth
             self.timeout = timeout
@@ -78,7 +112,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         This method takes into accounts the terms and the relationships defined
         in the current ontology as well as all of its imports. To only count
         terms or relationships, use `len` on the iterator returned by the
-        dedicated methods (e.g. `len(ontology.terms())`).
+        dedicated methods (e.g. ``len(ontology.terms())``).
 
         Example:
             >>> ms = pronto.Ontology("ms.obo.xz")
@@ -92,6 +126,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         return len(self._terms) + len(self._relationships) + sum(map(len, self.imports.values()))
 
     def __iter__(self) -> SizedIterator[str]:
+        """Yields the identifiers of all the entities part of the ontology.
+        """
         terms, relationships = self.terms(), self.relationships()
         return SizedIterator(
             (entity.id for entity in itertools.chain(terms, relationships)),
@@ -104,6 +140,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             or item in self._relationships \
             or item in relationship._BUILTINS
 
+    @typechecked
     def __getitem__(self, id: str) -> Union[Term, Relationship]:
         """Get any entity in the ontology graph with the given identifier.
         """
@@ -149,8 +186,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     def relationships(self) -> SizedIterator[Relationship]:
         """Iterate over the relationships of the ontology graph.
 
-        Builtin ontologies (``is_a`` and ``has_subclass``) are not part of the
-        returned sequence.
+        Builtin relationships (``is_a``) are not part of the yielded entities,
+        yet they can still be accessed with the `Ontology.get_relationship`
+        method.
         """
         return SizedIterator(
             itertools.chain(
@@ -169,12 +207,17 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             ),
         )
 
+    @typechecked
     def create_term(self, id: str) -> Term:
         """Create a new term with the given identifier.
 
+        Returns:
+            `Term`: the newly created term view, which attributes can the be
+            modified directly.
+
         Raises:
             ValueError: if the provided ``id`` already identifies an entity
-                in the ontology graph.
+                in the ontology graph, or if it is not a valid OBO identifier.
 
         """
         with contextlib.suppress(KeyError):
@@ -182,6 +225,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         self._terms[id] = termdata = _TermData(id)
         return Term(self, termdata)
 
+    @typechecked
     def create_relationship(self, id: str) -> Relationship:
         """Create a new relationship with the given identifier.
 
@@ -195,6 +239,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         self._relationships[id] = reldata = _RelationshipData(id)
         return Relationship(self, reldata)
 
+    @typechecked
     def get_term(self, id: str) -> Term:
         """Get a term in the ontology graph from the given identifier.
 
@@ -208,6 +253,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 return Term(self, dep.get_term(id)._data())
         return Term(self, self._terms[id])
 
+    @typechecked
     def get_relationship(self, id: str) -> Relationship:
         """Get a relationship in the ontology graph from the given identifier.
 

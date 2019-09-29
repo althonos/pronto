@@ -1,4 +1,5 @@
-# coding: utf-8
+"""Cross-reference object definition.
+"""
 
 import functools
 import typing
@@ -15,7 +16,16 @@ class Xref(object):
 
     Cross-references (xrefs for short) can be used to back-up definitions of
     entities, synonyms, or to link ontological entities to other resources
-    they may have been derived from.
+    they may have been derived from. Although originally intended to provide
+    links to databases, cross-references in OBO ontologies gained additional
+    purposes, such as helping for header macros expansion, or being used to
+    alias external relationships with local unprefixed IDs.
+
+    The OBO format version 1.4 expects references to be proper OBO identifiers
+    that can be translated to actual IRIs, which is a breaking change from the
+    previous format. Therefore, cross-references are encouraged to be given as
+    plain IRIs or as prefixed IDs using an ID from the IDspace mapping defined
+    in the header.
 
     Example:
         A cross-reference in the Mammalian Phenotype ontology linking a term
@@ -59,7 +69,8 @@ class Xref(object):
             id (str): the identifier of the cross-reference, either as a URL,
                 a prefixed identifier, or an unprefixed identifier.
             description (str or None): a human-readable description of the
-                cross-reference, or `None`.
+                cross-reference, if any.
+
         """
         # check the id is valid using fastobo
         self.id: str = str(fastobo.id.parse(id))

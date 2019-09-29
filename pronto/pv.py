@@ -1,3 +1,6 @@
+"""Object hierarchy of property-value annotations in OBO files.
+"""
+
 import fastobo
 
 from .utils.impl import set
@@ -5,8 +8,10 @@ from .utils.meta import roundrepr, typechecked
 
 
 class PropertyValue(object):
-    property: str
+    """A property-value, which adds annotations to an entity.
+    """
 
+    property: str
     __slots__ = ("__weakref__", "property")
 
     @classmethod
@@ -22,10 +27,11 @@ class PropertyValue(object):
 
 @roundrepr
 class LiteralPropertyValue(PropertyValue):
-    property: str
+    """A property-value which adds a literal annotation to an entity.
+    """
+
     literal: str
     datatype: str
-
     __slots__ = ("literal", "datatype")
 
     @typechecked
@@ -41,11 +47,13 @@ class LiteralPropertyValue(PropertyValue):
 
 @roundrepr
 class ResourcePropertyValue(PropertyValue):
-    property: str
-    resource: str
+    """A property-value which adds a resource annotation to an entity.
+    """
 
+    resource: str
     __slots__ = ("resource",)
 
+    @typechecked
     def __init__(self, property: str, resource: str):
         self.property = str(fastobo.id.parse(property))
         self.resource = str(fastobo.id.parse(resource))

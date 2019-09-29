@@ -4,7 +4,7 @@ import itertools
 import typing
 import warnings
 import weakref
-from typing import Callable, Dict, Iterator, List, Mapping, Optional, Set, Tuple, Union, FrozenSet
+from typing import Callable, Dict, Iterator, Iterable, List, Mapping, Optional, Set, Tuple, Union, FrozenSet
 
 import fastobo
 import frozendict
@@ -107,9 +107,6 @@ class Term(Entity):
     """A term, corresponding to a node in the ontology graph.
     """
 
-    _ontology: 'weakref.ReferenceType[Ontology]'
-    _data: 'weakref.ReferenceType[_TermData]'
-
     def __init__(self, ontology: 'Ontology', termdata: '_TermData'):
         """Instantiate a new `Term`.
 
@@ -119,8 +116,7 @@ class Term(Entity):
             `Ontology.create_term` or `Ontology.get_term` depending on your
             needs to obtain a `Term` instance.
         """
-        self._ontology = weakref.ref(ontology)
-        self._data = weakref.ref(termdata)
+        super().__init__(ontology, termdata)
 
     @classmethod
     def _from_ast(cls, frame: fastobo.term.TermFrame, ontology: 'Ontology'):
@@ -227,6 +223,11 @@ class Term(Entity):
             frame.append(fastobo.term.UnionOfClause(member))
 
         return frame
+
+    if typing.TYPE_CHECKING:
+
+        def _data(self) -> '_TermData':
+            return typing.cast('_TermData', super()._data())
 
     # --- Methods ------------------------------------------------------------
 
@@ -348,7 +349,6 @@ class Term(Entity):
                     yield neighbor
             done.add(node)
 
-
     def subclasses(self) -> Iterator['Term']:
         """Get an iterator over the subclasses of this `Term`.
 
@@ -415,9 +415,31 @@ class Term(Entity):
     def disjoint_from(self) -> FrozenSet['Term']:
         ontology, termdata = self._ontology(), self._data()
         return frozenset({
-            Term(ontology, ontology.get_term(id))
+            ontology.get_term(id)
             for id in termdata.disjoint_from
         })
+
+    @disjoint_from.setter
+    def disjoint_from(self, terms: FrozenSet['Term']):
+        if __debug__:
+            if not isinstance(terms, collections.abc.Set):
+                msg = "'terms' must be a set, not {}"
+                raise TypeError(msg.format(type(terms).__name__))
+            for x in (x for x in terms if not isinstance(x, Term)):
+                msg = "'terms' must contain only Term, not {}"
+                raise TypeError(msg.format(type(x).__name__))
+        self._data().disjoint_from = set(term.id for term in terms)
+
+    @property
+    def intersection_of(self) -> FrozenSet[Union['Term', Tuple['Relationship', 'Term']]]:
+        ont, termdata, intersection_of = self._ontology(), self._data(), list()
+        for item in termdata.intersection_of:
+            try:
+                r, t = item
+                intersection_of.append(ont.get_relationship(r), ont.get_term(t))
+            except TypeError:
+                intersection_of.append(ont.get_term(item))
+        return frozenset(intersection_of)
 
     @property
     def relationships(self) -> Mapping[Relationship, FrozenSet['Term']]:
@@ -430,10 +452,22 @@ class Term(Entity):
             for rel,terms in termdata.relationships.items()
         })
 
+    @relationships.setter
+    def relationships(self, r: Mapping[Relationship, Iterable['Term']]):
+        self._data().relationships = {
+            relation.id: set(t.id for t in terms)
+            for relation, terms in r.items()
+        }
+
     @property
-    def union_of(self) -> Set['Term']:
-        cls, termdata, ont = type(self), self._data(), self._ontology()
-        return set(cls(ont, id) for id in termdata.union_of)
+    def replaced_by(self) -> FrozenSet['Term']:
+        ontology, termdata = self._ontology(), self._data()
+        return frozenset({ontology.get_term(t) for t in termdata.replaced_by})
+
+    @property
+    def union_of(self) -> FrozenSet['Term']:
+        termdata, ont = self._data(), self._ontology()
+        return frozenset(ont.get_term(t) for t in termdata.union_of)
 
     @union_of.setter
     def union_of(self, union_of: Set['Term']):
@@ -450,5 +484,5 @@ class Term(Entity):
 
     @property
     def consider(self) -> FrozenSet['Term']:
-        cls, termdata, ont = type(self), self._data(), self._ontology()
-        return frozenset(cls(ont, id) for id in termdata.consider)
+        termdata, ont = self._data(), self._ontology()
+        return frozenset(ont.get_term(t) for t in termdata.consider)

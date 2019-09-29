@@ -2,9 +2,10 @@ import datetime
 import typing
 import warnings
 import weakref
-from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from typing import Any, Dict, FrozenSet, List, Mapping, Optional, Set, Tuple
 
 import fastobo
+import frozendict
 
 from .entity import Entity, EntityData
 from .definition import Definition
@@ -71,7 +72,7 @@ class _RelationshipData(EntityData):
         anonymous: bool = False,
         name: Optional[str] = None,
         namespace: Optional[str] = None,
-        alternate_ids: Set[str] = None,
+        alternate_ids: Optional[Set[str]] = None,
         definition: Optional[Definition] = None,
         comment: Optional[str] = None,
         subsets: Optional[Set[str]] = None,
@@ -154,7 +155,7 @@ class _RelationshipData(EntityData):
 
 class Relationship(Entity):
 
-    def __init__(self, ontology, reldata):
+    def __init__(self, ontology: 'Ontology', reldata: '_RelationshipData'):
         """Instantiate a new `Relationship`.
 
         Important:
@@ -163,113 +164,173 @@ class Relationship(Entity):
             `Ontology.create_relationship` or `Ontology.get_relationship`
             depending on your needs to obtain a `Relationship` instance.
         """
-        self._ontology = weakref.ref(ontology)
-        self._data = weakref.ref(reldata)
+        super().__init__(ontology, reldata)
 
     @classmethod
     def _from_ast(cls, frame: fastobo.typedef.TypedefFrame, ontology: 'Ontology'):
 
-            rship = ontology.create_relationship(str(frame.id))
-            rshipdata = rship._data()
+        rship = ontology.create_relationship(str(frame.id))
+        rshipdata = rship._data()
 
-            union_of = set()
-            intersection_of = set()
+        union_of = set()
+        intersection_of = set()
 
-            def copy(src, dst=None, cb=None):
-                cb = cb or (lambda x: x)
-                dst = dst or src
-                return lambda c: setattr(rship, dst, cb(getattr(c, src)))
+        def copy(src, dst=None, cb=None):
+            cb = cb or (lambda x: x)
+            dst = dst or src
+            return lambda c: setattr(rship, dst, cb(getattr(c, src)))
 
-            def add(src, dst=None, cb=None):
-                cb = cb or (lambda x: x)
-                dst = dst or src
-                return lambda c: getattr(rshipdata, dst).add(cb(getattr(c, src)))
+        def add(src, dst=None, cb=None):
+            cb = cb or (lambda x: x)
+            dst = dst or src
+            return lambda c: getattr(rshipdata, dst).add(cb(getattr(c, src)))
 
-            def todo():
-                return lambda c: warnings.warn(f"cannot process `{c}`", NotImplementedWarning, stacklevel=3)
+        def todo():
+            return lambda c: warnings.warn(f"cannot process `{c}`", NotImplementedWarning, stacklevel=3)
 
-            _callbacks = {
-                fastobo.typedef.AltIdClause: add("alt_id", "alternate_ids", cb=str),
-                fastobo.typedef.BuiltinClause: copy("builtin"),
-                fastobo.typedef.CommentClause: copy("comment"),
-                fastobo.typedef.ConsiderClause: add("typedef", "consider", cb=str),
-                fastobo.typedef.CreatedByClause: copy("creator", "created_by"),
-                fastobo.typedef.CreationDateClause: copy("date", "creation_date"),
-                fastobo.typedef.DefClause:
-                    lambda c: setattr(rship, "definition", Definition._from_ast(c)),
-                fastobo.typedef.DisjointFromClause:
-                    add("typedef", "disjoint_from", cb=str),
-                fastobo.typedef.DisjointOverClause:
-                    add("typedef", "disjoint_over", cb=str),
-                fastobo.typedef.DomainClause:
-                    lambda c: setattr(rshipdata, "domain", str(c.domain)),
-                fastobo.typedef.EquivalentToChainClause: todo(),
-                fastobo.typedef.EquivalentToClause: add("typedef", "equivalent_to", cb=str),
-                fastobo.typedef.ExpandAssertionToClause: (lambda c:
-                    rshipdata.expand_assertion_to.add(Definition._from_ast(c))
-                ),
-                fastobo.typedef.ExpandExpressionToClause: (lambda c:
-                    rshipdata.expand_expression_to.add(Definition._from_ast(c))
-                ),
-                fastobo.typedef.HoldsOverChainClause: (lambda c:
-                    rshipdata.holds_over_chain.add((str(c.first), str(c.last)))
-                ),
-                fastobo.typedef.IntersectionOfClause:
-                    lambda c: intersection_of.add(str(c.typedef)),
-                fastobo.typedef.InverseOfClause:
-                    lambda c: setattr(rshipdata, "inverse_of", str(c.typedef)),
-                fastobo.typedef.IsAClause:
-                    lambda c: rshipdata.relationships.setdefault("is_a", set()).add(str(c.typedef)),
-                fastobo.typedef.IsAnonymousClause: copy("anonymous"),
-                fastobo.typedef.IsAntiSymmetricClause: copy("antisymmetric"),
-                fastobo.typedef.IsAsymmetricClause: copy("asymmetric"),
-                fastobo.typedef.IsClassLevelClause: copy("class_level"),
-                fastobo.typedef.IsCyclicClause: copy("cyclic"),
-                fastobo.typedef.IsFunctionalClause: copy("functional"),
-                fastobo.typedef.IsInverseFunctionalClause: copy("inverse_functional"),
-                fastobo.typedef.IsMetadataTagClause: copy("metadata_tag"),
-                fastobo.typedef.IsObsoleteClause: copy("obsolete"),
-                fastobo.typedef.IsReflexiveClause: copy("reflexive"),
-                fastobo.typedef.IsSymmetricClause: copy("symmetric"),
-                fastobo.typedef.IsTransitiveClause: copy("transitive"),
-                fastobo.typedef.NameClause: copy("name"),
-                fastobo.typedef.NamespaceClause: copy("namespace", cb=str),
-                fastobo.typedef.PropertyValueClause: (lambda c: (
-                    rshipdata.annotations.add(
-                        PropertyValue._from_ast(c.property_value)
-                    )
-                )),
-                fastobo.typedef.RangeClause:
-                    lambda c: setattr(rshipdata, "range", str(c.range)),
-                fastobo.typedef.RelationshipClause: todo(),
-                fastobo.typedef.ReplacedByClause: add("typedef", "replaced_by", cb=str),
-                fastobo.typedef.SubsetClause: add("subset", "subsets", cb=str),
-                fastobo.typedef.SynonymClause:
-                    lambda c: rshipdata.synonyms.add(_SynonymData._from_ast(c.synonym)),
-                fastobo.typedef.TransitiveOverClause:
-                    lambda c: rshipdata.transitive_over.add(str(c.typedef)),
-                fastobo.typedef.UnionOfClause:
-                    lambda c: union_of.add(str(c.typedef)),
-                fastobo.typedef.XrefClause:
-                    add("xref", "xrefs", cb=Xref._from_ast),
-            }
+        _callbacks = {
+            fastobo.typedef.AltIdClause: add("alt_id", "alternate_ids", cb=str),
+            fastobo.typedef.BuiltinClause: copy("builtin"),
+            fastobo.typedef.CommentClause: copy("comment"),
+            fastobo.typedef.ConsiderClause: add("typedef", "consider", cb=str),
+            fastobo.typedef.CreatedByClause: copy("creator", "created_by"),
+            fastobo.typedef.CreationDateClause: copy("date", "creation_date"),
+            fastobo.typedef.DefClause:
+                lambda c: setattr(rship, "definition", Definition._from_ast(c)),
+            fastobo.typedef.DisjointFromClause:
+                add("typedef", "disjoint_from", cb=str),
+            fastobo.typedef.DisjointOverClause:
+                add("typedef", "disjoint_over", cb=str),
+            fastobo.typedef.DomainClause:
+                lambda c: setattr(rshipdata, "domain", str(c.domain)),
+            fastobo.typedef.EquivalentToChainClause: todo(),
+            fastobo.typedef.EquivalentToClause: add("typedef", "equivalent_to", cb=str),
+            fastobo.typedef.ExpandAssertionToClause: (lambda c:
+                rshipdata.expand_assertion_to.add(Definition._from_ast(c))
+            ),
+            fastobo.typedef.ExpandExpressionToClause: (lambda c:
+                rshipdata.expand_expression_to.add(Definition._from_ast(c))
+            ),
+            fastobo.typedef.HoldsOverChainClause: (lambda c:
+                rshipdata.holds_over_chain.add((str(c.first), str(c.last)))
+            ),
+            fastobo.typedef.IntersectionOfClause:
+                lambda c: intersection_of.add(str(c.typedef)),
+            fastobo.typedef.InverseOfClause:
+                lambda c: setattr(rshipdata, "inverse_of", str(c.typedef)),
+            fastobo.typedef.IsAClause:
+                lambda c: rshipdata.relationships.setdefault("is_a", set()).add(str(c.typedef)),
+            fastobo.typedef.IsAnonymousClause: copy("anonymous"),
+            fastobo.typedef.IsAntiSymmetricClause: copy("antisymmetric"),
+            fastobo.typedef.IsAsymmetricClause: copy("asymmetric"),
+            fastobo.typedef.IsClassLevelClause: copy("class_level"),
+            fastobo.typedef.IsCyclicClause: copy("cyclic"),
+            fastobo.typedef.IsFunctionalClause: copy("functional"),
+            fastobo.typedef.IsInverseFunctionalClause: copy("inverse_functional"),
+            fastobo.typedef.IsMetadataTagClause: copy("metadata_tag"),
+            fastobo.typedef.IsObsoleteClause: copy("obsolete"),
+            fastobo.typedef.IsReflexiveClause: copy("reflexive"),
+            fastobo.typedef.IsSymmetricClause: copy("symmetric"),
+            fastobo.typedef.IsTransitiveClause: copy("transitive"),
+            fastobo.typedef.NameClause: copy("name"),
+            fastobo.typedef.NamespaceClause: copy("namespace", cb=str),
+            fastobo.typedef.PropertyValueClause: (lambda c: (
+                rshipdata.annotations.add(
+                    PropertyValue._from_ast(c.property_value)
+                )
+            )),
+            fastobo.typedef.RangeClause:
+                lambda c: setattr(rshipdata, "range", str(c.range)),
+            fastobo.typedef.RelationshipClause: todo(),
+            fastobo.typedef.ReplacedByClause: add("typedef", "replaced_by", cb=str),
+            fastobo.typedef.SubsetClause: add("subset", "subsets", cb=str),
+            fastobo.typedef.SynonymClause:
+                lambda c: rshipdata.synonyms.add(_SynonymData._from_ast(c.synonym)),
+            fastobo.typedef.TransitiveOverClause:
+                lambda c: rshipdata.transitive_over.add(str(c.typedef)),
+            fastobo.typedef.UnionOfClause:
+                lambda c: union_of.add(str(c.typedef)),
+            fastobo.typedef.XrefClause:
+                add("xref", "xrefs", cb=Xref._from_ast),
+        }
 
-            for clause in frame:
-                try:
-                    _callbacks[type(clause)](clause)
-                except KeyError:
-                    raise TypeError(f"unexpected type: {type(clause).__name__}")
-            if len(union_of) == 1:
-                raise ValueError("'union_of' cannot have a cardinality of 1")
-            rshipdata.union_of = union_of
-            if len(intersection_of) == 1:
-                raise ValueError("'intersection_of' cannot have a cardinality of 1")
-            rshipdata.intersection_of = intersection_of
-            return rship
+        for clause in frame:
+            try:
+                print(clause)
+                _callbacks[type(clause)](clause)
+            except KeyError:
+                raise TypeError(f"unexpected type: {type(clause).__name__}")
+        if len(union_of) == 1:
+            raise ValueError("'union_of' cannot have a cardinality of 1")
+        rshipdata.union_of = union_of
+        if len(intersection_of) == 1:
+            raise ValueError("'intersection_of' cannot have a cardinality of 1")
+        rshipdata.intersection_of = intersection_of
+        return rship
+
+    if typing.TYPE_CHECKING:
+
+        def _data(self) -> '_RelationshipData':
+            return typing.cast('_RelationshipData', super()._data())
 
     # --- Data descriptors ---------------------------------------------------
 
     @property
+    def antisymmetric(self) -> bool:
+        return self._data().antisymmetric
+
+    @antisymmetric.setter
+    def antisymmetric(self, value: bool) -> None:
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'antisymmetric' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().antisymmetric = value
+
+    @property
+    def asymmetric(self) -> bool:
+        return self._data().asymmetric
+
+    @asymmetric.setter
+    def asymmetric(self, value: bool) -> None:
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'asymmetric' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().asymmetric = value
+
+    @property
+    def class_level(self) -> bool:
+        return self._data().class_level
+
+    @class_level.setter
+    def class_level(self, value: bool) -> None:
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'class_level' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().class_level = value
+
+    @property
+    def consider(self) -> FrozenSet['Relationship']:
+        rdata, ont = self._data(), self._ontology()
+        return frozenset(ont.get_relationship(r) for r in rdata.consider)
+
+    @property
+    def cyclic(self) -> bool:
+        return self._data().cyclic
+
+    @property
+    def disjoint_from(self) -> FrozenSet['Relationship']:
+        rdata, ont = self._data(), self._ontology()
+        return frozenset(ont.get_relationship(t) for t in rdata.disjoint_from)
+
+    @property
+    def disjoint_over(self) -> FrozenSet['Relationship']:
+        rdata, ont = self._data(), self._ontology()
+        return frozenset(ont.get_relationship(t) for t in rdata.disjoint_over)
+
+    @property
     def domain(self) -> Optional['Term']:
         rshipdata, ontology = self._data(), self._ontology()
         if rshipdata.domain is not None:
@@ -277,7 +338,7 @@ class Relationship(Entity):
         return None
 
     @domain.setter
-    def domain(self, value: Optional['Term']):
+    def domain(self, value: Optional['Term']) -> None:
         rshipdata, ontology = self._data(), self._ontology()
         if value is not None:
             try:
@@ -288,20 +349,56 @@ class Relationship(Entity):
 
     @property
     def domain(self) -> Optional['Term']:
-        rshipdata, ontology = self._data(), self._ontology()
-        if rshipdata.domain is not None:
-            return ontology.get_term(rshipdata.domain)
-        return None
+        dom, ontology = self._data().domain, self._ontology()
+        return ontology.get_term(dom) if dom is not None else None
 
     @domain.setter
     def domain(self, value: Optional['Term']):
-        rshipdata, ontology = self._data(), self._ontology()
         if value is not None:
             try:
-                ontology.get_term(value.id)
+                self._ontology().get_term(value.id)
             except KeyError:
-                raise ValueError(f"{value} is not in {ontology}")
-        rshipdata.domain = value.id if value is not None else None
+                raise ValueError(f"{value} is not in {self._ontology()}")
+        self._data().domain = value.id if value is not None else None
+
+    @property
+    def equivalent_to_chain(self) -> FrozenSet[Tuple['Relationship', 'Relationship']]:
+        return frozenset({
+            tuple(map(self._ontology().get_relationship, chain))
+            for chain in self._data().equivalent_to_chain
+        })
+
+    @property
+    def expand_assertion_to(self) -> FrozenSet[Definition]:
+        return frozenset(self._data().expand_assertion_to)
+
+    @property
+    def expand_expression_to(self) -> FrozenSet[Definition]:
+        return frozenset(self._data().expand_expression_to)
+
+    @property
+    def functional(self) -> bool:
+        return self._data().functional
+
+    @functional.setter
+    def functional(self, value: bool) -> None:
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'functional' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().functional = value
+
+    @property
+    def inverse_functional(self) -> bool:
+        return self._data().inverse_functional
+
+    @inverse_functional.setter
+    def inverse_functional(self, value: bool) -> None:
+        if __debug__:
+            if not isinstance(value, bool):
+                msg = "'inverse_functional' must be bool, not {}"
+                raise TypeError(msg.format(type(value).__name__))
+        self._data().inverse_functional = value
 
     @property
     def metadata_tag(self) -> bool:
@@ -316,15 +413,24 @@ class Relationship(Entity):
         self._data().metadata_tag = value
 
     @property
-    def relationships(self) -> Dict['Relationship', FrozenSet['Relationship']]:
+    def relationships(self) -> Mapping['Relationship', FrozenSet['Relationship']]:
         ont, reldata = self._ontology(), self._data()
-        return {
+        return frozendict.frozendict({
             Relationship(ont, ont.get_relationship(rel)._data()): frozenset(
                 Term(ont, ont.get_relationship(rel)._data())
                 for rel in rels
             )
             for rel, rels in reldata.relationships.items()
-        }
+        })
+
+    @property
+    def holds_over_chain(self) -> FrozenSet[Tuple['Relationship', 'Relationship']]:
+        ont: 'Ontology' = self._ontology()
+        data: '_RelationshipData' = self._data()
+        return frozenset({
+            tuple(map(ont.get_term, chain))
+            for chain in data.holds_over_chain
+        })
 
     @property
     def inverse_of(self) -> Optional['Relationship']:
@@ -336,6 +442,27 @@ class Relationship(Entity):
     @inverse_of.setter
     def inverse_of(self, value: Optional['Relationship']):
         self._data().inverse_of = None if value is None else value.id
+
+    @property
+    def intersection_of(self) -> FrozenSet['Relationship']:
+        ont, reldata = self._ontology(), self._data()
+        return frozenset({
+            ont.get_relationship(r) for r in reldata.intersection_of
+        })
+
+    @property
+    def range(self) -> Optional['Term']:
+        range, ont = self._data().range, self._ontology()
+        return ont.get_term(range) if range is not None else None
+
+    @range.setter
+    def range(self, value: Optional['Term']):
+        if value is not None:
+            try:
+                self._ontology().get_term(value.id)
+            except KeyError:
+                raise ValueError(f"{value} is not in {self._ontology()}")
+        self._data().range = value.id if value is not None else None
 
     @property
     def reflexive(self) -> bool:
@@ -350,6 +477,11 @@ class Relationship(Entity):
         self._data().reflexive = value
 
     @property
+    def replaced_by(self) -> FrozenSet['Relationship']:
+        ont, data = self._ontology(), self._data()
+        return frozenset({ont.get_relationship(r) for r in data.replaced_by})
+
+    @property
     def symmetric(self) -> bool:
         return self._data().symmetric
 
@@ -360,7 +492,6 @@ class Relationship(Entity):
                 msg = "'symmetric' must be bool, not {}"
                 raise TypeError(msg.format(type(value).__name__))
         self._data().symmetric = value
-
 
     @property
     def transitive(self) -> bool:
@@ -379,6 +510,10 @@ class Relationship(Entity):
         ont, reldata = self._ontology(), self._data()
         return frozenset(ont.get_relationship(x) for x in reldata.transitive_over)
 
+    @property
+    def union_of(self) -> FrozenSet['Relationship']:
+        data, ont = self._data(), self._ontology()
+        return frozenset(ont.get_relationship(r) for r in data.union_of)
 
 
 

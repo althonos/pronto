@@ -51,7 +51,7 @@ class Xref(object):
     def _to_ast(self) -> fastobo.xref.Xref:
         return fastobo.xref.Xref(fastobo.id.parse(self.id), self.description)
 
-    @typechecked(property=False)
+    @typechecked
     def __init__(self, id: str, description: typing.Optional[str] = None):
         """Create a new cross-reference.
 
@@ -65,27 +65,27 @@ class Xref(object):
         self.id: str = str(fastobo.id.parse(id))
         self.description = description
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Xref):
             return self.id == other.id
         return False
 
-    def __gt__(self, other):
+    def __gt__(self, other: object) -> bool:
         if isinstance(other, Xref):
             return self.id > other.id
         return NotImplemented
 
-    def __ge__(self, other):
+    def __ge__(self, other: object) -> bool:
         if isinstance(other, Xref):
             return self.id >= other.id
         return NotImplemented
 
-    def __lt__(self, other):
+    def __lt__(self, other: object) -> bool:
         if isinstance(other, Xref):
             return self.id < other.id
         return NotImplemented
 
-    def __le__(self, other):
+    def __le__(self, other: object) -> bool:
         if isinstance(other, Xref):
             return self.id <= other.id
         return NotImplemented

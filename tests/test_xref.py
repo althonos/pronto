@@ -54,10 +54,11 @@ class TestXref(unittest.TestCase):
     def test_init(self):
         with self.assertRaises(ValueError):
             pronto.Xref("PMC SOMETHING")
-        with self.assertRaises(TypeError):
-            pronto.Xref(1)
-        with self.assertRaises(TypeError):
-            pronto.Xref("PMC:5392374", 1)
+        if __debug__:
+            with self.assertRaises(TypeError):
+                pronto.Xref(1)
+            with self.assertRaises(TypeError):
+                pronto.Xref("PMC:5392374", 1)
 
     def test_from_ast(self):
         ast1 = fastobo.xref.Xref(fastobo.id.parse("GO:0099545"))

@@ -1,7 +1,7 @@
 import fastobo
 
-from .utils.meta import roundrepr
 from .utils.impl import set
+from .utils.meta import roundrepr, typechecked
 
 
 class PropertyValue(object):
@@ -28,6 +28,7 @@ class LiteralPropertyValue(PropertyValue):
 
     __slots__ = ("literal", "datatype")
 
+    @typechecked
     def __init__(self, property: str, literal: str, datatype: str = "xsd:string"):
         self.property = str(fastobo.id.parse(property))
         self.literal = literal

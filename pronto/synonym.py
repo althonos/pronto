@@ -9,7 +9,7 @@ import fastobo
 
 from .xref import Xref
 from .utils.impl import set
-from .utils.meta import roundrepr
+from .utils.meta import roundrepr, typechecked
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -24,6 +24,7 @@ class SynonymType(object):
 
     __slots__ = ("__weakref__", "id", "description", "scope")
 
+    @typechecked
     def __init__(self, id: str, description: str, scope: Optional[str]=None):
         if scope is not None:
             if scope not in {'EXACT', 'RELATED', 'BROAD', 'NARROW'}:
@@ -154,11 +155,8 @@ class Synonym(object):
         return self._data().description
 
     @description.setter
+    @typechecked(property=True)
     def description(self, description: str):
-        if __debug__:
-            if not isinstance(description, str):
-                msg = "'description' must be str, not {}"
-                raise TypeError(msg.format(type(description).__name__))
         self._data().description = description
 
     @property
@@ -169,11 +167,8 @@ class Synonym(object):
         return None
 
     @type.setter
+    @typechecked(property=True)
     def type(self, type_: Optional[SynonymType]):
-        if __debug__:
-            if type_ is not None and not isinstance(type, SynonymType):
-                msg = "'type' must be SynonymType or None, not {}"
-                raise TypeError(msg.format(type(type_).__name__))
         synonyms = self._ontology().metadata.synonymtypedefs
         if type is not None and type_.id not in synonyms:
             raise ValueError(f"undeclared synonym type: {type_.id}")
@@ -184,6 +179,7 @@ class Synonym(object):
         return self._data().scope
 
     @scope.setter
+    @typechecked(property=True)
     def scope(self, scope: str):
         if __debug__:
             if scope is not None and not isinstance(scope, str):

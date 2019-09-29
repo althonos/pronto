@@ -27,14 +27,35 @@ class Entity():
     well as some common properties.
     """
 
-    _ontology: 'weakref.ReferenceType[Ontology]'
-    _data: 'weakref.ReferenceType[EntityData]'
+    if typing.TYPE_CHECKING:
 
-    __slots__ = ("__weakref__", "_ontology", "_data")
+        __ontology: 'weakref.ReferenceType[Ontology]'
+        __data: 'weakref.ReferenceType[EntityData]'
 
-    def __init__(self, ontology: 'Ontology', data: 'EntityData'):
-        self._ontology = weakref.ref(ontology)
-        self._data = weakref.ref(data)
+        __slots__ = ("__weakref__", "__ontology", "__data")
+
+        def __init__(self, ontology: 'Ontology', data: 'EntityData'):
+            self.__ontology = weakref.ref(ontology)
+            self.__data = weakref.ref(data)
+
+        def _data(self) -> 'EntityData':
+            rdata = self.__data()
+            if rdata is None:
+                raise RuntimeError("entity data was deallocated")
+            return rdata
+
+        def _ontology(self) -> 'Ontology':
+            ontology = self.__ontology()
+            if ontology is None:
+                raise RuntimeError("referenced ontology was deallocated")
+            return ontology
+
+    else:
+
+        def __init__(self, ontology: 'Ontology', data: 'EntityData'):
+            self._ontology = weakref.ref(ontology)
+            self._data = weakref.ref(data)
+
 
     # --- Magic Methods ------------------------------------------------------
 
@@ -95,10 +116,6 @@ class Entity():
 
     @anonymous.setter
     def anonymous(self, value: bool):
-        if __debug__:
-            if not isinstance(value, bool):
-                msg = "'anonymous' must be bool, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().anonymous = value
 
     @property
@@ -119,10 +136,6 @@ class Entity():
 
     @comment.setter
     def comment(self, value: Optional[str]):
-        if __debug__:
-            if value is not None and not isinstance(value, str):
-                msg = "'comment' must be str or None, not {}"
-                raise TypeError(msg.format(type(value).__name__))
         self._data().comment = value
 
     @property
@@ -160,6 +173,20 @@ class Entity():
                 msg = "'definition' must be a Definition, not {}"
                 raise TypeError(msg.format(type(definition).__name__))
         self._data().definition = definition
+
+    @property
+    def equivalent_to(self) -> FrozenSet[str]:
+        return frozenset(self._data().equivalent_to)
+
+    @equivalent_to.setter
+    def equivalent_to(self, equivalent_to: FrozenSet[str]):
+        if __debug__:
+            msg = "'equivalent_to' must be a set of str, not {}"
+            if not isinstance(equivalent_to, collections.abc.Set):
+                raise TypeError(msg.format(type(equivalent_to).__name__))
+            for x in (x for x in equivalent_to if not isinstance(x, str)):
+                raise TypeError(msg.format(type(x).__name__))
+        self._data().equivalent_to = set(equivalent_to)
 
     @property
     def id(self):

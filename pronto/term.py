@@ -298,8 +298,9 @@ class Term(Entity):
         first when calling this method.
 
         Yields:
-            Superclasses of the selected term, breadth-first. The first element
-            is always the term itself, use `itertools.islice` to skip it.
+            `Term`: Superclasses of the selected term, breadth-first. The
+            first element is always the term itself, use `itertools.islice`
+            to skip it.
 
         Example:
             >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")
@@ -352,8 +353,9 @@ class Term(Entity):
         """Get an iterator over the subclasses of this `Term`.
 
         Yields:
-            Subclasses of the selected term, breadth-first. The first element
-            is always the term itself, use `itertools.islice` to skip it.
+            `Term`: Subclasses of the selected term, breadth-first. The first
+            element is always the term itself, use `itertools.islice` to skip
+            it.
 
         Example:
             >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")

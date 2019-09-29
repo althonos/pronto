@@ -4,12 +4,17 @@ import itertools
 import functools
 import types
 import typing
+from typing import Callable, ClassVar, Optional, Union, Tuple
+
+
+T = typing.TypeVar('T')
+F = typing.TypeVar('F')
 
 
 class typechecked(object):
 
     @classmethod
-    def check_type(cls, hint, value) -> bool:
+    def check_type(cls, hint: object, value: object) -> Tuple[bool, Optional[str]]:
         # None: check if None
         if hint is None.__class__:
             return (value is None, "None")
@@ -26,8 +31,15 @@ class typechecked(object):
                 results[arg] = cls.check_type(arg, value)
             ok = any(ok for ok,name in results.values())
             return (ok, ", ".join(name for ok,name in results.values()))
-
         return (False, "something")
+
+    @typing.overload
+    def __new__(self: ClassVar[T], property: bool) -> T:
+        pass
+
+    @typing.overload
+    def __new__(self: ClassVar[T], property: F) -> F:
+        pass
 
     def __new__(self, property):
         if isinstance(property, types.FunctionType):
@@ -36,10 +48,10 @@ class typechecked(object):
         obj.__init__(property)
         return obj
 
-    def __init__(self, property=False):
+    def __init__(self, property: bool = False) -> None:
         self.property = property
 
-    def __call__(self, func):
+    def __call__(self, func: F) -> F:
         if not __debug__:
             return func
 

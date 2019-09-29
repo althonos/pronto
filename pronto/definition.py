@@ -6,7 +6,7 @@ from operator import attrgetter
 from typing import Optional, Iterable
 
 from .xref import Xref
-from .utils.repr import make_repr
+from .utils.meta import roundrepr
 from .utils.impl import set
 
 
@@ -70,4 +70,4 @@ class Definition(str):
         self.xrefs = set(xrefs) if xrefs is not None else set()
 
     def __repr__(self):
-        return make_repr("Definition", str(self), xrefs=(self.xrefs, set()))
+        return roundrepr.make("Definition", str(self), xrefs=(self.xrefs, set()))

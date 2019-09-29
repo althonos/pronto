@@ -18,7 +18,7 @@ from .relationship import Relationship, _RelationshipData
 from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
-from .utils.repr import make_repr
+from .utils.meta import roundrepr
 from .utils.impl import set
 from .parsers import BaseParser
 
@@ -122,7 +122,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         kwargs = {"timeout": (self.timeout, 2)}
         if self.import_depth > 0:
             kwargs["import_depth"] = (self.import_depth, -1)
-        return make_repr("Ontology", *args, **kwargs)
+        return roundrepr.make("Ontology", *args, **kwargs)
 
     # ------------------------------------------------------------------------
 

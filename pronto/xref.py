@@ -7,6 +7,7 @@ import fastobo
 
 from .utils.repr import roundrepr
 from .utils.impl import set
+from .utils.meta import typechecked
 
 
 @roundrepr
@@ -51,6 +52,7 @@ class Xref(object):
     def _to_ast(self) -> fastobo.xref.Xref:
         return fastobo.xref.Xref(fastobo.id.parse(self.id), self.description)
 
+    @typechecked(property=False)
     def __init__(self, id: str, description: typing.Optional[str] = None):
         """Create a new cross-reference.
 
@@ -60,12 +62,6 @@ class Xref(object):
             description (str or None): a human-readable description of the
                 cross-reference, or `None`.
         """
-        if __debug__:
-            if not isinstance(id, str):
-                raise TypeError(f"'id' must be str, not {type(id).__name__}")
-            if description is not None and not isinstance(description, str):
-                msg = "'description' must be str or None, not {}"
-                raise TypeError(msg.format(type(description).__name__))
         # check the id is valid using fastobo
         self.id: str = str(fastobo.id.parse(id))
         self.description = description

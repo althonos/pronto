@@ -17,7 +17,6 @@ from .xref import Xref
 from .synonym import Synonym, _SynonymData
 from .relationship import Relationship
 from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
-from .utils.repr import make_repr
 from .utils.impl import set
 from .utils.warnings import NotImplementedWarning
 

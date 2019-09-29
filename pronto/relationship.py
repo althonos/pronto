@@ -256,7 +256,6 @@ class Relationship(Entity):
 
         for clause in frame:
             try:
-                print(clause)
                 _callbacks[type(clause)](clause)
             except KeyError:
                 raise TypeError(f"unexpected type: {type(clause).__name__}")
@@ -514,7 +513,6 @@ class Relationship(Entity):
     def union_of(self) -> FrozenSet['Relationship']:
         data, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(r) for r in data.union_of)
-
 
 
 _BUILTINS = {

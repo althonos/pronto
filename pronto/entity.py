@@ -8,7 +8,7 @@ from .definition import Definition
 from .synonym import Synonym
 from .pv import PropertyValue
 from .xref import Xref
-from .utils.repr import make_repr
+from .utils.meta import roundrepr
 from .utils.impl import set
 
 if typing.TYPE_CHECKING:
@@ -88,7 +88,7 @@ class Entity():
         return hash((self.id))
 
     def __repr__(self):
-        return make_repr(type(self).__name__, self.id, name=(self.name, None))
+        return roundrepr.make(type(self).__name__, self.id, name=(self.name, None))
 
     # --- Data descriptors ---------------------------------------------------
 

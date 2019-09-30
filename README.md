@@ -19,6 +19,11 @@
 ## 🚩 Table of Contents
 
 - [Overview](#-overview)
+- [Supported Languages](#%EF%B8%8F-supported-languages)
+- [Installing](#-installing)
+- [Examples](#-examples)
+- [API Reference](#-api-reference)
+- [License](#-license)
 
 ## 🗺️ Overview
 
@@ -105,9 +110,9 @@ Term('CL:0002116', name='B220-low CD38-positive unswitched memory B cell')
 
 The `terms` method of `Ontology` instances can be used to
 iterate over all the terms in the ontology (including the
-ones that are imported). We can then use the `subclasses`
-method of `Term` objects that returns an iterator over the
-subclasses of
+ones that are imported). We can then use the `is_leaf`
+method of `Term` objects to check is the term is a leaf in the
+class inclusion graph.
 
 ```python
 >>> ms = Ontology("ms.obo")
@@ -125,8 +130,12 @@ MS:1000001
 
 ## 📖 API Reference
 
-A complete API reference can be found in the [online documentation]
-
+A complete API reference can be found in the
+[online documentation](https://pronto.readthedocs.io/en/latest/api.html), or
+directly from the command line using `pydoc`:
+```console
+$ pydoc pronto.Ontology
+```
 
 ## 📜 License
 

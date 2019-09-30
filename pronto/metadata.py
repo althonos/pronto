@@ -1,5 +1,6 @@
 
 import datetime
+import functools
 import typing
 import warnings
 from typing import Dict, List, Optional, Set, Union
@@ -14,7 +15,10 @@ from .utils.warnings import NotImplementedWarning
 
 
 @roundrepr
+@functools.total_ordering
 class Subset(object):
+    """A definition of a subset in an ontology.
+    """
 
     name: str
     description: str
@@ -28,19 +32,21 @@ class Subset(object):
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Subset):
-            return (self.name, self.description) == (other.name, other.description)
+            return self.name == other.name
         return False
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, Subset):
             return typing.cast(bool, NotImplemented)
-        return (self.name, self.description) < (other.name, other.description)
+        return self.name < other.name
 
     def __hash__(self) -> int:
-        return hash((self.name, self.description))
+        return hash((Subset, self.name))
 
 
 class Metadata(object):
+    """A mapping containing metadata about the current ontology.
+    """
     format_version: str
     data_version: Optional[str]
     ontology: Optional[str]

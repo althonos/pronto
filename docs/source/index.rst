@@ -58,7 +58,7 @@ Library
 
    Installation <install>
    Examples <examples>
-   Api Reference <api>
+   API Reference <api>
    To-do <todo>
    Changelog <changes>
    About <about>

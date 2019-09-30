@@ -28,6 +28,9 @@ sys.path.insert(0, project_dir)
 # -- Sphinx Setup ------------------------------------------------------------
 
 def setup(app):
+    # Add custom stylesheet
+    app.add_stylesheet("css/main.css")
+    # Copy `CHANGELOG.md` from project directory
     changelog_src = os.path.join(project_dir, "CHANGELOG.md")
     changelog_dst = os.path.join(docssrc_dir, "changes.md")
     if os.path.exists(changelog_src):
@@ -155,6 +158,7 @@ html_theme_options = {
         for k, v in project_urls.items()
         if k not in {"Documentation", "Changelog"}
     ],
+    "admonition_use_panel": True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -172,7 +176,6 @@ html_static_path = ["_static"]
 #
 html_sidebars = {
     "*": ["localtoc.html"],
-    os.path.join("pronto", "*"): ["localtoc.html"],
 }
 
 # -- Options for HTMLHelp output ---------------------------------------------

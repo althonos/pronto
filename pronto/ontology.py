@@ -155,7 +155,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     def __repr__(self):
         args = (self.path,) if self.path is not None else (self.handle,)
-        kwargs = {"timeout": (self.timeout, 2)}
+        kwargs = {"timeout": (self.timeout, 5)}
         if self.import_depth > 0:
             kwargs["import_depth"] = (self.import_depth, -1)
         return roundrepr.make("Ontology", *args, **kwargs)

@@ -410,6 +410,20 @@ class Term(Entity):
                 yield ont.get_term(neighbor)
             done.add(node)
 
+    def is_leaf(self) -> bool:
+        """Check whether the term is a leaf in the ontology.
+
+        We define leaves as nodes in the ontology which do not have subclasses
+        since the subclassing relationship is directed and can be used to
+        create a DAG of all the terms in the ontology.
+        """
+        ont = self._ontology()
+        is_a = ont.get_relationship('is_a')
+        for t in self._ontology().terms():
+            if self.id in t.relationships.get(is_a, {}):
+                return False
+        return True
+
     # --- Attributes ---------------------------------------------------------
 
     @property

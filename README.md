@@ -80,9 +80,12 @@ formats, even if the file is compressed:
 >>> go = Ontology("tests/data/go.obo.gz")
 ```
 
-Loading a file from a persistent URL is also supported:
+Loading a file from a persistent URL is also supported, although you may also
+want to use the `Ontology.from_obo_library` method if you're using persistent
+URLs a lot:
 ```python
 >>> cl = Ontology("http://purl.obolibrary.org/obo/cl.obo")
+>>> stato = Ontology.from_obo_library("stato.owl")
 ```
 
 ### 🏷️ Get a term by accession

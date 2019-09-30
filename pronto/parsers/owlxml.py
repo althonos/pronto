@@ -97,7 +97,10 @@ class OwlXMLParser(BaseParser):
 
     def _extract_literal_pv(self, elem: etree.Element) -> LiteralPropertyValue:
         property = re.sub('{|}', '', elem.tag)
-        datatype = elem.attrib[_NS['rdf']['datatype']]
+        datatype = elem.get(_NS['rdf']['datatype'])
+        if datatype is None:
+            warnings.warn(f'{elem} contains text but no `xsd:datatype`', stacklevel=2)
+            datatype = _NS['xsd'].raw('string')
         return LiteralPropertyValue(property, typing.cast(str, elem.text), datatype)
 
     def _extract_meta(self, elem: etree.Element):
@@ -143,7 +146,7 @@ class OwlXMLParser(BaseParser):
                 meta.data_version = iri if match is None else match.group(1)
             elif _NS['rdf']['resource'] in child.attrib:
                 meta.annotations.add(self._extract_resource_pv(child))
-            elif _NS['rdf']['datatype'] in child.attrib and child.text is not None:
+            elif child.text is not None:
                 meta.annotations.add(self._extract_literal_pv(child))
             else:
                 warnings.warn(f'unknown element in `owl:Ontology`: {child}')
@@ -196,7 +199,7 @@ class OwlXMLParser(BaseParser):
                 termdata.synonyms.add(_SynonymData(child.text, scope="BROAD"))
             elif child.tag == _NS['oboInOwl']['hasNarrowSynonym']:
                 termdata.synonyms.add(_SynonymData(child.text, scope="NARROW"))
-            elif child.tag == _NS['owl']['equivalentClass']:
+            elif child.tag == _NS['owl']['equivalentClass'] and child.text is not None:
                 termdata.equivalent_to.add(self._compact_id(child.text))
             elif child.tag == _NS['owl']['deprecated']:
                 term.obsolete = child.text == "true"

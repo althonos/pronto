@@ -67,7 +67,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 to download imports.
 
         Example:
-            >>> ms = pronto.Ontology.from_obo_foundry("ms.obo")
+            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
             >>> ms.ontology
             'ms'
             >>> ms.path

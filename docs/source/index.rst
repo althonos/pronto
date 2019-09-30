@@ -1,5 +1,7 @@
-``pronto`` - Python frontend to ontologies
-==========================================
+``pronto``
+==========
+
+*Python frontend to ontologies.*
 
 |PyPI| |Conda| |Py versions| |Codacy grade| |Dev repo| |Build status| |License| |DOI| |coverage|
 
@@ -40,11 +42,13 @@ its dependencies from PyPi, or have a look at the
 .. note::
 
     ``pronto`` requires ``fastobo``, an efficient and faultless parser
-    for the OBO language implemented in Rust. Some platforms, such as Linux
-    x86-64 and OSX provide precompiled packages, but for others such as Windows,
-    installing will require a working Rust toolchain. See the ``fastobo``
+    for the OBO language implemented in Rust. Most platforms, such as Linux
+    x86-64, OSX and Windows x86-64 provide precompiled packages, but other
+    less frequent platforms will require a working Rust toolchain. See the
+    ``fastobo``
     `Installation page <https://fastobo.readthedocs.io/en/latest/install.html>`_
-    and the `Rust Forge tutorial <https://forge.rust-lang.org/other-installation-methods.html>`_.
+    and the `Rust Forge tutorial <https://forge.rust-lang.org/other-installation-methods.html>`_
+    for more information about this topic.
 
 Library
 -------

@@ -11,15 +11,20 @@ format of Mass Spectrometry data).
 
 .. code:: python
 
-    self.obo = Ontology('http://purl.obolibrary.org/obo/ms.obo')
+    self.obo = pronto.Ontology('http://purl.obolibrary.org/obo/ms.obo')
+    instruments = {term.id for term in self.obo['MS:1000031'].subclasses()}
+    manufacturers = {term.id for term in self.obo['MS:1000031'].relationships[self.obo['is_a']]}
+
     # ... extract metadata and get elements ... #
     for e in elements:
         for ie in e.iterfind('s:cvParam', self.ns):
-            if ie.attrib['accession'] in self.obo['MS:1000031'].rchildren().id:
+            if ie.attrib['accession'] in instruments:
                 ### ... get instrument info ... ###
-                parents = self.obo[ie.attrib['accession']].rparents()
-                manufacturer = next(parent for parent in parents \
-                                    if parent in self.obo['MS:1000031'].children)
+                parents = self.obo[ie.attrib['accession']].superclasses()
+                manufacturer = next(
+                    parent for parent in parents
+                    if parent in manufacturers
+                )
                 ### ... get manufacturer info ... ###
 
 

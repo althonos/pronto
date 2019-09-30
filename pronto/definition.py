@@ -11,7 +11,7 @@ from .utils.impl import set
 
 
 class Definition(str):
-    """The definition of a term or a relationship.
+    """A human-readable text definition of an entity.
 
     Definitions are human-readable descriptions of an entity in the ontology
     graph, with some optional cross-references to support the definition.
@@ -45,8 +45,8 @@ class Definition(str):
         The common usecase however is to refer to the source of a definition
         using persistent identifiers like ISBN book numbers or PubMed IDs.
 
-        >> plana = pronto.Ontology("http://purl.obolibrary.org/obo/plana.obo")
-        >> sorted(plana['PLANA:0007518'].definition.xrefs)
+        >>> pl = pronto.Ontology("http://purl.obolibrary.org/obo/plana.obo")
+        >>> sorted(pl['PLANA:0007518'].definition.xrefs)
         [Xref('ISBN:0-71677033-4'), Xref('PMID:4853064')]
 
     """
@@ -63,10 +63,10 @@ class Definition(str):
         xrefs = [Xref._to_ast(x) for x in sorted(self.xrefs)]
         return fastobo.term.DefClause(str(self), xrefs)
 
-    def __new__(cls, text, xrefs=None):
-        return super(Definition, cls).__new__(cls, text)
+    def __new__(cls, text: str, xrefs=None) -> 'Definition':
+        return super().__new__(cls, text)
 
-    def __init__(self, text: str, xrefs: Optional[Iterable[Xref]] = None):
+    def __init__(self, text: str, xrefs: Optional[Iterable[Xref]] = None) -> None:
         self.xrefs = set(xrefs) if xrefs is not None else set()
 
     def __repr__(self):

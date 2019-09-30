@@ -34,7 +34,7 @@ class LiteralPropertyValue(PropertyValue):
     datatype: str
     __slots__ = ("literal", "datatype")
 
-    @typechecked
+    @typechecked()
     def __init__(self, property: str, literal: str, datatype: str = "xsd:string"):
         self.property = str(fastobo.id.parse(property))
         self.literal = literal
@@ -53,7 +53,7 @@ class ResourcePropertyValue(PropertyValue):
     resource: str
     __slots__ = ("resource",)
 
-    @typechecked
+    @typechecked()
     def __init__(self, property: str, resource: str):
         self.property = str(fastobo.id.parse(property))
         self.resource = str(fastobo.id.parse(resource))

@@ -24,7 +24,7 @@ class SynonymType(object):
 
     __slots__ = ("__weakref__", "id", "description", "scope")
 
-    @typechecked(property=False)
+    @typechecked()
     def __init__(self, id: str, description: str, scope: Optional[str]=None):
         if scope is not None:
             if scope not in {'EXACT', 'RELATED', 'BROAD', 'NARROW'}:

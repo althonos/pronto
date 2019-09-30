@@ -8,7 +8,7 @@ from typing import Callable, ClassVar, Optional, Union, Tuple
 
 
 T = typing.TypeVar('T')
-F = typing.TypeVar('F', bound=Callable)
+F = typing.TypeVar('F', bound=Callable[..., object])
 
 
 class typechecked(object):
@@ -46,23 +46,6 @@ class typechecked(object):
             ok = any(ok for ok,name in results.values())
             return (ok, ", ".join(name for ok,name in results.values()))
         return (False, "something")
-
-    @typing.overload
-    def __new__(self, property: F) -> F:
-        pass
-
-    @typing.overload
-    def __new__(self, property: bool) -> 'typechecked':
-        pass
-
-    def __new__(self, property):
-        obj = super().__new__(self)
-        if isinstance(property, types.FunctionType):
-            obj.__init__()
-            return obj(property)
-        else:
-            obj.__init__(property)
-            return obj
 
     def __init__(self, property: bool = False) -> None:
         self.property = property

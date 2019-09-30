@@ -25,7 +25,7 @@ class Subset(object):
 
     __slots__ = ("__weakref__", "name", "description")
 
-    @typechecked(property=False)
+    @typechecked()
     def __init__(self, name: str, description: str):
         self.name: str = name
         self.description: str = description

@@ -42,6 +42,43 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     timeout: int
     imports: Dict[str, 'Ontology']
 
+    @classmethod
+    def from_obo_library(
+            cls,
+            slug: str,
+            import_depth: int = -1,
+            timeout: int = 5,
+    ) -> 'Ontology':
+        """Create an `Ontology` from a file in the OBO Library.
+
+        This is basically just a shortcut constructor to avoid typing the full
+        OBO Library URL each time.
+
+        Arguments:
+            slug (str): the filename of the ontology release to download from
+                the OBO Library, including the file extension (should be one
+                of ``.obo``, ``.owl`` or ``.json``).
+            import_depth (int): The maximum depth of imports to resolve in the
+                ontology tree. *Note that the library may not behave correctly
+                when not importing the complete dependency tree, so you should
+                probably use the default value and import everything*.
+            timeout (int): The timeout in seconds to use when performing
+                network I/O, for instance when connecting to the OBO library
+                to download imports.
+
+        Example:
+            >>> ms = pronto.Ontology.from_obo_foundry("ms.obo")
+            >>> ms.ontology
+            'ms'
+            >>> ms.path
+            'http://purl.obolibrary.org/obo/ms.obo'
+        """
+        return cls(
+            f"http://purl.obolibrary.org/obo/{slug}",
+            import_depth,
+            timeout,
+        )
+
     def __init__(
         self,
         handle: Union[BinaryIO, str, None] = None,
@@ -139,7 +176,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             or item in self._relationships \
             or item in relationship._BUILTINS
 
-    @typechecked
+    @typechecked()
     def __getitem__(self, id: str) -> Union[Term, Relationship]:
         """Get any entity in the ontology graph with the given identifier.
         """
@@ -206,7 +243,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             ),
         )
 
-    @typechecked
+    @typechecked()
     def create_term(self, id: str) -> Term:
         """Create a new term with the given identifier.
 
@@ -224,7 +261,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         self._terms[id] = termdata = _TermData(id)
         return Term(self, termdata)
 
-    @typechecked
+    @typechecked()
     def create_relationship(self, id: str) -> Relationship:
         """Create a new relationship with the given identifier.
 
@@ -238,7 +275,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         self._relationships[id] = reldata = _RelationshipData(id)
         return Relationship(self, reldata)
 
-    @typechecked
+    @typechecked()
     def get_term(self, id: str) -> Term:
         """Get a term in the ontology graph from the given identifier.
 
@@ -252,7 +289,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 return Term(self, dep.get_term(id)._data())
         return Term(self, self._terms[id])
 
-    @typechecked
+    @typechecked()
     def get_relationship(self, id: str) -> Relationship:
         """Get a relationship in the ontology graph from the given identifier.
 

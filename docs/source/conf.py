@@ -135,14 +135,14 @@ html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 #
 html_theme_options = {
     # Bootswatch (http://bootswatch.com/) theme.
-    "bootswatch_theme": "simplex",
+    "bootswatch_theme": "flatly",
     # Choose Bootstrap version.
     "bootstrap_version": "3",
     # Tab name for entire site. (Default: "Site")
     "navbar_site_name": "Documentation",
     # HTML navbar class (Default: "navbar") to attach to <div> element.
     # For black navbar, do "navbar navbar-inverse"
-    "navbar_class": "navbar navbar-inverse",
+    "navbar_class": "navbar",
     # Render the next and previous page links in navbar. (Default: true)
     "navbar_sidebarrel": True,
     # Render the current pages TOC in the navbar. (Default: true)

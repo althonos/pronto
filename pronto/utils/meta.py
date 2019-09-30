@@ -113,7 +113,7 @@ class roundrepr(object):
             >>> MyClass('Will')
             MyClass('foo', name='Will')
             >>> MyClass(None)
-            MyClass()
+            MyClass('foo')
 
         Credits:
             `PyFilesystem2 <https://github.com/PyFilesystem/pyfilesystem2/blob/master/fs/_repr.py>`_

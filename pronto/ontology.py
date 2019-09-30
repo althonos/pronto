@@ -23,7 +23,7 @@ from .parsers import BaseParser
 
 
 class Ontology(Mapping[str, Union[Term, Relationship]]):
-    """An ontology.
+    """An ontology storing terms and the relationships between them.
 
     Ontologies can be loaded with ``pronto`` if they are serialized in any of
     the following ontology languages and formats at the moment:
@@ -36,6 +36,17 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     - `OBO graphs <https://github.com/geneontology/obographs>`_ in
       `JSON <http://json.org/>`_ format.
 
+    Attributes:
+        metadata (Metadata): a data structure storing the metadata about the
+            current ontology, either extracted from the ``owl:Ontology`` XML
+            element or from the header of the OBO file.
+        timeout (int): The timeout in seconds to use when performing network
+            I/O, for instance when connecting to the OBO library to download
+            imports. This is kept for reference, as it is not used after the
+            initialization of the ontology.
+        imports (~typing.Dict[str, Ontology]): a dictionary mapping references
+            found in the import section of the metadata to resolved `Ontology`
+            instances.
     """
 
     import_depth: int
@@ -68,7 +79,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
         Example:
             >>> ms = pronto.Ontology.from_obo_library("ms.obo")
-            >>> ms.ontology
+            >>> ms.metadata.ontology
             'ms'
             >>> ms.path
             'http://purl.obolibrary.org/obo/ms.obo'

@@ -2,15 +2,15 @@ p {
     text-align: justify;
 }
 
-a.reference strong {
+/* a.reference strong {
     font-weight: bold;
     font-size: 90%;
     color: #c7254e;
     box-sizing: border-box;
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
-}
+} */
 
-a.reference em {
+.field-list a.reference {
     font-weight: bold;
     font-size: 90%;
     color: #c7254e;

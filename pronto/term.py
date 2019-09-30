@@ -428,6 +428,11 @@ class Term(Entity):
 
     @property
     def disjoint_from(self) -> FrozenSet['Term']:
+        """The terms declared as disjoint from this term.
+
+        Two terms are disjoint if they have no instances or subclasses in
+        common.
+        """
         ontology, termdata = self._ontology(), self._data()
         return frozenset({
             ontology.get_term(id)
@@ -447,6 +452,8 @@ class Term(Entity):
 
     @property
     def intersection_of(self) -> FrozenSet[Union['Term', Tuple['Relationship', 'Term']]]:
+        """The terms or term relationships this term is an intersection of.
+        """
         ont, termdata = self._ontology(), self._data()
         intersection_of: List[Union['Term', Tuple['Relationship', 'Term']]] = []
         for item in termdata.intersection_of:

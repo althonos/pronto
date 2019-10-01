@@ -88,6 +88,7 @@ extensions = [
         "sphinx.ext.viewcode",
         "sphinx.ext.githubpages",
         "sphinx_bootstrap_theme",
+        "nbsphinx",
         "recommonmark",
 ]
 
@@ -176,6 +177,7 @@ html_static_path = ["_static"]
 #
 html_sidebars = {
     "*": ["localtoc.html"],
+    "examples/*": ["localtoc.html"],
 }
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -226,3 +228,7 @@ source_suffix = {
     '.txt': 'markdown',
     '.md': 'markdown',
 }
+
+# -- Options for nbsphinx extension ------------------------------------------
+
+nbsphinx_execute = 'auto'

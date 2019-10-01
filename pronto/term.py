@@ -4,6 +4,7 @@ import itertools
 import typing
 import warnings
 import weakref
+import queue
 from typing import Callable, Dict, Iterator, Iterable, List, Mapping, Optional, Set, Tuple, Union, FrozenSet
 
 import fastobo
@@ -288,7 +289,7 @@ class Term(Entity):
                         yield ont.get_term(other)
             done.add(node)
 
-    def superclasses(self) -> Iterator['Term']:
+    def superclasses(self, distance: Optional[int] = None) -> Iterator['Term']:
         """Get an iterator over the superclasses of this `Term`.
 
         In order to follow the semantics of ``rdf:subClassOf``, which in turn
@@ -297,13 +298,19 @@ class Term(Entity):
         transitive by closure property. Therefore ``self`` is always yielded
         first when calling this method.
 
+        Arguments:
+            distance (int, optional): The maximum distance between this node
+                and the yielded superclass (`0` for the term itself, `1` for
+                its immediate superclasses, etc.). Use `None` to explore
+                transitively the entire directed graph.
+
         Yields:
             `Term`: Superclasses of the selected term, breadth-first. The
             first element is always the term itself, use `itertools.islice`
             to skip it.
 
         Example:
-            >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")
+            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
             >>> sup = ms['MS:1000143'].superclasses()
             >>> next(sup)
             Term('MS:1000143', name='API 150EX')
@@ -322,34 +329,32 @@ class Term(Entity):
             the ``is_a`` relationship is translated to in OWL2 language.
 
         """
-        ont: 'Ontology' = typing.cast('Ontology', self._ontology())
+        distmax: float = distance if distance is not None else float('+inf')
+        is_a: 'Relationship' = self._ontology().get_relationship('is_a')
 
         # Search objects terms
         sup: Set[Term] = set()
         done: Set[Term] = set()
-        frontier: Set[Term] = { self }
+        frontier: queue.Queue[Tuple[Term, int]] = queue.Queue()
 
         # RDF semantics state that self is a subclass of self
+        frontier.put((self, 0))
         sup.add(self)
         yield self
 
-        # Initial connected components
-        for other in self.relationships.get(ont.get_relationship('is_a'), ()):
-            sup.add(other)
-            yield other
-
         # Explore the graph
-        while frontier:
-            node: Term = frontier.pop()
-            if node in sup:
-                neighbors: Set[Term] = set(node.relationships.get(ont.get_relationship('is_a'), ()))
-                frontier.update(neighbors - done)
+        while not frontier.empty():
+            node, distance = frontier.get()
+            neighbors: Set[Term] = set(node.relationships.get(is_a, ()))
+            if distance < distmax:
+                for node in neighbors - done:
+                    frontier.put((node, distance + 1))
                 for neighbor in neighbors - sup:
                     sup.add(neighbor)
                     yield neighbor
             done.add(node)
 
-    def subclasses(self) -> Iterator['Term']:
+    def subclasses(self, distance: Optional[int] = None) -> Iterator['Term']:
         """Get an iterator over the subclasses of this `Term`.
 
         Yields:
@@ -358,7 +363,7 @@ class Term(Entity):
             it.
 
         Example:
-            >>> ms = pronto.Ontology("http://purl.obolibrary.org/obo/ms.obo")
+            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
             >>> sub = ms['MS:1000031'].subclasses()
             >>> next(sub)
             Term('MS:1000031', name='instrument model')
@@ -375,39 +380,37 @@ class Term(Entity):
             graph.
         """
 
+        ont: 'Ontology' = self._ontology()
+        distmax: float = distance if distance is not None else float('+inf')
+        is_a: 'Relationship' = ont.get_relationship('is_a')
         g = networkx.DiGraph()
-        ont = self._ontology()
 
         # Build the directed graph
         for t in ont.terms():
             g.add_node(t.id)
-            for t2 in t.relationships.get(ont.get_relationship('is_a'), []):
+            for t2 in t.relationships.get(is_a, []):
                 g.add_edge(t2.id, t.id)
 
         # Search objects terms
         sub: Set[str] = set()
         done: Set[str] = set()
-        frontier: Set[str] = set()
+        frontier: queue.Queue[Tuple[str, int]] = queue.Queue()
 
         # RDF semantics state that self is a subclass of self
-        frontier.add(self.id)
+        frontier.put((self.id, 0))
         sub.add(self.id)
         yield self
 
-        # Initial connected components
-        for other in g.neighbors(self.id):
-            sub.add(other)
-            frontier.add(other)
-            yield ont.get_term(other)
-
         # Explore the graph
-        while frontier:
-            node: str = frontier.pop()
+        while not frontier.empty():
+            node, distance = frontier.get()
             neighbors: Set[str] = set(g.neighbors(node))
-            frontier.update(neighbors - done)
-            for neighbor in neighbors - sub:
-                sub.add(neighbor)
-                yield ont.get_term(neighbor)
+            if distance < distmax:
+                for node in neighbors - done:
+                    frontier.put((node, distance + 1))
+                for neighbor in neighbors - sub:
+                    sub.add(neighbor)
+                    yield ont.get_term(neighbor)
             done.add(node)
 
     def is_leaf(self) -> bool:
@@ -416,6 +419,13 @@ class Term(Entity):
         We define leaves as nodes in the ontology which do not have subclasses
         since the subclassing relationship is directed and can be used to
         create a DAG of all the terms in the ontology.
+
+        Example:
+            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
+            >>> ms['MS:1000031'].is_leaf()   # instrument model
+            False
+            >>> ms['MS:1001792'].is_leaf()   # Xevo TQ-S
+            True
         """
         ont = self._ontology()
         is_a = ont.get_relationship('is_a')

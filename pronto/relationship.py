@@ -161,7 +161,7 @@ class Relationship(Entity):
 
         Important:
             Do not use directly, as this API does some black magic to reduce
-            memory usage and improve consistentcy in the data model. Use
+            memory usage and improve consistency in the data model. Use
             `Ontology.create_relationship` or `Ontology.get_relationship`
             depending on your needs to obtain a `Relationship` instance.
         """

@@ -1,9 +1,9 @@
 # coding: utf-8
 from __future__ import absolute_import
 
+import io
 import unittest
 import os
-import six
 import sys
 import warnings
 import shutil
@@ -29,24 +29,24 @@ class TestProntoDocumentation(unittest.TestCase):
         shutil.rmtree(os.path.join(utils.TESTDIR, "run"))
 
     def assertBuilds(self, format):
-        with mock.patch('sys.stderr', six.moves.StringIO()) as stderr:
-            with mock.patch('sys.stdout', six.moves.StringIO()) as stdout:
-                self.assertEquals(0, build_main([
+        with mock.patch('sys.stderr', io.StringIO()) as stderr:
+            with mock.patch('sys.stdout', io.StringIO()) as stdout:
+                res = build_main([
                     "-b{}".format(format),
                     "-d{}".format(os.path.join(self.build_dir, 'doctrees')),
                     self.source_dir,
-                    os.path.join(self.build_dir, format)]),
-                    "sphinx exited with non-zero return code",
-                )
+                    os.path.join(self.build_dir, format)
+                ])
+        if res != 0:
+            print(stdout.getvalue())
+            print(stderr.getvalue())
+        self.assertEqual(res, 0, "sphinx exited with non-zero exit code")
 
     def test_html(self):
         self.assertBuilds("html")
 
     def test_json(self):
         self.assertBuilds("json")
-
-    def test_man(self):
-        self.assertBuilds("man")
 
     def test_xml(self):
         self.assertBuilds("xml")

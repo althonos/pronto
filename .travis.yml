@@ -3,6 +3,11 @@ dist: xenial
 language: python
 cache: pip
 
+addons:
+  apt:
+    packages:
+    - pandoc
+
 python:
 - 3.6
 - 3.7

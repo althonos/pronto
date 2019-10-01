@@ -256,6 +256,7 @@ class Term(Entity):
 
         # Build the graph
         for t in ont.terms():
+            g.add_node(t.id)
             for (rel, terms) in t.relationships.items():
                 for t2 in terms:
                     g.add_edge(t.id, t2.id, key=rel.id)

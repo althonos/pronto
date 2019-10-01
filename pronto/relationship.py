@@ -399,8 +399,8 @@ class Relationship(Entity):
     def relationships(self) -> Mapping['Relationship', FrozenSet['Relationship']]:
         ont, reldata = self._ontology(), self._data()
         return frozendict.frozendict({
-            Relationship(ont, ont.get_relationship(rel)._data()): frozenset(
-                Term(ont, ont.get_relationship(rel)._data())
+            ont.get_relationship(rel): frozenset(
+                ont.get_relationship(rel)
                 for rel in rels
             )
             for rel, rels in reldata.relationships.items()

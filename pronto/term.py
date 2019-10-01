@@ -348,9 +348,9 @@ class Term(Entity):
             node, distance = frontier.get()
             neighbors: Set[Term] = set(node.relationships.get(is_a, ()))
             if distance < distmax:
-                for node in neighbors - done:
+                for node in sorted(neighbors - done):
                     frontier.put((node, distance + 1))
-                for neighbor in neighbors - sup:
+                for neighbor in sorted(neighbors - sup):
                     sup.add(neighbor)
                     yield neighbor
             done.add(node)
@@ -379,8 +379,8 @@ class Term(Entity):
             that OBO and OWL only explicit *superclassing* relationship, so
             we have to build the graph of *subclasses* from the knowledge
             graph.
-        """
 
+        """
         ont: 'Ontology' = self._ontology()
         distmax: float = distance if distance is not None else float('+inf')
         is_a: 'Relationship' = ont.get_relationship('is_a')
@@ -407,9 +407,9 @@ class Term(Entity):
             node, distance = frontier.get()
             neighbors: Set[str] = set(g.neighbors(node))
             if distance < distmax:
-                for node in neighbors - done:
+                for node in sorted(neighbors - done):
                     frontier.put((node, distance + 1))
-                for neighbor in neighbors - sub:
+                for neighbor in sorted(neighbors - sub):
                     sub.add(neighbor)
                     yield ont.get_term(neighbor)
             done.add(node)
@@ -431,7 +431,7 @@ class Term(Entity):
         ont = self._ontology()
         is_a = ont.get_relationship('is_a')
         for t in self._ontology().terms():
-            if self.id in t.relationships.get(is_a, {}):
+            if self in t.relationships.get(is_a, {}):
                 return False
         return True
 

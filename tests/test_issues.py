@@ -39,4 +39,4 @@ class TestIssues(unittest.TestCase):
         Thanks to @owen-jones-gen for issue reporting.
         """
         ont = pronto.Ontology(os.path.join(utils.DATADIR, "owen-jones-gen.obo"))
-        self.assertEqual(str(ont['ONT0:ROOT']), "Term('ONT0:ROOT', name='°')")
+        self.assertEqual(str(ont["ONT0:ROOT"]), "Term('ONT0:ROOT', name='°')")

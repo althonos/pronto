@@ -158,11 +158,11 @@ class Relationship(Entity):
 
     if typing.TYPE_CHECKING:
 
-        def __init__(self, ontology: 'Ontology', reldata: 'RelationshipData'):
+        def __init__(self, ontology: "Ontology", reldata: "RelationshipData"):
             super().__init__(ontology, reldata)
 
-        def _data(self) -> 'RelationshipData':
-            return typing.cast('RelationshipData', super()._data())
+        def _data(self) -> "RelationshipData":
+            return typing.cast("RelationshipData", super()._data())
 
     # --- Data descriptors ---------------------------------------------------
 
@@ -194,7 +194,7 @@ class Relationship(Entity):
         self._data().class_level = value
 
     @property
-    def consider(self) -> FrozenSet['Relationship']:
+    def consider(self) -> FrozenSet["Relationship"]:
         rdata, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(r) for r in rdata.consider)
 
@@ -203,25 +203,25 @@ class Relationship(Entity):
         return self._data().cyclic
 
     @property
-    def disjoint_from(self) -> FrozenSet['Relationship']:
+    def disjoint_from(self) -> FrozenSet["Relationship"]:
         rdata, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(t) for t in rdata.disjoint_from)
 
     @property
-    def disjoint_over(self) -> FrozenSet['Relationship']:
+    def disjoint_over(self) -> FrozenSet["Relationship"]:
         rdata, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(t) for t in rdata.disjoint_over)
 
     @property
-    def domain(self) -> Optional['Term']:
+    def domain(self) -> Optional["Term"]:
         rshipdata, ontology = self._data(), self._ontology()
         if rshipdata.domain is not None:
             return ontology.get_term(rshipdata.domain)
         return None
 
     @domain.setter
-    #@typechecked(property=True)
-    def domain(self, value: Optional['Term']) -> None:
+    # @typechecked(property=True)
+    def domain(self, value: Optional["Term"]) -> None:
         rshipdata, ontology = self._data(), self._ontology()
         if value is not None:
             try:
@@ -231,12 +231,12 @@ class Relationship(Entity):
         rshipdata.domain = value.id if value is not None else None
 
     @property
-    def domain(self) -> Optional['Term']:
+    def domain(self) -> Optional["Term"]:
         dom, ontology = self._data().domain, self._ontology()
         return ontology.get_term(dom) if dom is not None else None
 
     @domain.setter
-    def domain(self, value: Optional['Term']):
+    def domain(self, value: Optional["Term"]):
         if value is not None:
             try:
                 self._ontology().get_term(value.id)
@@ -245,11 +245,13 @@ class Relationship(Entity):
         self._data().domain = value.id if value is not None else None
 
     @property
-    def equivalent_to_chain(self) -> FrozenSet[Tuple['Relationship', 'Relationship']]:
-        return frozenset({
-            tuple(map(self._ontology().get_relationship, chain))
-            for chain in self._data().equivalent_to_chain
-        })
+    def equivalent_to_chain(self) -> FrozenSet[Tuple["Relationship", "Relationship"]]:
+        return frozenset(
+            {
+                tuple(map(self._ontology().get_relationship, chain))
+                for chain in self._data().equivalent_to_chain
+            }
+        )
 
     @property
     def expand_assertion_to(self) -> FrozenSet[Definition]:
@@ -287,50 +289,48 @@ class Relationship(Entity):
         self._data().metadata_tag = value
 
     @property
-    def relationships(self) -> Mapping['Relationship', FrozenSet['Relationship']]:
+    def relationships(self) -> Mapping["Relationship", FrozenSet["Relationship"]]:
         ont, reldata = self._ontology(), self._data()
-        return frozendict.frozendict({
-            ont.get_relationship(rel): frozenset(
-                ont.get_relationship(rel)
-                for rel in rels
-            )
-            for rel, rels in reldata.relationships.items()
-        })
+        return frozendict.frozendict(
+            {
+                ont.get_relationship(rel): frozenset(
+                    ont.get_relationship(rel) for rel in rels
+                )
+                for rel, rels in reldata.relationships.items()
+            }
+        )
 
     @property
-    def holds_over_chain(self) -> FrozenSet[Tuple['Relationship', 'Relationship']]:
-        ont: 'Ontology' = self._ontology()
-        data: 'RelationshipData' = self._data()
-        return frozenset({
-            tuple(map(ont.get_term, chain))
-            for chain in data.holds_over_chain
-        })
+    def holds_over_chain(self) -> FrozenSet[Tuple["Relationship", "Relationship"]]:
+        ont: "Ontology" = self._ontology()
+        data: "RelationshipData" = self._data()
+        return frozenset(
+            {tuple(map(ont.get_term, chain)) for chain in data.holds_over_chain}
+        )
 
     @property
-    def inverse_of(self) -> Optional['Relationship']:
+    def inverse_of(self) -> Optional["Relationship"]:
         ont, reldata = self._ontology(), self._data()
         if reldata.inverse_of is not None:
             return ont.get_relationship(reldata.inverse_of)
         return None
 
     @inverse_of.setter
-    def inverse_of(self, value: Optional['Relationship']):
+    def inverse_of(self, value: Optional["Relationship"]):
         self._data().inverse_of = None if value is None else value.id
 
     @property
-    def intersection_of(self) -> FrozenSet['Relationship']:
+    def intersection_of(self) -> FrozenSet["Relationship"]:
         ont, reldata = self._ontology(), self._data()
-        return frozenset({
-            ont.get_relationship(r) for r in reldata.intersection_of
-        })
+        return frozenset({ont.get_relationship(r) for r in reldata.intersection_of})
 
     @property
-    def range(self) -> Optional['Term']:
+    def range(self) -> Optional["Term"]:
         range, ont = self._data().range, self._ontology()
         return ont.get_term(range) if range is not None else None
 
     @range.setter
-    def range(self, value: Optional['Term']):
+    def range(self, value: Optional["Term"]):
         if value is not None:
             try:
                 self._ontology().get_term(value.id)
@@ -348,7 +348,7 @@ class Relationship(Entity):
         self._data().reflexive = value
 
     @property
-    def replaced_by(self) -> FrozenSet['Relationship']:
+    def replaced_by(self) -> FrozenSet["Relationship"]:
         ont, data = self._ontology(), self._data()
         return frozenset({ont.get_relationship(r) for r in data.replaced_by})
 
@@ -371,61 +371,67 @@ class Relationship(Entity):
         self._data().transitive = value
 
     @property
-    def transitive_over(self) -> FrozenSet['Relationship']:
+    def transitive_over(self) -> FrozenSet["Relationship"]:
         ont, reldata = self._ontology(), self._data()
         return frozenset(ont.get_relationship(x) for x in reldata.transitive_over)
 
     @property
-    def union_of(self) -> FrozenSet['Relationship']:
+    def union_of(self) -> FrozenSet["Relationship"]:
         data, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(r) for r in data.union_of)
 
 
 _BUILTINS = {
     "is_a": RelationshipData(
-        id = "is_a",
-        anonymous = False,
-        name = "is a",
-        namespace = None,
-        alternate_ids = None,
-        definition = Definition(
+        id="is_a",
+        anonymous=False,
+        name="is a",
+        namespace=None,
+        alternate_ids=None,
+        definition=Definition(
             "A subclassing relationship between one term and another",
-            xrefs=set({Xref("http://owlcollab.github.io/oboformat/doc/GO.format.obo-1_4.html")}),
+            xrefs=set(
+                {
+                    Xref(
+                        "http://owlcollab.github.io/oboformat/doc/GO.format.obo-1_4.html"
+                    )
+                }
+            ),
         ),
-        comment = None,
-        subsets = None,
-        synonyms = None,
-        xrefs = None,
-        annotations = None,
-        domain = None,
-        range = None,
-        builtin = True,
-        holds_over_chain = None,
-        antisymmetric = True,
-        cyclic = True,
-        reflexive = True,
-        asymmetric = False,
-        symmetric = False,
-        transitive = True,
-        functional = False,
-        inverse_functional = False,
-        intersection_of = None,
-        union_of = None,
-        equivalent_to = None,
-        disjoint_from = None,
-        inverse_of = None,
-        transitive_over = None,
-        equivalent_to_chain = None,
-        disjoint_over = None,
-        relationships = None,
-        obsolete = False,
-        created_by = None,
-        creation_date = None,
-        replaced_by = None,
-        consider = None,
-        expand_assertion_to = None, # TODO
-        expand_expression_to = None, # TODO
-        metadata_tag = False,
-        class_level = True,
-    ),
+        comment=None,
+        subsets=None,
+        synonyms=None,
+        xrefs=None,
+        annotations=None,
+        domain=None,
+        range=None,
+        builtin=True,
+        holds_over_chain=None,
+        antisymmetric=True,
+        cyclic=True,
+        reflexive=True,
+        asymmetric=False,
+        symmetric=False,
+        transitive=True,
+        functional=False,
+        inverse_functional=False,
+        intersection_of=None,
+        union_of=None,
+        equivalent_to=None,
+        disjoint_from=None,
+        inverse_of=None,
+        transitive_over=None,
+        equivalent_to_chain=None,
+        disjoint_over=None,
+        relationships=None,
+        obsolete=False,
+        created_by=None,
+        creation_date=None,
+        replaced_by=None,
+        consider=None,
+        expand_assertion_to=None,  # TODO
+        expand_expression_to=None,  # TODO
+        metadata_tag=False,
+        class_level=True,
+    )
 }

@@ -8,10 +8,9 @@ from ..relationship import Relationship
 
 
 class OboParser(FastoboParser, BaseParser):
-
     @classmethod
     def can_parse(cls, path, buffer):
-        return buffer.lstrip().startswith((b'format-version:', b'[Term', b'[Typedef'))
+        return buffer.lstrip().startswith((b"format-version:", b"[Term", b"[Typedef"))
 
     def parse_from(self, handle):
         # Load the OBO document through an iterator using fastobo

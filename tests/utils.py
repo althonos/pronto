@@ -22,5 +22,6 @@ def try_import(*paths):
                 return importlib.import_module(path)
     raise ImportError(f"could not find any of the following: {', '.join(paths)}")
 
+
 # Force importing the local version of the module
 sys.path.insert(0, MAINDIR)

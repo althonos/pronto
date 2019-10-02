@@ -1,4 +1,2 @@
-
-
 class NotImplementedWarning(UserWarning):
     pass

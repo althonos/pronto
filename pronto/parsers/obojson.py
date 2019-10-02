@@ -8,10 +8,9 @@ from ..relationship import Relationship
 
 
 class OboJsonParser(FastoboParser, BaseParser):
-
     @classmethod
     def can_parse(cls, path, buffer):
-        return buffer.lstrip().startswith(b'{')
+        return buffer.lstrip().startswith(b"{")
 
     def parse_from(self, handle):
         # Load the OBO graph into a syntax tree using fastobo

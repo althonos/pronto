@@ -5,9 +5,7 @@ import unittest
 import pronto
 
 
-
 class TestDefinition(unittest.TestCase):
-
     def test_repr(self):
         d1 = pronto.Definition("something")
         self.assertEqual(repr(d1), "Definition('something')")

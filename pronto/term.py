@@ -5,7 +5,19 @@ import typing
 import warnings
 import weakref
 import queue
-from typing import Callable, Dict, Iterator, Iterable, List, Mapping, Optional, Set, Tuple, Union, FrozenSet
+from typing import (
+    Callable,
+    Dict,
+    Iterator,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+    FrozenSet,
+)
 
 import fastobo
 import frozendict
@@ -109,15 +121,15 @@ class Term(Entity):
 
     if typing.TYPE_CHECKING:
 
-        def __init__(self, ontology: 'Ontology', termdata: 'TermData'):
+        def __init__(self, ontology: "Ontology", termdata: "TermData"):
             super().__init__(ontology, termdata)
 
-        def _data(self) -> 'TermData':
-            return typing.cast('TermData', super()._data())
+        def _data(self) -> "TermData":
+            return typing.cast("TermData", super()._data())
 
     # --- Methods ------------------------------------------------------------
 
-    def objects(self, r: Relationship) -> Iterator['Term']:
+    def objects(self, r: Relationship) -> Iterator["Term"]:
         """Iterate over the terms ``t`` verifying ``self · r · t``.
 
         Example:
@@ -134,7 +146,7 @@ class Term(Entity):
 
         """
 
-        if r._data() is relationship._BUILTINS['is_a']:
+        if r._data() is relationship._BUILTINS["is_a"]:
             return self.superclasses()
 
         g = networkx.MultiDiGraph()
@@ -154,7 +166,7 @@ class Term(Entity):
         # Search objects terms
         red, done = set(), set()
         is_red = red.__contains__
-        frontier = { self.id }
+        frontier = {self.id}
 
         # Initial connected components
         if r.reflexive:
@@ -176,7 +188,7 @@ class Term(Entity):
                         yield ont.get_term(other)
             done.add(node)
 
-    def superclasses(self, distance: Optional[int] = None) -> Iterator['Term']:
+    def superclasses(self, distance: Optional[int] = None) -> Iterator["Term"]:
         """Get an iterator over the superclasses of this `Term`.
 
         In order to follow the semantics of ``rdf:subClassOf``, which in turn
@@ -216,8 +228,8 @@ class Term(Entity):
             the ``is_a`` relationship is translated to in OWL2 language.
 
         """
-        distmax: float = distance if distance is not None else float('+inf')
-        is_a: 'Relationship' = self._ontology().get_relationship('is_a')
+        distmax: float = distance if distance is not None else float("+inf")
+        is_a: "Relationship" = self._ontology().get_relationship("is_a")
 
         # Search objects terms
         sup: Set[Term] = set()
@@ -241,7 +253,7 @@ class Term(Entity):
                     yield neighbor
             done.add(node)
 
-    def subclasses(self, distance: Optional[int] = None) -> Iterator['Term']:
+    def subclasses(self, distance: Optional[int] = None) -> Iterator["Term"]:
         """Get an iterator over the subclasses of this `Term`.
 
         Yields:
@@ -267,9 +279,9 @@ class Term(Entity):
             graph.
 
         """
-        ont: 'Ontology' = self._ontology()
-        distmax: float = distance if distance is not None else float('+inf')
-        is_a: 'Relationship' = ont.get_relationship('is_a')
+        ont: "Ontology" = self._ontology()
+        distmax: float = distance if distance is not None else float("+inf")
+        is_a: "Relationship" = ont.get_relationship("is_a")
         g = networkx.DiGraph()
 
         # Build the directed graph
@@ -315,7 +327,7 @@ class Term(Entity):
             True
         """
         ont = self._ontology()
-        is_a = ont.get_relationship('is_a')
+        is_a = ont.get_relationship("is_a")
         for t in self._ontology().terms():
             if self in t.relationships.get(is_a, {}):
                 return False
@@ -324,20 +336,17 @@ class Term(Entity):
     # --- Attributes ---------------------------------------------------------
 
     @property
-    def disjoint_from(self) -> FrozenSet['Term']:
+    def disjoint_from(self) -> FrozenSet["Term"]:
         """The terms declared as disjoint from this term.
 
         Two terms are disjoint if they have no instances or subclasses in
         common.
         """
         ontology, termdata = self._ontology(), self._data()
-        return frozenset({
-            ontology.get_term(id)
-            for id in termdata.disjoint_from
-        })
+        return frozenset({ontology.get_term(id) for id in termdata.disjoint_from})
 
     @disjoint_from.setter
-    def disjoint_from(self, terms: FrozenSet['Term']):
+    def disjoint_from(self, terms: FrozenSet["Term"]):
         if __debug__:
             if not isinstance(terms, collections.abc.Set):
                 msg = "'terms' must be a set, not {}"
@@ -348,11 +357,13 @@ class Term(Entity):
         self._data().disjoint_from = set(term.id for term in terms)
 
     @property
-    def intersection_of(self) -> FrozenSet[Union['Term', Tuple['Relationship', 'Term']]]:
+    def intersection_of(
+        self
+    ) -> FrozenSet[Union["Term", Tuple["Relationship", "Term"]]]:
         """The terms or term relationships this term is an intersection of.
         """
         ont, termdata = self._ontology(), self._data()
-        intersection_of: List[Union['Term', Tuple['Relationship', 'Term']]] = []
+        intersection_of: List[Union["Term", Tuple["Relationship", "Term"]]] = []
         for item in termdata.intersection_of:
             try:
                 r, t = item
@@ -362,35 +373,35 @@ class Term(Entity):
         return frozenset(intersection_of)
 
     @property
-    def relationships(self) -> Mapping[Relationship, FrozenSet['Term']]:
+    def relationships(self) -> Mapping[Relationship, FrozenSet["Term"]]:
         ont, termdata = self._ontology(), self._data()
-        return frozendict.frozendict({
-            Relationship(ont, ont.get_relationship(rel)._data()): frozenset(
-                Term(ont, ont.get_term(term)._data())
-                for term in terms
-            )
-            for rel,terms in termdata.relationships.items()
-        })
+        return frozendict.frozendict(
+            {
+                Relationship(ont, ont.get_relationship(rel)._data()): frozenset(
+                    Term(ont, ont.get_term(term)._data()) for term in terms
+                )
+                for rel, terms in termdata.relationships.items()
+            }
+        )
 
     @relationships.setter
-    def relationships(self, r: Mapping[Relationship, Iterable['Term']]):
+    def relationships(self, r: Mapping[Relationship, Iterable["Term"]]):
         self._data().relationships = {
-            relation.id: set(t.id for t in terms)
-            for relation, terms in r.items()
+            relation.id: set(t.id for t in terms) for relation, terms in r.items()
         }
 
     @property
-    def replaced_by(self) -> FrozenSet['Term']:
+    def replaced_by(self) -> FrozenSet["Term"]:
         ontology, termdata = self._ontology(), self._data()
         return frozenset({ontology.get_term(t) for t in termdata.replaced_by})
 
     @property
-    def union_of(self) -> FrozenSet['Term']:
+    def union_of(self) -> FrozenSet["Term"]:
         termdata, ont = self._data(), self._ontology()
         return frozenset(ont.get_term(t) for t in termdata.union_of)
 
     @union_of.setter
-    def union_of(self, union_of: Set['Term']):
+    def union_of(self, union_of: Set["Term"]):
         if __debug__:
             if not isinstance(union_of, collections.abc.Set):
                 msg = "'union_of' must be a set, not {}"
@@ -403,6 +414,6 @@ class Term(Entity):
         self._data().union_of = set(term.id for term in union_of)
 
     @property
-    def consider(self) -> FrozenSet['Term']:
+    def consider(self) -> FrozenSet["Term"]:
         termdata, ont = self._data(), self._ontology()
         return frozenset(ont.get_term(t) for t in termdata.consider)

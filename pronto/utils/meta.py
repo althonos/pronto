@@ -7,12 +7,11 @@ import typing
 from typing import Callable, ClassVar, Optional, Union, Tuple
 
 
-T = typing.TypeVar('T')
-F = typing.TypeVar('F', bound=Callable[..., object])
+T = typing.TypeVar("T")
+F = typing.TypeVar("F", bound=Callable[..., object])
 
 
 class typechecked(object):
-
     @classmethod
     def check_type(cls, hint: object, value: object) -> Tuple[bool, Optional[str]]:
         # None: check if None
@@ -22,29 +21,29 @@ class typechecked(object):
         if isinstance(hint, type):
             return (isinstance(value, hint), hint.__name__)
         # typing.Any is always true
-        if getattr(hint, '_name', None) == 'typing.Any':
+        if getattr(hint, "_name", None) == "typing.Any":
             return (True, None)
         # typing.Set needs to check member types
-        if getattr(hint, '__origin__', None) is set:
+        if getattr(hint, "__origin__", None) is set:
             if not isinstance(value, collections.abc.MutableSet):
                 return (False, f"set of { hint.__args__ }")
             for arg in value:
                 if not cls.check_type(hint.__args__, value):
                     return (False, f"set of { hint.__args__ }")
         # typing.FrozenSet needs to check member types
-        if getattr(hint, '__origin__', None) is frozenset:
+        if getattr(hint, "__origin__", None) is frozenset:
             if not isinstance(value, collections.abc.Set):
                 return (False, f"frozen set of { hint.__args__ }")
             for arg in value:
                 if not cls.check_type(hint.__args__, value):
                     return (False, f"frozen set of { hint.__args__ }")
         # typing.Union needs to be a valid type
-        if getattr(hint, '__origin__', None) == typing.Union:
+        if getattr(hint, "__origin__", None) == typing.Union:
             results = {}
             for arg in hint.__args__:
                 results[arg] = cls.check_type(arg, value)
-            ok = any(ok for ok,name in results.values())
-            return (ok, ", ".join(name for ok,name in results.values()))
+            ok = any(ok for ok, name in results.values())
+            return (ok, ", ".join(name for ok, name in results.values()))
         return (False, "something")
 
     def __init__(self, property: bool = False) -> None:
@@ -124,7 +123,9 @@ class roundrepr(object):
         # Extract signature of `__init__`
         sig = inspect.signature(cls.__init__)
         if not all(p.kind is p.POSITIONAL_OR_KEYWORD for p in sig.parameters.values()):
-            raise TypeError("cannot use `roundrepr` on a class with variadic `__init__`")
+            raise TypeError(
+                "cannot use `roundrepr` on a class with variadic `__init__`"
+            )
 
         # Derive the __repr__ implementation
         def __repr__(self_):

@@ -17,7 +17,6 @@ build_main = utils.try_import("sphinx.cmd.build:build_main", None)
 
 
 class TestProntoDocumentation(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.build_dir = os.path.join(utils.TESTDIR, "run", "build")
@@ -29,14 +28,16 @@ class TestProntoDocumentation(unittest.TestCase):
         shutil.rmtree(os.path.join(utils.TESTDIR, "run"))
 
     def assertBuilds(self, format):
-        with mock.patch('sys.stderr', io.StringIO()) as stderr:
-            with mock.patch('sys.stdout', io.StringIO()) as stdout:
-                res = build_main([
-                    "-b{}".format(format),
-                    "-d{}".format(os.path.join(self.build_dir, 'doctrees')),
-                    self.source_dir,
-                    os.path.join(self.build_dir, format)
-                ])
+        with mock.patch("sys.stderr", io.StringIO()) as stderr:
+            with mock.patch("sys.stdout", io.StringIO()) as stdout:
+                res = build_main(
+                    [
+                        "-b{}".format(format),
+                        "-d{}".format(os.path.join(self.build_dir, "doctrees")),
+                        self.source_dir,
+                        os.path.join(self.build_dir, format),
+                    ]
+                )
         if res != 0:
             print(stdout.getvalue())
             print(stderr.getvalue())
@@ -53,7 +54,8 @@ class TestProntoDocumentation(unittest.TestCase):
 
 
 def setUpModule():
-    warnings.simplefilter('ignore')
+    warnings.simplefilter("ignore")
+
 
 def tearDownModule():
     warnings.simplefilter(warnings.defaultaction)

@@ -50,15 +50,12 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     import_depth: int
     timeout: int
-    imports: Dict[str, 'Ontology']
+    imports: Dict[str, "Ontology"]
 
     @classmethod
     def from_obo_library(
-            cls,
-            slug: str,
-            import_depth: int = -1,
-            timeout: int = 5,
-    ) -> 'Ontology':
+        cls, slug: str, import_depth: int = -1, timeout: int = 5
+    ) -> "Ontology":
         """Create an `Ontology` from a file in the OBO Library.
 
         This is basically just a shortcut constructor to avoid typing the full
@@ -83,11 +80,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             >>> ms.path
             'http://purl.obolibrary.org/obo/ms.obo'
         """
-        return cls(
-            f"http://purl.obolibrary.org/obo/{slug}",
-            import_depth,
-            timeout,
-        )
+        return cls(f"http://purl.obolibrary.org/obo/{slug}", import_depth, timeout)
 
     def __init__(
         self,
@@ -138,7 +131,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 self.path: str = handle
                 self.handle = ctx << get_handle(handle, timeout)
                 _handle = ctx << decompress(self.handle)
-            elif hasattr(handle, 'read'):
+            elif hasattr(handle, "read"):
                 self.path: str = get_location(handle)
                 self.handle = handle
                 _handle = decompress(self.handle)
@@ -171,7 +164,11 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             >>> len(ms.relationships())
             5
         """
-        return len(self._terms) + len(self._relationships) + sum(map(len, self.imports.values()))
+        return (
+            len(self._terms)
+            + len(self._relationships)
+            + sum(map(len, self.imports.values()))
+        )
 
     def __iter__(self) -> SizedIterator[str]:
         """Yields the identifiers of all the entities part of the ontology.
@@ -183,10 +180,12 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         )
 
     def __contains__(self, item: str) -> bool:
-        return any(item in i for i in self.imports.values()) \
-            or item in self._terms \
-            or item in self._relationships \
+        return (
+            any(item in i for i in self.imports.values())
+            or item in self._terms
+            or item in self._relationships
             or item in relationship._BUILTINS
+        )
 
     @typechecked()
     def __getitem__(self, id: str) -> Union[Term, Relationship]:
@@ -221,13 +220,10 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                     for ref in self.imports.values()
                     for t in ref.terms()
                 ),
-                (
-                    Term(self, t) for t in self._terms.values()
-                ),
+                (Term(self, t) for t in self._terms.values()),
             ),
             length=(
-                sum(len(r.terms()) for r in self.imports.values())
-                + len(self._terms)
+                sum(len(r.terms()) for r in self.imports.values()) + len(self._terms)
             ),
         )
 
@@ -245,9 +241,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                     for ref in self.imports.values()
                     for r in ref.relationships()
                 ),
-                (
-                    self.get_relationship(r) for r in self._relationships
-                ),
+                (self.get_relationship(r) for r in self._relationships),
             ),
             length=(
                 sum(len(r.relationships()) for r in self.imports.values())

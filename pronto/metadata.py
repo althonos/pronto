@@ -1,4 +1,3 @@
-
 import datetime
 import functools
 import typing
@@ -47,6 +46,7 @@ class Subset(object):
 class Metadata(object):
     """A mapping containing metadata about the current ontology.
     """
+
     format_version: str
     data_version: Optional[str]
     ontology: Optional[str]
@@ -65,23 +65,23 @@ class Metadata(object):
     unreserved: Dict[str, Set[str]]
 
     def __init__(
-            self,
-            format_version: str = "1.4",
-            data_version: Optional[str] = None,
-            ontology: Optional[str] = None,
-            date: Optional[datetime.datetime] = None,
-            default_namespace: Optional[str] = None,
-            namespace_id_rule: Optional[str] = None,
-            owl_axioms: Optional[List[str]] = None,
-            saved_by: Optional[str] = None,
-            auto_generated_by: Optional[str] = None,
-            subsetdefs: Set[Subset] = None,
-            imports: Optional[Dict[str, str]] = None,
-            synonymtypedefs: Set[SynonymType] = None,
-            idspace: Dict[str, str] = None,
-            remarks: Set[str] = None,
-            annotations: Set[PropertyValue] = None,
-            **unreserved: Set[str],
+        self,
+        format_version: str = "1.4",
+        data_version: Optional[str] = None,
+        ontology: Optional[str] = None,
+        date: Optional[datetime.datetime] = None,
+        default_namespace: Optional[str] = None,
+        namespace_id_rule: Optional[str] = None,
+        owl_axioms: Optional[List[str]] = None,
+        saved_by: Optional[str] = None,
+        auto_generated_by: Optional[str] = None,
+        subsetdefs: Set[Subset] = None,
+        imports: Optional[Dict[str, str]] = None,
+        synonymtypedefs: Set[SynonymType] = None,
+        idspace: Dict[str, str] = None,
+        remarks: Set[str] = None,
+        annotations: Set[PropertyValue] = None,
+        **unreserved: Set[str],
     ):
         """Create a new `Metadata` instance.
 
@@ -105,7 +105,9 @@ class Metadata(object):
         self.auto_generated_by = auto_generated_by
         self.subsetdefs = set(subsetdefs) if subsetdefs is not None else set()
         self.imports = set(imports) if imports is not None else set()
-        self.synonymtypedefs = set(synonymtypedefs) if synonymtypedefs is not None else set()
+        self.synonymtypedefs = (
+            set(synonymtypedefs) if synonymtypedefs is not None else set()
+        )
         self.idspace = idspace or dict()
         self.remarks = remarks or set()
         self.annotations = annotations or set()

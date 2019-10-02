@@ -1,9 +1,9 @@
 __author__ = "Martin Larralde <martin.larralde@embl.de>"
 __license__ = "MIT"
 __version__ = (
-    __import__('pkg_resources')
+    __import__("pkg_resources")
     .resource_string(__name__, "_version.txt")
-    .decode('utf-8')
+    .decode("utf-8")
     .strip()
 )
 

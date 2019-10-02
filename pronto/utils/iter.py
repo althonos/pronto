@@ -1,12 +1,11 @@
 import typing
 from typing import TypeVar, Generic, Iterator, Sized
 
-S = TypeVar('S')
-T = TypeVar('T')
+S = TypeVar("S")
+T = TypeVar("T")
 
 
 class SizedIterator(Generic[T], Iterator[T], Sized):
-
     def __init__(self, it: Iterator[T], length: int):
         self._it = it
         self._length = length

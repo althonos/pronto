@@ -15,11 +15,11 @@ if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
 
-class EntityData():
+class EntityData:
     __slots__ = ("__weakref__",)
 
 
-class Entity():
+class Entity:
     """An entity in the ontology graph.
 
     With respects to the OBO semantics, an `Entity` is either a term or a
@@ -29,22 +29,22 @@ class Entity():
 
     if typing.TYPE_CHECKING:
 
-        __ontology: 'weakref.ReferenceType[Ontology]'
-        __data: 'weakref.ReferenceType[EntityData]'
+        __ontology: "weakref.ReferenceType[Ontology]"
+        __data: "weakref.ReferenceType[EntityData]"
 
         __slots__ = ("__weakref__", "__ontology", "__data")
 
-        def __init__(self, ontology: 'Ontology', data: 'EntityData'):
+        def __init__(self, ontology: "Ontology", data: "EntityData"):
             self.__ontology = weakref.ref(ontology)
             self.__data = weakref.ref(data)
 
-        def _data(self) -> 'EntityData':
+        def _data(self) -> "EntityData":
             rdata = self.__data()
             if rdata is None:
                 raise RuntimeError("entity data was deallocated")
             return rdata
 
-        def _ontology(self) -> 'Ontology':
+        def _ontology(self) -> "Ontology":
             ontology = self.__ontology()
             if ontology is None:
                 raise RuntimeError("referenced ontology was deallocated")
@@ -52,10 +52,9 @@ class Entity():
 
     else:
 
-        def __init__(self, ontology: 'Ontology', data: 'EntityData'):
+        def __init__(self, ontology: "Ontology", data: "EntityData"):
             self._ontology = weakref.ref(ontology)
             self._data = weakref.ref(data)
-
 
     # --- Magic Methods ------------------------------------------------------
 

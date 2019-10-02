@@ -7,7 +7,6 @@ import pronto
 
 
 class TestXref(unittest.TestCase):
-
     def setUp(self):
         self.x1 = pronto.Xref("PMC:5392374")
         self.x2 = pronto.Xref("PMC:5392374")

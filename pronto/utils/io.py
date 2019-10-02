@@ -26,18 +26,17 @@ class BufferedReader(io.BufferedReader):
             return super(BufferedReader, self).read(size)
         except ValueError:
             if typing.cast(io.BufferedReader, self.closed):
-                return b''
+                return b""
             raise
 
 
 class EncodedFile(codecs.StreamRecoder):
-
     def __init__(
-            self,
-            file: BinaryIO,
-            data_encoding: str,
-            file_encoding: Optional[str] = None,
-            errors: str ='strict'
+        self,
+        file: BinaryIO,
+        data_encoding: str,
+        file_encoding: Optional[str] = None,
+        errors: str = "strict",
     ):
         if file_encoding is None:
             file_encoding = data_encoding
@@ -49,7 +48,7 @@ class EncodedFile(codecs.StreamRecoder):
             data_info.decode,
             file_info.streamreader,
             file_info.streamwriter,
-            errors
+            errors,
         )
         # Add attributes to simplify introspection
         self.data_encoding = data_encoding
@@ -57,26 +56,26 @@ class EncodedFile(codecs.StreamRecoder):
 
     def read(self, size: Optional[int] = -1) -> bytes:
         chunk = super().read(-1 if size is None else size)
-        return chunk.replace(b'\r\n', b'\n')
+        return chunk.replace(b"\r\n", b"\n")
 
     def readinto(self, buffer: ByteString) -> int:
-        chunk = self.read(len(buffer)//2)
-        typing.cast(bytearray, buffer)[:len(chunk)] = chunk
+        chunk = self.read(len(buffer) // 2)
+        typing.cast(bytearray, buffer)[: len(chunk)] = chunk
         return len(chunk)
 
 
-def get_handle(path: str, timeout: int=2) -> BinaryIO:
+def get_handle(path: str, timeout: int = 2) -> BinaryIO:
     """Given a path or URL, get a binary handle for that path.
     """
     try:
         return open(path, "rb", buffering=0)
     except Exception as err:
-        headers = {'Keep-Alive': f'timeout={timeout}'}
+        headers = {"Keep-Alive": f"timeout={timeout}"}
         request = urllib.request.Request(path, headers=headers)
         res: HTTPResponse = urllib.request.urlopen(request, timeout=timeout)
         if not res.status == 200:
             raise ValueError(f"could not open {path}: {res.status} ({res.msg})")
-        if res.headers.get('Content-Encoding') in {'gzip', 'deflate'}:
+        if res.headers.get("Content-Encoding") in {"gzip", "deflate"}:
             f = gzip.GzipFile(filename=res.geturl(), mode="rb", fileobj=res)
             return typing.cast(BinaryIO, f)
         return res
@@ -88,14 +87,12 @@ def get_location(reader: BinaryIO) -> Optional[str]:
     return (
         getattr(reader, "name", None)
         or getattr(reader, "url", None)
-        or getattr(reader, 'geturl', lambda: None)()
+        or getattr(reader, "geturl", lambda: None)()
     )
 
 
 def decompress(
-        reader: io.RawIOBase,
-        path: Optional[str] = None,
-        encoding: Optional[str] = None
+    reader: io.RawIOBase, path: Optional[str] = None, encoding: Optional[str] = None
 ) -> BinaryIO:
     """Given a binary file-handle, decompress it if it is compressed.
     """
@@ -104,20 +101,24 @@ def decompress(
 
     # Decompress the stream if it is compressed
     if buffered.peek().startswith(MAGIC_GZIP):
-        decompressed = BufferedReader(typing.cast(
-            io.RawIOBase,
-            gzip.GzipFile(mode="rb", fileobj=typing.cast(BinaryIO, buffered))
-        ))
+        decompressed = BufferedReader(
+            typing.cast(
+                io.RawIOBase,
+                gzip.GzipFile(mode="rb", fileobj=typing.cast(BinaryIO, buffered)),
+            )
+        )
     elif buffered.peek().startswith(MAGIC_LZMA):
-        decompressed = BufferedReader(typing.cast(
-            io.RawIOBase,
-            lzma.LZMAFile(typing.cast(BinaryIO, buffered), mode="rb"),
-        ))
+        decompressed = BufferedReader(
+            typing.cast(
+                io.RawIOBase, lzma.LZMAFile(typing.cast(BinaryIO, buffered), mode="rb")
+            )
+        )
     elif buffered.peek().startswith(MAGIC_BZIP2):
-        decompressed = BufferedReader(typing.cast(
-            io.RawIOBase,
-            bz2.BZ2File(typing.cast(BinaryIO, buffered), mode="rb"),
-        ))
+        decompressed = BufferedReader(
+            typing.cast(
+                io.RawIOBase, bz2.BZ2File(typing.cast(BinaryIO, buffered), mode="rb")
+            )
+        )
     else:
         decompressed = buffered
 
@@ -125,17 +126,24 @@ def decompress(
     det: Dict[str, Union[str, float]] = chardet.detect(decompressed.peek())
     if encoding is not None:
         det = dict(encoding=encoding, confidence=1.0)
-    elif det['encoding'] == 'ascii':
-        det['encoding'] = 'UTF-8'
-    if det['confidence'] == 1.0:
-        return typing.cast(BinaryIO, BufferedReader(typing.cast(
-            io.RawIOBase,
-            EncodedFile(
-                typing.cast(typing.BinaryIO, decompressed),
-                'UTF-8',
-                typing.cast(str, det['encoding'])
+    elif det["encoding"] == "ascii":
+        det["encoding"] = "UTF-8"
+    if det["confidence"] == 1.0:
+        return typing.cast(
+            BinaryIO,
+            BufferedReader(
+                typing.cast(
+                    io.RawIOBase,
+                    EncodedFile(
+                        typing.cast(typing.BinaryIO, decompressed),
+                        "UTF-8",
+                        typing.cast(str, det["encoding"]),
+                    ),
+                )
             ),
-        )))
+        )
     else:
-        warnings.warn('could not find encoding, assuming UTF-8', UnicodeWarning, stacklevel=3)
+        warnings.warn(
+            "could not find encoding, assuming UTF-8", UnicodeWarning, stacklevel=3
+        )
         return typing.cast(BinaryIO, decompressed)

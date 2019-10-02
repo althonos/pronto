@@ -8,9 +8,7 @@ from pronto.relationship import Relationship, RelationshipData
 from .utils import DATADIR
 
 
-
 class TestRelationship(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.ms = pronto.Ontology(os.path.join(DATADIR, "ms.obo.xz"))

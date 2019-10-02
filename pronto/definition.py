@@ -59,7 +59,7 @@ class Definition(str):
         xrefs = [Xref._to_ast(x) for x in sorted(self.xrefs)]
         return fastobo.term.DefClause(str(self), xrefs)
 
-    def __new__(cls, text: str, xrefs=None) -> 'Definition':
+    def __new__(cls, text: str, xrefs=None) -> "Definition":
         return super().__new__(cls, text)
 
     def __init__(self, text: str, xrefs: Optional[Iterable[Xref]] = None) -> None:

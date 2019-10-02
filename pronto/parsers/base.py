@@ -8,8 +8,7 @@ if typing.TYPE_CHECKING:
 
 
 class BaseParser(abc.ABC):
-
-    def __init__(self, ont: 'Ontology'):
+    def __init__(self, ont: "Ontology"):
         self.ont = ont
 
     @classmethod
@@ -43,7 +42,5 @@ class BaseParser(abc.ABC):
                         url = f"http://purl.obolibrary.org/obo/{ref}"
 
                 self.ont.imports[ref] = type(self.ont)(
-                    url,
-                    max(self.ont.import_depth-1, 0),
-                    self.ont.timeout,
+                    url, max(self.ont.import_depth - 1, 0), self.ont.timeout
                 )

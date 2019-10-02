@@ -14,6 +14,7 @@ from .utils.meta import roundrepr, typechecked
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
+
 @functools.total_ordering
 @roundrepr
 class SynonymType(object):
@@ -25,9 +26,9 @@ class SynonymType(object):
     __slots__ = ("__weakref__", "id", "description", "scope")
 
     @typechecked()
-    def __init__(self, id: str, description: str, scope: Optional[str]=None):
+    def __init__(self, id: str, description: str, scope: Optional[str] = None):
         if scope is not None:
-            if scope not in {'EXACT', 'RELATED', 'BROAD', 'NARROW'}:
+            if scope not in {"EXACT", "RELATED", "BROAD", "NARROW"}:
                 raise ValueError(f"invalid synonym scope: {scope}")
         self.id = id
         self.description = description
@@ -37,15 +38,18 @@ class SynonymType(object):
         if not isinstance(other, SynonymData):
             return False
         return all(
-            getattr(self, attr) == getattr(other, attr)
-            for attr in self.__slots__[1:]
+            getattr(self, attr) == getattr(other, attr) for attr in self.__slots__[1:]
         )
 
     def __lt__(self, other):
         if not isinstance(other, SynonymData):
             return NotImplemented
         if self.scope is not None and other.scope is not None:
-            return (self.id, self.description, self.scope) < (other.id, other.description, other.scope)
+            return (self.id, self.description, self.scope) < (
+                other.id,
+                other.description,
+                other.scope,
+            )
         else:
             return (self.id, self.description) < (other.id, other.description)
 
@@ -73,11 +77,18 @@ class SynonymData(object):
         if not isinstance(other, SynonymData):
             return NotImplemented
         if self.type is not None and other.type is not None:
-            return (self.description, self.scope, self.type, frozenset(self.xrefs)) \
-                 < (self.description, self.scope, other.type, frozenset(other.xrefs))
+            return (self.description, self.scope, self.type, frozenset(self.xrefs)) < (
+                self.description,
+                self.scope,
+                other.type,
+                frozenset(other.xrefs),
+            )
         else:
-            return (self.description, self.scope, frozenset(self.xrefs)) \
-                 < (self.description, self.scope, frozenset(other.xrefs))
+            return (self.description, self.scope, frozenset(self.xrefs)) < (
+                self.description,
+                self.scope,
+                frozenset(other.xrefs),
+            )
 
     def __hash__(self):
         return hash((self.description, self.scope))
@@ -85,9 +96,9 @@ class SynonymData(object):
     def __init__(
         self,
         description: str,
-        scope: Optional[str]=None,
-        type: Optional[str]=None,
-        xrefs: Optional[Iterable[Xref]]=None
+        scope: Optional[str] = None,
+        type: Optional[str] = None,
+        xrefs: Optional[Iterable[Xref]] = None,
     ):
         self.description = description
         self.scope = scope
@@ -106,18 +117,17 @@ class SynonymData(object):
 @functools.total_ordering
 class Synonym(object):
 
-    _ontology: 'weakref.ReferenceType[Ontology]'
-    _data: 'weakref.ReferenceType[SynonymData]'
+    _ontology: "weakref.ReferenceType[Ontology]"
+    _data: "weakref.ReferenceType[SynonymData]"
 
     def _to_ast(self):
         return self._data()._to_ast()
 
-    def __init__(self, ontology: 'Ontology', syndata: 'SynonymData'):
+    def __init__(self, ontology: "Ontology", syndata: "SynonymData"):
         if syndata.type is not None:
             synonyms = ontology.metadata.synonymtypedefs
             if not any(s.id == syndata.type for s in synonyms):
                 raise ValueError(f"undeclared synonym type: {syndata.type}")
-
 
         self._ontology = weakref.ref(ontology)
         self._data = weakref.ref(syndata)
@@ -179,7 +189,7 @@ class Synonym(object):
             if scope is not None and not isinstance(scope, str):
                 msg = "'scope' must be str or None, not {}"
                 raise TypeError(msg.format(type(scope).__name__))
-        if scope not in {'EXACT', 'RELATED', 'BROAD', 'NARROW'}:
+        if scope not in {"EXACT", "RELATED", "BROAD", "NARROW"}:
             raise ValueError(f"invalid synonym scope: {scope}")
         self._data().scope = scope
 

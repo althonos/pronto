@@ -74,11 +74,10 @@ class OwlXMLParser(BaseParser):
         self._extract_meta(owl_ontology)
         self.process_imports()
 
-        # TODO
-        # for class_ in tree.iterfind(_NS['owl']['ObjectProperty']):
-        #     self._extract_relationship(class_)
         for class_ in tree.iterfind(_NS["owl"]["Class"]):
             self._extract_term(class_)
+        for prop in tree.iterfind(_NS['owl']['ObjectProperty']):
+            self._extract_object_property(prop)
         for axiom in tree.iterfind(_NS["owl"]["Axiom"]):
             self._process_axiom(axiom)
 
@@ -227,6 +226,40 @@ class OwlXMLParser(BaseParser):
                 else:
                     warnings.warn(f"unknown element in `owl:Class`: {child}")
 
+    def _extract_object_property(self, elem: etree.Element):
+        if __debug__:
+            if elem.tag != _NS["owl"]["ObjectProperty"]:
+                raise ValueError("expected `owl:ObjectProperty` element")
+
+        # only create the term if it is not a restriction
+        iri = elem.get(_NS["rdf"]["about"])
+        if iri is None:  # ignore
+            return None
+
+        # attempt to extract the compact id of the term
+        e = elem.find(_NS["oboInOwl"]["id"])
+        id_ = e.text if e is not None and e.text else self._compact_id(iri)
+        rel = self.ont.get_relationship(id_) if id_ in self.ont else self.ont.create_relationship(id_)
+        reldata = rel._data()
+        return rel
+
+    def _extract_annotation_property(self, elem: etree.Element):
+        if __debug__:
+            if elem.tag != _NS["owl"]["ObjectProperty"]:
+                raise ValueError("expected `owl:ObjectProperty` element")
+
+        # only create the term if it is not a restriction
+        iri = elem.get(_NS["rdf"]["about"])
+        if iri is None:  # ignore
+            return None
+
+        # attempt to extract the compact id of the term
+        e = elem.find(_NS["oboInOwl"]["id"])
+        id_ = e.text if e is not None and e.text else self._compact_id(iri)
+        rel = self.ont.get_relationship(id_) if id_ in self.ont else self.ont.create_relationship(id_)
+        reldata = rel._data()
+        return rel
+
     def _process_axiom(self, elem: etree.Element):
         _resource = _NS["rdf"]["resource"]
 
@@ -243,11 +276,19 @@ class OwlXMLParser(BaseParser):
 
         property = elem_property.attrib[_resource]
         if property == _NS["obo"].raw("IAO_0000115") and elem_target.text is not None:
+
+            if self._compact_id(elem_source.attrib[_resource]) not in self.ont:
+                return # FIXME!
+
+
             entity = self.ont[self._compact_id(elem_source.attrib[_resource])]
             entity.definition = d = Definition(elem_target.text)
             for child in elem.iterfind(_NS["oboInOwl"]["hasDbXref"]):
                 if child.text is not None:
-                    d.xrefs.add(Xref(child.text))
+                    try:
+                        d.xrefs.add(Xref(child.text))
+                    except ValueError:
+                        warnings.warn(f"could not parse Xref: {child.text!r}")
                 else:
                     warnings.warn("`oboInOwl:hasDbXref` element has no text")
 
@@ -255,6 +296,10 @@ class OwlXMLParser(BaseParser):
             property == _NS["oboInOwl"].raw("hasDbXref")
             and elem_target.text is not None
         ):
+
+            if self._compact_id(elem_source.attrib[_resource]) not in self.ont:
+                return # FIXME!
+
             entity = self.ont[self._compact_id(elem_source.attrib[_resource])]
             label = elem.find(_NS["rdfs"]["label"])
             if label is not None and label.text is not None:
@@ -263,6 +308,11 @@ class OwlXMLParser(BaseParser):
                 entity._data().xrefs.add(Xref(elem_target.text))
 
         elif property in _SYNONYMS:
+
+
+            if self._compact_id(elem_source.attrib[_resource]) not in self.ont:
+                return # FIXME!
+
             entity = self.ont[self._compact_id(elem_source.attrib[_resource])]
             try:
                 s = next(

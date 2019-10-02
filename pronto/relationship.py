@@ -9,7 +9,7 @@ import frozendict
 
 from .entity import Entity, EntityData
 from .definition import Definition
-from .synonym import Synonym, _SynonymData
+from .synonym import Synonym, SynonymData
 from .xref import Xref
 from .pv import PropertyValue
 from .utils.impl import set
@@ -21,7 +21,7 @@ if typing.TYPE_CHECKING:
     from .term import Term
 
 
-class _RelationshipData(EntityData):
+class RelationshipData(EntityData):
 
     id: str
     anonymous: bool
@@ -156,21 +156,13 @@ class _RelationshipData(EntityData):
 
 class Relationship(Entity):
 
-    def __init__(self, ontology: 'Ontology', reldata: '_RelationshipData'):
-        """Instantiate a new `Relationship`.
-
-        Important:
-            Do not use directly, as this API does some black magic to reduce
-            memory usage and improve consistency in the data model. Use
-            `Ontology.create_relationship` or `Ontology.get_relationship`
-            depending on your needs to obtain a `Relationship` instance.
-        """
-        super().__init__(ontology, reldata)
-
     if typing.TYPE_CHECKING:
 
-        def _data(self) -> '_RelationshipData':
-            return typing.cast('_RelationshipData', super()._data())
+        def __init__(self, ontology: 'Ontology', reldata: 'RelationshipData'):
+            super().__init__(ontology, reldata)
+
+        def _data(self) -> 'RelationshipData':
+            return typing.cast('RelationshipData', super()._data())
 
     # --- Data descriptors ---------------------------------------------------
 
@@ -308,7 +300,7 @@ class Relationship(Entity):
     @property
     def holds_over_chain(self) -> FrozenSet[Tuple['Relationship', 'Relationship']]:
         ont: 'Ontology' = self._ontology()
-        data: '_RelationshipData' = self._data()
+        data: 'RelationshipData' = self._data()
         return frozenset({
             tuple(map(ont.get_term, chain))
             for chain in data.holds_over_chain
@@ -390,7 +382,7 @@ class Relationship(Entity):
 
 
 _BUILTINS = {
-    "is_a": _RelationshipData(
+    "is_a": RelationshipData(
         id = "is_a",
         anonymous = False,
         name = "is a",

@@ -11,6 +11,7 @@ import types
 import warnings
 
 import pronto
+import pronto.parsers
 
 from . import utils
 

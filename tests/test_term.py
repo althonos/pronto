@@ -3,7 +3,7 @@ import os
 import unittest
 
 import pronto
-from pronto.term import Term, _TermData
+from pronto.term import Term, TermData
 
 from .utils import DATADIR
 
@@ -16,7 +16,7 @@ class TestTerm(unittest.TestCase):
         cls.ms = pronto.Ontology(os.path.join(DATADIR, "ms.obo.xz"))
 
     def test_properties(self):
-        for t in _TermData.__slots__:
+        for t in TermData.__slots__:
             self.assertTrue(hasattr(Term, t), f"no property for {t}")
 
     def test_subclasses(self):

@@ -34,7 +34,7 @@ class SynonymType(object):
         self.scope = scope
 
     def __eq__(self, other):
-        if not isinstance(other, _SynonymData):
+        if not isinstance(other, SynonymData):
             return False
         return all(
             getattr(self, attr) == getattr(other, attr)
@@ -42,7 +42,7 @@ class SynonymType(object):
         )
 
     def __lt__(self, other):
-        if not isinstance(other, _SynonymData):
+        if not isinstance(other, SynonymData):
             return NotImplemented
         if self.scope is not None and other.scope is not None:
             return (self.id, self.description, self.scope) < (other.id, other.description, other.scope)
@@ -55,7 +55,7 @@ class SynonymType(object):
 
 @functools.total_ordering
 @roundrepr
-class _SynonymData(object):
+class SynonymData(object):
 
     description: str
     scope: Optional[str]
@@ -65,12 +65,12 @@ class _SynonymData(object):
     __slots__ = ("__weakref__", "description", "type", "xrefs", "scope")
 
     def __eq__(self, other):
-        if isinstance(other, _SynonymData):
+        if isinstance(other, SynonymData):
             return self.description == other.description and self.scope == other.scope
         return False
 
     def __lt__(self, other):  # FIXME?
-        if not isinstance(other, _SynonymData):
+        if not isinstance(other, SynonymData):
             return NotImplemented
         if self.type is not None and other.type is not None:
             return (self.description, self.scope, self.type, frozenset(self.xrefs)) \
@@ -107,12 +107,12 @@ class _SynonymData(object):
 class Synonym(object):
 
     _ontology: 'weakref.ReferenceType[Ontology]'
-    _data: 'weakref.ReferenceType[_SynonymData]'
+    _data: 'weakref.ReferenceType[SynonymData]'
 
     def _to_ast(self):
         return self._data()._to_ast()
 
-    def __init__(self, ontology: 'Ontology', syndata: '_SynonymData'):
+    def __init__(self, ontology: 'Ontology', syndata: 'SynonymData'):
         if syndata.type is not None:
             synonyms = ontology.metadata.synonymtypedefs
             if not any(s.id == syndata.type for s in synonyms):

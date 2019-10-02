@@ -15,7 +15,7 @@ from . import relationship
 from .entity import Entity, EntityData
 from .definition import Definition
 from .xref import Xref
-from .synonym import Synonym, _SynonymData
+from .synonym import Synonym, SynonymData
 from .relationship import Relationship
 from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
 from .utils.impl import set
@@ -25,7 +25,7 @@ if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
 
-class _TermData(EntityData):  # noqa: R0902, R0903
+class TermData(EntityData):  # noqa: R0902, R0903
     """Internal data storage of `Term` information.
     """
 
@@ -35,7 +35,7 @@ class _TermData(EntityData):  # noqa: R0902, R0903
     alternate_ids: Set[str]
     definition: Optional[Definition]
     comment: Optional[str]
-    synonyms: Set[_SynonymData]
+    synonyms: Set[SynonymData]
     subsets: Set[str]
     namespace: Optional[str]
     xrefs: Set[Xref]
@@ -107,21 +107,13 @@ class Term(Entity):
     """A term, corresponding to a node in the ontology graph.
     """
 
-    def __init__(self, ontology: 'Ontology', termdata: '_TermData'):
-        """Instantiate a new `Term`.
-
-        Important:
-            Do not use directly, as this API does some black magic to reduce
-            memory usage and improve consistentcy in the data model. Use
-            `Ontology.create_term` or `Ontology.get_term` depending on your
-            needs to obtain a `Term` instance.
-        """
-        super().__init__(ontology, termdata)
-
     if typing.TYPE_CHECKING:
 
-        def _data(self) -> '_TermData':
-            return typing.cast('_TermData', super()._data())
+        def __init__(self, ontology: 'Ontology', termdata: 'TermData'):
+            super().__init__(ontology, termdata)
+
+        def _data(self) -> 'TermData':
+            return typing.cast('TermData', super()._data())
 
     # --- Methods ------------------------------------------------------------
 

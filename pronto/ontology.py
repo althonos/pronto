@@ -11,9 +11,9 @@ import contexter
 import fastobo
 
 from . import relationship
-from .term import Term, _TermData
+from .term import Term, TermData
 from .synonym import SynonymType
-from .relationship import Relationship, _RelationshipData
+from .relationship import Relationship, RelationshipData
 from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
@@ -124,8 +124,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             self.timeout = timeout
             self.imports = dict()
 
-            self._terms: Dict[str, _TermData] = {}
-            self._relationships: Dict[str, _RelationshipData] = {}
+            self._terms: Dict[str, TermData] = {}
+            self._relationships: Dict[str, RelationshipData] = {}
 
             # Creating an ontology from scratch is supported
             if handle is None:
@@ -270,7 +270,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """
         with contextlib.suppress(KeyError):
             raise ValueError(f"identifier already in use: {id} ({self[id]})")
-        self._terms[id] = termdata = _TermData(id)
+        self._terms[id] = termdata = TermData(id)
         return Term(self, termdata)
 
     @typechecked()
@@ -284,7 +284,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """
         if id in self._relationships or id in relationship._BUILTINS:
             raise ValueError(f"identifier already in use: {id}")
-        self._relationships[id] = reldata = _RelationshipData(id)
+        self._relationships[id] = reldata = RelationshipData(id)
         return Relationship(self, reldata)
 
     @typechecked()

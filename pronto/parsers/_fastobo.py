@@ -11,7 +11,7 @@ from ..ontology import Ontology
 from ..term import Term
 from ..pv import PropertyValue, LiteralPropertyValue, ResourcePropertyValue
 from ..xref import Xref
-from ..synonym import Synonym, _SynonymData, SynonymType
+from ..synonym import Synonym, SynonymData, SynonymType
 from ..relationship import Relationship
 from ..utils.warnings import NotImplementedWarning
 
@@ -110,10 +110,10 @@ class FastoboParser(abc.ABC):
             msg = "'pv' must be AbstractPropertyValue, not {}"
             raise TypeError(msg.format(type(pv).__name__))
 
-    def _extract_synonym_data(self, syn: fastobo.syn.Synonym) -> _SynonymData:
+    def _extract_synonym_data(self, syn: fastobo.syn.Synonym) -> SynonymData:
         xrefs = map(self._extract_xref, syn.xrefs)
         type_ = str(syn.type) if syn.type is not None else None
-        return _SynonymData(syn.desc, syn.scope, type_, xrefs)
+        return SynonymData(syn.desc, syn.scope, type_, xrefs)
 
     def _extract_term(self, frame: fastobo.term.TermFrame) -> Term:
 

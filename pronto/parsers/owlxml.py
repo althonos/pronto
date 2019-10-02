@@ -11,7 +11,7 @@ from .base import BaseParser
 from ..definition import Definition
 from ..metadata import Metadata
 from ..term import Term
-from ..synonym import Synonym, _SynonymData
+from ..synonym import Synonym, SynonymData
 from ..relationship import Relationship
 from ..pv import ResourcePropertyValue, LiteralPropertyValue
 from ..xref import Xref
@@ -192,13 +192,13 @@ class OwlXMLParser(BaseParser):
             elif child.tag == _NS['obo']['IAO_0000115'] and child.text is not None:
                 term.definition = Definition(child.text)
             elif child.tag == _NS['oboInOwl']['hasExactSynonym']:
-                termdata.synonyms.add(_SynonymData(child.text, scope="EXACT"))
+                termdata.synonyms.add(SynonymData(child.text, scope="EXACT"))
             elif child.tag == _NS['oboInOwl']['hasRelatedSynonym']:
-                termdata.synonyms.add(_SynonymData(child.text, scope="RELATED"))
+                termdata.synonyms.add(SynonymData(child.text, scope="RELATED"))
             elif child.tag == _NS['oboInOwl']['hasBroadSynonym']:
-                termdata.synonyms.add(_SynonymData(child.text, scope="BROAD"))
+                termdata.synonyms.add(SynonymData(child.text, scope="BROAD"))
             elif child.tag == _NS['oboInOwl']['hasNarrowSynonym']:
-                termdata.synonyms.add(_SynonymData(child.text, scope="NARROW"))
+                termdata.synonyms.add(SynonymData(child.text, scope="NARROW"))
             elif child.tag == _NS['owl']['equivalentClass'] and child.text is not None:
                 termdata.equivalent_to.add(self._compact_id(child.text))
             elif child.tag == _NS['owl']['deprecated']:
@@ -270,7 +270,7 @@ class OwlXMLParser(BaseParser):
                     msg = "synonym {} contains different scopes in axiom and class: {} != {}"
                     raise ValueError(msg.format(elem_target.text, synonym.scope, _SYNONYMS[property]))
             except StopIteration:
-                synonym = _SynonymData(elem_target.text, scope=_SYNONYMS[property])
+                synonym = SynonymData(elem_target.text, scope=_SYNONYMS[property])
                 entity._data().synonyms.add(synonym)
             for child in elem.iterfind(_NS['oboInOwl']['hasDbXref']):
                 if child.text is not None:

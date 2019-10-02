@@ -28,6 +28,9 @@ sys.path.insert(0, project_dir)
 # -- Sphinx Setup ------------------------------------------------------------
 
 def setup(app):
+    # Force regenerating autosummary
+    if os.path.exists(os.path.join(docssrc_dir, "api")):
+        shutil.rmtree(os.path.join(docssrc_dir, "api"))
     # Add custom stylesheet
     app.add_stylesheet("css/main.css")
     # Copy `CHANGELOG.md` from project directory
@@ -117,7 +120,7 @@ language = None
 exclude_patterns = ["_build", "**.ipynb_checkpoints"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
+pygments_style = "monokailight"
 
 # The name of the default role for inline references
 default_role = "py:obj"
@@ -178,6 +181,7 @@ html_static_path = ["_static"]
 html_sidebars = {
     "*": ["localtoc.html"],
     "examples/*": ["localtoc.html"],
+    "api/*": ["localtoc.html"],
 }
 
 # -- Options for HTMLHelp output ---------------------------------------------

@@ -1,5 +1,6 @@
 semantic_version ~=2.6
 sphinx ~=2.2
 sphinx-bootstrap-theme ~=0.7
-recommonmark ~=0.6.0
-nbsphinx ~=0.4.3
+recommonmark ~=0.6
+nbsphinx ~=0.4
+pygments-style-monokailight ~=0.4

@@ -19,7 +19,6 @@ from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
 from .utils.meta import roundrepr, typechecked
 from .utils.impl import set
-from .parsers import BaseParser
 
 
 class Ontology(Mapping[str, Union[Term, Relationship]]):
@@ -118,6 +117,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 ontology not supported by any of the builtin parsers.
 
         """
+        from .parsers import BaseParser
+
         with contexter.Contexter() as ctx:
             self.import_depth = import_depth
             self.timeout = timeout

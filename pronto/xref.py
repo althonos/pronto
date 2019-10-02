@@ -54,10 +54,6 @@ class Xref(object):
 
     __slots__ = ("__weakref__", "id", "description") # noqa: E0602
 
-    @classmethod
-    def _from_ast(cls, xref: fastobo.xref.Xref) -> 'Xref':
-        return cls(str(xref.id), xref.desc)
-
     def _to_ast(self) -> fastobo.xref.Xref:
         return fastobo.xref.Xref(fastobo.id.parse(self.id), self.description)
 

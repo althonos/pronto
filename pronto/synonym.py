@@ -94,12 +94,6 @@ class _SynonymData(object):
         self.type = type
         self.xrefs = set(xrefs) if xrefs is not None else set()
 
-    @classmethod
-    def _from_ast(cls, syn: fastobo.syn.Synonym):
-        xrefs = set(Xref._from_ast(x) for x in syn.xrefs)
-        type_ = str(syn.type) if syn.type is not None else None
-        return cls(syn.desc, syn.scope, type_, xrefs)
-
     def _to_ast(self) -> fastobo.syn.Synonym:
         return fastobo.syn.Synonym(
             self.description,

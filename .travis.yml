@@ -32,12 +32,17 @@ before_deploy:
 - twine check dist/*
 
 deploy:
-  provider: script
+- provider: script
   script: twine upload --skip-existing dist/*
   skip_cleanup: true
   on:
     python: "3.7"
     tags: true
+    repo: althonos/pronto
+- provider: script
+  script: ci/travis/chandler.sh
+  on:
+    python: "3.7"
     repo: althonos/pronto
 
 notifications:

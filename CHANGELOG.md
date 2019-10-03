@@ -5,7 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.1...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.2...HEAD
+
+## [1.0.0-alpha.2] - 2019-10-03
+[1.0.0-alpha.2]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
+### Added
+- Support for extraction of relationships from OWL/XML files to `OwlXMLParser`.
+### Fixed
+- Type hints of `RelationshipData.synonyms` attribute.
 
 ## [1.0.0-alpha.1] - 2019-10-02
 [1.0.0-alpha.1]: https://github.com/althonos/pronto/compare/v0.12.2...v1.0.0-alpha.1

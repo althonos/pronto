@@ -3,7 +3,7 @@ import itertools
 import re
 import typing
 import warnings
-from typing import Optional
+from typing import Dict, Optional
 
 import dateutil.parser
 
@@ -58,14 +58,19 @@ _SYNONYMS = {
 
 
 class OwlXMLParser(BaseParser):
+
+    # -- BaseParser interface ------------------------------------------------
+
     @classmethod
     def can_parse(cls, path, buffer):
         return buffer.lstrip().startswith((b"<?xml", b"<rdf:RDF", b"<owl:"))
 
     def parse_from(self, handle):
-
         # Load the XML document into an XML Element tree
         tree: etree.ElementTree = etree.parse(handle)
+
+        # Keep a map of aliases (IRI -> local OBO id)
+        aliases: Dict[str, str] = dict()
 
         # Load metadata from the `owl:Ontology` element and process imports
         owl_ontology = tree.find(_NS["owl"]["Ontology"])
@@ -74,15 +79,20 @@ class OwlXMLParser(BaseParser):
         self._extract_meta(owl_ontology)
         self.process_imports()
 
-        for class_ in tree.iterfind(_NS["owl"]["Class"]):
-            self._extract_term(class_)
+        # Parse typedef first to handle OBO shorthand renaming
         for prop in tree.iterfind(_NS['owl']['ObjectProperty']):
-            self._extract_object_property(prop)
+            self._extract_object_property(prop, aliases)
+        for class_ in tree.iterfind(_NS["owl"]["Class"]):
+            self._extract_term(class_, aliases)
         for axiom in tree.iterfind(_NS["owl"]["Axiom"]):
-            self._process_axiom(axiom)
+            self._process_axiom(axiom, aliases)
+
+    # -- Helper methods ------------------------------------------------------
 
     def _compact_id(self, iri: str) -> str:
-        match = re.match("^http://purl.obolibrary.org/obo/([^_]+)_(.*)$", iri)
+        """Compact an OBO identifier into a prefixed identifier.
+        """
+        match = re.match("^http://purl.obolibrary.org/obo/([^#_]+)_(.*)$", iri)
         if match is not None:
             return ":".join(match.groups())
         return iri
@@ -148,30 +158,34 @@ class OwlXMLParser(BaseParser):
             else:
                 warnings.warn(f"unknown element in `owl:Ontology`: {child}")
 
-    def _extract_term(self, elem: etree.Element):
+    def _extract_term(self, elem: etree.Element, aliases: Dict[str, str]):
+        """Extract the term from a `owl:Class` element.
+        """
         if __debug__:
             if elem.tag != _NS["owl"]["Class"]:
                 raise ValueError("expected `owl:Class` element")
 
-        # only create the term if it is not a restriction
+        # only create the term if it is not a class by restriction
         iri = elem.get(_NS["rdf"]["about"])
-        if iri is None:  # ignore
+        if iri is None:
             return None
 
         # attempt to extract the compact id of the term
         e = elem.find(_NS["oboInOwl"]["id"])
         id_ = e.text if e is not None and e.text else self._compact_id(iri)
-        term = self.ont.get_term(id_) if id_ in self.ont else self.ont.create_term(id_)
+
+        # get or create the term
+        term = (self.ont.get_term if id_ in self.ont else self.ont.create_term)(id_)
         termdata = term._data()
 
-        # extract attributes
+        # extract attributes from annotation of the OWL class
         for child in elem:
             if child.tag == _NS["rdfs"]["subClassOf"]:
                 if _NS["rdf"]["resource"] in child.attrib:
                     iri = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
                     termdata.relationships.setdefault("is_a", set()).add(iri)
                 else:
-                    pass  # TODO: subclassing relationship for relationship
+                    pass  # TODO: relationships
             elif child.tag == _NS["oboInOwl"]["inSubset"]:
                 iri = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
                 termdata.subsets.add(iri)
@@ -200,8 +214,11 @@ class OwlXMLParser(BaseParser):
                 termdata.equivalent_to.add(self._compact_id(child.text))
             elif child.tag == _NS["owl"]["deprecated"]:
                 term.obsolete = child.text == "true"
-            elif child.tag == _NS["oboInOwl"]["hasDbXref"] and child.text is not None:
-                termdata.xrefs.add(Xref(child.text))
+            elif child.tag == _NS["oboInOwl"]["hasDbXref"]:
+                if child.text is not None:
+                    termdata.xrefs.add(Xref(child.text))
+                else:
+                    termdata.xrefs.add(Xref(child.attrib[_NS['rdf']['resource']]))
             elif child.tag == _NS["oboInOwl"]["hasAlternativeId"]:
                 termdata.alternate_ids.add(child.text)
             elif child.tag == _NS["owl"]["disjointWith"]:
@@ -226,7 +243,9 @@ class OwlXMLParser(BaseParser):
                 else:
                     warnings.warn(f"unknown element in `owl:Class`: {child}")
 
-    def _extract_object_property(self, elem: etree.Element):
+    def _extract_object_property(self, elem: etree.Element, aliases: Dict[str, str]):
+        """Extract the object property from an `owl:ObjectProperty` element.
+        """
         if __debug__:
             if elem.tag != _NS["owl"]["ObjectProperty"]:
                 raise ValueError("expected `owl:ObjectProperty` element")
@@ -237,51 +256,117 @@ class OwlXMLParser(BaseParser):
             return None
 
         # attempt to extract the compact id of the term
-        e = elem.find(_NS["oboInOwl"]["id"])
-        id_ = e.text if e is not None and e.text else self._compact_id(iri)
-        rel = self.ont.get_relationship(id_) if id_ in self.ont else self.ont.create_relationship(id_)
+        elem_id = elem.find(_NS["oboInOwl"]["id"])
+        elem_sh = elem.find(_NS["oboInOwl"]["shorthand"])
+        if elem_sh is not None and elem_sh.text is not None:
+            id_ = aliases[iri] = elem_sh.text
+        elif elem_id is not None and elem_id.text is not None:
+            id_ = aliases[iri] = elem_id.text
+        else:
+            id_ = self._compact_id(iri)
+
+        # Create the relationship
+        rel = (self.ont.get_relationship if id_ in self.ont else self.ont.create_relationship)(id_)
         reldata = rel._data()
+
+        # extract attributes from annotation of the OWL relationship
+        for child in elem:
+            if child.tag == _NS["rdfs"]["subObjectPropertyOf"]:
+                if _NS["rdf"]["resource"] in child.attrib:
+                    iri = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
+                    reldata.relationships.setdefault("is_a", set()).add(iri)
+                else:
+                    pass  # TODO: subclassing relationship for relationship
+            elif child.tag == _NS["oboInOwl"]["inSubset"]:
+                iri = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
+                reldata.subsets.add(iri)
+            elif child.tag == _NS["rdf"]["type"]:
+                resource = child.get(_NS['rdf']['resource'])
+                if resource == _NS['owl'].raw('TransitiveProperty'):
+                    reldata.transitive = True
+                elif resource == _NS['owl'].raw('ReflexiveProperty'):
+                    reldata.reflexive = True
+                elif resource == _NS['owl'].raw('SymmetricProperty'):
+                    reldata.symmetric = True
+                elif resource == _NS['owl'].raw('AsymmetricProperty'):
+                    reldata.asymmetric = True
+                elif resource == _NS['owl'].raw('FunctionalProperty'):
+                    reldata.functional = True
+                elif resource == _NS['owl'].raw('InverseFunctionalProperty'):
+                    reldata.inverse_functional = True
+            elif child.tag == _NS["rdfs"]["comment"]:
+                reldata.comment = child.text
+            elif child.tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
+                reldata.created_by = child.text
+            elif child.tag in (_NS["oboInOwl"]["creation_date"], _NS["dc"]["date"]):
+                reldata.creation_date = dateutil.parser.parse(child.text)
+            elif child.tag == _NS["oboInOwl"]["hasOBONamespace"]:
+                if child.text != self.ont.metadata.default_namespace:
+                    reldata.namespace = child.text
+            elif child.tag == _NS["rdfs"]["label"]:
+                reldata.name = child.text
+            elif child.tag == _NS["rdfs"]["domain"]:
+                reldata.domain = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
+            elif child.tag == _NS["rdfs"]["range"]:
+                reldata.range = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
+            elif child.tag == _NS["obo"]["IAO_0000115"] and child.text is not None:
+                reldata.definition = Definition(child.text)
+            elif child.tag == _NS["oboInOwl"]["hasExactSynonym"]:
+                reldata.synonyms.add(SynonymData(child.text, scope="EXACT"))
+            elif child.tag == _NS["oboInOwl"]["hasRelatedSynonym"]:
+                reldata.synonyms.add(SynonymData(child.text, scope="RELATED"))
+            elif child.tag == _NS["oboInOwl"]["hasBroadSynonym"]:
+                reldata.synonyms.add(SynonymData(child.text, scope="BROAD"))
+            elif child.tag == _NS["oboInOwl"]["hasNarrowSynonym"]:
+                reldata.synonyms.add(SynonymData(child.text, scope="NARROW"))
+            elif child.tag == _NS["oboInOwl"]["is_cyclic"] and child.text is not None:
+                reldata.cyclic = child.text == "true"
+            elif child.tag == _NS["obo"]["IAO_0000427"] and child.text is not None:
+                reldata.antisymmetric = child.text == "true"
+            elif child.tag == _NS["owl"]["equivalentClass"] and child.text is not None:
+                reldata.equivalent_to.add(self._compact_id(child.text))
+            elif child.tag == _NS["owl"]["deprecated"]:
+                reldata.obsolete = child.text == "true"
+            elif child.tag == _NS["oboInOwl"]["hasDbXref"]:
+                if child.text is not None:
+                    reldata.xrefs.add(Xref(child.text))
+                else:
+                    reldata.xrefs.add(Xref(child.attrib[_NS['rdf']['resource']]))
+            elif child.tag == _NS["oboInOwl"]["hasAlternativeId"]:
+                reldata.alternate_ids.add(child.text)
+            elif child.tag == _NS["obo"]["IAO_0100001"]:
+                if _NS["rdf"]["resource"] in child.attrib:
+                    iri = child.attrib[_NS["rdf"]["resource"]]
+                    reldata.replaced_by.add(self._compact_id(iri))
+                elif _NS["rdf"]["datatype"] in child.attrib:
+                    reldata.replaced_by.add(self._compact_id(child.text))
+                else:
+                    warnings.warn("could not extract ID from IAO:0100001 annotation")
+            elif child.tag not in (_NS["oboInOwl"]["id"], _NS["oboInOwl"]["shorthand"]):
+                if _NS["rdf"]["resource"] in child.attrib:
+                    reldata.annotations.add(self._extract_resource_pv(child))
+                elif _NS["rdf"]["datatype"] and child.text is not None:
+                    reldata.annotations.add(self._extract_literal_pv(child))
+                else:
+                    warnings.warn(f"unknown element in `owl:ObjectProperty`: {child}")
+
         return rel
 
-    def _extract_annotation_property(self, elem: etree.Element):
-        if __debug__:
-            if elem.tag != _NS["owl"]["ObjectProperty"]:
-                raise ValueError("expected `owl:ObjectProperty` element")
-
-        # only create the term if it is not a restriction
-        iri = elem.get(_NS["rdf"]["about"])
-        if iri is None:  # ignore
-            return None
-
-        # attempt to extract the compact id of the term
-        e = elem.find(_NS["oboInOwl"]["id"])
-        id_ = e.text if e is not None and e.text else self._compact_id(iri)
-        rel = self.ont.get_relationship(id_) if id_ in self.ont else self.ont.create_relationship(id_)
-        reldata = rel._data()
-        return rel
-
-    def _process_axiom(self, elem: etree.Element):
-        _resource = _NS["rdf"]["resource"]
-
+    def _process_axiom(self, elem: etree.Element, aliases: Dict[str, str]):
         elem_source = elem.find(_NS["owl"]["annotatedSource"])
         elem_property = elem.find(_NS["owl"]["annotatedProperty"])
         elem_target = elem.find(_NS["owl"]["annotatedTarget"])
 
-        if elem_property is None or _resource not in elem_property.attrib:
-            return
-        if elem_source is None or _resource not in elem_source.attrib:
-            return
-        if elem_target is None:
-            return
+        for elem in (elem_source, elem_property, elem_target):
+            if elem is None or _NS["rdf"]["resource"] not in elem.attrib:
+                return
 
-        property = elem_property.attrib[_resource]
+        property = elem_property.attrib[_NS["rdf"]["resource"]]
         if property == _NS["obo"].raw("IAO_0000115") and elem_target.text is not None:
+            iri = elem_source.attrib[_NS["rdf"]["resource"]]
+            resource = aliases.get(iri, iri)
+            entity = self.ont[self._compact_id(resource)]
 
-            if self._compact_id(elem_source.attrib[_resource]) not in self.ont:
-                return # FIXME!
-
-
-            entity = self.ont[self._compact_id(elem_source.attrib[_resource])]
             entity.definition = d = Definition(elem_target.text)
             for child in elem.iterfind(_NS["oboInOwl"]["hasDbXref"]):
                 if child.text is not None:
@@ -289,41 +374,38 @@ class OwlXMLParser(BaseParser):
                         d.xrefs.add(Xref(child.text))
                     except ValueError:
                         warnings.warn(f"could not parse Xref: {child.text!r}")
+                elif _NS["rdf"]["resource"] in child.attrib:
+                    d.xrefs.add(Xref(child.get(_NS["rdf"]["resource"])))
                 else:
+                    print(child, child.attrib)
                     warnings.warn("`oboInOwl:hasDbXref` element has no text")
 
         elif (
             property == _NS["oboInOwl"].raw("hasDbXref")
             and elem_target.text is not None
         ):
-
-            if self._compact_id(elem_source.attrib[_resource]) not in self.ont:
-                return # FIXME!
-
-            entity = self.ont[self._compact_id(elem_source.attrib[_resource])]
+            iri = elem_source.attrib[_NS["rdf"]["resource"]]
+            resource = aliases.get(iri, iri)
+            entity = self.ont[self._compact_id(resource)]
             label = elem.find(_NS["rdfs"]["label"])
+
             if label is not None and label.text is not None:
                 entity._data().xrefs.add(Xref(elem_target.text, label.text))
             else:
                 entity._data().xrefs.add(Xref(elem_target.text))
 
         elif property in _SYNONYMS:
+            iri = elem_source.attrib[_NS["rdf"]["resource"]]
+            resource = aliases.get(iri, iri)
+            entity = self.ont[self._compact_id(resource)]
 
-
-            if self._compact_id(elem_source.attrib[_resource]) not in self.ont:
-                return # FIXME!
-
-            entity = self.ont[self._compact_id(elem_source.attrib[_resource])]
             try:
-                s = next(
-                    s for s in entity.synonyms if s.description == elem_target.text
+                synonym = next(
+                    s._data()
+                    for s in entity.synonyms
+                    if s.description == elem_target.text
+                    and s.scope == _SYNONYMS[property]
                 )
-                synonym = s._data()
-                if synonym.scope != _SYNONYMS[property]:
-                    msg = "synonym {} contains different scopes in axiom and class: {} != {}"
-                    raise ValueError(
-                        msg.format(elem_target.text, synonym.scope, _SYNONYMS[property])
-                    )
             except StopIteration:
                 synonym = SynonymData(elem_target.text, scope=_SYNONYMS[property])
                 entity._data().synonyms.add(synonym)
@@ -334,4 +416,4 @@ class OwlXMLParser(BaseParser):
                     warnings.warn("`oboInOwl:hasDbXref` element has no text")
 
         else:
-            warnings.warn(f"unknown axiom property: {property}")
+            warnings.warn(f"unknown axiom property: {property!r}")

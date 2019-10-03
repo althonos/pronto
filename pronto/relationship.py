@@ -31,7 +31,7 @@ class RelationshipData(EntityData):
     definition: Optional[Definition]
     comment: Optional[str]
     subsets: Set[str]
-    synonyms: Set[Synonym]
+    synonyms: Set[SynonymData]
     xrefs: Set[Xref]
     annotations: Set[PropertyValue]
     domain: Optional[str]
@@ -77,7 +77,7 @@ class RelationshipData(EntityData):
         definition: Optional[Definition] = None,
         comment: Optional[str] = None,
         subsets: Optional[Set[str]] = None,
-        synonyms: Optional[Set[Synonym]] = None,
+        synonyms: Optional[Set[SynonymData]] = None,
         xrefs: Optional[Set[Xref]] = None,
         annotations: Optional[Set[PropertyValue]] = None,
         domain: Optional[str] = None,

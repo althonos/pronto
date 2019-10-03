@@ -80,7 +80,7 @@ class OwlXMLParser(BaseParser):
         self.process_imports()
 
         # Parse typedef first to handle OBO shorthand renaming
-        for prop in tree.iterfind(_NS['owl']['ObjectProperty']):
+        for prop in tree.iterfind(_NS["owl"]["ObjectProperty"]):
             self._extract_object_property(prop, aliases)
         for class_ in tree.iterfind(_NS["owl"]["Class"]):
             self._extract_term(class_, aliases)
@@ -218,7 +218,7 @@ class OwlXMLParser(BaseParser):
                 if child.text is not None:
                     termdata.xrefs.add(Xref(child.text))
                 else:
-                    termdata.xrefs.add(Xref(child.attrib[_NS['rdf']['resource']]))
+                    termdata.xrefs.add(Xref(child.attrib[_NS["rdf"]["resource"]]))
             elif child.tag == _NS["oboInOwl"]["hasAlternativeId"]:
                 termdata.alternate_ids.add(child.text)
             elif child.tag == _NS["owl"]["disjointWith"]:
@@ -266,7 +266,11 @@ class OwlXMLParser(BaseParser):
             id_ = self._compact_id(iri)
 
         # Create the relationship
-        rel = (self.ont.get_relationship if id_ in self.ont else self.ont.create_relationship)(id_)
+        rel = (
+            self.ont.get_relationship
+            if id_ in self.ont
+            else self.ont.create_relationship
+        )(id_)
         reldata = rel._data()
 
         # extract attributes from annotation of the OWL relationship
@@ -281,18 +285,18 @@ class OwlXMLParser(BaseParser):
                 iri = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
                 reldata.subsets.add(iri)
             elif child.tag == _NS["rdf"]["type"]:
-                resource = child.get(_NS['rdf']['resource'])
-                if resource == _NS['owl'].raw('TransitiveProperty'):
+                resource = child.get(_NS["rdf"]["resource"])
+                if resource == _NS["owl"].raw("TransitiveProperty"):
                     reldata.transitive = True
-                elif resource == _NS['owl'].raw('ReflexiveProperty'):
+                elif resource == _NS["owl"].raw("ReflexiveProperty"):
                     reldata.reflexive = True
-                elif resource == _NS['owl'].raw('SymmetricProperty'):
+                elif resource == _NS["owl"].raw("SymmetricProperty"):
                     reldata.symmetric = True
-                elif resource == _NS['owl'].raw('AsymmetricProperty'):
+                elif resource == _NS["owl"].raw("AsymmetricProperty"):
                     reldata.asymmetric = True
-                elif resource == _NS['owl'].raw('FunctionalProperty'):
+                elif resource == _NS["owl"].raw("FunctionalProperty"):
                     reldata.functional = True
-                elif resource == _NS['owl'].raw('InverseFunctionalProperty'):
+                elif resource == _NS["owl"].raw("InverseFunctionalProperty"):
                     reldata.inverse_functional = True
             elif child.tag == _NS["rdfs"]["comment"]:
                 reldata.comment = child.text
@@ -305,9 +309,15 @@ class OwlXMLParser(BaseParser):
                     reldata.namespace = child.text
             elif child.tag == _NS["rdfs"]["label"]:
                 reldata.name = child.text
-            elif child.tag == _NS["rdfs"]["domain"]:
+            elif (
+                child.tag == _NS["rdfs"]["domain"]
+                and _NS["rdf"]["resource"] in child.attrib
+            ):
                 reldata.domain = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
-            elif child.tag == _NS["rdfs"]["range"]:
+            elif (
+                child.tag == _NS["rdfs"]["range"]
+                and _NS["rdf"]["resource"] in child.attrib
+            ):
                 reldata.range = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
             elif child.tag == _NS["obo"]["IAO_0000115"] and child.text is not None:
                 reldata.definition = Definition(child.text)
@@ -331,7 +341,7 @@ class OwlXMLParser(BaseParser):
                 if child.text is not None:
                     reldata.xrefs.add(Xref(child.text))
                 else:
-                    reldata.xrefs.add(Xref(child.attrib[_NS['rdf']['resource']]))
+                    reldata.xrefs.add(Xref(child.attrib[_NS["rdf"]["resource"]]))
             elif child.tag == _NS["oboInOwl"]["hasAlternativeId"]:
                 reldata.alternate_ids.add(child.text)
             elif child.tag == _NS["obo"]["IAO_0100001"]:

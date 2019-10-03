@@ -180,65 +180,70 @@ class OwlXMLParser(BaseParser):
 
         # extract attributes from annotation of the OWL class
         for child in elem:
-            if child.tag == _NS["rdfs"]["subClassOf"]:
-                if _NS["rdf"]["resource"] in child.attrib:
-                    iri = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
+
+            tag: str = child.tag
+            text: Optional[str] = child.text
+            attrib: Dict[str, str] = child.attrib
+
+            if tag == _NS["rdfs"]["subClassOf"]:
+                if _NS["rdf"]["resource"] in attrib:
+                    iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
                     termdata.relationships.setdefault("is_a", set()).add(iri)
                 else:
                     pass  # TODO: relationships
-            elif child.tag == _NS["oboInOwl"]["inSubset"]:
-                iri = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
+            elif tag == _NS["oboInOwl"]["inSubset"]:
+                iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
                 termdata.subsets.add(iri)
-            elif child.tag == _NS["rdfs"]["comment"]:
-                term.comment = child.text
-            elif child.tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
-                term.created_by = child.text
-            elif child.tag in (_NS["oboInOwl"]["creation_date"], _NS["dc"]["date"]):
-                term.creation_date = dateutil.parser.parse(child.text)
-            elif child.tag == _NS["oboInOwl"]["hasOBONamespace"]:
-                if child.text != self.ont.metadata.default_namespace:
-                    term.namespace = child.text
-            elif child.tag == _NS["rdfs"]["label"]:
-                term.name = child.text
-            elif child.tag == _NS["obo"]["IAO_0000115"] and child.text is not None:
-                term.definition = Definition(child.text)
-            elif child.tag == _NS["oboInOwl"]["hasExactSynonym"]:
-                termdata.synonyms.add(SynonymData(child.text, scope="EXACT"))
-            elif child.tag == _NS["oboInOwl"]["hasRelatedSynonym"]:
-                termdata.synonyms.add(SynonymData(child.text, scope="RELATED"))
-            elif child.tag == _NS["oboInOwl"]["hasBroadSynonym"]:
-                termdata.synonyms.add(SynonymData(child.text, scope="BROAD"))
-            elif child.tag == _NS["oboInOwl"]["hasNarrowSynonym"]:
-                termdata.synonyms.add(SynonymData(child.text, scope="NARROW"))
-            elif child.tag == _NS["owl"]["equivalentClass"] and child.text is not None:
-                termdata.equivalent_to.add(self._compact_id(child.text))
-            elif child.tag == _NS["owl"]["deprecated"]:
-                term.obsolete = child.text == "true"
-            elif child.tag == _NS["oboInOwl"]["hasDbXref"]:
-                if child.text is not None:
-                    termdata.xrefs.add(Xref(child.text))
+            elif tag == _NS["rdfs"]["comment"]:
+                termdata.comment = text
+            elif tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
+                termdata.created_by = text
+            elif tag in (_NS["oboInOwl"]["creation_date"], _NS["dc"]["date"]):
+                termdata.creation_date = dateutil.parser.parse(text)
+            elif tag == _NS["oboInOwl"]["hasOBONamespace"]:
+                if text != self.ont.metadata.default_namespace:
+                    termdata.namespace = text
+            elif tag == _NS["rdfs"]["label"]:
+                termdata.name = text
+            elif tag == _NS["obo"]["IAO_0000115"] and text is not None:
+                termdata.definition = Definition(text)
+            elif tag == _NS["oboInOwl"]["hasExactSynonym"]:
+                termdata.synonyms.add(SynonymData(text, scope="EXACT"))
+            elif tag == _NS["oboInOwl"]["hasRelatedSynonym"]:
+                termdata.synonyms.add(SynonymData(text, scope="RELATED"))
+            elif tag == _NS["oboInOwl"]["hasBroadSynonym"]:
+                termdata.synonyms.add(SynonymData(text, scope="BROAD"))
+            elif tag == _NS["oboInOwl"]["hasNarrowSynonym"]:
+                termdata.synonyms.add(SynonymData(text, scope="NARROW"))
+            elif tag == _NS["owl"]["equivalentClass"] and text is not None:
+                termdata.equivalent_to.add(self._compact_id(text))
+            elif tag == _NS["owl"]["deprecated"]:
+                termdata.obsolete = text == "true"
+            elif tag == _NS["oboInOwl"]["hasDbXref"]:
+                if text is not None:
+                    termdata.xrefs.add(Xref(text))
                 else:
-                    termdata.xrefs.add(Xref(child.attrib[_NS["rdf"]["resource"]]))
-            elif child.tag == _NS["oboInOwl"]["hasAlternativeId"]:
-                termdata.alternate_ids.add(child.text)
-            elif child.tag == _NS["owl"]["disjointWith"]:
-                if _NS["rdf"]["resource"] in child.attrib:
-                    iri = child.attrib[_NS["rdf"]["resource"]]
+                    termdata.xrefs.add(Xref(attrib[_NS["rdf"]["resource"]]))
+            elif tag == _NS["oboInOwl"]["hasAlternativeId"]:
+                termdata.alternate_ids.add(text)
+            elif tag == _NS["owl"]["disjointWith"]:
+                if _NS["rdf"]["resource"] in attrib:
+                    iri = attrib[_NS["rdf"]["resource"]]
                     termdata.disjoint_from.add(self._compact_id(iri))
                 else:
                     warnings.warn("`owl:disjointWith` element without `rdf:resource`")
-            elif child.tag == _NS["obo"]["IAO_0100001"]:
-                if _NS["rdf"]["resource"] in child.attrib:
-                    iri = child.attrib[_NS["rdf"]["resource"]]
+            elif tag == _NS["obo"]["IAO_0100001"]:
+                if _NS["rdf"]["resource"] in attrib:
+                    iri = attrib[_NS["rdf"]["resource"]]
                     termdata.replaced_by.add(self._compact_id(iri))
-                elif _NS["rdf"]["datatype"] in child.attrib:
-                    termdata.replaced_by.add(self._compact_id(child.text))
+                elif _NS["rdf"]["datatype"] in attrib:
+                    termdata.replaced_by.add(self._compact_id(text))
                 else:
                     warnings.warn("could not extract ID from IAO:0100001 annotation")
-            elif child.tag != _NS["oboInOwl"]["id"]:
-                if _NS["rdf"]["resource"] in child.attrib:
+            elif tag != _NS["oboInOwl"]["id"]:
+                if _NS["rdf"]["resource"] in attrib:
                     termdata.annotations.add(self._extract_resource_pv(child))
-                elif _NS["rdf"]["datatype"] and child.text is not None:
+                elif _NS["rdf"]["datatype"] and text is not None:
                     termdata.annotations.add(self._extract_literal_pv(child))
                 else:
                     warnings.warn(f"unknown element in `owl:Class`: {child}")

@@ -32,7 +32,8 @@ def setup(app):
     if os.path.exists(os.path.join(docssrc_dir, "api")):
         shutil.rmtree(os.path.join(docssrc_dir, "api"))
     # Add custom stylesheet
-    app.add_stylesheet("css/main.css")
+    app.add_css_file("css/main.css")
+    app.add_js_file("js/apitoc.js")
     # Copy `CHANGELOG.md` from project directory
     changelog_src = os.path.join(project_dir, "CHANGELOG.md")
     changelog_dst = os.path.join(docssrc_dir, "changes.md")

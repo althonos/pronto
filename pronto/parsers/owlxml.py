@@ -58,6 +58,8 @@ _SYNONYMS = {
 
 
 class OwlXMLParser(BaseParser):
+    # TODO: extract annotation properties
+    # TODO: extract subset definitions from annotations property
 
     # -- BaseParser interface ------------------------------------------------
 
@@ -151,6 +153,8 @@ class OwlXMLParser(BaseParser):
                 else:
                     match = None
                 meta.data_version = iri if match is None else match.group(1)
+            elif child.tag == _NS["doap"]["Version"]:
+                meta.data_version = child.text
             elif _NS["rdf"]["resource"] in child.attrib:
                 meta.annotations.add(self._extract_resource_pv(child))
             elif child.text is not None:

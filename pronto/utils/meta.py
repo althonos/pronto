@@ -2,6 +2,7 @@ import collections
 import inspect
 import itertools
 import functools
+import sys
 import types
 import typing
 from typing import Callable, ClassVar, Optional, Union, Tuple
@@ -12,19 +13,24 @@ F = typing.TypeVar("F", bound=Callable[..., object])
 
 
 class typechecked(object):
+
+    if sys.version_info >= (3, 7):
+        Set = set
+        FrozenSet = frozenset
+    else:
+        Set = typing.Set
+        FrozenSet = typing.FrozenSet
+
     @classmethod
     def check_type(cls, hint: object, value: object) -> Tuple[bool, Optional[str]]:
         # None: check if None
         if hint is None.__class__:
             return (value is None, "None")
-        # direct type annotation: simply do an instance check
-        if isinstance(hint, type):
-            return (isinstance(value, hint), hint.__name__)
         # typing.Any is always true
         if getattr(hint, "_name", None) == "typing.Any":
             return (True, None)
         # typing.Set needs to check member types
-        if getattr(hint, "__origin__", None) is set:
+        if getattr(hint, "__origin__", None) is cls.Set:
             if not isinstance(value, collections.abc.MutableSet):
                 return (False, f"set of { hint.__args__ }")
             for arg in value:
@@ -33,7 +39,7 @@ class typechecked(object):
                     return (False, f"set of { type_name }")
             return (True, f"set of { hint.__args__ }")
         # typing.FrozenSet needs to check member types
-        if getattr(hint, "__origin__", None) is frozenset:
+        if getattr(hint, "__origin__", None) is cls.FrozenSet:
             if not isinstance(value, collections.abc.Set):
                 return (False, f"frozen set of { hint.__args__ }")
             for arg in value:
@@ -48,6 +54,9 @@ class typechecked(object):
                 results[arg] = cls.check_type(arg, value)
             ok = any(ok for ok, name in results.values())
             return (ok, ", ".join(name for ok, name in results.values()))
+        # direct type annotation: simply do an instance check
+        if isinstance(hint, type):
+            return (isinstance(value, hint), hint.__name__)
         return (False, "something")
 
     def __init__(self, property: bool = False) -> None:

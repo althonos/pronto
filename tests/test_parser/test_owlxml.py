@@ -54,6 +54,33 @@ class TestOwlXMLParser(unittest.TestCase):
         )
         self.assertEqual(ont.metadata.default_namespace, "thing")
 
+    def test_term_consider(self):
+        # Extract from `oboInOwl:consider` text
+        ont = self.get_ontology(
+            """
+            <owl:Ontology/>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <oboInOwl:consider rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:002</oboInOwl:consider>
+            </owl:Class>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_002"/>
+            """
+        )
+        self.assertIn("TST:001", ont)
+        self.assertIn("TST:002", ont)
+        self.assertIn(ont["TST:002"], ont["TST:001"].consider)
+        # Extract from `oboInOwl:consider` RDF resource
+        ont2 = self.get_ontology(
+            """
+            <owl:Ontology/>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <oboInOwl:consider rdf:resource="http://purl.obolibrary.org/obo/TST_002"/>
+            </owl:Class>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_002"/>
+            """
+        )
+        self.assertIn("TST:001", ont2)
+        self.assertIn("TST:002", ont2)
+        self.assertIn(ont2["TST:002"], ont2["TST:001"].consider)
 
     def test_relationship_cyclic(self):
         ont = self.get_ontology(

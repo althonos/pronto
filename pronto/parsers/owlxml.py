@@ -239,7 +239,15 @@ class OwlXMLParser(BaseParser):
                 elif _NS["rdf"]["datatype"] in attrib:
                     termdata.replaced_by.add(self._compact_id(text))
                 else:
-                    warnings.warn("could not extract ID from IAO:0100001 annotation")
+                    warnings.warn("could not extract ID from `IAO:0100001` annotation")
+            elif tag == _NS["oboInOwl"]["consider"]:
+                if _NS["rdf"]["resource"] in attrib:
+                    iri = attrib[_NS["rdf"]["resource"]]
+                    termdata.consider.add(self._compact_id(iri))
+                elif _NS["rdf"]["datatype"] in attrib:
+                    termdata.consider.add(self._compact_id(text))
+                else:
+                    warnings.warn("could not extract ID from `oboInOwl:consider` annotation")
             elif tag != _NS["oboInOwl"]["id"]:
                 if _NS["rdf"]["resource"] in attrib:
                     termdata.annotations.add(self._extract_resource_pv(child))
@@ -357,6 +365,14 @@ class OwlXMLParser(BaseParser):
                     reldata.replaced_by.add(self._compact_id(child.text))
                 else:
                     warnings.warn("could not extract ID from IAO:0100001 annotation")
+            elif child.tag == _NS["oboInOwl"]["consider"]:
+                if _NS["rdf"]["resource"] in child.attrib:
+                    iri = child.attrib[_NS["rdf"]["resource"]]
+                    reldata.consider.add(self._compact_id(iri))
+                elif _NS["rdf"]["datatype"] in child.attrib:
+                    reldata.consider.add(self._compact_id(child.text))
+                else:
+                    warnings.warn("could not extract ID from `oboInOwl:consider` annotation")
             elif child.tag not in (_NS["oboInOwl"]["id"], _NS["oboInOwl"]["shorthand"]):
                 if _NS["rdf"]["resource"] in child.attrib:
                     reldata.annotations.add(self._extract_resource_pv(child))

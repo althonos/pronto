@@ -283,13 +283,13 @@ class Term(Entity):
         ont: "Ontology" = self._ontology()
         distmax: float = distance if distance is not None else float("+inf")
         is_a: Relationship = ont.get_relationship("is_a")
-        g = networkx.DiGraph()
+        graph: Dict[str, Set[str]] = dict()
 
         # Build the directed graph
         for t in ont.terms():
-            g.add_node(t.id)
+            graph.setdefault(t.id, set())
             for t2 in t.relationships.get(is_a, []):
-                g.add_edge(t2.id, t.id)
+                graph.setdefault(t2.id, set()).add(t.id)
 
         # Search objects terms
         sub: Set[str] = set()
@@ -304,7 +304,7 @@ class Term(Entity):
         # Explore the graph
         while not frontier.empty():
             node, distance = frontier.get()
-            neighbors: Set[str] = set(g.neighbors(node))
+            neighbors: Set[str] = graph[node]
             if distance < distmax:
                 for node in sorted(neighbors - done):
                     frontier.put((node, distance + 1))

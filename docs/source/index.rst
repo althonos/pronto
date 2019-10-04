@@ -1,29 +1,54 @@
-``pronto``
-==========
+``pronto`` |Stars|
+==================
 
-*Python frontend to ontologies.*
+.. |Stars| image:: https://img.shields.io/github/stars/althonos/pronto.svg?style=social&maxAge=3600&label=Star
+   :target: https://github.com/althonos/pronto/stargazers
 
-|PyPI| |Conda| |Py versions| |Codacy grade| |Dev repo| |Build status| |License| |DOI| |coverage|
+*A Python frontend to ontologies.*
 
+|TravisCI| |License| |Source| |Docs| |Coverage| |Sanity| |PyPI| |Bioconda| |Versions| |Wheel| |Changelog| |Issues| |DOI| |Downloads|
 
-.. |PyPI| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat-square&maxAge=2592000
-   :target: https://pypi.python.org/pypi/pronto
-.. |Conda| image:: https://img.shields.io/conda/vn/bioconda/pronto.svg?style=flat-square&maxAge=2592000
-   :target: https://anaconda.org/bioconda/pronto
-.. |Py versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat-square&maxAge=2592000
-   :target: https://travis-ci.org/althonos/pronto
-.. |Codacy grade| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat-square&maxAge=2592000
-   :target: https://codacy.com/app/althonos/pronto
-.. |Build status| image:: https://img.shields.io/travis/althonos/pronto.svg?style=flat-square&maxAge=2592000
-   :target: https://travis-ci.org/althonos/pronto
-.. |License| image:: https://img.shields.io/pypi/l/pronto.svg?style=flat-square&maxAge=2592000
+.. |TravisCI| image:: https://img.shields.io/travis/althonos/pronto/master.svg?&maxAge=600&style=flat-square
+   :target: https://travis-ci.org/althonos/pronto/branches
+
+.. |License| image:: https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square&maxAge=2678400
    :target: https://choosealicense.com/licenses/mit/
-.. |Dev repo| image:: https://img.shields.io/badge/source-GitHub-303030.svg?style=flat-square&maxAge=2592000
-   :target: https://github.com/althonos/pronto
-.. |DOI| image:: https://img.shields.io/badge/doi-10.5281%2Fzenodo.595572-blue?style=flat-square&maxAge=2592000
-   :target: https://zenodo.org/badge/latestdoi/23304/althonos/pronto
-.. |coverage| image:: https://img.shields.io/codacy/coverage/157b5fd24e5648ea80580f28399e79a4.svg?style=flat-square&maxAge=2592000
-   :target: https://www.codacy.com/app/althonos/pronto/dashboard
+
+.. |Source| image:: https://img.shields.io/badge/source-GitHub-303030.svg?maxAge=2678400&style=flat-square
+   :target: https://github.com/althonos/pronto/
+
+.. |Docs| image:: https://img.shields.io/readthedocs/pronto?style=flat-square&maxAge=3600
+   :target: http://pronto.readthedocs.io/en/latest/?badge=latest
+
+.. |Coverage| image:: https://img.shields.io/codecov/c/gh/althonos/pronto?style=flat-square&maxAge=3600
+   :target: https://www.codecov.com/gh/althonos/pronto/
+
+.. |Sanity| image:: https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat-square&maxAge=3600
+   :target: https://codacy.com/app/althonos/pronto
+
+.. |PyPI| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat-square&maxAge=3600
+   :target: https://pypi.python.org/pypi/pronto
+
+.. |Bioconda| image:: https://img.shields.io/conda/vn/bioconda/pronto?style=flat-square&maxAge=3600
+   :target: https://anaconda.org/bioconda/pronto
+
+.. |Versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat-square&maxAge=3600
+   :target: https://pypi.org/project/pronto/#files
+
+.. |Wheel| image:: https://img.shields.io/pypi/wheel/pronto?style=flat-square&maxAge=3600
+   :target: https://pypi.org/project/pronto/#files
+
+.. |Changelog| image:: https://img.shields.io/badge/keep%20a-changelog-8A0707.svg?maxAge=2678400&style=flat-square
+   :target: https://github.com/althonos/pronto/blob/master/CHANGELOG.md
+
+.. |Issues| image:: https://img.shields.io/github/issues/althonos/pronto.svg?style=flat-square&maxAge=600
+   :target: https://github.com/althonos/pronto/issues
+
+.. |DOI| image:: https://img.shields.io/badge/doi-10.5281%2Fzenodo.595572-green?style=flat-square&maxAge=2678400
+   :target: https://doi.org/10.5281/zenodo.595572
+
+.. |Downloads| image:: https://img.shields.io/badge/dynamic/json?style=flat-square&color=303f9f&maxAge=86400&label=downloads&query=%24.total_downloads&url=https%3A%2F%2Fapi.pepy.tech%2Fapi%2Fprojects%2Fpronto
+   :target: https://pepy.tech/project/pronto
 
 
 ``pronto`` is a Python agnostic library designed to work with ontologies. At the

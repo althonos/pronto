@@ -1,4 +1,4 @@
-# `pronto` [![starme](https://img.shields.io/github/stars/althonos/pronto.svg?style=social&label=Star)](https://github.com/althonos/pronto)
+# `pronto` [![Stars](https://img.shields.io/github/stars/althonos/pronto.svg?style=social&maxAge=3600&label=Star)](https://github.com/althonos/pronto/stargazers)
 
 *A Python frontend to ontologies.*
 
@@ -14,7 +14,7 @@
 [![Wheel](https://img.shields.io/pypi/wheel/pronto?style=flat-square&maxAge=3600)](https://pypi.org/project/pronto/#files)
 [![Changelog](https://img.shields.io/badge/keep%20a-changelog-8A0707.svg?maxAge=2678400&style=flat-square)](https://github.com/althonos/pronto/blob/master/CHANGELOG.md)
 [![GitHub issues](https://img.shields.io/github/issues/althonos/pronto.svg?style=flat-square&maxAge=600)](https://github.com/althonos/pronto/issues)
-[![DOI](https://img.shields.io/badge/doi-10.5281%2Fzenodo.595572-green?style=flat-square&maxAge=3600)](https://doi.org/10.5281/zenodo.595572)
+[![DOI](https://img.shields.io/badge/doi-10.5281%2Fzenodo.595572-green?style=flat-square&maxAge=2678400)](https://doi.org/10.5281/zenodo.595572)
 [![Downloads](https://img.shields.io/badge/dynamic/json?style=flat-square&color=303f9f&maxAge=86400&label=downloads&query=%24.total_downloads&url=https%3A%2F%2Fapi.pepy.tech%2Fapi%2Fprojects%2Fpronto)](https://pepy.tech/project/pronto)
 
 ## 🚩 Table of Contents

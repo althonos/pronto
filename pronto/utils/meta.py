@@ -5,7 +5,7 @@ import functools
 import sys
 import types
 import typing
-from typing import Callable, ClassVar, Optional, Union, Tuple
+from typing import Callable, ClassVar, List, Optional, Union, Tuple, Type
 
 
 T = typing.TypeVar("T")
@@ -27,10 +27,11 @@ class typechecked(object):
         if hint is None.__class__:
             return (value is None, "None")
         # typing.Any is always true
-        if getattr(hint, "_name", None) == "typing.Any":
+        if typing.cast(str, getattr(hint, "_name", None)) == "typing.Any":
             return (True, None)
         # typing.Set needs to check member types
-        if getattr(hint, "__origin__", None) is cls.Set:
+        if typing.cast(object, getattr(hint, "__origin__", None)) is cls.Set:
+            hint = typing
             if not isinstance(value, collections.abc.MutableSet):
                 return (False, f"set of { hint.__args__ }")
             for arg in value:
@@ -39,7 +40,7 @@ class typechecked(object):
                     return (False, f"set of { type_name }")
             return (True, f"set of { hint.__args__ }")
         # typing.FrozenSet needs to check member types
-        if getattr(hint, "__origin__", None) is cls.FrozenSet:
+        if typing.cast(object, getattr(hint, "__origin__", None)) is cls.FrozenSet:
             if not isinstance(value, collections.abc.Set):
                 return (False, f"frozen set of { hint.__args__ }")
             for arg in value:
@@ -89,7 +90,7 @@ class roundrepr(object):
     """
 
     @staticmethod
-    def make(class_name: str, *args, **kwargs):
+    def make(class_name: str, *args: object, **kwargs: Tuple[object, object]) -> str:
         """Generate a repr string.
 
         Positional arguments should be the positional arguments used to
@@ -113,7 +114,7 @@ class roundrepr(object):
             `PyFilesystem2 <https://github.com/PyFilesystem/pyfilesystem2/blob/master/fs/_repr.py>`_
             code developed by `Will McGugan <https://github.com/willmcgugan>`_.
         """
-        arguments = [repr(arg) for arg in args]
+        arguments: List[str] = [repr(arg) for arg in args]
         arguments.extend(
             [
                 "{}={!r}".format(name, value)
@@ -123,7 +124,7 @@ class roundrepr(object):
         )
         return "{}({})".format(class_name, ", ".join(arguments))
 
-    def __new__(self, cls: T) -> T:
+    def __new__(self, cls: Type[T]) -> T:
         obj = super().__new__(self)
         obj.__init__()
         if isinstance(cls, type):

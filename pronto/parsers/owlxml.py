@@ -135,7 +135,7 @@ class OwlXMLParser(BaseParser):
                 meta.saved_by = child.text
             elif child.tag == _NS["oboInOwl"]["auto-generated-by"]:
                 meta.auto_generated_by = child.text
-            elif child.tag == _NS["oboInOwl"]["default-namespace"]:
+            elif child.tag in (_NS["oboInOwl"]["default-namespace"], _NS["oboInOwl"]["hasDefaultNamespace"]):
                 meta.default_namespace = child.text
             elif child.tag == _NS["oboInOwl"]["date"]:
                 meta.date = datetime.datetime.strptime(child.text, "%d:%m:%Y %H:%M")

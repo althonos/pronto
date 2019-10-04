@@ -24,7 +24,7 @@ class TestOwlXMLParser(unittest.TestCase):
         </rdf:RDF>
         """
         s = io.BytesIO(xml.encode('utf-8'))
-        return pronto.Ontology(s)
+        return pronto.Ontology(s, import_depth=0)
 
     @classmethod
     def setUpClass(cls):
@@ -34,7 +34,28 @@ class TestOwlXMLParser(unittest.TestCase):
     def tearDownClass(cls):
         warnings.simplefilter(warnings.defaultaction)
 
-    def test_cyclic_relationship(self):
+    def test_metadata_imports(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology>
+                <owl:imports rdf:resource="http://purl.obolibrary.org/obo/ms.obo"/>
+            </owl:Ontology>
+            """
+        )
+        self.assertIn("http://purl.obolibrary.org/obo/ms.obo", ont.metadata.imports)
+
+    def test_metadata_default_namespace(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology>
+                <oboInOwl:hasDefaultNamespace rdf:datatype="http://www.w3.org/2001/XMLSchema#string">thing</oboInOwl:hasDefaultNamespace>
+            </owl:Ontology>
+            """
+        )
+        self.assertEqual(ont.metadata.default_namespace, "thing")
+
+
+    def test_relationship_cyclic(self):
         ont = self.get_ontology(
             """
             <owl:Ontology/>
@@ -46,3 +67,16 @@ class TestOwlXMLParser(unittest.TestCase):
         )
         self.assertIn("TST:001", ont)
         self.assertTrue(ont["TST:001"].cyclic)
+
+    def test_relationship_functional(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology/>
+            <owl:ObjectProperty rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+                <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+            </owl:ObjectProperty>
+            """
+        )
+        self.assertIn("TST:001", ont)
+        self.assertTrue(ont["TST:001"].functional)

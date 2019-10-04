@@ -31,7 +31,7 @@ class Xref(object):
         A cross-reference in the Mammalian Phenotype ontology linking a term
         to some related Web resource:
 
-        >>> mp = pronto.Ontology("http://purl.obolibrary.org/obo/mp.obo")
+        >>> mp = pronto.Ontology.from_obo_library("mp.obo")
         >>> mp["MP:0030151"].name
         'abnormal buccinator muscle morphology'
         >>> mp["MP:0030151"].xrefs

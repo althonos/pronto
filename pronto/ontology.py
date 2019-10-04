@@ -74,11 +74,11 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 to download imports.
 
         Example:
-            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
+            >>> ms = pronto.Ontology.from_obo_library("apo.obo")
             >>> ms.metadata.ontology
-            'ms'
+            'apo'
             >>> ms.path
-            'http://purl.obolibrary.org/obo/ms.obo'
+            'http://purl.obolibrary.org/obo/apo.obo'
         """
         return cls(f"http://purl.obolibrary.org/obo/{slug}", import_depth, timeout)
 
@@ -156,13 +156,13 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         dedicated methods (e.g. ``len(ontology.terms())``).
 
         Example:
-            >>> ms = pronto.Ontology("ms.obo.xz")
+            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
             >>> len(ms)
-            2961
+            6023
             >>> len(ms.terms())
-            2956
+            5995
             >>> len(ms.relationships())
-            5
+            28
         """
         return (
             len(self._terms)

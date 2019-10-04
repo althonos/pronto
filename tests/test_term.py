@@ -11,13 +11,12 @@ from .utils import DATADIR
 class TestTerm(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.file = open(os.path.join(DATADIR, "ms.obo.xz"), "rb")
+        cls.file = open(os.path.join(DATADIR, "ms.obo"), "rb")
         cls.ms = pronto.Ontology(cls.file)
 
     @classmethod
     def tearDownClass(cls):
         cls.file.close()
-
 
     def test_properties(self):
         for t in TermData.__slots__:

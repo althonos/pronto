@@ -9,6 +9,7 @@ import sys
 import shutil
 import types
 import warnings
+from unittest import mock
 
 import pronto
 import pronto.parsers
@@ -34,7 +35,19 @@ def load_tests(loader, tests, ignore):
         self.datadir = os.path.realpath(os.path.join(__file__, "..", "data"))
         os.chdir(self.datadir)
 
+        Ontology = pronto.Ontology
+        _from_obo_library = Ontology.from_obo_library
+
+        def from_obo_library(name):
+            if os.path.exists(os.path.join(utils.DATADIR, name)):
+                return Ontology(os.path.join(utils.DATADIR, name))
+            return _from_obo_library(name)
+
+        self.m = mock.patch("pronto.Ontology.from_obo_library", from_obo_library)
+        self.m.__enter__()
+
     def tearDown(self):
+        self.m.__exit__(None, None, None)
         os.chdir(self.rundir)
         warnings.simplefilter(warnings.defaultaction)
 

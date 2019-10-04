@@ -1,0 +1,15 @@
+format-version: 1.2
+data-version: releases/2019-05-25
+synonymtypedef: human "synonym typically used in the context of human anatomy" NARROW
+synonymtypedef: vertebrate "synonym typically used in the context of vertebrate anatomy" NARROW
+default-namespace: Planarian_Anatomy
+treat-xrefs-as-genus-differentia: CARO part_of NCBITaxon:79327; CL part_of NCBITaxon:79327
+ontology: plana
+
+[Term]
+id: PLANA:0007518
+name: lysosome
+def: "The digestive component of the cell. They are homogenous, dense, membrane bound organelles filled with acid hydrolases which break down polymers." [ISBN:0-71677033-4, PMID:4853064]
+property_value: seeAlso https://planosphere.stowers.org/ontology/PLANA_0007518 xsd:string
+created_by: Steph Nowotarski
+creation_date: 2017-05-04T15:35:23Z

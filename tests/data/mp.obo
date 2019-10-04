@@ -1,0 +1,7 @@
+format-version: 1.4
+ontology: mp
+
+[Term]
+id: MP:0030151
+name: abnormal buccinator muscle morphology
+xref: https://en.wikipedia.org/wiki/Buccinator_muscle

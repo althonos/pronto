@@ -28,15 +28,19 @@ class typechecked(object):
             if not isinstance(value, collections.abc.MutableSet):
                 return (False, f"set of { hint.__args__ }")
             for arg in value:
-                if not cls.check_type(hint.__args__, value):
-                    return (False, f"set of { hint.__args__ }")
+                well_typed, type_name = cls.check_type(hint.__args__[0], arg)
+                if not well_typed:
+                    return (False, f"set of { type_name }")
+            return (True, f"set of { hint.__args__ }")
         # typing.FrozenSet needs to check member types
         if getattr(hint, "__origin__", None) is frozenset:
             if not isinstance(value, collections.abc.Set):
                 return (False, f"frozen set of { hint.__args__ }")
             for arg in value:
-                if not cls.check_type(hint.__args__, value):
-                    return (False, f"frozen set of { hint.__args__ }")
+                well_typed, type_name = cls.check_type(hint.__args__[0], arg)
+                if not well_typed:
+                    return (False, f"frozenset of { type_name }")
+            return (True, f"frozenset of { hint.__args__[0] }")
         # typing.Union needs to be a valid type
         if getattr(hint, "__origin__", None) == typing.Union:
             results = {}
@@ -53,10 +57,9 @@ class typechecked(object):
         if not __debug__:
             return func
 
-        hints = typing.get_type_hints(func)
-
         @functools.wraps(func)
         def newfunc(*args, **kwargs):
+            hints = typing.get_type_hints(func)
             callargs = inspect.getcallargs(func, *args, **kwargs)
             for name, value in callargs.items():
                 if name in hints:

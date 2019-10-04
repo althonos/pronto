@@ -11,7 +11,13 @@ from .utils import DATADIR
 class TestTerm(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.ms = pronto.Ontology(os.path.join(DATADIR, "ms.obo.xz"))
+        cls.file = open(os.path.join(DATADIR, "ms.obo.xz"), "rb")
+        cls.ms = pronto.Ontology(cls.file)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.file.close()
+
 
     def test_properties(self):
         for t in TermData.__slots__:
@@ -69,3 +75,19 @@ class TestTerm(unittest.TestCase):
         for term in self.ms.terms():
             superclasses = list(term.superclasses())
             self.assertCountEqual(superclasses, set(superclasses))
+
+    @unittest.skipUnless(__debug__, "no type checking in optimized mode")
+    def test_union_of_typechecked(self):
+        ont = pronto.Ontology()
+        t1 = ont.create_term("TST:001")
+        with self.assertRaises(TypeError):
+            t1.union_of = 1
+        with self.assertRaises(TypeError):
+            t1.union_of = { 1 }
+
+    def test_union_of_cardinality(self):
+        ont = pronto.Ontology()
+        t1 = ont.create_term("TST:001")
+        t2 = ont.create_term("TST:002")
+        with self.assertRaises(ValueError):
+            t2.union_of = { t1 }

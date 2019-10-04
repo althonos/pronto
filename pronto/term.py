@@ -31,6 +31,7 @@ from .synonym import Synonym, SynonymData
 from .relationship import Relationship
 from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
 from .utils.impl import set
+from .utils.meta import typechecked
 from .utils.warnings import NotImplementedWarning
 
 if typing.TYPE_CHECKING:
@@ -401,14 +402,8 @@ class Term(Entity):
         return frozenset(ont.get_term(t) for t in termdata.union_of)
 
     @union_of.setter
-    def union_of(self, union_of: Set["Term"]):
-        if __debug__:
-            if not isinstance(union_of, collections.abc.Set):
-                msg = "'union_of' must be a set, not {}"
-                raise TypeError(msg.format(type(union_of).__name__))
-            for x in (x for x in union_of if not isinstance(x, Term)):
-                msg = "'union_of' must contain only Term, not {}"
-                raise TypeError(msg.format(type(x).__name__))
+    @typechecked(property=True)
+    def union_of(self, union_of: FrozenSet["Term"]):
         if len(union_of) == 1:
             raise ValueError("'union_of' cannot have a cardinality of 1")
         self._data().union_of = set(term.id for term in union_of)

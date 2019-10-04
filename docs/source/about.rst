@@ -1,15 +1,16 @@
 About
 =====
 
-Author
-------
+Authors
+-------
 
 **pronto** is developped and maintained by:
 
 +-----------------------------------+----------------------------------------------+
 |                                   | | **Martin Larralde**                        |
-| .. image:: _static/ens.png        | | Ecole Normale Supérieure de Cachan, France | 
-|                                   | | martin.larralde@ens-cachan.fr              |
+|                                   | | PhD Candidate,                             |
+| .. image:: _static/embl.png       | | EMBL Heidelberg, Germany                   |
+|                                   | | martin.larralde@embl.de                    |
 +-----------------------------------+----------------------------------------------+
 
 Contributors

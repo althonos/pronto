@@ -3,7 +3,7 @@ import itertools
 import re
 import typing
 import warnings
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import dateutil.parser
 
@@ -125,7 +125,7 @@ class OwlXMLParser(BaseParser):
             match = re.match("^http://purl.obolibrary.org/obo/(.*).(obo|owl)$", iri)
             meta.ontology = match.group(1) if match is not None else iri
 
-        # extract metadta from child elements
+        # extract metadata from child elements
         for child in elem:
             if child.tag == _NS["rdfs"]["comment"] and child.text is not None:
                 meta.remarks.add(child.text)
@@ -177,6 +177,8 @@ class OwlXMLParser(BaseParser):
         # get or create the term
         term = (self.ont.get_term if id_ in self.ont else self.ont.create_term)(id_)
         termdata = term._data()
+        names: List[str] = []
+        comments: List[str] = []
 
         # extract attributes from annotation of the OWL class
         for child in elem:
@@ -194,8 +196,8 @@ class OwlXMLParser(BaseParser):
             elif tag == _NS["oboInOwl"]["inSubset"]:
                 iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
                 termdata.subsets.add(iri)
-            elif tag == _NS["rdfs"]["comment"]:
-                termdata.comment = text
+            elif tag == _NS["rdfs"]["comment"] and text is not None:
+                comments.append(text)
             elif tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
                 termdata.created_by = text
             elif tag in (_NS["oboInOwl"]["creation_date"], _NS["dc"]["date"]):
@@ -204,7 +206,7 @@ class OwlXMLParser(BaseParser):
                 if text != self.ont.metadata.default_namespace:
                     termdata.namespace = text
             elif tag == _NS["rdfs"]["label"]:
-                termdata.name = text
+                names.append(text)
             elif tag == _NS["obo"]["IAO_0000115"] and text is not None:
                 termdata.definition = Definition(text)
             elif tag == _NS["oboInOwl"]["hasExactSynonym"]:
@@ -220,10 +222,14 @@ class OwlXMLParser(BaseParser):
             elif tag == _NS["owl"]["deprecated"]:
                 termdata.obsolete = text == "true"
             elif tag == _NS["oboInOwl"]["hasDbXref"]:
-                if text is not None:
-                    termdata.xrefs.add(Xref(text))
-                else:
-                    termdata.xrefs.add(Xref(attrib[_NS["rdf"]["resource"]]))
+                try:
+                    if text is not None:
+                        termdata.xrefs.add(Xref(text))
+                    else:
+                        termdata.xrefs.add(Xref(attrib[_NS["rdf"]["resource"]]))
+                except ValueError:
+                    pass
+
             elif tag == _NS["oboInOwl"]["hasAlternativeId"]:
                 termdata.alternate_ids.add(text)
             elif tag == _NS["owl"]["disjointWith"]:
@@ -256,6 +262,19 @@ class OwlXMLParser(BaseParser):
                 else:
                     warnings.warn(f"unknown element in `owl:Class`: {child}")
 
+        # Owl to OBO post processing:
+        # see http://owlcollab.github.io/oboformat/doc/obo-syntax.html#5.11
+        # check we got a single name, or select an arbitrary one
+        if names:
+            if len(names) > 1:
+                warnings.warn(f"several names found for {id_!r}, using {names[0]!r}")
+            termdata.name = names[0]
+        # check we got a single comment, or concatenate comments
+        if comments:
+            if len(comments) > 1:
+                warnings.warn(f"several names found for {id_!r}, concatenating")
+            termdata.comment = "\n".join(comments)
+
     def _extract_object_property(self, elem: etree.Element, aliases: Dict[str, str]):
         """Extract the object property from an `owl:ObjectProperty` element.
         """
@@ -285,6 +304,8 @@ class OwlXMLParser(BaseParser):
             else self.ont.create_relationship
         )(id_)
         reldata = rel._data()
+        names: List[str] = []
+        comments: List[str] = []
 
         # extract attributes from annotation of the OWL relationship
         for child in elem:
@@ -295,8 +316,12 @@ class OwlXMLParser(BaseParser):
                 else:
                     pass  # TODO: subclassing relationship for relationship
             elif child.tag == _NS["oboInOwl"]["inSubset"]:
-                iri = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
-                reldata.subsets.add(iri)
+                resource = child.get(_NS["rdf"]["resource"])
+                about = child.get(_NS["rdf"]["about"])
+                if resource or about:
+                    reldata.subsets.add(self._compact_id(resource or about))
+                else:
+                    warnings.warn(f"could not extract subset in {id_!r}")
             elif child.tag == _NS["rdf"]["type"]:
                 resource = child.get(_NS["rdf"]["resource"])
                 if resource == _NS["owl"].raw("TransitiveProperty"):
@@ -312,7 +337,7 @@ class OwlXMLParser(BaseParser):
                 elif resource == _NS["owl"].raw("InverseFunctionalProperty"):
                     reldata.inverse_functional = True
             elif child.tag == _NS["rdfs"]["comment"]:
-                reldata.comment = child.text
+                comments.append(child.text)
             elif child.tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
                 reldata.created_by = child.text
             elif child.tag in (_NS["oboInOwl"]["creation_date"], _NS["dc"]["date"]):
@@ -321,7 +346,7 @@ class OwlXMLParser(BaseParser):
                 if child.text != self.ont.metadata.default_namespace:
                     reldata.namespace = child.text
             elif child.tag == _NS["rdfs"]["label"]:
-                reldata.name = child.text
+                names.append(child.text)
             elif (
                 child.tag == _NS["rdfs"]["domain"]
                 and _NS["rdf"]["resource"] in child.attrib
@@ -381,6 +406,20 @@ class OwlXMLParser(BaseParser):
                 else:
                     warnings.warn(f"unknown element in `owl:ObjectProperty`: {child}")
 
+
+        # Owl to OBO post processing:
+        # see http://owlcollab.github.io/oboformat/doc/obo-syntax.html#5.11
+        # check we got a single name, or select an arbitrary one
+        if names:
+            if len(names) > 1:
+                warnings.warn(f"several names found for {id_!r}, using {names[0]!r}")
+            reldata.name = names[0]
+        # check we got a single comment, or concatenate comments
+        if comments:
+            if len(comments) > 1:
+                warnings.warn(f"several names found for {id_!r}, concatenating")
+            reldata.comment = "\n".join(comments)
+
         return rel
 
     def _process_axiom(self, elem: etree.Element, aliases: Dict[str, str]):
@@ -408,7 +447,6 @@ class OwlXMLParser(BaseParser):
                 elif _NS["rdf"]["resource"] in child.attrib:
                     d.xrefs.add(Xref(child.get(_NS["rdf"]["resource"])))
                 else:
-                    print(child, child.attrib)
                     warnings.warn("`oboInOwl:hasDbXref` element has no text")
 
         elif (

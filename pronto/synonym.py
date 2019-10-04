@@ -184,11 +184,7 @@ class Synonym(object):
 
     @scope.setter
     @typechecked(property=True)
-    def scope(self, scope: str):
-        if __debug__:
-            if scope is not None and not isinstance(scope, str):
-                msg = "'scope' must be str or None, not {}"
-                raise TypeError(msg.format(type(scope).__name__))
+    def scope(self, scope: Optional[str]):
         if scope not in {"EXACT", "RELATED", "BROAD", "NARROW"}:
             raise ValueError(f"invalid synonym scope: {scope}")
         self._data().scope = scope

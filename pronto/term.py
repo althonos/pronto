@@ -230,7 +230,7 @@ class Term(Entity):
 
         """
         distmax: float = distance if distance is not None else float("+inf")
-        is_a: "Relationship" = self._ontology().get_relationship("is_a")
+        is_a: Relationship = self._ontology().get_relationship("is_a")
 
         # Search objects terms
         sup: Set[Term] = set()
@@ -282,7 +282,7 @@ class Term(Entity):
         """
         ont: "Ontology" = self._ontology()
         distmax: float = distance if distance is not None else float("+inf")
-        is_a: "Relationship" = ont.get_relationship("is_a")
+        is_a: Relationship = ont.get_relationship("is_a")
         g = networkx.DiGraph()
 
         # Build the directed graph
@@ -347,24 +347,18 @@ class Term(Entity):
         return frozenset({ontology.get_term(id) for id in termdata.disjoint_from})
 
     @disjoint_from.setter
+    @typechecked(property=True)
     def disjoint_from(self, terms: FrozenSet["Term"]):
-        if __debug__:
-            if not isinstance(terms, collections.abc.Set):
-                msg = "'terms' must be a set, not {}"
-                raise TypeError(msg.format(type(terms).__name__))
-            for x in (x for x in terms if not isinstance(x, Term)):
-                msg = "'terms' must contain only Term, not {}"
-                raise TypeError(msg.format(type(x).__name__))
         self._data().disjoint_from = set(term.id for term in terms)
 
     @property
     def intersection_of(
         self
-    ) -> FrozenSet[Union["Term", Tuple["Relationship", "Term"]]]:
+    ) -> FrozenSet[Union["Term", Tuple[Relationship, "Term"]]]:
         """The terms or term relationships this term is an intersection of.
         """
         ont, termdata = self._ontology(), self._data()
-        intersection_of: List[Union["Term", Tuple["Relationship", "Term"]]] = []
+        intersection_of: List[Union["Term", Tuple[Relationship, "Term"]]] = []
         for item in termdata.intersection_of:
             try:
                 r, t = item

@@ -133,7 +133,7 @@ class OwlXMLParser(BaseParser):
                 meta.remarks.add(child.text)
             elif child.tag == _NS["oboInOwl"]["hasOBOFormatVersion"]:
                 meta.format_version = child.text
-            elif child.tag == _NS["oboInOwl"]["saved-by"]:
+            elif child.tag in (_NS["oboInOwl"]["saved-by"], _NS["oboInOwl"]["savedBy"]):
                 meta.saved_by = child.text
             elif child.tag == _NS["oboInOwl"]["auto-generated-by"]:
                 meta.auto_generated_by = child.text

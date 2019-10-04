@@ -122,7 +122,8 @@ class FastoboParser(abc.ABC):
 
     def _extract_term(self, frame: fastobo.term.TermFrame) -> Term:
 
-        term = self.ont.create_term(str(frame.id))
+        id_ = str(frame.id)
+        term = (self.ont.get_term if id_ in self.ont else self.ont.create_term)(id_)
         termdata = term._data()
 
         union_of = set()
@@ -205,7 +206,8 @@ class FastoboParser(abc.ABC):
         self, frame: fastobo.typedef.TypedefFrame
     ) -> Relationship:
 
-        rship = self.ont.create_relationship(str(frame.id))
+        id_ = str(frame.id)
+        rship = (self.ont.get_relationship if id_ in self.ont else self.ont.create_relationship)(id_)
         rshipdata = rship._data()
 
         union_of = set()

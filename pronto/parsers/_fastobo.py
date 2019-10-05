@@ -53,7 +53,10 @@ class FastoboParser(abc.ABC):
             ),
             fastobo.header.FormatVersionClause: copy("version", "format_version"),
             fastobo.header.IdspaceClause: (
-                lambda c: (metadata.idspace.__setitem__(str(c.prefix), str(c.url)))
+                lambda c: (metadata.idspace.__setitem__(
+                    str(c.prefix),
+                    (str(c.url), c.description)
+                ))
             ),
             fastobo.header.ImportClause: add("reference", "imports"),
             fastobo.header.OntologyClause: copy("ontology"),

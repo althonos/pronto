@@ -2,7 +2,7 @@ import datetime
 import functools
 import typing
 import warnings
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 import fastobo
 
@@ -47,7 +47,7 @@ class Metadata(object):
     """A mapping containing metadata about the current ontology.
     """
 
-    format_version: str
+    format_version: Optional[str]
     data_version: Optional[str]
     ontology: Optional[str]
     date: Optional[datetime.datetime]
@@ -59,14 +59,14 @@ class Metadata(object):
     subsetdefs: Set[Subset]
     imports: Set[str]
     synonymtypedefs: Set[SynonymType]
-    idspaces: Dict[str, str]
+    idspaces: Dict[str, Tuple[str, Optional[str]]]  # FIXME: better typing?
     remarks: Set[str]
     annotations: Set[PropertyValue]
     unreserved: Dict[str, Set[str]]
 
     def __init__(
         self,
-        format_version: str = "1.4",
+        format_version: Optional[str] = "1.4",
         data_version: Optional[str] = None,
         ontology: Optional[str] = None,
         date: Optional[datetime.datetime] = None,
@@ -78,7 +78,7 @@ class Metadata(object):
         subsetdefs: Set[Subset] = None,
         imports: Optional[Dict[str, str]] = None,
         synonymtypedefs: Set[SynonymType] = None,
-        idspace: Dict[str, str] = None,
+        idspaces: Dict[str, Tuple[str, Optional[str]]] = None,
         remarks: Set[str] = None,
         annotations: Set[PropertyValue] = None,
         **unreserved: Set[str],
@@ -108,7 +108,12 @@ class Metadata(object):
         self.synonymtypedefs = (
             set(synonymtypedefs) if synonymtypedefs is not None else set()
         )
-        self.idspace = idspace or dict()
+        self.idspaces = idspaces or dict()
         self.remarks = remarks or set()
         self.annotations = annotations or set()
         self.unreserved = unreserved
+
+    def __bool__(self) -> bool:
+        """Return `False` if the instance does not contain any metadata.
+        """
+        return any(bool(getattr(self, x)) for x in self.__annotations__)

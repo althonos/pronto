@@ -55,10 +55,6 @@ class Definition(str):
 
     __slots__ = ("__weakref__", "xrefs")
 
-    def _to_ast(self) -> fastobo.term.DefClause:
-        xrefs = [Xref._to_ast(x) for x in sorted(self.xrefs)]
-        return fastobo.term.DefClause(str(self), xrefs)
-
     def __new__(cls, text: str, xrefs=None) -> "Definition":
         return super().__new__(cls, text)
 

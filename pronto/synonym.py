@@ -35,26 +35,17 @@ class SynonymType(object):
         self.scope = scope
 
     def __eq__(self, other):
-        if not isinstance(other, SynonymData):
-            return False
-        return all(
-            getattr(self, attr) == getattr(other, attr) for attr in self.__slots__[1:]
-        )
+        if isinstance(other, SynonymType):
+            return self.id == other.id
+        return False
 
     def __lt__(self, other):
-        if not isinstance(other, SynonymData):
-            return NotImplemented
-        if self.scope is not None and other.scope is not None:
-            return (self.id, self.description, self.scope) < (
-                other.id,
-                other.description,
-                other.scope,
-            )
-        else:
-            return (self.id, self.description) < (other.id, other.description)
+        if isinstance(other, SynonymType):
+            return self.id < other.id
+        return NotImplemented
 
     def __hash__(self):
-        return hash((self.id, self.description, self.scope))
+        return hash((SynonymType, self.id))
 
 
 @functools.total_ordering
@@ -105,23 +96,12 @@ class SynonymData(object):
         self.type = type
         self.xrefs = set(xrefs) if xrefs is not None else set()
 
-    def _to_ast(self) -> fastobo.syn.Synonym:
-        return fastobo.syn.Synonym(
-            self.description,
-            self.scope,
-            fastobo.id.parse(self.type) if self.type is not None else None,
-            map(Xref._to_ast, self.xrefs),
-        )
-
 
 @functools.total_ordering
 class Synonym(object):
 
     _ontology: "weakref.ReferenceType[Ontology]"
     _data: "weakref.ReferenceType[SynonymData]"
-
-    def _to_ast(self):
-        return self._data()._to_ast()
 
     def __init__(self, ontology: "Ontology", syndata: "SynonymData"):
         if syndata.type is not None:

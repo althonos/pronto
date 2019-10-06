@@ -36,14 +36,14 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
       `JSON <http://json.org/>`_ format.
 
     Attributes:
-        metadata (Metadata): a data structure storing the metadata about the
+        metadata (Metadata): A data structure storing the metadata about the
             current ontology, either extracted from the ``owl:Ontology`` XML
             element or from the header of the OBO file.
         timeout (int): The timeout in seconds to use when performing network
             I/O, for instance when connecting to the OBO library to download
             imports. This is kept for reference, as it is not used after the
             initialization of the ontology.
-        imports (~typing.Dict[str, Ontology]): a dictionary mapping references
+        imports (~typing.Dict[str, Ontology]): A dictionary mapping references
             found in the import section of the metadata to resolved `Ontology`
             instances.
     """
@@ -202,6 +202,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         raise KeyError(f"could not find entity: {id}")
 
     def __repr__(self):
+        """Return a textual representation of `self` that should roundtrip.
+        """
         args = (self.path,) if self.path is not None else (self.handle,)
         kwargs = {"timeout": (self.timeout, 5)}
         if self.import_depth > 0:

@@ -56,6 +56,13 @@ _SYNONYMS = {
     _NS["oboInOwl"].raw("hasRelatedSynonym"): "RELATED",
 }
 
+_SYNONYMS_ATTRIBUTES = {
+    _NS["oboInOwl"]["hasExactSynonym"]: "EXACT",
+    _NS["oboInOwl"]["hasBroadSynonym"]: "BROAD",
+    _NS["oboInOwl"]["hasNarrowSynonym"]: "NARROW",
+    _NS["oboInOwl"]["hasRelatedSynonym"]: "RELATED",
+}
+
 
 class OwlXMLParser(BaseParser):
     # TODO: extract annotation properties
@@ -99,6 +106,12 @@ class OwlXMLParser(BaseParser):
             return ":".join(match.groups())
         return iri
 
+    def _compact_datatype(self, iri: str) -> str:
+        match = re.match("^http://www.w3.org/2001/XMLSchema#(.*)$", iri)
+        if match is not None:
+            return f"xsd:{match.group(1)}"
+        raise ValueError(f"invalid datatype: {iri!r}")
+
     def _extract_resource_pv(self, elem: etree.Element) -> ResourcePropertyValue:
         property = re.sub("{|}", "", elem.tag)
         resource = elem.attrib[_NS["rdf"]["resource"]]
@@ -110,7 +123,11 @@ class OwlXMLParser(BaseParser):
         if datatype is None:
             warnings.warn(f"{elem} contains text but no `xsd:datatype`", stacklevel=2)
             datatype = _NS["xsd"].raw("string")
-        return LiteralPropertyValue(property, typing.cast(str, elem.text), datatype)
+        return LiteralPropertyValue(
+            property,
+            typing.cast(str, elem.text),
+            self._compact_datatype(datatype)
+        )
 
     def _extract_meta(self, elem: etree.Element):
         """Extract the metadata from an `owl:Ontology` element.
@@ -170,13 +187,13 @@ class OwlXMLParser(BaseParser):
                 raise ValueError("expected `owl:Class` element")
 
         # only create the term if it is not a class by restriction
-        iri = elem.get(_NS["rdf"]["about"])
+        iri: Optional[str] = elem.get(_NS["rdf"]["about"])
         if iri is None:
             return None
 
         # attempt to extract the compact id of the term
         e = elem.find(_NS["oboInOwl"]["id"])
-        id_ = e.text if e is not None and e.text else self._compact_id(iri)
+        id_: str = e.text if e is not None and e.text else self._compact_id(iri)
 
         # get or create the term
         term = (self.ont.get_term if id_ in self.ont else self.ont.create_term)(id_)
@@ -198,29 +215,34 @@ class OwlXMLParser(BaseParser):
                 else:
                     pass  # TODO: relationships
             elif tag == _NS["oboInOwl"]["inSubset"]:
-                iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
-                termdata.subsets.add(iri)
+                iri = attrib.get(_NS["rdf"]["resource"], text)
+                if iri is not None:
+                    termdata.subsets.add(self._compact_id(iri))
+                else:
+                    warnings.warn(f"could not extract subset value in {id_!r}")
             elif tag == _NS["rdfs"]["comment"] and text is not None:
                 comments.append(text)
             elif tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
                 termdata.created_by = text
             elif tag in (_NS["oboInOwl"]["creation_date"], _NS["dc"]["date"]):
-                termdata.creation_date = dateutil.parser.parse(text)
+                termdata.creation_date = dateutil.parser.parse(typing.cast(str, text))
             elif tag == _NS["oboInOwl"]["hasOBONamespace"]:
                 if text != self.ont.metadata.default_namespace:
                     termdata.namespace = text
             elif tag == _NS["rdfs"]["label"]:
-                names.append(text)
+                if text is not None:
+                    names.append(text)
+                else:
+                    warnings.warn(f"label without text in {id_!r}")
             elif tag == _NS["obo"]["IAO_0000115"] and text is not None:
                 termdata.definition = Definition(text)
-            elif tag == _NS["oboInOwl"]["hasExactSynonym"]:
-                termdata.synonyms.add(SynonymData(text, scope="EXACT"))
-            elif tag == _NS["oboInOwl"]["hasRelatedSynonym"]:
-                termdata.synonyms.add(SynonymData(text, scope="RELATED"))
-            elif tag == _NS["oboInOwl"]["hasBroadSynonym"]:
-                termdata.synonyms.add(SynonymData(text, scope="BROAD"))
-            elif tag == _NS["oboInOwl"]["hasNarrowSynonym"]:
-                termdata.synonyms.add(SynonymData(text, scope="NARROW"))
+            elif tag in _SYNONYMS_ATTRIBUTES:
+                scope = _SYNONYMS_ATTRIBUTES[tag]
+                description = attrib.get(_NS["rdf"]["resource"], text)
+                if description is not None:
+                    termdata.synonyms.add(SynonymData(description, scope))
+                else:
+                    warnings.warn("could not extract synonym value in {id_!r}")
             elif tag == _NS["owl"]["equivalentClass"] and text is not None:
                 termdata.equivalent_to.add(self._compact_id(text))
             elif tag == _NS["owl"]["deprecated"]:
@@ -233,9 +255,12 @@ class OwlXMLParser(BaseParser):
                         termdata.xrefs.add(Xref(attrib[_NS["rdf"]["resource"]]))
                 except ValueError:
                     pass
-
             elif tag == _NS["oboInOwl"]["hasAlternativeId"]:
-                termdata.alternate_ids.add(text)
+                if _NS["rdf"]["resource"] in attrib:
+                    iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
+                else:
+                    iri = self._compact_id(text)
+                termdata.alternate_ids.add(iri)
             elif tag == _NS["owl"]["disjointWith"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
@@ -363,14 +388,10 @@ class OwlXMLParser(BaseParser):
                 reldata.range = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
             elif child.tag == _NS["obo"]["IAO_0000115"] and child.text is not None:
                 reldata.definition = Definition(child.text)
-            elif child.tag == _NS["oboInOwl"]["hasExactSynonym"]:
-                reldata.synonyms.add(SynonymData(child.text, scope="EXACT"))
-            elif child.tag == _NS["oboInOwl"]["hasRelatedSynonym"]:
-                reldata.synonyms.add(SynonymData(child.text, scope="RELATED"))
-            elif child.tag == _NS["oboInOwl"]["hasBroadSynonym"]:
-                reldata.synonyms.add(SynonymData(child.text, scope="BROAD"))
-            elif child.tag == _NS["oboInOwl"]["hasNarrowSynonym"]:
-                reldata.synonyms.add(SynonymData(child.text, scope="NARROW"))
+            elif child.tag in _SYNONYMS_ATTRIBUTES:
+                scope = _SYNONYMS_ATTRIBUTES[child.tag]
+                description = child.get(_NS["rdf"]["resource"], child.text)
+                reldata.synonyms.add(SynonymData(description, scope))
             elif child.tag == _NS["oboInOwl"]["is_cyclic"] and child.text is not None:
                 reldata.cyclic = child.text == "true"
             elif child.tag == _NS["obo"]["IAO_0000427"] and child.text is not None:
@@ -480,8 +501,14 @@ class OwlXMLParser(BaseParser):
                     and s.scope == _SYNONYMS[property]
                 )
             except StopIteration:
-                synonym = SynonymData(elem_target.text, scope=_SYNONYMS[property])
-                entity._data().synonyms.add(synonym)
+                description = elem_target.get(_NS["rdf"]["resource"], elem_target.text)
+                if description is None:
+                    warnings.warn(f"could not extract synonym value in {elem!r}")
+                    return
+                synonym = SynonymData(description, scope=_SYNONYMS[property])
+
+
+            entity._data().synonyms.add(typing.cast(SynonymData, synonym))
             for child in elem.iterfind(_NS["oboInOwl"]["hasDbXref"]):
                 if child.text is not None:
                     synonym.xrefs.add(Xref(child.text))

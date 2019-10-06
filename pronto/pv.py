@@ -1,6 +1,8 @@
 """Object hierarchy of property-value annotations in OBO files.
 """
 
+import functools
+
 import fastobo
 
 from .utils.impl import set
@@ -16,6 +18,7 @@ class PropertyValue(object):
 
 
 @roundrepr
+@functools.total_ordering
 class LiteralPropertyValue(PropertyValue):
     """A property-value which adds a literal annotation to an entity.
     """
@@ -39,8 +42,27 @@ class LiteralPropertyValue(PropertyValue):
         self.literal = literal
         self.datatype = str(fastobo.id.parse(datatype))
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, LiteralPropertyValue):
+            return self.property == other.property \
+                and self.literal == other.literal \
+                and self.datatype == other.datatype
+        return False
+
+    def __lt__(self, other: object) -> bool:
+        if isinstance(other, LiteralPropertyValue):
+            return (self.property, self.literal, self.datatype) \
+                < (other.property, other.literal, other.datatype)
+        elif isinstance(other, ResourcePropertyValue):
+            return self.property < other.property
+        else:
+            return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash((LiteralPropertyValue, self.property, self.literal, self.datatype))
 
 @roundrepr
+@functools.total_ordering
 class ResourcePropertyValue(PropertyValue):
     """A property-value which adds a resource annotation to an entity.
     """
@@ -59,3 +81,19 @@ class ResourcePropertyValue(PropertyValue):
         """
         self.property = str(fastobo.id.parse(property))
         self.resource = str(fastobo.id.parse(resource))
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, ResourcePropertyValue):
+            return (self.property, self.resource) == (other.property, other.resource)
+        return False
+
+    def __lt__(self, other: object) -> bool:
+        if isinstance(other, ResourcePropertyValue):
+            return (self.property, self.resource) < (other.property, other.resource)
+        elif isinstance(other, LiteralPropertyValue):
+            return self.property < other.property
+        else:
+            return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash((LiteralPropertyValue, self.property, self.resource))

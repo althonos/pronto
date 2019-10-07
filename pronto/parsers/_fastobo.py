@@ -1,4 +1,3 @@
-import abc
 import typing
 import warnings
 from typing import Union
@@ -16,7 +15,7 @@ from ..relationship import Relationship
 from ..utils.warnings import NotImplementedWarning
 
 
-class FastoboParser(abc.ABC):
+class FastoboParser:
 
     ont: "Ontology"
 

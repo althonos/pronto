@@ -7,7 +7,7 @@ from ..term import Term
 from ..relationship import Relationship
 
 
-class OboJsonParser(FastoboParser, BaseParser):
+class OboJSONParser(FastoboParser, BaseParser):
     @classmethod
     def can_parse(cls, path, buffer):
         return buffer.lstrip().startswith(b"{")

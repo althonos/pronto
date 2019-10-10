@@ -37,7 +37,7 @@ class RelationshipData(EntityData):
     domain: Optional[str]
     range: Optional[str]
     builtin: bool
-    holds_over_chain: Set[Tuple[str]]
+    holds_over_chain: Set[Tuple[str, str]]
     antisymmetric: bool
     cyclic: bool
     reflexive: bool
@@ -52,7 +52,7 @@ class RelationshipData(EntityData):
     disjoint_from: Set[str]
     inverse_of: Optional[str]
     transitive_over: Set[str]
-    equivalent_to_chain: Set[Tuple[str]]
+    equivalent_to_chain: Set[Tuple[str, str]]
     disjoint_over: Set[str]
     relationships: Dict[str, Set[str]]
     obsolete: bool
@@ -83,7 +83,7 @@ class RelationshipData(EntityData):
         domain: Optional[str] = None,
         range: Optional[str] = None,
         builtin: bool = False,
-        holds_over_chain: Optional[Set[Tuple[str]]] = None,
+        holds_over_chain: Optional[Set[Tuple[str, str]]] = None,
         antisymmetric: bool = False,
         cyclic: bool = False,
         reflexive: bool = False,
@@ -98,7 +98,7 @@ class RelationshipData(EntityData):
         disjoint_from: Optional[Set[str]] = None,
         inverse_of: Optional[str] = None,
         transitive_over: Optional[Set[str]] = None,
-        equivalent_to_chain: Optional[Set[Tuple[str]]] = None,
+        equivalent_to_chain: Optional[Set[Tuple[str, str]]] = None,
         disjoint_over: Optional[Set[str]] = None,
         relationships: Optional[Dict[str, Set[str]]] = None,
         obsolete: bool = False,

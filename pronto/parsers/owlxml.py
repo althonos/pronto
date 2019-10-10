@@ -326,7 +326,7 @@ class OwlXMLParser(BaseParser):
         else:
             id_ = self._compact_id(iri)
 
-        # Create the relationship
+        # create the relationship
         rel = (
             self.ont.get_relationship
             if id_ in self.ont
@@ -431,7 +431,6 @@ class OwlXMLParser(BaseParser):
                 else:
                     warnings.warn(f"unknown element in `owl:ObjectProperty`: {child}")
 
-
         # Owl to OBO post processing:
         # see http://owlcollab.github.io/oboformat/doc/obo-syntax.html#5.11
         # check we got a single name, or select an arbitrary one
@@ -448,14 +447,17 @@ class OwlXMLParser(BaseParser):
         return rel
 
     def _process_axiom(self, elem: etree.Element, aliases: Dict[str, str]):
+        # get the source, property and target of the axiom.
         elem_source = elem.find(_NS["owl"]["annotatedSource"])
         elem_property = elem.find(_NS["owl"]["annotatedProperty"])
         elem_target = elem.find(_NS["owl"]["annotatedTarget"])
 
+        # assert source, target and property have a `rdf:resource` attribute.
         for elem in (elem_source, elem_property, elem_target):
             if elem is None or _NS["rdf"]["resource"] not in elem.attrib:
                 return
 
+        # check among known properties
         property = elem_property.attrib[_NS["rdf"]["resource"]]
         if property == _NS["obo"].raw("IAO_0000115") and elem_target.text is not None:
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
@@ -492,6 +494,8 @@ class OwlXMLParser(BaseParser):
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
             resource = aliases.get(iri, iri)
             entity = self.ont[self._compact_id(resource)]
+            type_ = elem.find(_NS["oboInOwl"]["hasSynonymType"])
+
 
             try:
                 synonym = next(
@@ -505,8 +509,11 @@ class OwlXMLParser(BaseParser):
                 if description is None:
                     warnings.warn(f"could not extract synonym value in {elem!r}")
                     return
-                synonym = SynonymData(description, scope=_SYNONYMS[property])
-
+                synonym = SynonymData(
+                    description,
+                    scope=_SYNONYMS[property],
+                    type=type_.text if type_ is not None else None,
+                )
 
             entity._data().synonyms.add(typing.cast(SynonymData, synonym))
             for child in elem.iterfind(_NS["oboInOwl"]["hasDbXref"]):

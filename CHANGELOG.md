@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 [Unreleased]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.3...HEAD
+### Changed
+- Bumped `fastobo` requirement to `v0.6.0`.
 
 ## [1.0.0-alpha.3] - 2019-10-10
 [1.0.0-alpha.2]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.2...v1.0.0-alpha.3

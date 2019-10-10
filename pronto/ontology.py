@@ -212,6 +212,22 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     # ------------------------------------------------------------------------
 
+    def dump(self, file: BinaryIO, format: str = "obo"):
+        from .serializers import BaseSerializer
+        for cls in BaseSerializer.__subclasses__():
+            if cls.format == format:
+                cls(self).dump(file)
+                break
+        else:
+            raise ValueError(f"could not find a serializer to handle {format!r}")
+
+    def dumps(self, format: str = "obo") -> str:
+        s = io.BytesIO()
+        self.dump(s, format=format)
+        return s.getvalue().decode('utf-8')
+
+    # ------------------------------------------------------------------------
+
     def terms(self) -> SizedIterator[Term]:
         """Iterate over the terms of the ontology graph.
         """

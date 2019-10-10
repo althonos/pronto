@@ -89,10 +89,11 @@ class RdfXMLParser(BaseParser):
         self.ont.metadata = self._extract_meta(owl_ontology)
 
         # Process imports
-        self.ont.medata.imports.update(self.process_imports(
+        self.ont.imports.update(self.process_imports(
             self.ont.metadata.imports,
             self.ont.import_depth,
             os.path.dirname(self.ont.path or str()),
+            self.ont.timeout,
         ))
 
         # Parse typedef first to handle OBO shorthand renaming

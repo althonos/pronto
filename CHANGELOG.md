@@ -5,7 +5,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.2...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.3...HEAD
+
+## [1.0.0-alpha.3] - 2019-10-10
+[1.0.0-alpha.2]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.2...v1.0.0-alpha.3
+### Added
+- Extraction of `oboInOwl:consider` annotation in `RdfXMLParser`.
+- Extraction of `oboInOwl:savedBy` annotation in `RdfXMLParser`.
+- Extraction of `subsetdef` and `synonymtypedef` as annotation properties in
+  `RdfXMLParser`.
+- Support for `doap:Version` instead of `owl:VersionIri` for specification
+  of ontology data version.
+- Proper comparison of `PropertyValue` classes, based on the lexicographic order
+  of their serialization.
+- `Ontology.dump` and `Ontology.dumps` methods to serialize an ontology in
+  **obo** or **obojson** format.
+### Fixed
+- `Metadata` not storing optional description of ID spaces if any.
+- Wrong type hints in `RelationshipData.equivalent_to_chain`.
+### Changed
+- Added type checking to some more property setters.
+- Avoid using `networkx` in `Term.subclasses`.
+- `fastobo`-derived parsers will not create a new entity if one exists in the
+  graph of dependencies already.
+- Exposed `pronto.warnings` and the complete warnings hierarchy.
 
 ## [1.0.0-alpha.2] - 2019-10-03
 [1.0.0-alpha.2]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.1...v1.0.0-alpha.2

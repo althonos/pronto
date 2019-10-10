@@ -28,6 +28,7 @@ class BaseParser(abc.ABC):
             imports: Set[str],
             import_depth: int = -1,
             basepath: str = "",
+            timeout: int = 5,
     ) -> Dict[str, Ontology]:
         # check we did not reach the maximum import depth
         resolved = {}
@@ -47,9 +48,10 @@ class BaseParser(abc.ABC):
                 else:
                     id_ = f"{ref}.obo" if not os.path.splitext(ref)[1] else ref
                     url = f"http://purl.obolibrary.org/obo/{id_}"
-
             resolved[ref] = Ontology(
-                url, max(import_depth - 1, 0), self.ont.timeout
+                url,
+                max(import_depth - 1, 0),
+                timeout
             )
 
         # return the resolved imports

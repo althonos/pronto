@@ -9,13 +9,14 @@ import dateutil.parser
 
 from .base import BaseParser
 from ..definition import Definition
-from ..metadata import Metadata
+from ..metadata import Metadata, Subset
 from ..term import Term
-from ..synonym import Synonym, SynonymData
+from ..synonym import Synonym, SynonymData, SynonymType
 from ..relationship import Relationship
 from ..pv import ResourcePropertyValue, LiteralPropertyValue
 from ..xref import Xref
 from ..utils.impl import etree
+from ..utils.warnings import SyntaxWarning, NotImplementedWarning
 
 if typing.TYPE_CHECKING:
     from ..ontology import Ontology
@@ -66,7 +67,6 @@ _SYNONYMS_ATTRIBUTES = {
 
 class OwlXMLParser(BaseParser):
     # TODO: extract annotation properties
-    # TODO: extract subset definitions from annotations property
 
     # -- BaseParser interface ------------------------------------------------
 
@@ -85,12 +85,14 @@ class OwlXMLParser(BaseParser):
         owl_ontology = tree.find(_NS["owl"]["Ontology"])
         if owl_ontology is None:
             raise ValueError("could not find `owl:Ontology` element")
-        self._extract_meta(owl_ontology)
+        self.ont.metadata = self._extract_meta(owl_ontology)
         self.process_imports()
 
         # Parse typedef first to handle OBO shorthand renaming
         for prop in tree.iterfind(_NS["owl"]["ObjectProperty"]):
             self._extract_object_property(prop, aliases)
+        for prop in tree.iterfind(_NS["owl"]["AnnotationProperty"]):
+            self._extract_annotation_property(prop, aliases)
         for class_ in tree.iterfind(_NS["owl"]["Class"]):
             self._extract_term(class_, aliases)
         for axiom in tree.iterfind(_NS["owl"]["Axiom"]):
@@ -104,6 +106,11 @@ class OwlXMLParser(BaseParser):
         match = re.match("^http://purl.obolibrary.org/obo/([^#_]+)_(.*)$", iri)
         if match is not None:
             return ":".join(match.groups())
+        if self.ont.metadata.ontology is not None:
+            id_ = self.ont.metadata.ontology
+            match = re.match(f"^http://purl.obolibrary.org/obo/{id_}#(.*)$", iri)
+            if match is not None:
+                return match.group(1)
         return iri
 
     def _compact_datatype(self, iri: str) -> str:
@@ -121,7 +128,11 @@ class OwlXMLParser(BaseParser):
         property = re.sub("{|}", "", elem.tag)
         datatype = elem.get(_NS["rdf"]["datatype"])
         if datatype is None:
-            warnings.warn(f"{elem} contains text but no `xsd:datatype`", stacklevel=2)
+            warnings.warn(
+                f"{elem} contains text but no `xsd:datatype`",
+                SyntaxWarning,
+                stacklevel=3
+            )
             datatype = _NS["xsd"].raw("string")
         return LiteralPropertyValue(
             property,
@@ -132,8 +143,7 @@ class OwlXMLParser(BaseParser):
     def _extract_meta(self, elem: etree.Element):
         """Extract the metadata from an `owl:Ontology` element.
         """
-
-        meta = self.ont.metadata = Metadata()
+        meta = Metadata()
         if __debug__:
             if elem.tag != _NS["owl"]["Ontology"]:
                 raise ValueError("expected `owl:Ontology` element")
@@ -177,7 +187,14 @@ class OwlXMLParser(BaseParser):
             elif child.text is not None:
                 meta.annotations.add(self._extract_literal_pv(child))
             else:
-                warnings.warn(f"unknown element in `owl:Ontology`: {child}")
+                warnings.warn(
+                    f"unknown element in `owl:Ontology`: {child}",
+                    SyntaxWarning,
+                    stacklevel=3,
+                )
+
+        # return the extracted metadata
+        return meta
 
     def _extract_term(self, elem: etree.Element, aliases: Dict[str, str]):
         """Extract the term from a `owl:Class` element.
@@ -219,7 +236,11 @@ class OwlXMLParser(BaseParser):
                 if iri is not None:
                     termdata.subsets.add(self._compact_id(iri))
                 else:
-                    warnings.warn(f"could not extract subset value in {id_!r}")
+                    warnings.warn(
+                        f"could not extract subset value in {id_!r}",
+                        SyntaxWarning,
+                        stacklevel=3
+                    )
             elif tag == _NS["rdfs"]["comment"] and text is not None:
                 comments.append(text)
             elif tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
@@ -233,7 +254,11 @@ class OwlXMLParser(BaseParser):
                 if text is not None:
                     names.append(text)
                 else:
-                    warnings.warn(f"label without text in {id_!r}")
+                    warnings.warn(
+                        f"label without text in {id_!r}",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
             elif tag == _NS["obo"]["IAO_0000115"] and text is not None:
                 termdata.definition = Definition(text)
             elif tag in _SYNONYMS_ATTRIBUTES:
@@ -242,7 +267,11 @@ class OwlXMLParser(BaseParser):
                 if description is not None:
                     termdata.synonyms.add(SynonymData(description, scope))
                 else:
-                    warnings.warn("could not extract synonym value in {id_!r}")
+                    warnings.warn(
+                        f"could not extract synonym value in {id_!r}",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
             elif tag == _NS["owl"]["equivalentClass"] and text is not None:
                 termdata.equivalent_to.add(self._compact_id(text))
             elif tag == _NS["owl"]["deprecated"]:
@@ -266,7 +295,11 @@ class OwlXMLParser(BaseParser):
                     iri = attrib[_NS["rdf"]["resource"]]
                     termdata.disjoint_from.add(self._compact_id(iri))
                 else:
-                    warnings.warn("`owl:disjointWith` element without `rdf:resource`")
+                    warnings.warn(
+                        "`owl:disjointWith` element without `rdf:resource`",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
             elif tag == _NS["obo"]["IAO_0100001"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
@@ -274,7 +307,11 @@ class OwlXMLParser(BaseParser):
                 elif _NS["rdf"]["datatype"] in attrib:
                     termdata.replaced_by.add(self._compact_id(text))
                 else:
-                    warnings.warn("could not extract ID from `IAO:0100001` annotation")
+                    warnings.warn(
+                        "could not extract ID from `IAO:0100001` annotation",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
             elif tag == _NS["oboInOwl"]["consider"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
@@ -282,26 +319,42 @@ class OwlXMLParser(BaseParser):
                 elif _NS["rdf"]["datatype"] in attrib:
                     termdata.consider.add(self._compact_id(text))
                 else:
-                    warnings.warn("could not extract ID from `oboInOwl:consider` annotation")
+                    warnings.warn(
+                        "could not extract ID from `oboInOwl:consider` annotation",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
             elif tag != _NS["oboInOwl"]["id"]:
                 if _NS["rdf"]["resource"] in attrib:
                     termdata.annotations.add(self._extract_resource_pv(child))
                 elif _NS["rdf"]["datatype"] and text is not None:
                     termdata.annotations.add(self._extract_literal_pv(child))
                 else:
-                    warnings.warn(f"unknown element in `owl:Class`: {child}")
+                    warnings.warn(
+                        f"unknown element in `owl:Class`: {child}",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
 
         # Owl to OBO post processing:
         # see http://owlcollab.github.io/oboformat/doc/obo-syntax.html#5.11
         # check we got a single name, or select an arbitrary one
         if names:
             if len(names) > 1:
-                warnings.warn(f"several names found for {id_!r}, using {names[0]!r}")
+                warnings.warn(
+                    f"several names found for {id_!r}, using {names[0]!r}",
+                    SyntaxWarning,
+                    stacklevel=3,
+                )
             termdata.name = names[0]
         # check we got a single comment, or concatenate comments
         if comments:
             if len(comments) > 1:
-                warnings.warn(f"several names found for {id_!r}, concatenating")
+                warnings.warn(
+                    f"several names found for {id_!r}, concatenating",
+                    SyntaxWarning,
+                    stacklevel=3,
+                )
             termdata.comment = "\n".join(comments)
 
     def _extract_object_property(self, elem: etree.Element, aliases: Dict[str, str]):
@@ -350,7 +403,11 @@ class OwlXMLParser(BaseParser):
                 if resource or about:
                     reldata.subsets.add(self._compact_id(resource or about))
                 else:
-                    warnings.warn(f"could not extract subset in {id_!r}")
+                    warnings.warn(
+                        f"could not extract subset in {id_!r}",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
             elif child.tag == _NS["rdf"]["type"]:
                 resource = child.get(_NS["rdf"]["resource"])
                 if resource == _NS["owl"].raw("TransitiveProperty"):
@@ -414,7 +471,11 @@ class OwlXMLParser(BaseParser):
                 elif _NS["rdf"]["datatype"] in child.attrib:
                     reldata.replaced_by.add(self._compact_id(child.text))
                 else:
-                    warnings.warn("could not extract ID from IAO:0100001 annotation")
+                    warnings.warn(
+                        "could not extract ID from IAO:0100001 annotation",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
             elif child.tag == _NS["oboInOwl"]["consider"]:
                 if _NS["rdf"]["resource"] in child.attrib:
                     iri = child.attrib[_NS["rdf"]["resource"]]
@@ -422,29 +483,75 @@ class OwlXMLParser(BaseParser):
                 elif _NS["rdf"]["datatype"] in child.attrib:
                     reldata.consider.add(self._compact_id(child.text))
                 else:
-                    warnings.warn("could not extract ID from `oboInOwl:consider` annotation")
+                    warnings.warn(
+                        "could not extract ID from `oboInOwl:consider` annotation",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
             elif child.tag not in (_NS["oboInOwl"]["id"], _NS["oboInOwl"]["shorthand"]):
                 if _NS["rdf"]["resource"] in child.attrib:
                     reldata.annotations.add(self._extract_resource_pv(child))
                 elif _NS["rdf"]["datatype"] and child.text is not None:
                     reldata.annotations.add(self._extract_literal_pv(child))
                 else:
-                    warnings.warn(f"unknown element in `owl:ObjectProperty`: {child}")
+                    warnings.warn(
+                        f"unknown element in `owl:ObjectProperty`: {child}",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
 
         # Owl to OBO post processing:
         # see http://owlcollab.github.io/oboformat/doc/obo-syntax.html#5.11
         # check we got a single name, or select an arbitrary one
         if names:
             if len(names) > 1:
-                warnings.warn(f"several names found for {id_!r}, using {names[0]!r}")
+                warnings.warn(
+                    f"several names found for {id_!r}, using {names[0]!r}",
+                    SyntaxWarning,
+                    stacklevel=3,
+                )
             reldata.name = names[0]
         # check we got a single comment, or concatenate comments
         if comments:
             if len(comments) > 1:
-                warnings.warn(f"several names found for {id_!r}, concatenating")
+                warnings.warn(
+                    f"several names found for {id_!r}, concatenating",
+                    SyntaxWarning,
+                    stacklevel=3,
+                )
             reldata.comment = "\n".join(comments)
 
         return rel
+
+    def _extract_annotation_property(self, elem: etree.Element, aliases: Dict[str, str]):
+        if __debug__:
+            if elem.tag != _NS["owl"]["AnnotationProperty"]:
+                raise ValueError("expected `owl:ObjectProperty` element")
+
+        # special handling of `synonymtypedef` and `subsetdef`
+        sub = elem.find(_NS["rdfs"]["subPropertyOf"])
+        if sub is not None:
+            resource = sub.get(_NS["rdf"]["resource"])
+            if resource == _NS["oboInOwl"].raw("SynonymTypeProperty"):
+                id_ = self._compact_id(elem.attrib[_NS["rdf"]["about"]])
+                label = elem.find(_NS["rdfs"]["label"]).text
+                elem_scope = elem.find(_NS["oboInOwl"]["hasScope"])
+                scope = _SYNONYMS.get(elem_scope.attrib[_NS["rdf"]["resource"]])
+                self.ont.metadata.synonymtypedefs.add(SynonymType(id_, label, scope))
+                return
+            elif resource == _NS["oboInOwl"].raw("SubsetProperty"):
+                id_ = self._compact_id(elem.attrib[_NS["rdf"]["about"]])
+                elem_comment = elem.find(_NS["rdfs"]["comment"])
+                desc = elem_comment.text if elem_comment is not None else None
+                self.ont.metadata.subsetdefs.add(Subset(id_, desc or ""))
+                return
+
+        # TODO: actual annotation properties
+        warnings.warn(
+            "cannot process plain `owl:AnnotationProperty`",
+            NotImplementedWarning,
+            stacklevel=3,
+        )
 
     def _process_axiom(self, elem: etree.Element, aliases: Dict[str, str]):
         # get the source, property and target of the axiom.
@@ -470,11 +577,19 @@ class OwlXMLParser(BaseParser):
                     try:
                         d.xrefs.add(Xref(child.text))
                     except ValueError:
-                        warnings.warn(f"could not parse Xref: {child.text!r}")
+                        warnings.warn(
+                            f"could not parse Xref: {child.text!r}",
+                            SyntaxWarning,
+                            stacklevel=3,
+                        )
                 elif _NS["rdf"]["resource"] in child.attrib:
                     d.xrefs.add(Xref(child.get(_NS["rdf"]["resource"])))
                 else:
-                    warnings.warn("`oboInOwl:hasDbXref` element has no text")
+                    warnings.warn(
+                        "`oboInOwl:hasDbXref` element has no text",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
 
         elif (
             property == _NS["oboInOwl"].raw("hasDbXref")
@@ -507,7 +622,11 @@ class OwlXMLParser(BaseParser):
             except StopIteration:
                 description = elem_target.get(_NS["rdf"]["resource"], elem_target.text)
                 if description is None:
-                    warnings.warn(f"could not extract synonym value in {elem!r}")
+                    warnings.warn(
+                        f"could not extract synonym value in {elem!r}",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
                     return
                 synonym = SynonymData(
                     description,
@@ -520,7 +639,15 @@ class OwlXMLParser(BaseParser):
                 if child.text is not None:
                     synonym.xrefs.add(Xref(child.text))
                 else:
-                    warnings.warn("`oboInOwl:hasDbXref` element has no text")
+                    warnings.warn(
+                        "`oboInOwl:hasDbXref` element has no text",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
 
         else:
-            warnings.warn(f"unknown axiom property: {property!r}")
+            warnings.warn(
+                f"unknown axiom property: {property!r}",
+                SyntaxWarning,
+                stacklevel=3,
+            )

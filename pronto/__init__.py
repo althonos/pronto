@@ -7,6 +7,7 @@ __version__ = (
     .strip()
 )
 
+from .utils import warnings
 from .entity import Entity
 from .definition import Definition
 from .metadata import Metadata, Subset
@@ -18,6 +19,9 @@ from .term import Term, TermData
 from .xref import Xref
 
 __all__ = [
+    # modules
+    warnings.__name__,
+    # classes
     Ontology.__name__,
     Entity.__name__,
     Term.__name__,

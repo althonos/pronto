@@ -19,7 +19,7 @@
 
 ## 🚩 Table of Contents
 
-- [Overview](#-overview)
+- [Overview](#%EF%B8%8F-overview)
 - [Supported Languages](#%EF%B8%8F-supported-languages)
 - [Installing](#-installing)
 - [Examples](#-examples)

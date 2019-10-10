@@ -227,7 +227,9 @@ class FastoboParser:
 
         def todo():
             return lambda c: warnings.warn(
-                f"cannot process `{c}`", NotImplementedWarning, stacklevel=3
+                f"cannot process `{c}`",
+                NotImplementedWarning,
+                stacklevel=3
             )
 
         _callbacks = {

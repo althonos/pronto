@@ -205,11 +205,11 @@ class FastoboSerializer:
         if r.symmetric:
             frame.append(fastobo.typedef.IsSymmetricClause(True))
         if r.transitive:
-            frame.append(fastobo.typedef.IsTransitive(True))
+            frame.append(fastobo.typedef.IsTransitiveClause(True))
         if r.functional:
-            frame.append(fastobo.typedef.IsFunctional(True))
+            frame.append(fastobo.typedef.IsFunctionalClause(True))
         if r.inverse_functional:
-            frame.append(fastobo.typedef.IsInverseFunctional(True))
+            frame.append(fastobo.typedef.IsInverseFunctionalClause(True))
         for superclass in sorted(r.relationships.get('is_a', ())):
             frame.append(fastobo.typedef.IsAClause(fastobo.id.parse(superclass)))
         for i in sorted(r.intersection_of):

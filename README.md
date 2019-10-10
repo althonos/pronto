@@ -103,9 +103,15 @@ they contain from their identifier in compact form:
 Term('CL:0002116', name='B220-low CD38-positive unswitched memory B cell')
 ```
 
-<!-- ### Export an ontology in OBO format -->
+### ✏️ Convert an OWL ontology to OBO format
 
-<!-- ### Get all the subclasses of a term -->
+The `Ontology.dump` method can be used to serialize an ontology to any of the
+supported formats (currently OBO and OBO JSON):
+```python
+>>> edam = Ontology("http://edamontology.org/EDAM.owl")
+>>> with open("edam.obo", "wb") as f:
+...     edam.dump(f, format="obo")
+```
 
 ### 🌿 Find ontology terms without subclasses
 
@@ -126,8 +132,6 @@ MS:1000001
 ```
 
 <!-- ### 🤝 Merging several ontologies -->
-
-
 
 ## 📖 API Reference
 

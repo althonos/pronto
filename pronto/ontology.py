@@ -62,7 +62,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         OBO Library URL each time.
 
         Arguments:
-            slug (str): the filename of the ontology release to download from
+            slug (str): The filename of the ontology release to download from
                 the OBO Library, including the file extension (should be one
                 of ``.obo``, ``.owl`` or ``.json``).
             import_depth (int): The maximum depth of imports to resolve in the
@@ -104,9 +104,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 to download imports.
 
         Raises:
-            TypeError: when the given ``handle`` could not be used to parse
+            TypeError: When the given ``handle`` could not be used to parse
                 and ontology.
-            ValueError: when the given ``handle`` contains a serialized
+            ValueError: When the given ``handle`` contains a serialized
                 ontology not supported by any of the builtin parsers.
 
         """
@@ -213,6 +213,20 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     # ------------------------------------------------------------------------
 
     def dump(self, file: BinaryIO, format: str = "obo"):
+        """Serialize the ontology to a given file-handle.
+
+        Arguments:
+            file (~typing.BinaryIO): A binary file handle open in reading mode
+                to write the serialized ontology into.
+            format (str): The serialization format to use. Currently supported
+                formats are: **obo**, **obojson**.
+
+        Example:
+            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
+            >>> with open("ms.json", "wb") as f:
+            ...     ms.dump(f)
+
+        """
         from .serializers import BaseSerializer
         for cls in BaseSerializer.__subclasses__():
             if cls.format == format:
@@ -222,6 +236,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             raise ValueError(f"could not find a serializer to handle {format!r}")
 
     def dumps(self, format: str = "obo") -> str:
+        """Get a textual representation of the serialization ontology.
+        """
         s = io.BytesIO()
         self.dump(s, format=format)
         return s.getvalue().decode('utf-8')

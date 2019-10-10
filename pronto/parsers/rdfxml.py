@@ -66,7 +66,7 @@ _SYNONYMS_ATTRIBUTES = {
 }
 
 
-class OwlXMLParser(BaseParser):
+class RdfXMLParser(BaseParser):
     # TODO: extract annotation properties
 
     # -- BaseParser interface ------------------------------------------------
@@ -88,7 +88,7 @@ class OwlXMLParser(BaseParser):
             raise ValueError("could not find `owl:Ontology` element")
         self.ont.metadata = self._extract_meta(owl_ontology)
 
-        # Process imports 
+        # Process imports
         self.ont.medata.imports.update(self.process_imports(
             self.ont.metadata.imports,
             self.ont.import_depth,

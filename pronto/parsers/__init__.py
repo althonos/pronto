@@ -1,6 +1,6 @@
 from .base import BaseParser
 from .obo import OboParser
 from .obojson import OboJSONParser
-from .owlxml import OwlXMLParser
+from .rdfxml import RdfXMLParser
 
-__all__ = ["BaseParser", "OboParser", "OboJSONParser", "OwlXMLParser"]
+__all__ = ["BaseParser", "OboParser", "OboJSONParser", "RdfXMLParser"]

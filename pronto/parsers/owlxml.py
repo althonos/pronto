@@ -1,5 +1,6 @@
 import datetime
 import itertools
+import os
 import re
 import typing
 import warnings
@@ -81,12 +82,18 @@ class OwlXMLParser(BaseParser):
         # Keep a map of aliases (IRI -> local OBO id)
         aliases: Dict[str, str] = dict()
 
-        # Load metadata from the `owl:Ontology` element and process imports
+        # Load metadata from the `owl:Ontology` element
         owl_ontology = tree.find(_NS["owl"]["Ontology"])
         if owl_ontology is None:
             raise ValueError("could not find `owl:Ontology` element")
         self.ont.metadata = self._extract_meta(owl_ontology)
-        self.process_imports()
+
+        # Process imports 
+        self.ont.medata.imports.update(self.process_imports(
+            self.ont.metadata.imports,
+            self.ont.import_depth,
+            os.path.dirname(self.ont.path or str()),
+        ))
 
         # Parse typedef first to handle OBO shorthand renaming
         for prop in tree.iterfind(_NS["owl"]["ObjectProperty"]):

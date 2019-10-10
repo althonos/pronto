@@ -18,7 +18,11 @@ class OboJSONParser(FastoboParser, BaseParser):
 
         # Extract metadata from the graph metadata and resolve imports
         self.ont.metadata = self._extract_metadata(doc.header)
-        self.process_imports()
+        self.ont.medata.imports.update(self.process_imports(
+            self.ont.metadata.imports,
+            self.ont.import_depth,
+            os.path.dirname(self.ont.path or str()),
+        ))
 
         # Extract frames from the current document.
         try:

@@ -14,7 +14,7 @@ class BaseSerializer(abc.ABC):
         self.ont = ont
 
     @abc.abstractmethod
-    def dump(self, file: BinaryIO, encoding: str = "utf-8") -> None:
+    def dump(self, file: BinaryIO) -> None:
         return NotImplemented
 
     def dumps(self) -> str:

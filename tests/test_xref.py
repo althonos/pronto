@@ -1,12 +1,19 @@
-# coding: utf-8
-
 import unittest
+import warnings
 
 import fastobo
 import pronto
 
 
 class TestXref(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        warnings.simplefilter('error')
+
+    @classmethod
+    def tearDownClass(cls):
+        warnings.simplefilter(warnings.defaultaction)
+
     def setUp(self):
         self.x1 = pronto.Xref("PMC:5392374")
         self.x2 = pronto.Xref("PMC:5392374")

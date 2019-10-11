@@ -1,6 +1,7 @@
 import itertools
 import os
 import unittest
+import warnings
 
 import pronto
 from pronto.term import Term, TermData
@@ -11,12 +12,15 @@ from .utils import DATADIR
 class TestTerm(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        warnings.simplefilter('error')
+        warnings.simplefilter('ignore', category=UnicodeWarning)
         cls.file = open(os.path.join(DATADIR, "ms.obo"), "rb")
         cls.ms = pronto.Ontology(cls.file)
 
     @classmethod
     def tearDownClass(cls):
         cls.file.close()
+        warnings.simplefilter(warnings.defaultaction)
 
     def test_properties(self):
         for t in TermData.__slots__:

@@ -1,9 +1,18 @@
 import unittest
+import warnings
 
 import pronto.pv
 
 
 class TestLiteralPropertyValue(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        warnings.simplefilter('error')
+
+    @classmethod
+    def tearDownClass(cls):
+        warnings.simplefilter(warnings.defaultaction)
+
     def test_repr(self):
         pv = pronto.pv.LiteralPropertyValue("IAO:0000112", "an example")
         self.assertEqual(repr(pv), "LiteralPropertyValue('IAO:0000112', 'an example')")
@@ -17,6 +26,14 @@ class TestLiteralPropertyValue(unittest.TestCase):
 
 
 class TestResourcePropertyValue(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        warnings.simplefilter('error')
+
+    @classmethod
+    def tearDownClass(cls):
+        warnings.simplefilter(warnings.defaultaction)
+
     def test_repr(self):
         pv = pronto.pv.ResourcePropertyValue("IAO:0000114", "IAO:0000122")
         self.assertEqual(

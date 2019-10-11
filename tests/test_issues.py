@@ -19,6 +19,14 @@ class TestIssues(unittest.TestCase):
 
     CONSISTENCY_SPAN = 10
 
+    @classmethod
+    def setUpClass(cls):
+        warnings.simplefilter('error')
+
+    @classmethod
+    def tearDownClass(cls):
+        warnings.simplefilter(warnings.defaultaction)
+        
     def test_parser_consistency(self):
         """Assert several runs on the same file give the same output.
 

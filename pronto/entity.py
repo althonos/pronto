@@ -52,6 +52,8 @@ class Entity:
 
     else:
 
+        __slots__ = ("__weakref__", "_ontology", "_data")
+
         def __init__(self, ontology: "Ontology", data: "EntityData"):
             self._ontology = weakref.ref(ontology)
             self._data = weakref.ref(data)

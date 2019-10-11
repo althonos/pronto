@@ -87,7 +87,7 @@ class FastoboParser:
         try:
             rship = self.ont.create_relationship(id_)
         except ValueError:
-            rship = self.ont.get_term(id_)
+            rship = self.ont.get_relationship(id_)
         # Process all clauses in the frame
         for clause in frame:
             process_clause_typedef(clause, rship._data())

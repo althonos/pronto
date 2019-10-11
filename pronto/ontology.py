@@ -296,7 +296,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 in the ontology graph, or if it is not a valid OBO identifier.
 
         """
-        with contextlib.suppress(KeyError):
+        if id in self:
             raise ValueError(f"identifier already in use: {id} ({self[id]})")
         self._terms[id] = termdata = TermData(id)
         return Term(self, termdata)
@@ -310,8 +310,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 in the ontology graph.
 
         """
-        if id in self._relationships or id in relationship._BUILTINS:
-            raise ValueError(f"identifier already in use: {id}")
+        if id in self:
+            raise ValueError(f"identifier already in use: {id} ({self[id]})")
         self._relationships[id] = reldata = RelationshipData(id)
         return Relationship(self, reldata)
 

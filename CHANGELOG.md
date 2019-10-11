@@ -5,7 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.3...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v1.0.0...HEAD
+
+## [1.0.0] - 2019-10-11
+[1.0.0]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.3...v1.0.0
+### Fixed
+- Issues with typedef serialization in `FastoboSerializer`.
+- `Ontology.create_term` and `Ontology.create_relationship` not raising `ValueError`
+  when given an identifier already in the knowledge graph.
+- Signature of `BaseSerializer.dump` to remove `encoding` argument.
+- Missing `__slots__` in `Entity` in non-typechecking runtime.
 ### Changed
 - Bumped `fastobo` requirement to `v0.6.0`.
 

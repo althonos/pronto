@@ -54,9 +54,6 @@ class Xref(object):
 
     __slots__ = ("__weakref__", "id", "description")  # noqa: E0602
 
-    def _to_ast(self) -> fastobo.xref.Xref:
-        return fastobo.xref.Xref(fastobo.id.parse(self.id), self.description)
-
     @typechecked()
     def __init__(self, id: str, description: typing.Optional[str] = None):
         """Create a new cross-reference.

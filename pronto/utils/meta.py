@@ -30,7 +30,6 @@ class typechecked(object):
             return (True, None)
         # typing.Set needs to check member types
         if typing.cast(object, getattr(hint, "__origin__", None)) is cls.Set:
-            hint = typing
             if not isinstance(value, collections.abc.MutableSet):
                 return (False, f"set of { hint.__args__ }")
             for arg in value:

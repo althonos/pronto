@@ -56,8 +56,8 @@ class RelationshipData(EntityData):
     creation_date: Optional[datetime.datetime]
     replaced_by: Set[str]
     consider: Set[str]
-    expand_assertion_to: Any  # TODO
-    expand_expression_to: Any  # TODO
+    expand_assertion_to: Set[Definition]
+    expand_expression_to: Set[Definition]
     metadata_tag: bool
     class_level: bool
 
@@ -151,6 +151,12 @@ class RelationshipData(EntityData):
 
 
 class Relationship(Entity):
+    """A relationship, constitute the edges of the ontology graph.
+
+    Also sometimes referede as typedefs, relationship types, properties or
+    predicates. Formally equivalent to a property (either ``ObjectProperty``
+    or ``AnnotationProperty``) in OWL2.
+    """
 
     if typing.TYPE_CHECKING:
 
@@ -164,6 +170,8 @@ class Relationship(Entity):
 
     @property
     def antisymmetric(self) -> bool:
+        """`bool`: whether this relationship is anti-symmetric.
+        """
         return self._data().antisymmetric
 
     @antisymmetric.setter
@@ -173,6 +181,8 @@ class Relationship(Entity):
 
     @property
     def asymmetric(self) -> bool:
+        """`bool`: whether this relationship is asymmetric.
+        """
         return self._data().asymmetric
 
     @asymmetric.setter

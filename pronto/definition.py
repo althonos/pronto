@@ -23,6 +23,12 @@ class Definition(str):
         >>> def2 = pronto.Definition('...', xrefs={pronto.Xref('MGI:Anna')})
         >>> def2.xrefs.add(pronto.Xref('ORCID:0000-0002-3947-4444'))
 
+        The text content of the definition can be accessed by casting the
+        definition object to a plain string:
+
+        >>> str(def1)
+        'a structural anomaly'
+
     Caution:
         A `Definition` compare only based on its textual value, independently
         of the `Xref` it may contains:

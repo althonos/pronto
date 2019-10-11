@@ -2,10 +2,10 @@ import collections.abc
 import datetime
 import weakref
 import typing
-from typing import Any, Optional, FrozenSet
+from typing import Any, Optional, Set, FrozenSet
 
 from .definition import Definition
-from .synonym import Synonym
+from .synonym import Synonym, SynonymData
 from .pv import PropertyValue
 from .xref import Xref
 from .utils.meta import roundrepr, typechecked
@@ -16,7 +16,25 @@ if typing.TYPE_CHECKING:
 
 
 class EntityData:
-    __slots__ = ("__weakref__",)
+
+    id: str
+    alternate_ids: Set[str]
+    annotations: Set[PropertyValue]
+    anonymous: bool
+    builtin: bool
+    comment: Optional[str]
+    created_by: Optional[str]
+    creation_date: Optional[datetime.datetime]
+    definition: Optional[Definition]
+    equivalent_to: Set[str]
+    name: Optional[str]
+    namespace: Optional[str]
+    obsolete: bool
+    subsets: Set[str]
+    synonyms: Set[SynonymData]
+    xrefs: Set[Xref]
+
+    __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
 
 
 class Entity:
@@ -151,6 +169,11 @@ class Entity:
 
     @property
     def definition(self) -> Optional[Definition]:
+        """`str` or None: the textual definition of the current entity.
+
+        Definitions in OBO are intended to be human-readable text describing
+        the entity, with some additional cross-references if possible.
+        """
         return self._data().definition
 
     @definition.setter
@@ -172,6 +195,12 @@ class Entity:
 
     @property
     def name(self) -> Optional[str]:
+        """`str` or None: the name of the entity.
+
+        Names are formally equivalent to ``rdf:label`` in OWL2. The OBO format
+        version 1.4 made names optional to improve OWL interoperability, as
+        labels are optional in OWL.
+        """
         return self._data().name
 
     @name.setter

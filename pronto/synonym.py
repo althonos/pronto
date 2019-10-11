@@ -16,6 +16,8 @@ if typing.TYPE_CHECKING:
 @functools.total_ordering
 @roundrepr
 class SynonymType(object):
+    """A user-defined synonym type.
+    """
 
     id: str
     description: str

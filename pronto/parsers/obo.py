@@ -4,9 +4,6 @@ import fastobo
 
 from .base import BaseParser
 from ._fastobo import FastoboParser
-from ..metadata import Metadata
-from ..term import Term
-from ..relationship import Relationship
 
 
 class OboParser(FastoboParser, BaseParser):
@@ -19,7 +16,7 @@ class OboParser(FastoboParser, BaseParser):
         doc = fastobo.iter(handle)
 
         # Extract metadata from the OBO header and resolve imports
-        self.ont.metadata = self._extract_metadata(doc.header())
+        self.ont.metadata = self.extract_metadata(doc.header())
         self.ont.imports.update(self.process_imports(
             self.ont.metadata.imports,
             self.ont.import_depth,
@@ -31,9 +28,9 @@ class OboParser(FastoboParser, BaseParser):
         try:
             for frame in doc:
                 if isinstance(frame, fastobo.term.TermFrame):
-                    self._extract_term(frame)
+                    self.enrich_term(frame)
                 elif isinstance(frame, fastobo.typedef.TypedefFrame):
-                    self._extract_relationship(frame)
+                    self.enrich_relationship(frame)
         except SyntaxError as s:
             location = self.ont.path, s.lineno, s.offset, s.text
             raise SyntaxError(s.args[0], location) from None

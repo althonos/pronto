@@ -1,16 +1,12 @@
 import datetime
 import functools
 import typing
-import warnings
 from typing import Dict, List, Optional, Set, Tuple, Union
-
-import fastobo
 
 from .synonym import SynonymType
 from .pv import PropertyValue
 from .utils.impl import set
 from .utils.meta import roundrepr, typechecked
-from .utils.warnings import NotImplementedWarning
 
 
 @roundrepr

@@ -5,8 +5,6 @@ import typing
 import weakref
 from typing import Optional, Set, FrozenSet, Iterable
 
-import fastobo
-
 from .xref import Xref
 from .utils.impl import set
 from .utils.meta import roundrepr, typechecked

@@ -1,5 +1,4 @@
 import datetime
-import itertools
 import os
 import re
 import typing
@@ -12,7 +11,7 @@ from .base import BaseParser
 from ..definition import Definition
 from ..metadata import Metadata, Subset
 from ..term import Term
-from ..synonym import Synonym, SynonymData, SynonymType
+from ..synonym import SynonymData, SynonymType
 from ..relationship import Relationship
 from ..pv import ResourcePropertyValue, LiteralPropertyValue
 from ..xref import Xref

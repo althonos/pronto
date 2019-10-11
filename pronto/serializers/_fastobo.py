@@ -3,7 +3,6 @@ import io
 import os
 import operator
 import typing
-import urllib.parse
 from typing import BinaryIO, ClassVar
 
 import fastobo

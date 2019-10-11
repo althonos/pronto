@@ -2,8 +2,6 @@ import collections.abc
 import datetime
 import itertools
 import typing
-import warnings
-import weakref
 import queue
 from typing import (
     Callable,
@@ -19,7 +17,6 @@ from typing import (
     FrozenSet,
 )
 
-import fastobo
 import frozendict
 import networkx
 
@@ -32,7 +29,6 @@ from .relationship import Relationship
 from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
 from .utils.impl import set
 from .utils.meta import typechecked
-from .utils.warnings import NotImplementedWarning
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology

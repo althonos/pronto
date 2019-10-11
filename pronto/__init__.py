@@ -20,7 +20,7 @@ from .xref import Xref
 
 __all__ = [
     # modules
-    warnings.__name__,
+    "warnings",
     # classes
     Ontology.__name__,
     Entity.__name__,

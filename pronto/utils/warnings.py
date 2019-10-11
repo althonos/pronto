@@ -1,8 +1,6 @@
 """Warnings raised by the library.
 """
 
-import warnings
-
 class ProntoWarning(Warning):
     """The class for all warnings raised by `pronto`.
     """

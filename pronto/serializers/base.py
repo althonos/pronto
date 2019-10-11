@@ -1,26 +1,16 @@
 import abc
 import io
-import os
-import operator
 import typing
-import urllib.parse
 from typing import BinaryIO, ClassVar
 
-import fastobo
-
-from ..metadata import Metadata
 from ..ontology import Ontology
-from ..synonym import SynonymData
-from ..term import Term, TermData
-from ..xref import Xref
-from ..pv import PropertyValue, LiteralPropertyValue, ResourcePropertyValue
 
 
 class BaseSerializer(abc.ABC):
 
     format: ClassVar[str] = NotImplemented
 
-    def __init__(self, ont: "Ontology"):
+    def __init__(self, ont: Ontology):
         self.ont = ont
 
     @abc.abstractmethod

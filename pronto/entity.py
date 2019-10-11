@@ -2,7 +2,7 @@ import collections.abc
 import datetime
 import weakref
 import typing
-from typing import Any, Callable, Optional, FrozenSet
+from typing import Any, Optional, FrozenSet
 
 from .definition import Definition
 from .synonym import Synonym

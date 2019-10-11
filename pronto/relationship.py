@@ -1,10 +1,7 @@
 import datetime
 import typing
-import warnings
-import weakref
-from typing import Any, Dict, FrozenSet, List, Mapping, Optional, Set, Tuple
+from typing import Any, Dict, FrozenSet, Mapping, Optional, Set, Tuple
 
-import fastobo
 import frozendict
 
 from .entity import Entity, EntityData
@@ -14,7 +11,6 @@ from .xref import Xref
 from .pv import PropertyValue
 from .utils.impl import set
 from .utils.meta import typechecked
-from .utils.warnings import NotImplementedWarning
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -229,20 +225,6 @@ class Relationship(Entity):
             except KeyError:
                 raise ValueError(f"{value} is not a term in {ontology}")
         rshipdata.domain = value.id if value is not None else None
-
-    @property
-    def domain(self) -> Optional["Term"]:
-        dom, ontology = self._data().domain, self._ontology()
-        return ontology.get_term(dom) if dom is not None else None
-
-    @domain.setter
-    def domain(self, value: Optional["Term"]):
-        if value is not None:
-            try:
-                self._ontology().get_term(value.id)
-            except KeyError:
-                raise ValueError(f"{value} is not a term in {self._ontology()}")
-        self._data().domain = value.id if value is not None else None
 
     @property
     def equivalent_to_chain(self) -> FrozenSet[Tuple["Relationship", "Relationship"]]:

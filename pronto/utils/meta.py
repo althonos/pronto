@@ -3,9 +3,8 @@ import inspect
 import itertools
 import functools
 import sys
-import types
 import typing
-from typing import Callable, ClassVar, List, Optional, Union, Tuple, Type
+from typing import Callable, ClassVar, List, Optional, Tuple, Type
 
 
 T = typing.TypeVar("T")

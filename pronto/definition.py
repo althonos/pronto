@@ -1,8 +1,4 @@
-# coding: utf-8
-
-import fastobo
 import typing
-from operator import attrgetter
 from typing import Optional, Iterable
 
 from .xref import Xref

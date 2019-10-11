@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bumped `fastobo` requirement to `v0.6.0`.
 
 ## [1.0.0-alpha.3] - 2019-10-10
-[1.0.0-alpha.2]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.2...v1.0.0-alpha.3
+[1.0.0-alpha.3]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.2...v1.0.0-alpha.3
 ### Added
 - Extraction of `oboInOwl:consider` annotation in `RdfXMLParser`.
 - Extraction of `oboInOwl:savedBy` annotation in `RdfXMLParser`.

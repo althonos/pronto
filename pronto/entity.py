@@ -113,6 +113,8 @@ class Entity:
 
     @property
     def alternate_ids(self) -> FrozenSet[str]:
+        """`~typing.FrozenSet[str]`: a set of alternate IDs for this entity.
+        """
         return frozenset(self._data().alternate_ids)
 
     @alternate_ids.setter
@@ -126,6 +128,10 @@ class Entity:
 
     @property
     def anonymous(self) -> bool:
+        """`bool`: whether or not the entity has an anonymous id.
+
+        Semantics of anonymous entities are the same as B-Nodes in RDF.
+        """
         return self._data().anonymous
 
     @anonymous.setter
@@ -134,6 +140,12 @@ class Entity:
 
     @property
     def builtin(self) -> bool:
+        """`bool`: whether or not the entity is built-in to the OBO format.
+
+        ``pronto`` uses this tag on the ``is_a`` relationship, which is the
+        axiomatic to the OBO language but treated as a relationship in the
+        library.
+        """
         return self._data().builtin
 
     @builtin.setter
@@ -151,6 +163,14 @@ class Entity:
 
     @property
     def created_by(self) -> Optional[str]:
+        """`str` or None: the name of the creator of the entity, if any.
+
+        This property gets translated to a ``dc:creator`` annotation in OWL2,
+        which has very broad semantics. Some OBO ontologies may instead use
+        annotation properties from the `Information Interchange Ontology
+        <http://www.obofoundry.org/ontology/iao.html>_`, which can be accessed
+        in the `annotations` attribute of the entity, if any.
+        """
         return self._data().created_by
 
     @created_by.setter
@@ -160,6 +180,8 @@ class Entity:
 
     @property
     def creation_date(self) -> Optional[datetime.datetime]:
+        """`~datetime.datetime` or None: the date the entity was created.
+        """
         return self._data().creation_date
 
     @creation_date.setter
@@ -210,6 +232,8 @@ class Entity:
 
     @property
     def namespace(self) -> Optional[str]:
+        """`str` or None: the namespace this entity is defined in.
+        """
         return self._data().namespace
 
     @namespace.setter
@@ -219,6 +243,8 @@ class Entity:
 
     @property
     def obsolete(self) -> bool:
+        """`bool`: whether or not the entity is obsolete.
+        """
         return self._data().obsolete
 
     @obsolete.setter
@@ -228,6 +254,8 @@ class Entity:
 
     @property
     def subsets(self) -> FrozenSet[str]:
+        """`~typing.FrozenSet[str]`: the subsets containing this entity.
+        """
         return frozenset(self._data().subsets)
 
     @subsets.setter
@@ -241,6 +269,8 @@ class Entity:
 
     @property
     def synonyms(self) -> FrozenSet[Synonym]:
+        """`~typing.FrozenSet[Synonym]`: a set of synonyms for this entity.
+        """
         ontology, termdata = self._ontology(), self._data()
         return frozenset(Synonym(ontology, s) for s in termdata.synonyms)
 
@@ -251,6 +281,11 @@ class Entity:
 
     @property
     def xrefs(self) -> FrozenSet[Xref]:
+        """`~typing.FrozenSet[Xref]`: a set of database cross-references.
+
+        Xrefs can be used to describe an analogous entity in another
+        vocabulary, such as a database or a semantic knowledge base.
+        """
         return frozenset(self._data().xrefs)
 
     @xrefs.setter

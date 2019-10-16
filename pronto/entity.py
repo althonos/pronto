@@ -113,7 +113,7 @@ class Entity:
 
     @property
     def alternate_ids(self) -> FrozenSet[str]:
-        """`~typing.FrozenSet[str]`: a set of alternate IDs for this entity.
+        """`frozenset` of `str`: a set of alternate IDs for this entity.
         """
         return frozenset(self._data().alternate_ids)
 
@@ -167,9 +167,10 @@ class Entity:
 
         This property gets translated to a ``dc:creator`` annotation in OWL2,
         which has very broad semantics. Some OBO ontologies may instead use
-        annotation properties from the `Information Interchange Ontology
-        <http://www.obofoundry.org/ontology/iao.html>_`, which can be accessed
-        in the `annotations` attribute of the entity, if any.
+        other annotation properties such as the ones found in `Information
+        Interchange Ontology <http://www.obofoundry.org/ontology/iao.html>`_,
+        which can be accessed in the `annotations` attribute of the entity,
+        if any.
         """
         return self._data().created_by
 
@@ -254,7 +255,7 @@ class Entity:
 
     @property
     def subsets(self) -> FrozenSet[str]:
-        """`~typing.FrozenSet[str]`: the subsets containing this entity.
+        """`frozenset` of `str`: the subsets containing this entity.
         """
         return frozenset(self._data().subsets)
 
@@ -269,7 +270,7 @@ class Entity:
 
     @property
     def synonyms(self) -> FrozenSet[Synonym]:
-        """`~typing.FrozenSet[Synonym]`: a set of synonyms for this entity.
+        """`frozenset` of `Synonym`: a set of synonyms for this entity.
         """
         ontology, termdata = self._ontology(), self._data()
         return frozenset(Synonym(ontology, s) for s in termdata.synonyms)
@@ -281,7 +282,7 @@ class Entity:
 
     @property
     def xrefs(self) -> FrozenSet[Xref]:
-        """`~typing.FrozenSet[Xref]`: a set of database cross-references.
+        """`frozenset` of `Xref`: a set of database cross-references.
 
         Xrefs can be used to describe an analogous entity in another
         vocabulary, such as a database or a semantic knowledge base.

@@ -41,6 +41,29 @@ class Subset(object):
 
 class Metadata(object):
     """A mapping containing metadata about the current ontology.
+
+    Attributes:
+        format_version (`str`): The OBO format version of the referenced
+            ontology. **1.4** is the default since ``pronto`` can only
+            parse and write OBO documents of that format version.
+        data_version (`str` or `None`): The OBO data version of the ontology,
+            which is then expanded to the ``versionIRI`` if translated to
+            OWL.
+        ontology (`str` or `None`): The identifier of the ontology, either as
+            a short OBO identifier or as a full IRI.
+        date (`~datetime.datetime` or `None`): The date the ontology was last
+            modified, if any.
+        default_namespace (`str` or `None`): The default namespace to use for
+            entity frames lacking a ``namespace`` clause.
+        namespace_id_rule (`str` or `None`): The production rule for
+            identifiers in the current ontology document. *soft-deprecated,
+            used mostly by OBO-Edit or other outdated tools*.
+        owl_axioms (`list` of `str`): A list of OWL axioms that cannot be
+            expressed in OBO language, serialized in OWL2 Functional syntax.
+        saved_by (`str` or `None`): The name of the person that last saved the
+            ontology file.
+        auto_generated_by (`str` or `None`): The name of the software that was
+            used to generate the file.
     """
 
     format_version: Optional[str]
@@ -79,17 +102,6 @@ class Metadata(object):
         annotations: Set[PropertyValue] = None,
         **unreserved: Set[str],
     ):
-        """Create a new `Metadata` instance.
-
-        Arguments:
-            format_version (str): the OBO format version of the referenced
-                ontology. **1.4** is the default since ``pronto`` can only
-                parse and write OBO documents of that format version.
-            data_version (str or None): the OBO data version of the ontology,
-                which is then expanded to the ``versionIRI`` if translated to
-                OWL.
-
-        """
         self.format_version = format_version
         self.data_version = data_version
         self.ontology = ontology

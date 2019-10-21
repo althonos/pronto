@@ -34,6 +34,7 @@ def setup(app):
     # Add custom stylesheet
     app.add_css_file("css/main.css")
     app.add_js_file("js/apitoc.js")
+    app.add_js_file("js/example-admonition.js")
     # Copy `CHANGELOG.md` from project directory
     changelog_src = os.path.join(project_dir, "CHANGELOG.md")
     changelog_dst = os.path.join(docssrc_dir, "changes.md")

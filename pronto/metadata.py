@@ -64,6 +64,26 @@ class Metadata(object):
             ontology file.
         auto_generated_by (`str` or `None`): The name of the software that was
             used to generate the file.
+        subsetdefs (`set` of `str`): A set of ontology subsets declared in the
+            ontology files.
+        imports (`set` of `str`): A set of references to other ontologies that
+            are imported by the current ontology. OBO requires all entities
+            referenced in the file to be reachable through imports (excluding
+            databases cross-references).
+        synonymtypedefs (`set` of `~pronto.SynonymType`): A set of user-defined
+            synonym types including a description and an optional scope.
+        idspaces (`dict` of `str` to couple of `str`): A mapping between a
+            local ID space and a global ID space, with an optional description
+            of the mapping.
+        remarks (`set` of `str`): A set of general comments for this file,
+            which will be preserved by a parser/serializer as opposed to
+            inline comments using ``!``.
+        annotations (`set` of `PropertyValue`): A set of annotations relevant
+            to the whole file. OBO property-values are semantically equivalent
+            to  ``owl:AnnotationProperty`` in OWL2.
+        unreserved (`dict` of `str` to `set` of `str`): A mapping of
+            unreserved tags to values found in the ontology header.
+
     """
 
     format_version: Optional[str]

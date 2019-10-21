@@ -140,6 +140,8 @@ class roundrepr(object):
 
         # Derive the __repr__ implementation
         def __repr__(self_):
+            """A roundtripping implementation for `repr`. Computed by @roundrepr.
+            """
             args, kwargs = [], {}
             for name, param in itertools.islice(sig.parameters.items(), 1, None):
                 if param.default is inspect.Parameter.empty:

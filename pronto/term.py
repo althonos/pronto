@@ -6,6 +6,7 @@ import typing
 import queue
 from typing import (
     Callable,
+    Deque,
     Dict,
     Iterator,
     Iterable,
@@ -240,20 +241,20 @@ class Term(Entity):
         # Search objects terms
         sup: Set[Term] = set()
         done: Set[Term] = set()
-        frontier: queue.Queue[Tuple[Term, int]] = queue.Queue()
+        frontier: Deque[Tuple[Term, int]] = collections.deque()
 
         # RDF semantics state that self is a subclass of self
-        frontier.put((self, 0))
+        frontier.append((self, 0))
         sup.add(self)
         yield self
 
         # Explore the graph
-        while not frontier.empty():
-            node, distance = frontier.get()
+        while frontier:
+            node, distance = frontier.popleft()
             neighbors: Set[Term] = set(node.relationships.get(is_a, ()))
             if distance < distmax:
                 for node in sorted(neighbors - done):
-                    frontier.put((node, distance + 1))
+                    frontier.append((node, distance + 1))
                 for neighbor in sorted(neighbors - sup):
                     sup.add(neighbor)
                     yield neighbor
@@ -302,22 +303,22 @@ class Term(Entity):
         # Search objects terms
         sub: Set[str] = set()
         done: Set[str] = set()
-        frontier: queue.Queue[Tuple[str, int]] = queue.Queue()
+        frontier: Deque[Tuple[str, int]] = collections.deque()
 
         # RDF semantics state that self is a subclass of self
-        frontier.put((self.id, 0))
+        frontier.append((self.id, 0))
         sub.add(self.id)
         yield self
 
         # Explore the graph
-        while not frontier.empty():
-            node, distance = frontier.get()
+        while frontier:
+            node, distance = frontier.popleft()
             done.add(node)
             try:
                 neighbors: Set[str] = graph[node]
                 if distance < distmax:
                     for node in sorted(neighbors - done):
-                        frontier.put((node, distance + 1))
+                        frontier.append((node, distance + 1))
                     for neighbor in sorted(neighbors - sub):
                         sub.add(neighbor)
                         yield ont.get_term(neighbor)

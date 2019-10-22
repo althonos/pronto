@@ -78,3 +78,20 @@ exception of custom parser implementations.
    pronto.RelationshipData
    pronto.SynonymData
    pronto.TermData
+
+
+Warnings
+--------
+
+.. toctree::
+   :hidden:
+
+   warnings <api/warnings>
+
+.. autosummary::
+   :nosignatures:
+
+   pronto.warnings.ProntoWarning
+   pronto.warnings.NotImplementedWarning
+   pronto.warnings.SyntaxWarning
+   pronto.warnings.UnstableWarning

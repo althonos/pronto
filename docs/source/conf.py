@@ -28,9 +28,6 @@ sys.path.insert(0, project_dir)
 # -- Sphinx Setup ------------------------------------------------------------
 
 def setup(app):
-    # Force regenerating autosummary
-    if os.path.exists(os.path.join(docssrc_dir, "api")):
-        shutil.rmtree(os.path.join(docssrc_dir, "api"))
     # Add custom stylesheet
     app.add_css_file("css/main.css")
     app.add_js_file("js/apitoc.js")

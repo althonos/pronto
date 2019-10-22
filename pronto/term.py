@@ -1,4 +1,5 @@
 import collections.abc
+import contextlib
 import datetime
 import itertools
 import typing
@@ -278,22 +279,25 @@ class Term(Entity):
 
         Note:
             This method has a runtime of :math:`O(n^2)` where :math:`n` is the
-            number of terms in the source ontology. This is due to the fact
-            that OBO and OWL only explicit *superclassing* relationship, so
-            we have to build the graph of *subclasses* from the knowledge
-            graph.
+            number of terms in the source ontology in the worst case. This is
+            due to the fact that OBO and OWL only explicit *superclassing*
+            relationship, so we have to build the graph of *subclasses* from
+            the knowledge graph. By caching the graph however, this can be
+            reduced to an :math:`O(n)` operation.
 
         """
         ont: "Ontology" = self._ontology()
         distmax: float = distance if distance is not None else float("+inf")
-        is_a: Relationship = ont.get_relationship("is_a")
-        graph: Dict[str, Set[str]] = dict()
 
-        # Build the directed graph
-        for t in ont.terms():
-            graph.setdefault(t.id, set())
-            for t2 in t.relationships.get(is_a, []):
-                graph.setdefault(t2.id, set()).add(t.id)
+        # use the subclassing cache from the `Ontology` or build it ourselves
+        graph: Optional[Dict[str, Set[str]]] = ont._subclassing_cache
+        if graph is None:
+            is_a: Relationship = ont.get_relationship("is_a")
+            graph = dict()
+            for t in ont.terms():
+                for t2 in t.relationships.get(is_a, []):
+                    graph.setdefault(t2.id, set()).add(t.id)
+            ont._subclassing_cache = graph
 
         # Search objects terms
         sub: Set[str] = set()
@@ -308,14 +312,17 @@ class Term(Entity):
         # Explore the graph
         while not frontier.empty():
             node, distance = frontier.get()
-            neighbors: Set[str] = graph[node]
-            if distance < distmax:
-                for node in sorted(neighbors - done):
-                    frontier.put((node, distance + 1))
-                for neighbor in sorted(neighbors - sub):
-                    sub.add(neighbor)
-                    yield ont.get_term(neighbor)
             done.add(node)
+            try:
+                neighbors: Set[str] = graph[node]
+                if distance < distmax:
+                    for node in sorted(neighbors - done):
+                        frontier.put((node, distance + 1))
+                    for neighbor in sorted(neighbors - sub):
+                        sub.add(neighbor)
+                        yield ont.get_term(neighbor)
+            except KeyError:
+                pass
 
     def is_leaf(self) -> bool:
         """Check whether the term is a leaf in the ontology.

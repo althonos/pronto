@@ -5,7 +5,7 @@ import io
 import typing
 import os
 import urllib.parse
-from typing import BinaryIO, Dict, Iterator, Mapping, Optional, Union
+from typing import BinaryIO, Dict, Iterator, Mapping, Optional, Set, Union
 
 import contexter
 import fastobo
@@ -57,9 +57,17 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     """
 
+    # Public attributes
     import_depth: int
     timeout: int
     imports: Dict[str, "Ontology"]
+
+    # Private attributes
+    _terms: Dict[str, TermData]
+    _relationships: Dict[str, RelationshipData]
+    _subclassing_cache: Optional[Dict[str, Set[str]]]  # cache for `Term.subclasses`
+
+    # --- Constructors -------------------------------------------------------
 
     @classmethod
     def from_obo_library(
@@ -97,6 +105,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         handle: Union[BinaryIO, str, None] = None,
         import_depth: int = -1,
         timeout: int = 5,
+        cache: bool = True,
     ):
         """Create a new `Ontology` instance.
 
@@ -112,6 +121,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             timeout (int): The timeout in seconds to use when performing
                 network I/O, for instance when connecting to the OBO library
                 to download imports.
+            cache (bool): Enable caching of subclassing relationships to make
+                `Term.subclasses` much faster, at the cost of a slightly
+                longer parsing step (about 5% of the total time).
 
         Raises:
             TypeError: When the given ``handle`` could not be used to parse
@@ -127,6 +139,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             self.timeout = timeout
             self.imports = dict()
 
+            self._subclassing_cache = dict() if cache else None
             self._terms: Dict[str, TermData] = {}
             self._relationships: Dict[str, RelationshipData] = {}
 
@@ -156,6 +169,12 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                     break
             else:
                 raise ValueError(f"could not find a parser to parse {handle!r}")
+
+            # Populate the subclassing cache
+            if cache:
+                self._build_subclassing_cache()
+
+    # --- Magic Methods ------------------------------------------------------
 
     def __len__(self) -> int:
         """Return the number of entities in the ontology.
@@ -221,7 +240,16 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             kwargs["import_depth"] = (self.import_depth, -1)
         return roundrepr.make("Ontology", *args, **kwargs)
 
-    # ------------------------------------------------------------------------
+    # --- Private helpers ----------------------------------------------------
+
+    def _build_subclassing_cache(self):
+        graph = self._subclassing_cache
+        graph.clear()
+        for t in self.terms():
+            for t2 in t._data().relationships.get("is_a", ()):
+                graph.setdefault(t2, set()).add(t.id)
+
+    # --- Serialization utils ------------------------------------------------
 
     def dump(self, file: BinaryIO, format: str = "obo"):
         """Serialize the ontology to a given file-handle.
@@ -253,7 +281,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         self.dump(s, format=format)
         return s.getvalue().decode('utf-8')
 
-    # ------------------------------------------------------------------------
+    # --- Data accessors -----------------------------------------------------
 
     def terms(self) -> SizedIterator[Term]:
         """Iterate over the terms of the ontology graph.

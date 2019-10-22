@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 [Unreleased]: https://github.com/althonos/pronto/compare/v1.0.0...HEAD
+### Added
+- `@roundrepr` now adds a minimal docstring to the generated `__repr__` method.
+- `Ontology` caches subclassing relationships to greatly improve performance of
+  `Term.subclasses`.
+### Changed
+- `Entity` subclasses now store their `id` directly to improve performance.
+- `Term.subclasses` and `Term.superclasses` use `collections.deque` instead of
+  `queue.Queue` as a LIFO structure since thread-safety is not needed.
 
 ## [1.0.0] - 2019-10-11
 [1.0.0]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.3...v1.0.0

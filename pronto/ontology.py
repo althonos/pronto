@@ -1,4 +1,3 @@
-import contextlib
 import datetime
 import itertools
 import io
@@ -363,10 +362,16 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 the ontology graph.
 
         """
+        try:
+            return Term(self, self._terms[id])
+        except KeyError:
+            pass
         for dep in self.imports.values():
-            with contextlib.suppress(KeyError):
+            try:
                 return Term(self, dep.get_term(id)._data())
-        return Term(self, self._terms[id])
+            except KeyError:
+                pass
+        raise KeyError(id)
 
     @typechecked()
     def get_relationship(self, id: str) -> Relationship:
@@ -380,9 +385,17 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 relationships of the ontology graph.
 
         """
-        if id in relationship._BUILTINS:
+        try:
+            return Relationship(self, self._relationships[id])
+        except KeyError:
+            pass
+        try:
             return Relationship(self, relationship._BUILTINS[id])
+        except KeyError:
+            pass
         for dep in self.imports.values():
-            with contextlib.suppress(KeyError):
+            try:
                 return Relationship(self, dep.get_relationship(id)._data())
-        return Relationship(self, self._relationships[id])
+            except KeyError:
+                pass
+        raise KeyError(id)

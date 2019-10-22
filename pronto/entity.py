@@ -2,7 +2,7 @@ import collections.abc
 import datetime
 import weakref
 import typing
-from typing import Any, Optional, Set, FrozenSet
+from typing import Any, Iterable, Optional, Set, FrozenSet
 
 from .definition import Definition
 from .synonym import Synonym, SynonymData
@@ -50,11 +50,12 @@ class Entity:
         __ontology: "weakref.ReferenceType[Ontology]"
         __data: "weakref.ReferenceType[EntityData]"
 
-        __slots__ = ("__weakref__", "__ontology", "__data")
+        __slots__: Iterable[str] = ("__weakref__",)
 
         def __init__(self, ontology: "Ontology", data: "EntityData"):
             self.__ontology = weakref.ref(ontology)
             self.__data = weakref.ref(data)
+            self.__id = data.id
 
         def _data(self) -> "EntityData":
             rdata = self.__data()
@@ -70,11 +71,12 @@ class Entity:
 
     else:
 
-        __slots__ = ("__weakref__", "_ontology", "_data")
+        __slots__: Iterable[str] = ("__weakref__", "_ontology", "_data")
 
         def __init__(self, ontology: "Ontology", data: "EntityData"):
             self._ontology = weakref.ref(ontology)
             self._data = weakref.ref(data)
+            self.__id = data.id
 
     # --- Magic Methods ------------------------------------------------------
 
@@ -214,7 +216,7 @@ class Entity:
 
     @property
     def id(self):
-        return self._data().id
+        return self.__id
 
     @property
     def name(self) -> Optional[str]:

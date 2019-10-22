@@ -2,6 +2,7 @@ import functools
 import typing
 import warnings
 from typing import Union
+from operator import attrgetter
 
 import fastobo
 
@@ -60,6 +61,11 @@ class FastoboParser:
             process_clause_header(clause, metadata)
         return metadata
 
+    __non_one_clause = {
+        k: attrgetter(k)
+        for k in ("union_of", "intersection_of")
+    }
+
     def enrich_term(self, frame: fastobo.term.TermFrame) -> Term:
         """Given a `TermFrame`, create a new `Term` or enrich an existing one.
         """
@@ -69,12 +75,13 @@ class FastoboParser:
             term = self.ont.create_term(id_)
         except ValueError:
             term = self.ont.get_term(id_)
+        data = term._data()
         # Process all clauses in the frame
         for clause in frame:
-            process_clause_term(clause, term._data())
+            process_clause_term(clause, data)
         # check cardinality of constrained clauses
-        for attr in ["union_of", "intersection_of"]:
-            if len(getattr(term._data(), attr)) == 1:
+        for attr, getter in self.__non_one_clause.items():
+            if len(getter(data)) == 1:
                 raise ValueError(f"{attr!r} cannot have a cardinality of 1")
         # return the enriched term
         return term
@@ -88,12 +95,13 @@ class FastoboParser:
             rship = self.ont.create_relationship(id_)
         except ValueError:
             rship = self.ont.get_relationship(id_)
+        data = rship._data()
         # Process all clauses in the frame
         for clause in frame:
-            process_clause_typedef(clause, rship._data())
+            process_clause_typedef(clause, data)
         # check cardinality of constrained clauses
-        for attr in ["union_of", "intersection_of"]:
-            if len(getattr(rship._data(), attr)) == 1:
+        for attr, getter in self.__non_one_clause.items():
+            if len(getter(data)) == 1:
                 raise ValueError(f"{attr!r} cannot have a cardinality of 1")
         # return the enriched relationship
         return rship

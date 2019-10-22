@@ -115,7 +115,13 @@ class TermData(EntityData):  # noqa: R0902, R0903
 class Term(Entity):
     """A term, corresponding to a node in the ontology graph.
 
-    Formally a `Term` frame is equivalent to a ``Class`` declaration in OWL2.
+    Formally a `Term` frame is equivalent to an ``owl:Class`` declaration in
+    OWL2 language. However, some constructs may not be possible to express in
+    both OBO and OWL2.
+
+    `Term` should not be manually instantiated, but obtained from an existing
+    `Ontology` instance, using either the `~Ontology.create_term` or the
+    `~Ontology.get_term` method.
     """
 
     if typing.TYPE_CHECKING:

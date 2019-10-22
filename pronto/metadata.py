@@ -13,6 +13,12 @@ from .utils.meta import roundrepr, typechecked
 @functools.total_ordering
 class Subset(object):
     """A definition of a subset in an ontology.
+
+    Attributes:
+        name (`str`): The name of the subset, as an OBO short identifier.
+        description (`str`): A description of the subset, as defined in the
+            metadata part of the ontology file.
+
     """
 
     name: str

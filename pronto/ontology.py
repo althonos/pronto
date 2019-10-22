@@ -46,6 +46,15 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         imports (~typing.Dict[str, Ontology]): A dictionary mapping references
             found in the import section of the metadata to resolved `Ontology`
             instances.
+
+    Caution:
+        `Ontology` instances share all the data about a deserialized ontology
+        file as well as all of its imports, and contains entities which can be
+        created or viewed with several dedicated methods. These instances,
+        however, **must not outlive the ontology object instead**, as they are
+        only view-models (in the `design pattern sense of the definition
+        <https://en.wikipedia.org/wiki/Model-view-viewmodel>`_).
+
     """
 
     import_depth: int
@@ -79,6 +88,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             'apo'
             >>> ms.path
             'http://purl.obolibrary.org/obo/apo.obo'
+
         """
         return cls(f"http://purl.obolibrary.org/obo/{slug}", import_depth, timeout)
 
@@ -163,6 +173,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             5995
             >>> len(ms.relationships())
             28
+
         """
         return (
             len(self._terms)
@@ -171,7 +182,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         )
 
     def __iter__(self) -> SizedIterator[str]:
-        """Yields the identifiers of all the entities part of the ontology.
+        """Yield the identifiers of all the entities part of the ontology.
         """
         terms, relationships = self.terms(), self.relationships()
         return SizedIterator(

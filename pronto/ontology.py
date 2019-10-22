@@ -216,7 +216,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             or item in relationship._BUILTINS
         )
 
-    @typechecked()
     def __getitem__(self, id: str) -> Union[Term, Relationship]:
         """Get any entity in the ontology graph with the given identifier.
         """
@@ -228,7 +227,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             return self.get_term(id)
         except KeyError:
             pass
-        raise KeyError(f"could not find entity: {id}")
+        raise KeyError(id)
 
     def __repr__(self):
         """Return a textual representation of `self` that should roundtrip.

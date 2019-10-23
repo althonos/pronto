@@ -13,6 +13,9 @@ if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
 
+_SCOPES = frozenset({"EXACT", "RELATED", "BROAD", "NARROW"})
+
+
 @functools.total_ordering
 @roundrepr
 class SynonymType(object):
@@ -27,9 +30,8 @@ class SynonymType(object):
 
     @typechecked()
     def __init__(self, id: str, description: str, scope: Optional[str] = None):
-        if scope is not None:
-            if scope not in {"EXACT", "RELATED", "BROAD", "NARROW"}:
-                raise ValueError(f"invalid synonym scope: {scope}")
+        if scope is not None and scope not in _SCOPES:
+            raise ValueError(f"invalid synonym scope: {scope}")
         self.id = id
         self.description = description
         self.scope = scope
@@ -41,7 +43,9 @@ class SynonymType(object):
 
     def __lt__(self, other):
         if isinstance(other, SynonymType):
-            return self.id < other.id
+            if self.id < other.id:
+                return True
+            return self.id == other.id and self.description < other.description
         return NotImplemented
 
     def __hash__(self):
@@ -91,6 +95,8 @@ class SynonymData(object):
         type: Optional[str] = None,
         xrefs: Optional[Iterable[Xref]] = None,
     ):
+        if scope is not None and scope not in _SCOPES:
+            raise ValueError(f"invalid synonym scope: {scope}")
         self.description = description
         self.scope = scope
         self.type = type
@@ -105,8 +111,8 @@ class Synonym(object):
 
     def __init__(self, ontology: "Ontology", syndata: "SynonymData"):
         if syndata.type is not None:
-            synonyms = ontology.metadata.synonymtypedefs
-            if not any(s.id == syndata.type for s in synonyms):
+            types = ontology.metadata.synonymtypedefs
+            if not any(t.id == syndata.type for t in types):
                 raise ValueError(f"undeclared synonym type: {syndata.type}")
 
         self._ontology = weakref.ref(ontology)
@@ -140,7 +146,7 @@ class Synonym(object):
 
     @description.setter
     @typechecked(property=True)
-    def description(self, description: str):
+    def description(self, description: str) -> None:
         self._data().description = description
 
     @property
@@ -152,7 +158,7 @@ class Synonym(object):
 
     @type.setter
     @typechecked(property=True)
-    def type(self, type_: Optional[SynonymType]):
+    def type(self, type_: Optional[SynonymType]) -> None:
         synonyms = self._ontology().metadata.synonymtypedefs
         if type is not None and type_.id not in synonyms:
             raise ValueError(f"undeclared synonym type: {type_.id}")
@@ -165,7 +171,7 @@ class Synonym(object):
     @scope.setter
     @typechecked(property=True)
     def scope(self, scope: Optional[str]):
-        if scope not in {"EXACT", "RELATED", "BROAD", "NARROW"}:
+        if scope not in _SCOPES:
             raise ValueError(f"invalid synonym scope: {scope}")
         self._data().scope = scope
 

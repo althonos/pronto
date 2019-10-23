@@ -1,0 +1,61 @@
+import unittest
+import warnings
+
+import pronto
+from pronto import SynonymType
+
+
+class TestSynonymType(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        warnings.simplefilter('error')
+
+    @classmethod
+    def tearDownClass(cls):
+        warnings.simplefilter(warnings.defaultaction)
+
+    def assertHashEqual(self, x, y):
+        self.assertEqual(
+            hash(x),
+            hash(y),
+            "hash({!r}) != hash({!r})".format(x, y)
+        )
+
+    def test_init_invalid_scope(self):
+        with self.assertRaises(ValueError):
+            _s = SynonymType(id="other", description="", scope="INVALID")
+
+    def test_eq(self):
+        # self == self
+        s1 = SynonymType("other", "")
+        self.assertEqual(s1, s1)
+        # self == other if self.id == other.id
+        s2 = SynonymType("other", "something else")
+        self.assertEqual(s1, s2)
+
+    def test_lt(self):
+        self.assertLess(SynonymType("a", "a"), SynonymType("b", "b"))
+        self.assertLess(SynonymType("a", "a"), SynonymType("a", "b"))
+
+    def test_hash(self):
+        s1 = SynonymType("other", "")
+        s2 = SynonymType("other", "something else")
+        self.assertEqual(hash(s1), hash(s2), )
+
+
+class TestSynonym(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        warnings.simplefilter('error')
+
+    @classmethod
+    def tearDownClass(cls):
+        warnings.simplefilter(warnings.defaultaction)
+
+    def test_scope_invalid(self):
+        ont = pronto.Ontology()
+        term = ont.create_term("TEST:001")
+        syn = term.add_synonym("something", scope="EXACT")
+        with self.assertRaises(ValueError):
+            syn.scope = "NONSENSE"

@@ -5,7 +5,7 @@ import typing
 from typing import Any, Iterable, Optional, Set, FrozenSet
 
 from .definition import Definition
-from .synonym import Synonym, SynonymData
+from .synonym import Synonym, SynonymData, SynonymType
 from .pv import PropertyValue
 from .xref import Xref
 from .utils.meta import roundrepr, typechecked
@@ -295,3 +295,38 @@ class Entity:
     @typechecked(property=True)
     def xrefs(self, xrefs: FrozenSet[Xref]):
         self._data().xrefs = set(xrefs)
+
+    # --- Conveniene methods -------------------------------------------------
+
+    def add_synonym(
+        self,
+        description: str,
+        scope: Optional[str] = None,
+        type: Optional[SynonymType] = None,
+        xrefs: Optional[Iterable[Xref]] = None,
+    ) -> Synonym:
+
+        """Add a new synonym to the current entity.
+
+        Arguments:
+            description (`str`): The alternate definition of the entity, or a
+                related human-readable synonym.
+            scope (`str` or `None`): An optional synonym scope. Must be either
+                **EXACT**, **RELATED**, **BROAD** or **NARROW** if given.
+            type (`~pronto.SynonymType` or `None`): An optional synonym type.
+                Must be declared in the header of the current ontology.
+            xrefs (iterable of `Xref`, or `None`): A collections of database
+                cross-references backing the origin of the synonym.
+
+        Raises:
+            ValueError: when given an invalid synonym type or scope.
+
+        Returns:
+            `~pronto.Synonym`: A new synonym for the terms. The synonym is
+            already added to the `Entity.synonyms` collection.
+        """
+        type_id = type.id if type is not None else None
+        data = SynonymData(description, scope, type_id, xrefs=xrefs)
+        synonym = Synonym(self._ontology(), data)
+        self._data().synonyms.add(data)
+        return synonym

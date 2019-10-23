@@ -22,6 +22,22 @@ class TestTerm(unittest.TestCase):
         cls.file.close()
         warnings.simplefilter(warnings.defaultaction)
 
+    def test_add_synonym(self):
+        term = self.ms["MS:1000031"]
+        s = term.add_synonym('instrument type')
+        self.assertIn(s, term.synonyms)
+
+    def test_add_synonym_invalid_scope(self):
+        term = self.ms["MS:1000031"]
+        with self.assertRaises(ValueError):
+            s = term.add_synonym('instrument type', scope="NONSENSE")
+
+    def test_add_synonym_invalid_type(self):
+        term = self.ms["MS:1000031"]
+        st = pronto.SynonymType("undeclared", "an undeclared synonym type")
+        with self.assertRaises(ValueError):
+            s = term.add_synonym('instrument type', type=st)
+
     def test_properties(self):
         for t in TermData.__slots__:
             self.assertTrue(hasattr(Term, t), f"no property for {t}")

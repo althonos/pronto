@@ -59,3 +59,18 @@ class TestSynonym(unittest.TestCase):
         syn = term.add_synonym("something", scope="EXACT")
         with self.assertRaises(ValueError):
             syn.scope = "NONSENSE"
+
+    def test_type(self):
+        ont = pronto.Ontology()
+        t1 = pronto.SynonymType("declared", "a declared synonym type")
+        ont.metadata.synonymtypedefs.add(t1)
+        term = ont.create_term("TEST:001")
+        syn = term.add_synonym("something", type=t1)
+        self.assertEqual(syn.type, t1)
+
+    def test_type_undeclared(self):
+        ont = pronto.Ontology()
+        t1 = pronto.SynonymType("undeclared", "an undeclared synonym type")
+        term = ont.create_term("TEST:001")
+        with self.assertRaises(ValueError):
+            syn = term.add_synonym("something", type=t1)

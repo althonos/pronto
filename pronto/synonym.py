@@ -153,7 +153,7 @@ class Synonym(object):
     def type(self) -> Optional[SynonymType]:
         ontology, syndata = self._ontology(), self._data()
         if syndata.type is not None:
-            return ontology.metadata.synonymtypedefs[syndata.type]
+            return next(t for t in ontology.metadata.synonymtypedefs if t.id == syndata.type)
         return None
 
     @type.setter

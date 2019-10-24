@@ -124,11 +124,21 @@ def decompress(
 
     # Attempt to detect the encoding and decode the stream
     det: Dict[str, Union[str, float]] = chardet.detect(decompressed.peek())
-    if encoding is not None:
-        det = dict(encoding=encoding, confidence=1.0)
-    elif det["encoding"] == "ascii":
-        det["encoding"] = "UTF-8"
-    if det["confidence"] == 1.0:
+    confidence: float = 1.0 if encoding is not None else det["confidence"]
+    encoding = encoding if encoding is not None else det["encoding"]
+
+    if encoding == "ascii":
+        encoding = "UTF-8"
+    if confidence < 1.0:
+        warnings.warn(
+            f"unsound encoding, assuming {encoding} ({confidence:.0%} confidence)",
+            UnicodeWarning,
+            stacklevel=3,
+        )
+
+    if encoding == "UTF-8":
+        return typing.cast(BinaryIO, decompressed)
+    else:
         return typing.cast(
             BinaryIO,
             BufferedReader(
@@ -142,8 +152,3 @@ def decompress(
                 )
             ),
         )
-    else:
-        warnings.warn(
-            "could not find encoding, assuming UTF-8", UnicodeWarning, stacklevel=3
-        )
-        return typing.cast(BinaryIO, decompressed)

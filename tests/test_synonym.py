@@ -33,10 +33,14 @@ class TestSynonymType(unittest.TestCase):
         # self == other if self.id == other.id
         s2 = SynonymType("other", "something else")
         self.assertEqual(s1, s2)
+        # self != anything not a synonym type
+        self.assertNotEqual(s1, 1)
 
     def test_lt(self):
         self.assertLess(SynonymType("a", "a"), SynonymType("b", "b"))
         self.assertLess(SynonymType("a", "a"), SynonymType("a", "b"))
+        with self.assertRaises(TypeError):
+            SynonymType("a", "a") < 2
 
     def test_hash(self):
         s1 = SynonymType("other", "")

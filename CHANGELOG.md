@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v1.1.0...HEAD
+
+## [1.1.0] - 2019-10-24
+[1.1.0]: https://github.com/althonos/pronto/compare/v1.0.0...v1.1.0
 ### Added
+- `Entity.add_synonym` method to create a new synonym and add it to an entity.
 - `@roundrepr` now adds a minimal docstring to the generated `__repr__` method.
 - `Ontology` caches subclassing relationships to greatly improve performance of
   `Term.subclasses`.
@@ -14,6 +18,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `Entity` subclasses now store their `id` directly to improve performance.
 - `Term.subclasses` and `Term.superclasses` use `collections.deque` instead of
   `queue.Queue` as a LIFO structure since thread-safety is not needed.
+- `chardet` result is now used even when prediction confidence is under 100%
+  to detect encoding of the handle passed to `Ontology`. 
+### Fixed
+- `SynonymType` comparison implementation.
+- `Synonym.type` getter crashing on `type` not being `None`.
+- `RdfXMLParser` crashing on synonymtypedefs without scope specifiers.
 
 ## [1.0.0] - 2019-10-11
 [1.0.0]: https://github.com/althonos/pronto/compare/v1.0.0-alpha.3...v1.0.0

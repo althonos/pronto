@@ -540,10 +540,16 @@ class RdfXMLParser(BaseParser):
         if sub is not None:
             resource = sub.get(_NS["rdf"]["resource"])
             if resource == _NS["oboInOwl"].raw("SynonymTypeProperty"):
+                # extract ID and label of the synonymtypedef
                 id_ = self._compact_id(elem.attrib[_NS["rdf"]["about"]])
                 label = elem.find(_NS["rdfs"]["label"]).text
+                # extract scope if any
                 elem_scope = elem.find(_NS["oboInOwl"]["hasScope"])
-                scope = _SYNONYMS.get(elem_scope.attrib[_NS["rdf"]["resource"]])
+                if elem_scope is not None:
+                    scope = _SYNONYMS.get(elem_scope.attrib[_NS["rdf"]["resource"]])
+                else:
+                    scope = None
+                # add the synonymtypedef to the metadata
                 self.ont.metadata.synonymtypedefs.add(SynonymType(id_, label, scope))
                 return
             elif resource == _NS["oboInOwl"].raw("SubsetProperty"):

@@ -35,6 +35,8 @@ class TestRdfXMLParser(unittest.TestCase):
     def tearDownClass(cls):
         warnings.simplefilter(warnings.defaultaction)
 
+    # ------------------------------------------------------------------------
+
     def test_metadata_imports(self):
         ont = self.get_ontology(
             """
@@ -72,6 +74,8 @@ class TestRdfXMLParser(unittest.TestCase):
         )
         self.assertEqual(ont2.metadata.data_version, "0.1.0")
 
+    # ------------------------------------------------------------------------
+
     def test_term_consider(self):
         # Extract from `oboInOwl:consider` text
         ont = self.get_ontology(
@@ -100,6 +104,30 @@ class TestRdfXMLParser(unittest.TestCase):
         self.assertIn("TST:002", ont2)
         self.assertIn(ont2["TST:002"], ont2["TST:001"].consider)
 
+    def test_term_multiple_labels(self):
+        txt = """
+            <owl:Ontology/>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <rdfs:label>A</rdfs:label>
+                <rdfs:label>B</rdfs:label>
+            </owl:Class>
+        """
+
+        # check multiple labels is a syntax error in error mode
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", pronto.warnings.SyntaxWarning)
+            with self.assertRaises(SyntaxError):
+                ont = self.get_ontology(txt)
+
+        # check multiple labels is fine in ignore mode
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
+            ont = self.get_ontology(txt)
+            self.assertIn(ont['TST:001'].name, ["A", "B"])
+
+
+    # ------------------------------------------------------------------------
+
     def test_relationship_cyclic(self):
         ont = self.get_ontology(
             """
@@ -125,3 +153,24 @@ class TestRdfXMLParser(unittest.TestCase):
         )
         self.assertIn("TST:001", ont)
         self.assertTrue(ont["TST:001"].functional)
+
+    def test_relationship_multiple_labels(self):
+        txt = """
+            <owl:Ontology/>
+            <owl:ObjectProperty rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <rdfs:label>A</rdfs:label>
+                <rdfs:label>B</rdfs:label>
+            </owl:ObjectProperty>
+        """
+
+        # check multiple labels is a syntax error in error mode
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", pronto.warnings.SyntaxWarning)
+            with self.assertRaises(SyntaxError):
+                ont = self.get_ontology(txt)
+
+        # check multiple labels is fine in ignore mode
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
+            ont = self.get_ontology(txt)
+            self.assertIn(ont['TST:001'].name, ["A", "B"])

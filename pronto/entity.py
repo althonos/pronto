@@ -115,7 +115,7 @@ class Entity:
 
     @property
     def alternate_ids(self) -> FrozenSet[str]:
-        """`frozenset` of `str`: a set of alternate IDs for this entity.
+        """`frozenset` of `str`: A set of alternate IDs for this entity.
         """
         return frozenset(self._data().alternate_ids)
 
@@ -130,7 +130,7 @@ class Entity:
 
     @property
     def anonymous(self) -> bool:
-        """`bool`: whether or not the entity has an anonymous id.
+        """`bool`: Whether or not the entity has an anonymous id.
 
         Semantics of anonymous entities are the same as B-Nodes in RDF.
         """
@@ -142,7 +142,7 @@ class Entity:
 
     @property
     def builtin(self) -> bool:
-        """`bool`: whether or not the entity is built-in to the OBO format.
+        """`bool`: Whether or not the entity is built-in to the OBO format.
 
         ``pronto`` uses this tag on the ``is_a`` relationship, which is the
         axiomatic to the OBO language but treated as a relationship in the
@@ -157,6 +157,14 @@ class Entity:
 
     @property
     def comment(self) -> Optional[str]:
+        """`str` or `None`: A comment about the current entity.
+
+        Comments in ``comment`` clauses are guaranteed to be conserved by OBO
+        parsers and serializers, unlike bang comments. A non `None` `comment`
+        is semantically equivalent to a ``rdfs:comment`` in OWL2. When parsing
+        from OWL, several RDF comments will be merged together into a single
+        ``comment`` clause spanning over multiple lines.
+        """
         return self._data().comment
 
     @comment.setter
@@ -165,7 +173,7 @@ class Entity:
 
     @property
     def created_by(self) -> Optional[str]:
-        """`str` or None: the name of the creator of the entity, if any.
+        """`str` or `None`: the name of the creator of the entity, if any.
 
         This property gets translated to a ``dc:creator`` annotation in OWL2,
         which has very broad semantics. Some OBO ontologies may instead use
@@ -220,7 +228,7 @@ class Entity:
 
     @property
     def name(self) -> Optional[str]:
-        """`str` or None: the name of the entity.
+        """`str` or `None`: the name of the entity.
 
         Names are formally equivalent to ``rdf:label`` in OWL2. The OBO format
         version 1.4 made names optional to improve OWL interoperability, as
@@ -235,7 +243,7 @@ class Entity:
 
     @property
     def namespace(self) -> Optional[str]:
-        """`str` or None: the namespace this entity is defined in.
+        """`str` or `None`: the namespace this entity is defined in.
         """
         return self._data().namespace
 

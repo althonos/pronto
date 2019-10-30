@@ -262,7 +262,7 @@ class RdfXMLParser(BaseParser):
                     names.append(text)
                 else:
                     warnings.warn(
-                        f"label without text in {id_!r}",
+                        f"`rdfs:label` without text literal in {id!r}",
                         SyntaxWarning,
                         stacklevel=3,
                     )
@@ -372,7 +372,7 @@ class RdfXMLParser(BaseParser):
                 raise ValueError("expected `owl:ObjectProperty` element")
 
         # only create the term if it is not a restriction
-        iri = elem.get(_NS["rdf"]["about"])
+        iri: Optional[str] = elem.get(_NS["rdf"]["about"])
         if iri is None:  # ignore
             return None
 
@@ -398,13 +398,18 @@ class RdfXMLParser(BaseParser):
 
         # extract attributes from annotation of the OWL relationship
         for child in elem:
-            if child.tag == _NS["rdfs"]["subObjectPropertyOf"]:
-                if _NS["rdf"]["resource"] in child.attrib:
-                    iri = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
+
+            tag: str = child.tag
+            text: Optional[str] = child.text
+            attrib: Dict[str, str] = child.attrib
+
+            if tag == _NS["rdfs"]["subObjectPropertyOf"]:
+                if _NS["rdf"]["resource"] in attrib:
+                    iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
                     reldata.relationships.setdefault("is_a", set()).add(iri)
                 else:
                     pass  # TODO: subclassing relationship for relationship
-            elif child.tag == _NS["oboInOwl"]["inSubset"]:
+            elif tag == _NS["oboInOwl"]["inSubset"]:
                 resource = child.get(_NS["rdf"]["resource"])
                 about = child.get(_NS["rdf"]["about"])
                 if resource or about:
@@ -415,7 +420,7 @@ class RdfXMLParser(BaseParser):
                         SyntaxWarning,
                         stacklevel=3,
                     )
-            elif child.tag == _NS["rdf"]["type"]:
+            elif tag == _NS["rdf"]["type"]:
                 resource = child.get(_NS["rdf"]["resource"])
                 if resource == _NS["owl"].raw("TransitiveProperty"):
                     reldata.transitive = True
@@ -429,76 +434,86 @@ class RdfXMLParser(BaseParser):
                     reldata.functional = True
                 elif resource == _NS["owl"].raw("InverseFunctionalProperty"):
                     reldata.inverse_functional = True
-            elif child.tag == _NS["rdfs"]["comment"]:
-                comments.append(child.text)
-            elif child.tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
-                reldata.created_by = child.text
-            elif child.tag in (_NS["oboInOwl"]["creation_date"], _NS["dc"]["date"]):
-                reldata.creation_date = dateutil.parser.parse(child.text)
-            elif child.tag == _NS["oboInOwl"]["hasOBONamespace"]:
-                if child.text != self.ont.metadata.default_namespace:
-                    reldata.namespace = child.text
-            elif child.tag == _NS["rdfs"]["label"]:
-                names.append(child.text)
+            elif tag == _NS["rdfs"]["comment"] and text is not None:
+                comments.append(text)
+            elif tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
+                reldata.created_by = text
             elif (
-                child.tag == _NS["rdfs"]["domain"]
-                and _NS["rdf"]["resource"] in child.attrib
+                (tag == _NS["oboInOwl"]["creation_date"] or tag == _NS["dc"]["date"])
+                and text is not None
+            ):
+                reldata.creation_date = dateutil.parser.parse(text)
+            elif tag == _NS["oboInOwl"]["hasOBONamespace"]:
+                if text != self.ont.metadata.default_namespace:
+                    reldata.namespace = text
+            elif tag == _NS["rdfs"]["label"]:
+                if text is not None:
+                    names.append(text)
+                else:
+                    warnings.warn(
+                        f"`rdfs:label` without text literal in {id!r}",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
+            elif (
+                tag == _NS["rdfs"]["domain"]
+                and _NS["rdf"]["resource"] in attrib
             ):
                 reldata.domain = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
             elif (
-                child.tag == _NS["rdfs"]["range"]
-                and _NS["rdf"]["resource"] in child.attrib
+                tag == _NS["rdfs"]["range"]
+                and _NS["rdf"]["resource"] in attrib
             ):
                 reldata.range = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
-            elif child.tag == _NS["obo"]["IAO_0000115"] and child.text is not None:
-                reldata.definition = Definition(child.text)
-            elif child.tag in _SYNONYMS_ATTRIBUTES:
-                scope = _SYNONYMS_ATTRIBUTES[child.tag]
-                description = child.get(_NS["rdf"]["resource"], child.text)
+            elif tag == _NS["obo"]["IAO_0000115"] and text is not None:
+                reldata.definition = Definition(text)
+            elif tag in _SYNONYMS_ATTRIBUTES:
+                scope = _SYNONYMS_ATTRIBUTES[tag]
+                description = child.get(_NS["rdf"]["resource"], text)
                 reldata.synonyms.add(SynonymData(description, scope))
-            elif child.tag == _NS["oboInOwl"]["is_cyclic"] and child.text is not None:
-                reldata.cyclic = child.text == "true"
-            elif child.tag == _NS["obo"]["IAO_0000427"] and child.text is not None:
-                reldata.antisymmetric = child.text == "true"
-            elif child.tag == _NS["owl"]["equivalentClass"] and child.text is not None:
-                reldata.equivalent_to.add(self._compact_id(child.text))
-            elif child.tag == _NS["owl"]["deprecated"]:
-                reldata.obsolete = child.text == "true"
-            elif child.tag == _NS["oboInOwl"]["hasDbXref"]:
-                if child.text is not None:
-                    reldata.xrefs.add(Xref(child.text))
+            elif tag == _NS["oboInOwl"]["is_cyclic"] and text is not None:
+                reldata.cyclic = text == "true"
+            elif tag == _NS["obo"]["IAO_0000427"] and text is not None:
+                reldata.antisymmetric = text == "true"
+            elif tag == _NS["owl"]["equivalentClass"] and text is not None:
+                reldata.equivalent_to.add(self._compact_id(text))
+            elif tag == _NS["owl"]["deprecated"]:
+                reldata.obsolete = text == "true"
+            elif tag == _NS["oboInOwl"]["hasDbXref"]:
+                if text is not None:
+                    reldata.xrefs.add(Xref(text))
                 else:
-                    reldata.xrefs.add(Xref(child.attrib[_NS["rdf"]["resource"]]))
-            elif child.tag == _NS["oboInOwl"]["hasAlternativeId"]:
-                reldata.alternate_ids.add(child.text)
-            elif child.tag == _NS["obo"]["IAO_0100001"]:
-                if _NS["rdf"]["resource"] in child.attrib:
-                    iri = child.attrib[_NS["rdf"]["resource"]]
+                    reldata.xrefs.add(Xref(attrib[_NS["rdf"]["resource"]]))
+            elif tag == _NS["oboInOwl"]["hasAlternativeId"] and text is not None:
+                reldata.alternate_ids.add(text)
+            elif tag == _NS["obo"]["IAO_0100001"]:
+                if _NS["rdf"]["resource"] in attrib:
+                    iri = attrib[_NS["rdf"]["resource"]]
                     reldata.replaced_by.add(self._compact_id(iri))
-                elif _NS["rdf"]["datatype"] in child.attrib:
-                    reldata.replaced_by.add(self._compact_id(child.text))
+                elif _NS["rdf"]["datatype"] in attrib:
+                    reldata.replaced_by.add(self._compact_id(text))
                 else:
                     warnings.warn(
                         "could not extract ID from IAO:0100001 annotation",
                         SyntaxWarning,
                         stacklevel=3,
                     )
-            elif child.tag == _NS["oboInOwl"]["consider"]:
-                if _NS["rdf"]["resource"] in child.attrib:
-                    iri = child.attrib[_NS["rdf"]["resource"]]
+            elif tag == _NS["oboInOwl"]["consider"]:
+                if _NS["rdf"]["resource"] in attrib:
+                    iri = attrib[_NS["rdf"]["resource"]]
                     reldata.consider.add(self._compact_id(iri))
-                elif _NS["rdf"]["datatype"] in child.attrib:
-                    reldata.consider.add(self._compact_id(child.text))
+                elif _NS["rdf"]["datatype"] in attrib:
+                    reldata.consider.add(self._compact_id(text))
                 else:
                     warnings.warn(
                         "could not extract ID from `oboInOwl:consider` annotation",
                         SyntaxWarning,
                         stacklevel=3,
                     )
-            elif child.tag not in (_NS["oboInOwl"]["id"], _NS["oboInOwl"]["shorthand"]):
-                if _NS["rdf"]["resource"] in child.attrib:
+            elif tag not in (_NS["oboInOwl"]["id"], _NS["oboInOwl"]["shorthand"]):
+                if _NS["rdf"]["resource"] in attrib:
                     reldata.annotations.add(self._extract_resource_pv(child))
-                elif _NS["rdf"]["datatype"] and child.text is not None:
+                elif _NS["rdf"]["datatype"] and text is not None:
                     reldata.annotations.add(self._extract_literal_pv(child))
                 else:
                     warnings.warn(

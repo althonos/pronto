@@ -126,11 +126,11 @@ class FastoboSerializer:
             frame.append(fastobo.term.PropertyValueClause(self._to_property_value(pv)))
         for superclass in sorted(t.relationships.get('is_a', ())):
             frame.append(fastobo.term.IsAClause(fastobo.id.parse(superclass)))
-        for i in sorted(filter( lambda x: len(x) == 1, t.intersection_of)):
+        for i in sorted(filter( lambda x: not isinstance(x, tuple), t.intersection_of)):
             frame.append(fastobo.term.IntersectionOfClause(
                 term=fastobo.id.parse(i)
             ))
-        for (i, j) in sorted(filter( lambda x: len(x) == 2, t.intersection_of)):
+        for (i, j) in sorted(filter( lambda x: isinstance(x, tuple), t.intersection_of)):
             frame.append(fastobo.term.IntersectionOfClause(
                 typedef=fastobo.id.parse(i),
                 term=fastobo.id.parse(j)

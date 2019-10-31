@@ -23,7 +23,7 @@ class OboSerializer(FastoboSerializer, BaseSerializer):
                 for i, (id, data) in enumerate(self.ont._terms.items()):
                     frame = self._to_term_frame(data)
                     file.write(str(frame).encode('utf-8'))
-                    if i < len(self.ont._terms) - 1:
+                    if i < len(self.ont._terms) - 1 or self.ont._relationships:
                         file.write(b'\n')
             # dump typedefs
             if self.ont._relationships:

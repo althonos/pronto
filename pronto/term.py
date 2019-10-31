@@ -371,10 +371,10 @@ class Term(Entity):
         ont, termdata = self._ontology(), self._data()
         intersection_of: List[Union["Term", Tuple[Relationship, "Term"]]] = []
         for item in termdata.intersection_of:
-            try:
+            if len(item) == 2:
                 r, t = item
                 intersection_of.append((ont.get_relationship(r), ont.get_term(t)))
-            except TypeError:
+            else:
                 intersection_of.append(ont.get_term(typing.cast(str, item)))
         return frozenset(intersection_of)
 

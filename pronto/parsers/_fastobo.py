@@ -240,11 +240,11 @@ def _process_clause_entity_comment(clause, entity):
 
 @process_clause_term.register(fastobo.term.ConsiderClause)
 def _process_clause_term_consider(clause, entity):
-    entity.consider = str(clause.term)
+    entity.consider.add(str(clause.term))
 
 @process_clause_typedef.register(fastobo.typedef.ConsiderClause)
 def _process_clause_typedef_consider(clause, entity):
-    entity.consider = str(clause.typedef)
+    entity.consider.add(str(clause.typedef))
 
 @process_clause_term.register(fastobo.term.CreatedByClause)
 @process_clause_typedef.register(fastobo.typedef.CreatedByClause)
@@ -412,11 +412,11 @@ def _process_clause_typedef_relationship(clause, entity):
 
 @process_clause_term.register(fastobo.term.ReplacedByClause)
 def _process_clause_term_replaced_by(clause, entity):
-    entity.replaced_by = str(clause.term)
+    entity.replaced_by.add(str(clause.term))
 
 @process_clause_typedef.register(fastobo.typedef.ReplacedByClause)
 def _process_clause_typedef_replaced_by(clause, entity):
-    entity.replaced_by = str(clause.typedef)
+    entity.replaced_by.add(str(clause.typedef))
 
 @process_clause_term.register(fastobo.term.SubsetClause)
 @process_clause_typedef.register(fastobo.typedef.SubsetClause)

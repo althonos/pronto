@@ -126,6 +126,8 @@ class Entity:
 
     @property
     def annotations(self) -> FrozenSet[PropertyValue]:
+        """`frozenset` of `PropertyValue`: Annotations relevant to the entity.
+        """
         return frozenset(self._data().annotations)
 
     @property
@@ -224,11 +226,17 @@ class Entity:
 
     @property
     def id(self):
+        """`str`: The OBO identifier of the entity.
+
+        Identifiers can be either prefixed (e.g. ``MS:1000031``), unprefixed
+        (e.g. ``part_of``) or given as plain URLs. Identifiers cannot be
+        edited.
+        """
         return self.__id
 
     @property
     def name(self) -> Optional[str]:
-        """`str` or `None`: the name of the entity.
+        """`str` or `None`: The name of the entity.
 
         Names are formally equivalent to ``rdf:label`` in OWL2. The OBO format
         version 1.4 made names optional to improve OWL interoperability, as

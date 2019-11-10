@@ -5,7 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v1.1.3...HEAD
+
+## [1.1.3] - 2019-11-10
+[1.1.3]: https://github.com/althonos/pronto/compare/v1.1.2...v1.1.3
+### Fixed
+- Handling of some clauses in `FastoboParser`.
+- `OboSerializer` occasionaly missing lines between term and typedef frames.
+### Added
+- Missing docstrings to some `Entity` properties.
 
 ## [1.1.2] - 2019-10-30
 [1.1.2]: https://github.com/althonos/pronto/compare/v1.1.1...v1.1.2

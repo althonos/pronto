@@ -5,7 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v1.1.3...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v1.1.4...HEAD
+
+## [1.1.4] - 2020-01-21
+[1.1.3]: https://github.com/althonos/pronto/compare/v1.1.3...v1.1.4
+### Added
+- Explicit support for Python 3.8.
+- Support for Windows-style line endings
+  ([#53](https://github.com/althonos/pronto/issues/53))
 
 ## [1.1.3] - 2019-11-10
 [1.1.3]: https://github.com/althonos/pronto/compare/v1.1.2...v1.1.3
@@ -38,7 +45,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `Term.subclasses` and `Term.superclasses` use `collections.deque` instead of
   `queue.Queue` as a LIFO structure since thread-safety is not needed.
 - `chardet` result is now used even when prediction confidence is under 100%
-  to detect encoding of the handle passed to `Ontology`. 
+  to detect encoding of the handle passed to `Ontology`.
 ### Fixed
 - `SynonymType` comparison implementation.
 - `Synonym.type` getter crashing on `type` not being `None`.

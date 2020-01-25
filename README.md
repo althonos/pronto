@@ -30,8 +30,12 @@
 
 Pronto is a Python library to parse, browse, create, and export
 ontologies, supporting several ontology languages and formats. It
-implement the specifications of the [Open Biomedical Ontologies 1.4](http://owlcollab.github.io/oboformat/doc/obo-syntax.html)
-in the form of an safe high-level interface.
+implement the specifications of the
+[Open Biomedical Ontologies 1.4](http://owlcollab.github.io/oboformat/doc/obo-syntax.html)
+in the form of an safe high-level interface. *If you're only interested in
+parsing OBO or OBO Graphs document, you may wish to consider
+[`fastobo`](https://pypi.org/project/fastobo) instead.*
+
 
 ## 🏳️ Supported Languages
 

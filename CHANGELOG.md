@@ -5,10 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v1.1.4...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v1.1.5...HEAD
+
+## [1.1.5] - 2020-01-25
+[1.1.5]: https://github.com/althonos/pronto/compare/v1.1.4...v1.1.5
+### Changed
+- Bumped `fastobo` to `v0.7.0`, switching parser implementation to use
+  multi-threading in order to speedup the parser process.
 
 ## [1.1.4] - 2020-01-21
-[1.1.3]: https://github.com/althonos/pronto/compare/v1.1.3...v1.1.4
+[1.1.4]: https://github.com/althonos/pronto/compare/v1.1.3...v1.1.4
 ### Added
 - Explicit support for Python 3.8.
 - Support for Windows-style line endings

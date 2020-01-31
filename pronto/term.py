@@ -194,20 +194,28 @@ class Term(Entity):
                         yield ont.get_term(other)
             done.add(node)
 
-    def superclasses(self, distance: Optional[int] = None) -> Iterator["Term"]:
+    def superclasses(
+            self,
+            distance: Optional[int] = None,
+            with_self: bool = True,
+    ) -> Iterator["Term"]:
         """Get an iterator over the superclasses of this `Term`.
 
         In order to follow the semantics of ``rdf:subClassOf``, which in turn
         respects the mathematical inclusion of subset inclusion, ``is_a`` is
         defined as a transitive relationship, hence ``has_subclass`` is also
-        transitive by closure property. Therefore ``self`` is always yielded
-        first when calling this method.
+        transitive by closure property.
 
         Arguments:
-            distance (int, optional): The maximum distance between this node
+            distance (int, optional): The maximum distance between this term
                 and the yielded superclass (`0` for the term itself, `1` for
                 its immediate superclasses, etc.). Use `None` to explore
                 transitively the entire directed graph.
+            with_self (bool): Whether or not to include the current term in
+                the terms being yielded. RDF semantics state that the
+                ``rdfs:subClassOf`` property is transitive, so this is enabled
+                by default, but in most practical cases only the distinct
+                subclasses are desired.
 
         Yields:
             `Term`: Superclasses of the selected term, breadth-first. The
@@ -245,7 +253,8 @@ class Term(Entity):
         # RDF semantics state that self is a subclass of self
         frontier.append((self, 0))
         sup.add(self)
-        yield self
+        if with_self:
+            yield self
 
         # Explore the graph
         while frontier:
@@ -259,8 +268,23 @@ class Term(Entity):
                     yield neighbor
             done.add(node)
 
-    def subclasses(self, distance: Optional[int] = None) -> Iterator["Term"]:
+    def subclasses(
+            self,
+            distance: Optional[int] = None,
+            with_self: bool = True,
+    ) -> Iterator["Term"]:
         """Get an iterator over the subclasses of this `Term`.
+
+        Arguments:
+            distance (int, optional): The maximum distance between this term
+                and the yielded subclass (`0` for the term itself, `1` for
+                its immediate children, etc.). Use `None` to explore the
+                entire directed graph transitively.
+            with_self (bool): Whether or not to include the current term in
+                the terms being yielded. RDF semantics state that the
+                ``rdfs:subClassOf`` property is transitive, so this is enabled
+                by default, but in most practical cases only the distinct
+                subclasses are desired.
 
         Yields:
             `Term`: Subclasses of the selected term, breadth-first. The first
@@ -307,7 +331,8 @@ class Term(Entity):
         # RDF semantics state that self is a subclass of self
         frontier.append((self.id, 0))
         sub.add(self.id)
-        yield self
+        if with_self:
+            yield self  
 
         # Explore the graph
         while frontier:

@@ -75,6 +75,13 @@ class TestTerm(unittest.TestCase):
             subclasses = list(term.subclasses())
             self.assertCountEqual(subclasses, set(subclasses))
 
+    def test_subclasses_without_self(self):
+        term = self.ms["MS:1003025"]
+        self.assertSetEqual(
+            {sub.id for sub in term.subclasses(with_self=False)},
+            {"MS:1003026", "MS:1003027", "MS:1003021", "MS:1003022"},
+        )
+
     def test_superclasses(self):
         term = self.ms["MS:1000200"]
         self.assertSetEqual(
@@ -94,6 +101,13 @@ class TestTerm(unittest.TestCase):
         for term in self.ms.terms():
             superclasses = list(term.superclasses())
             self.assertCountEqual(superclasses, set(superclasses))
+
+    def test_superclasses(self):
+        term = self.ms["MS:1000200"]
+        self.assertSetEqual(
+            {sup.id for sup in term.superclasses(with_self=False)},
+            {"MS:1000123", "MS:1000489", "MS:1000031"},
+        )
 
     @unittest.skipUnless(__debug__, "no type checking in optimized mode")
     def test_union_of_typechecked(self):

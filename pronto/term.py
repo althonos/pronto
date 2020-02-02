@@ -1,8 +1,10 @@
 import collections.abc
 import datetime
 import itertools
+import operator
 import typing
 import queue
+import weakref
 from typing import (
     Callable,
     Deque,
@@ -16,6 +18,8 @@ from typing import (
     Tuple,
     Union,
     FrozenSet,
+    MutableSet,
+    AbstractSet,
 )
 
 import frozendict
@@ -61,6 +65,9 @@ class TermData(EntityData):  # noqa: R0902, R0903
     creation_date: Optional[datetime.datetime]
     equivalent_to: Set[str]
     annotations: Set[PropertyValue]
+
+    if typing.TYPE_CHECKING:
+        __annotations__: Dict[str, str]
 
     __slots__ = tuple(__annotations__)  # noqa: E0602
 
@@ -332,7 +339,7 @@ class Term(Entity):
         frontier.append((self.id, 0))
         sub.add(self.id)
         if with_self:
-            yield self  
+            yield self
 
         # Explore the graph
         while frontier:
@@ -373,18 +380,20 @@ class Term(Entity):
     # --- Attributes ---------------------------------------------------------
 
     @property
-    def disjoint_from(self) -> FrozenSet["Term"]:
+    def disjoint_from(self) -> 'TermSet':
         """The terms declared as disjoint from this term.
 
         Two terms are disjoint if they have no instances or subclasses in
         common.
         """
-        ontology, termdata = self._ontology(), self._data()
-        return frozenset({ontology.get_term(id) for id in termdata.disjoint_from})
+        s = TermSet()
+        s._ids = self._data().disjoint_from
+        s._ontology = weakref.ref(self._ontology())
+        return s
 
     @disjoint_from.setter
     @typechecked(property=True)
-    def disjoint_from(self, terms: FrozenSet["Term"]):
+    def disjoint_from(self, terms: Iterable["Term"]):
         self._data().disjoint_from = set(term.id for term in terms)
 
     @property
@@ -422,23 +431,159 @@ class Term(Entity):
         }
 
     @property
-    def replaced_by(self) -> FrozenSet["Term"]:
-        ontology, termdata = self._ontology(), self._data()
-        return frozenset({ontology.get_term(t) for t in termdata.replaced_by})
+    def replaced_by(self) -> 'TermSet':
+        s = TermSet()
+        s._ids = self._data().replaced_by
+        s._ontology = weakref.ref(self._ontology())
+        return s
 
     @property
-    def union_of(self) -> FrozenSet["Term"]:
-        termdata, ont = self._data(), self._ontology()
-        return frozenset(ont.get_term(t) for t in termdata.union_of)
+    def union_of(self) -> 'TermSet':
+        s = TermSet()
+        s._ids = self._data().union_of
+        s._ontology = weakref.ref(self._ontology())
+        return s
 
     @union_of.setter
     @typechecked(property=True)
-    def union_of(self, union_of: FrozenSet["Term"]):
-        if len(union_of) == 1:
+    def union_of(self, union_of: Set["Term"]):
+        data = set(term.id for term in union_of)
+        if len(data) == 1:
             raise ValueError("'union_of' cannot have a cardinality of 1")
-        self._data().union_of = set(term.id for term in union_of)
+        self._data().union_of = data
 
     @property
-    def consider(self) -> FrozenSet["Term"]:
-        termdata, ont = self._data(), self._ontology()
-        return frozenset(ont.get_term(t) for t in termdata.consider)
+    def consider(self) -> "TermSet":
+        s = TermSet()
+        s._ids = self._data().consider
+        s._ontology = weakref.ref(self._ontology())
+        return s
+
+
+class TermSet(MutableSet[Term]):
+
+    def __init__(self, terms: Optional[Iterable[Term]] = None) -> None:
+        self._ids: Set[str] = set()
+        self._ontology: "Optional[weakref.ReferenceType[Ontology]]" = None
+
+        if terms is not None:
+            for term in terms:
+                if __debug__ and not isinstance(term, Term):
+                    ty = type(term).__name__
+                    raise TypeError(f"'terms' must be iterator of `Term`, not {ty}")
+                if self._ontology is None:
+                    self._ontology = weakref.ref(term._ontology())
+                if self._ontology() is not term._ontology():
+                    raise ValueError("terms do not originate from the same ontology")
+                self._ids.add(term.id)
+
+    def __contains__(self, other: object):
+        if isinstance(other, Term):
+            return other.id in self._ids
+        return False
+
+    def __iter__(self) -> Iterator[Term]:
+        return map(lambda t: self._ontology().get_term(t), iter(self._ids))
+
+    def __len__(self):
+        return len(self._ids)
+
+    def __repr__(self):
+        ontology = self._ontology()
+        elements = (ontology[id_].__repr__() for id_ in self._ids)
+        return f"{type(self).__name__}({{{', '.join(elements)}}})"
+
+    def __iand__(self, other: AbstractSet[Term]) -> 'TermSet':
+        if isinstance(other, TermSet):
+            self._ids &= other._ids
+        else:
+            super().__iand__(other)
+        if not self._ids:
+            self._ontology = None
+        return self
+
+    def __and__(self, other: AbstractSet[Term]) -> 'TermSet':
+        if isinstance(other, TermSet):
+            s = TermSet()
+            s._ids = self._ids.__and__(other._ids)
+            s._ontology = self._ontology if s._ids else None
+        else:
+            s = TermSet(super().__and__(other))
+        return s
+
+    def __ior__(self, other: AbstractSet[Term]) -> 'TermSet':
+        if not isinstance(other, TermSet):
+            other = TermSet(other)
+        self._ids |= other._ids
+        self._ontology = self._ontology or other._ontology
+        return self
+
+    def __or__(self, other: AbstractSet[Term]) -> 'TermSet':
+        if isinstance(other, TermSet):
+            s = TermSet()
+            s._ids = self._ids.__or__(other._ids)
+            s._ontology = self._ontology
+        else:
+            s = TermSet(super().__or__(other))
+        return s
+
+    def __isub__(self, other: AbstractSet[Term]) -> 'TermSet':
+        if isinstance(other, TermSet):
+            self._ids -= other._ids
+        else:
+            super().__isub__(other)
+        if not self._ids:
+            self._ontology = None
+        return self
+
+    def __sub__(self, other: AbstractSet[Term]) -> 'TermSet':
+        if isinstance(other, TermSet):
+            s = TermSet()
+            s._ids = self._ids.__sub__(other._ids)
+            s._ontology = self._ontology
+        else:
+            s = TermSet(super().__sub__(other))
+        return s
+
+    def __ixor__(self, other: AbstractSet[Term]) -> 'TermSet':
+        if isinstance(other, TermSet):
+            self._ids ^= other._ids
+        else:
+            super().__ixor__(other)
+        if not self._ids:
+            self._ontology = None
+        return self
+
+    def __xor__(self, other: AbstractSet[Term]) -> 'TermSet':
+        if isinstance(other, TermSet):
+            s = TermSet()
+            s._ids = self._ids.__xor__(other._ids)
+        else:
+            s = TermSet(super().__xor__(other))
+        if not s._ids:
+            s._ontology = None
+        return s
+
+    @typechecked()
+    def add(self, term: Term) -> None:
+        self._ids.add(term.id)
+
+    def clear(self) -> None:
+        self._ids.clear()
+
+    @typechecked()
+    def discard(self, term: Term) -> None:
+        self._ids.discard(term.id)
+
+    def pop(self) -> Term:
+        return self._ontology().get_term(self._ids.pop())
+
+    @typechecked()
+    def remove(self, term: Term):
+        self._ids.remove(term.id)
+
+    # --- Attributes ---------------------------------------------------------
+
+    @property
+    def ids(self) -> FrozenSet[str]:
+        return frozenset(map(operator.attrgetter('id'), iter(self)))

@@ -4,7 +4,7 @@ import unittest
 import warnings
 
 import pronto
-from pronto.term import Term, TermData
+from pronto.term import Term, TermData, TermSet
 
 from .utils import DATADIR
 
@@ -124,3 +124,86 @@ class TestTerm(unittest.TestCase):
         t2 = ont.create_term("TST:002")
         with self.assertRaises(ValueError):
             t2.union_of = { t1 }
+
+    def test_replaced_by(self):
+        ont = pronto.Ontology()
+        t1 = ont.create_term("TST:001")
+        t2 = ont.create_term("TST:002")
+        t3 = ont.create_term("TST:003")
+
+        self.assertEqual(sorted(t1.replaced_by.ids), [])
+
+        t1.replaced_by.add(t2)
+        self.assertEqual(sorted(t1.replaced_by.ids), ["TST:002"])
+        self.assertEqual(sorted(ont["TST:001"].replaced_by.ids), ["TST:002"])
+
+        t1.replaced_by.add(t3)
+        self.assertEqual(sorted(t1.replaced_by.ids), ["TST:002", "TST:003"])
+        self.assertEqual(sorted(ont["TST:001"].replaced_by.ids), ["TST:002", "TST:003"])
+
+
+class TestTermSet(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        warnings.simplefilter('error')
+        warnings.simplefilter('ignore', category=UnicodeWarning)
+        cls.file = open(os.path.join(DATADIR, "ms.obo"), "rb")
+        cls.ms = pronto.Ontology(cls.file)
+
+    def test_inplace_and(self):
+        s1 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
+        s1 &= TermSet((self.ms['MS:1000015'], self.ms['MS:1000016']))
+        self.assertEqual(sorted(s1.ids), ['MS:1000015'])
+        self.assertIsNot(s1._ontology, None)
+
+        s2 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
+        s2 &= {self.ms['MS:1000015'], self.ms['MS:1000016']}
+        self.assertEqual(sorted(s2.ids), ['MS:1000015'])
+        self.assertIsNot(s2._ontology, None)
+
+        s3 = TermSet()
+        s3 &= {}
+        self.assertEqual(sorted(s3.ids), [])
+        self.assertIs(s3._ontology, None)
+
+    def test_inplace_or(self):
+        s1 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
+        s1 |= TermSet((self.ms['MS:1000015'], self.ms['MS:1000016']))
+        self.assertEqual(sorted(s1.ids), ['MS:1000014', 'MS:1000015', 'MS:1000016'])
+        self.assertIsNot(s1._ontology, None)
+
+        s2 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
+        s2 |= {self.ms['MS:1000015'], self.ms['MS:1000016']}
+        self.assertEqual(sorted(s2.ids), ['MS:1000014', 'MS:1000015', 'MS:1000016'])
+        self.assertIsNot(s2._ontology, None)
+
+        s3 = TermSet()
+        s3 |= TermSet((self.ms['MS:1000015'], self.ms['MS:1000016']))
+        self.assertEqual(sorted(s3.ids), ['MS:1000015', 'MS:1000016'])
+        self.assertIsNot(s3._ontology, None)
+
+        s4 = TermSet()
+        s4 |= {self.ms['MS:1000015'], self.ms['MS:1000016']}
+        self.assertEqual(sorted(s4.ids), ['MS:1000015', 'MS:1000016'])
+        self.assertIsNot(s4._ontology, None)
+
+    def test_inplace_sub(self):
+        s1 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
+        s1 -= TermSet((self.ms['MS:1000015'], self.ms['MS:1000016']))
+        self.assertEqual(sorted(s1.ids), ['MS:1000014'])
+        self.assertIsNot(s1._ontology, None)
+
+        s2 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
+        s2 -= {self.ms['MS:1000015'], self.ms['MS:1000016']}
+        self.assertEqual(sorted(s2.ids), ['MS:1000014'])
+        self.assertIsNot(s2._ontology, None)
+
+        s3 = TermSet()
+        s3 -= TermSet((self.ms['MS:1000015'], self.ms['MS:1000016']))
+        self.assertEqual(sorted(s3.ids), [])
+        self.assertIs(s3._ontology, None)
+
+        s4 = TermSet()
+        s4 -= {self.ms['MS:1000015'], self.ms['MS:1000016']}
+        self.assertEqual(sorted(s4.ids), [])
+        self.assertIs(s4._ontology, None)

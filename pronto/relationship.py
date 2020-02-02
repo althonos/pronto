@@ -61,6 +61,9 @@ class RelationshipData(EntityData):
     metadata_tag: bool
     class_level: bool
 
+    if typing.TYPE_CHECKING:
+        __annotations__: Dict[str, str]
+
     __slots__ = tuple(__annotations__)  # noqa: E0602
 
     def __init__(

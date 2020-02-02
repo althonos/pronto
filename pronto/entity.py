@@ -2,7 +2,7 @@ import collections.abc
 import datetime
 import weakref
 import typing
-from typing import Any, Iterable, Optional, Set, FrozenSet
+from typing import Any, Dict, Iterable, Optional, Set, FrozenSet
 
 from .definition import Definition
 from .synonym import Synonym, SynonymData, SynonymType
@@ -33,6 +33,9 @@ class EntityData:
     subsets: Set[str]
     synonyms: Set[SynonymData]
     xrefs: Set[Xref]
+
+    if typing.TYPE_CHECKING:
+        __annotations__: Dict[str, str]
 
     __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
 
@@ -321,7 +324,6 @@ class Entity:
         type: Optional[SynonymType] = None,
         xrefs: Optional[Iterable[Xref]] = None,
     ) -> Synonym:
-
         """Add a new synonym to the current entity.
 
         Arguments:

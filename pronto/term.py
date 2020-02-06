@@ -32,6 +32,7 @@ from .xref import Xref
 from .synonym import Synonym, SynonymData
 from .relationship import Relationship
 from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
+from .logic import SubclassesIterator
 from .utils.impl import set
 from .utils.meta import typechecked
 
@@ -279,7 +280,7 @@ class Term(Entity):
             self,
             distance: Optional[int] = None,
             with_self: bool = True,
-    ) -> Iterator["Term"]:
+    ) -> SubclassesIterator:
         """Get an iterator over the subclasses of this `Term`.
 
         Arguments:
@@ -308,6 +309,10 @@ class Term(Entity):
             >>> next(sub)
             Term('MS:1000122', name='Bruker Daltonics instrument model')
 
+        Hint:
+            Use the ``to_set`` method of the returned iterator to efficiently
+            collect all subclasses into a `TermSet`.
+
         Note:
             This method has a runtime of :math:`O(n^2)` where :math:`n` is the
             number of terms in the source ontology in the worst case. This is
@@ -317,44 +322,7 @@ class Term(Entity):
             reduced to an :math:`O(n)` operation.
 
         """
-        ont: "Ontology" = self._ontology()
-        distmax: float = distance if distance is not None else float("+inf")
-
-        # use the subclassing cache from the `Ontology` or build it ourselves
-        graph: Optional[Dict[str, Set[str]]] = ont._subclassing_cache
-        if graph is None:
-            is_a: Relationship = ont.get_relationship("is_a")
-            graph = dict()
-            for t in ont.terms():
-                for t2 in t.relationships.get(is_a, []):
-                    graph.setdefault(t2.id, set()).add(t.id)
-            ont._subclassing_cache = graph
-
-        # Search objects terms
-        sub: Set[str] = set()
-        done: Set[str] = set()
-        frontier: Deque[Tuple[str, int]] = collections.deque()
-
-        # RDF semantics state that self is a subclass of self
-        frontier.append((self.id, 0))
-        sub.add(self.id)
-        if with_self:
-            yield self
-
-        # Explore the graph
-        while frontier:
-            node, distance = frontier.popleft()
-            done.add(node)
-            try:
-                neighbors: Set[str] = graph[node]
-                if distance < distmax:
-                    for node in sorted(neighbors - done):
-                        frontier.append((node, distance + 1))
-                    for neighbor in sorted(neighbors - sub):
-                        sub.add(neighbor)
-                        yield ont.get_term(neighbor)
-            except KeyError:
-                pass
+        return SubclassesIterator(self, distance=distance, with_self=with_self)
 
     def is_leaf(self) -> bool:
         """Check whether the term is a leaf in the ontology.
@@ -369,6 +337,10 @@ class Term(Entity):
             False
             >>> ms['MS:1001792'].is_leaf()   # Xevo TQ-S
             True
+
+        Note:
+            This method has a runtime of :math:`O(n)` where :math:`n` is the
+            number of terms in the source ontology.
         """
         ont = self._ontology()
         is_a = ont.get_relationship("is_a")
@@ -466,16 +438,15 @@ class TermSet(MutableSet[Term]):
         self._ids: Set[str] = set()
         self._ontology: "Optional[weakref.ReferenceType[Ontology]]" = None
 
-        if terms is not None:
-            for term in terms:
-                if __debug__ and not isinstance(term, Term):
-                    ty = type(term).__name__
-                    raise TypeError(f"'terms' must be iterator of `Term`, not {ty}")
-                if self._ontology is None:
-                    self._ontology = weakref.ref(term._ontology())
-                if self._ontology() is not term._ontology():
-                    raise ValueError("terms do not originate from the same ontology")
-                self._ids.add(term.id)
+        for term in terms if terms is not None else ():
+            if __debug__ and not isinstance(term, Term):
+                ty = type(term).__name__
+                raise TypeError(f"'terms' must be iterator of `Term`, not {ty}")
+            if self._ontology is None:
+                self._ontology = weakref.ref(term._ontology())
+            if self._ontology() is not term._ontology():
+                raise ValueError("terms do not originate from the same ontology")
+            self._ids.add(term.id)
 
     def __contains__(self, other: object):
         if isinstance(other, Term):
@@ -587,3 +558,7 @@ class TermSet(MutableSet[Term]):
     @property
     def ids(self) -> FrozenSet[str]:
         return frozenset(map(operator.attrgetter('id'), iter(self)))
+
+    @property
+    def alternate_ids(self) -> FrozenSet[str]:
+        return frozenset(id for term in self for id in term.alternate_ids)

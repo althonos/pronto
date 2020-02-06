@@ -54,6 +54,7 @@ def load_tests(loader, tests, ignore):
     globs = {"pronto": pronto}
     if not sys.argv[0].endswith("green"):
         tests = _load_tests_from_module(tests, pronto, globs, setUp, tearDown)
+        tests = _load_tests_from_module(tests, pronto.logic, globs, setUp, tearDown)
         tests = _load_tests_from_module(tests, pronto.utils, globs, setUp, tearDown)
         tests = _load_tests_from_module(tests, pronto.parsers, globs, setUp, tearDown)
     return tests

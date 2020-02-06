@@ -2,6 +2,7 @@
 """Test doctest contained tests in every file of the module.
 """
 
+import configparser
 import doctest
 import os
 import re
@@ -16,6 +17,11 @@ import pronto.parsers
 
 from . import utils
 
+def get_packages():
+    parser = configparser.ConfigParser()
+    cfg_path = os.path.realpath(os.path.join(__file__, '..', '..', 'setup.cfg'))
+    parser.read(cfg_path)
+    return parser.get('options', 'packages').split()
 
 def _load_tests_from_module(tests, module, globs, setUp=None, tearDown=None):
     """Load tests from module, iterating through submodules"""
@@ -53,8 +59,8 @@ def load_tests(loader, tests, ignore):
 
     globs = {"pronto": pronto}
     if not sys.argv[0].endswith("green"):
-        tests = _load_tests_from_module(tests, pronto, globs, setUp, tearDown)
-        tests = _load_tests_from_module(tests, pronto.logic, globs, setUp, tearDown)
-        tests = _load_tests_from_module(tests, pronto.utils, globs, setUp, tearDown)
-        tests = _load_tests_from_module(tests, pronto.parsers, globs, setUp, tearDown)
+        for pkg in get_packages():
+            top = __import__(pkg)
+            module = top if pkg == 'pronto' else getattr(top, pkg.split('.', maxsplit=1)[-1])
+            tests = _load_tests_from_module(tests, module, globs, setUp, tearDown)
     return tests

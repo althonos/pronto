@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import datetime
 import itertools
 import io
@@ -74,7 +72,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     @classmethod
     def from_obo_library(
         cls, slug: str, import_depth: int = -1, timeout: int = 5
-    ) -> Ontology:
+    ) -> "Ontology":
         """Create an `Ontology` from a file in the OBO Library.
 
         This is basically just a shortcut constructor to avoid typing the full
@@ -234,7 +232,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             pass
         raise KeyError(id)
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         """Return a textual representation of `self` that should roundtrip.
         """
         args = (self.path,) if self.path is not None else (self.handle,)
@@ -254,7 +252,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     # --- Serialization utils ------------------------------------------------
 
-    def dump(self, file: BinaryIO, format: str = "obo") -> None:
+    def dump(self, file: BinaryIO, format: str = "obo"):
         """Serialize the ontology to a given file-handle.
 
         Arguments:

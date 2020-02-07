@@ -1,6 +1,5 @@
 """Object hierarchy of property-value annotations in OBO files.
 """
-from __future__ import annotations
 
 import functools
 

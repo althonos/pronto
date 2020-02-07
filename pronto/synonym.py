@@ -1,5 +1,4 @@
 # coding: utf-8
-from __future__ import annotations
 
 import functools
 import typing
@@ -109,10 +108,10 @@ class Synonym(object):
 
     if typing.TYPE_CHECKING:
 
-        __ontology: weakref.ReferenceType[Ontology]
-        __data: weakref.ReferenceType[SynonymData]
+        __ontology: "weakref.ReferenceType[Ontology]"
+        __data: "weakref.ReferenceType[SynonymData]"
 
-        def __init__(self, ontology: Ontology, data: SynonymData):
+        def __init__(self, ontology: "Ontology", data: "SynonymData"):
             self.__ontology = weakref.ref(ontology)
             self.__data = weakref.ref(data)
 
@@ -132,7 +131,7 @@ class Synonym(object):
 
         __slots__: Iterable[str] = ("__weakref__", "_ontology", "_data")
 
-        def __init__(self, ontology: Ontology, syndata: SynonymData):
+        def __init__(self, ontology: "Ontology", syndata: "SynonymData"):
             if syndata.type is not None:
                 types = ontology.metadata.synonymtypedefs
                 if not any(t.id == syndata.type for t in types):

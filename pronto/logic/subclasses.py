@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import collections
 import typing
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple, List
@@ -17,7 +15,7 @@ class SubclassesIterator(Iterator["Term"]):
     """
 
     @classmethod
-    def _build_cache(cls, ont: Ontology) -> Dict[str, Set[str]]:
+    def _build_cache(cls, ont: "Ontology") -> Dict[str, Set[str]]:
         is_a: Relationship = ont.get_relationship("is_a")
         graph: Dict[str, Set[str]] = dict()
         empty: List[Term] = list()
@@ -27,7 +25,7 @@ class SubclassesIterator(Iterator["Term"]):
         return graph
 
     def __init__(
-        self, term: Term, distance: Optional[int] = None, with_self: bool = True
+        self, term: "Term", distance: Optional[int] = None, with_self: bool = True
     ) -> None:
         self._distmax: float = float("inf") if distance is None else distance
         self._ontology = ont = term._ontology
@@ -47,10 +45,10 @@ class SubclassesIterator(Iterator["Term"]):
         if with_self:
             self._queue.append(term.id)
 
-    def __iter__(self) -> SubclassesIterator:
+    def __iter__(self) -> "SubclassesIterator":
         return self
 
-    def __next__(self) -> Term:
+    def __next__(self) -> "Term":
         while self._frontier or self._queue:
             # Return any element currently queued
             if self._queue:
@@ -79,7 +77,7 @@ class SubclassesIterator(Iterator["Term"]):
         else:
             return 0
 
-    def to_set(self) -> TermSet:
+    def to_set(self) -> "TermSet":
         """Collect all subclasses into a `~pronto.TermSet`.
 
         Hint:

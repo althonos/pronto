@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import collections.abc
 import datetime
 import weakref
@@ -52,23 +50,23 @@ class Entity:
 
     if typing.TYPE_CHECKING:
 
-        __ontology: weakref.ReferenceType[Ontology]
-        __data: weakref.ReferenceType[EntityData]
+        __ontology: "weakref.ReferenceType[Ontology]"
+        __data: "weakref.ReferenceType[EntityData]"
 
         __slots__: Iterable[str] = ("__weakref__",)
 
-        def __init__(self, ontology: Ontology, data: EntityData):
+        def __init__(self, ontology: "Ontology", data: "EntityData"):
             self.__ontology = weakref.ref(ontology)
             self.__data = weakref.ref(data)
             self.__id = data.id
 
-        def _data(self) -> EntityData:
+        def _data(self) -> "EntityData":
             rdata = self.__data()
             if rdata is None:
                 raise RuntimeError("entity data was deallocated")
             return rdata
 
-        def _ontology(self) -> Ontology:
+        def _ontology(self) -> "Ontology":
             ontology = self.__ontology()
             if ontology is None:
                 raise RuntimeError("referenced ontology was deallocated")
@@ -78,7 +76,7 @@ class Entity:
 
         __slots__: Iterable[str] = ("__weakref__", "_ontology", "_data")
 
-        def __init__(self, ontology: Ontology, data: EntityData):
+        def __init__(self, ontology: "Ontology", data: "EntityData"):
             self._ontology = weakref.ref(ontology)
             self._data = weakref.ref(data)
             self.__id = data.id

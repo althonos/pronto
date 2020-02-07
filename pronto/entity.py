@@ -285,7 +285,7 @@ class Entity:
     @subsets.setter
     @typechecked(property=True)
     def subsets(self, subsets: FrozenSet[str]):
-        declared = set(s.id for s in self._ontology().metadata.subsetdefs)
+        declared = set(s.name for s in self._ontology().metadata.subsetdefs)
         for subset in subsets:
             if subset not in declared:
                 raise ValueError(f"undeclared subset: {subset!r}")

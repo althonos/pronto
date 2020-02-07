@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import itertools
 import io
@@ -70,8 +72,11 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     @classmethod
     def from_obo_library(
-        cls, slug: str, import_depth: int = -1, timeout: int = 5
-    ) -> "Ontology":
+            cls,
+            slug: str,
+            import_depth: int = -1,
+            timeout: int = 5
+    ) -> Ontology:
         """Create an `Ontology` from a file in the OBO Library.
 
         This is basically just a shortcut constructor to avoid typing the full
@@ -100,11 +105,11 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         return cls(f"http://purl.obolibrary.org/obo/{slug}", import_depth, timeout)
 
     def __init__(
-        self,
-        handle: Union[BinaryIO, str, None] = None,
-        import_depth: int = -1,
-        timeout: int = 5,
-        cache: bool = True,
+            self,
+            handle: Union[BinaryIO, str, None] = None,
+            import_depth: int = -1,
+            timeout: int = 5,
+            cache: bool = True,
     ):
         """Create a new `Ontology` instance.
 
@@ -229,7 +234,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             pass
         raise KeyError(id)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a textual representation of `self` that should roundtrip.
         """
         args = (self.path,) if self.path is not None else (self.handle,)
@@ -249,7 +254,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     # --- Serialization utils ------------------------------------------------
 
-    def dump(self, file: BinaryIO, format: str = "obo"):
+    def dump(self, file: BinaryIO, format: str = "obo") -> None:
         """Serialize the ontology to a given file-handle.
 
         Arguments:

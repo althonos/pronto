@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import annotations
 
 import functools
 import typing
@@ -106,10 +107,10 @@ class SynonymData(object):
 @functools.total_ordering
 class Synonym(object):
 
-    _ontology: "weakref.ReferenceType[Ontology]"
-    _data: "weakref.ReferenceType[SynonymData]"
+    _ontology: weakref.ReferenceType[Ontology]
+    _data: weakref.ReferenceType[SynonymData]
 
-    def __init__(self, ontology: "Ontology", syndata: "SynonymData"):
+    def __init__(self, ontology: Ontology, syndata: SynonymData):
         if syndata.type is not None:
             types = ontology.metadata.synonymtypedefs
             if not any(t.id == syndata.type for t in types):

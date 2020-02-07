@@ -20,6 +20,7 @@ Note:
     reduced by about 60% in optimized mode.**
 
 """
+from __future__ import annotations
 
 __author__ = "Martin Larralde <martin.larralde@embl.de>"
 __license__ = "MIT"

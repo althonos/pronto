@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections.abc
 import datetime
 import itertools
@@ -135,15 +137,15 @@ class Term(Entity):
 
     if typing.TYPE_CHECKING:
 
-        def __init__(self, ontology: "Ontology", termdata: "TermData"):
+        def __init__(self, ontology: Ontology, termdata: TermData):
             super().__init__(ontology, termdata)
 
-        def _data(self) -> "TermData":
+        def _data(self) -> TermData:
             return typing.cast("TermData", super()._data())
 
     # --- Methods ------------------------------------------------------------
 
-    def objects(self, r: Relationship) -> Iterator["Term"]:
+    def objects(self, r: Relationship) -> Iterator[Term]:
         """Iterate over the terms ``t`` verifying ``self · r · t``.
 
         Example:
@@ -206,7 +208,7 @@ class Term(Entity):
             self,
             distance: Optional[int] = None,
             with_self: bool = True,
-    ) -> Iterator["Term"]:
+    ) -> Iterator[Term]:
         """Get an iterator over the superclasses of this `Term`.
 
         In order to follow the semantics of ``rdf:subClassOf``, which in turn
@@ -328,7 +330,7 @@ class Term(Entity):
     # --- Attributes ---------------------------------------------------------
 
     @property
-    def disjoint_from(self) -> 'TermSet':
+    def disjoint_from(self) -> TermSet:
         """The terms declared as disjoint from this term.
 
         Two terms are disjoint if they have no instances or subclasses in
@@ -341,17 +343,17 @@ class Term(Entity):
 
     @disjoint_from.setter
     @typechecked(property=True)
-    def disjoint_from(self, terms: Iterable["Term"]):
+    def disjoint_from(self, terms: Iterable[Term]):
         self._data().disjoint_from = set(term.id for term in terms)
 
     @property
     def intersection_of(
         self
-    ) -> FrozenSet[Union["Term", Tuple[Relationship, "Term"]]]:
+    ) -> FrozenSet[Union[Term, Tuple[Relationship, Term]]]:
         """The terms or term relationships this term is an intersection of.
         """
         ont, termdata = self._ontology(), self._data()
-        intersection_of: List[Union["Term", Tuple[Relationship, "Term"]]] = []
+        intersection_of: List[Union[Term, Tuple[Relationship, Term]]] = []
         for item in termdata.intersection_of:
             if len(item) == 2:
                 r, t = item
@@ -361,7 +363,7 @@ class Term(Entity):
         return frozenset(intersection_of)
 
     @property
-    def relationships(self) -> Mapping[Relationship, FrozenSet["Term"]]:
+    def relationships(self) -> Mapping[Relationship, FrozenSet[Term]]:
         ont, termdata = self._ontology(), self._data()
         return frozendict.frozendict(
             {
@@ -373,20 +375,20 @@ class Term(Entity):
         )
 
     @relationships.setter
-    def relationships(self, r: Mapping[Relationship, Iterable["Term"]]):
+    def relationships(self, r: Mapping[Relationship, Iterable[Term]]):
         self._data().relationships = {
             relation.id: set(t.id for t in terms) for relation, terms in r.items()
         }
 
     @property
-    def replaced_by(self) -> 'TermSet':
+    def replaced_by(self) -> TermSet:
         s = TermSet()
         s._ids = self._data().replaced_by
         s._ontology = weakref.ref(self._ontology())
         return s
 
     @property
-    def union_of(self) -> 'TermSet':
+    def union_of(self) -> TermSet:
         s = TermSet()
         s._ids = self._data().union_of
         s._ontology = weakref.ref(self._ontology())
@@ -394,14 +396,14 @@ class Term(Entity):
 
     @union_of.setter
     @typechecked(property=True)
-    def union_of(self, union_of: Set["Term"]):
+    def union_of(self, union_of: Set[Term]):
         data = set(term.id for term in union_of)
         if len(data) == 1:
             raise ValueError("'union_of' cannot have a cardinality of 1")
         self._data().union_of = data
 
     @property
-    def consider(self) -> "TermSet":
+    def consider(self) -> TermSet:
         s = TermSet()
         s._ids = self._data().consider
         s._ontology = weakref.ref(self._ontology())
@@ -412,7 +414,7 @@ class TermSet(MutableSet[Term]):
 
     def __init__(self, terms: Optional[Iterable[Term]] = None) -> None:
         self._ids: Set[str] = set()
-        self._ontology: "Optional[weakref.ReferenceType[Ontology]]" = None
+        self._ontology: Optional[weakref.ReferenceType[Ontology]] = None
 
         for term in terms if terms is not None else ():
             if __debug__ and not isinstance(term, Term):
@@ -440,7 +442,7 @@ class TermSet(MutableSet[Term]):
         elements = (ontology[id_].__repr__() for id_ in self._ids)
         return f"{type(self).__name__}({{{', '.join(elements)}}})"
 
-    def __iand__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __iand__(self, other: AbstractSet[Term]) -> TermSet:
         if isinstance(other, TermSet):
             self._ids &= other._ids
         else:
@@ -449,7 +451,7 @@ class TermSet(MutableSet[Term]):
             self._ontology = None
         return self
 
-    def __and__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __and__(self, other: AbstractSet[Term]) -> TermSet:
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__and__(other._ids)
@@ -458,14 +460,14 @@ class TermSet(MutableSet[Term]):
             s = TermSet(super().__and__(other))
         return s
 
-    def __ior__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __ior__(self, other: AbstractSet[Term]) -> TermSet:
         if not isinstance(other, TermSet):
             other = TermSet(other)
         self._ids |= other._ids
         self._ontology = self._ontology or other._ontology
         return self
 
-    def __or__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __or__(self, other: AbstractSet[Term]) -> TermSet:
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__or__(other._ids)
@@ -474,7 +476,7 @@ class TermSet(MutableSet[Term]):
             s = TermSet(super().__or__(other))
         return s
 
-    def __isub__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __isub__(self, other: AbstractSet[Term]) -> TermSet:
         if isinstance(other, TermSet):
             self._ids -= other._ids
         else:
@@ -483,7 +485,7 @@ class TermSet(MutableSet[Term]):
             self._ontology = None
         return self
 
-    def __sub__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __sub__(self, other: AbstractSet[Term]) -> TermSet:
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__sub__(other._ids)
@@ -492,7 +494,7 @@ class TermSet(MutableSet[Term]):
             s = TermSet(super().__sub__(other))
         return s
 
-    def __ixor__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __ixor__(self, other: AbstractSet[Term]) -> TermSet:
         if isinstance(other, TermSet):
             self._ids ^= other._ids
         else:
@@ -501,7 +503,7 @@ class TermSet(MutableSet[Term]):
             self._ontology = None
         return self
 
-    def __xor__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __xor__(self, other: AbstractSet[Term]) -> TermSet:
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__xor__(other._ids)

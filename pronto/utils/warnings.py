@@ -1,5 +1,6 @@
 """Warnings raised by the library.
 """
+from __future__ import annotations
 
 class ProntoWarning(Warning):
     """The class for all warnings raised by `pronto`.

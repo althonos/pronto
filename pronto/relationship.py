@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import typing
 from typing import Any, Dict, FrozenSet, Mapping, Optional, Set, Tuple
@@ -163,10 +165,10 @@ class Relationship(Entity):
 
     if typing.TYPE_CHECKING:
 
-        def __init__(self, ontology: "Ontology", reldata: "RelationshipData"):
+        def __init__(self, ontology: Ontology, reldata: RelationshipData):
             super().__init__(ontology, reldata)
 
-        def _data(self) -> "RelationshipData":
+        def _data(self) -> RelationshipData:
             return typing.cast("RelationshipData", super()._data())
 
     # --- Data descriptors ---------------------------------------------------
@@ -203,7 +205,7 @@ class Relationship(Entity):
         self._data().class_level = value
 
     @property
-    def consider(self) -> FrozenSet["Relationship"]:
+    def consider(self) -> FrozenSet[Relationship]:
         rdata, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(r) for r in rdata.consider)
 
@@ -212,17 +214,17 @@ class Relationship(Entity):
         return self._data().cyclic
 
     @property
-    def disjoint_from(self) -> FrozenSet["Relationship"]:
+    def disjoint_from(self) -> FrozenSet[Relationship]:
         rdata, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(t) for t in rdata.disjoint_from)
 
     @property
-    def disjoint_over(self) -> FrozenSet["Relationship"]:
+    def disjoint_over(self) -> FrozenSet[Relationship]:
         rdata, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(t) for t in rdata.disjoint_over)
 
     @property
-    def domain(self) -> Optional["Term"]:
+    def domain(self) -> Optional[Term]:
         rshipdata, ontology = self._data(), self._ontology()
         if rshipdata.domain is not None:
             return ontology.get_term(rshipdata.domain)
@@ -230,7 +232,7 @@ class Relationship(Entity):
 
     @domain.setter
     # @typechecked(property=True)
-    def domain(self, value: Optional["Term"]) -> None:
+    def domain(self, value: Optional[Term]) -> None:
         rshipdata, ontology = self._data(), self._ontology()
         if value is not None:
             try:
@@ -240,7 +242,7 @@ class Relationship(Entity):
         rshipdata.domain = value.id if value is not None else None
 
     @property
-    def equivalent_to_chain(self) -> FrozenSet[Tuple["Relationship", "Relationship"]]:
+    def equivalent_to_chain(self) -> FrozenSet[Tuple[Relationship, Relationship]]:
         return frozenset(
             {
                 tuple(map(self._ontology().get_relationship, chain))
@@ -284,7 +286,7 @@ class Relationship(Entity):
         self._data().metadata_tag = value
 
     @property
-    def relationships(self) -> Mapping["Relationship", FrozenSet["Relationship"]]:
+    def relationships(self) -> Mapping[Relationship, FrozenSet[Relationship]]:
         ont, reldata = self._ontology(), self._data()
         return frozendict.frozendict(
             {
@@ -296,36 +298,36 @@ class Relationship(Entity):
         )
 
     @property
-    def holds_over_chain(self) -> FrozenSet[Tuple["Relationship", "Relationship"]]:
-        ont: "Ontology" = self._ontology()
-        data: "RelationshipData" = self._data()
+    def holds_over_chain(self) -> FrozenSet[Tuple[Relationship, Relationship]]:
+        ont: Ontology = self._ontology()
+        data: RelationshipData = self._data()
         return frozenset(
             {tuple(map(ont.get_term, chain)) for chain in data.holds_over_chain}
         )
 
     @property
-    def inverse_of(self) -> Optional["Relationship"]:
+    def inverse_of(self) -> Optional[Relationship]:
         ont, reldata = self._ontology(), self._data()
         if reldata.inverse_of is not None:
             return ont.get_relationship(reldata.inverse_of)
         return None
 
     @inverse_of.setter
-    def inverse_of(self, value: Optional["Relationship"]):
+    def inverse_of(self, value: Optional[Relationship]):
         self._data().inverse_of = None if value is None else value.id
 
     @property
-    def intersection_of(self) -> FrozenSet["Relationship"]:
+    def intersection_of(self) -> FrozenSet[Relationship]:
         ont, reldata = self._ontology(), self._data()
         return frozenset({ont.get_relationship(r) for r in reldata.intersection_of})
 
     @property
-    def range(self) -> Optional["Term"]:
+    def range(self) -> Optional[Term]:
         range, ont = self._data().range, self._ontology()
         return ont.get_term(range) if range is not None else None
 
     @range.setter
-    def range(self, value: Optional["Term"]):
+    def range(self, value: Optional[Term]):
         if value is not None:
             try:
                 self._ontology().get_term(value.id)
@@ -343,7 +345,7 @@ class Relationship(Entity):
         self._data().reflexive = value
 
     @property
-    def replaced_by(self) -> FrozenSet["Relationship"]:
+    def replaced_by(self) -> FrozenSet[Relationship]:
         ont, data = self._ontology(), self._data()
         return frozenset({ont.get_relationship(r) for r in data.replaced_by})
 
@@ -366,12 +368,12 @@ class Relationship(Entity):
         self._data().transitive = value
 
     @property
-    def transitive_over(self) -> FrozenSet["Relationship"]:
+    def transitive_over(self) -> FrozenSet[Relationship]:
         ont, reldata = self._ontology(), self._data()
         return frozenset(ont.get_relationship(x) for x in reldata.transitive_over)
 
     @property
-    def union_of(self) -> FrozenSet["Relationship"]:
+    def union_of(self) -> FrozenSet[Relationship]:
         data, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(r) for r in data.union_of)
 

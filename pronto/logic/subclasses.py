@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 import typing
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple, List
@@ -80,7 +82,7 @@ class SubclassesIterator(Iterator['Term']):
         else:
             return 0
 
-    def to_set(self) -> 'TermSet':
+    def to_set(self) -> TermSet:
         """Collect all subclasses into a `~pronto.TermSet`.
 
         Hint:

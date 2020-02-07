@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .base import BaseParser
 from .obo import OboParser
 from .obojson import OboJSONParser

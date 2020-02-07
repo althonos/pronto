@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 [Unreleased]: https://github.com/althonos/pronto/compare/v1.1.5...HEAD
+### Added
+- Parameter `with_self` to disable reflexivity of `Term.subclasses` and
+  `Term.superclasses` iterators.
+- `TermSet` class which stores a set of terms efficiently while providing
+  some useful shortcuts to access the underlying data.
+### Changed
+- Moved code of `Term.subclasses` and `Term.superclasses` to a dedicated
+  iterator class in the `pronto.logic` submodule.
+### Fixed
+- Fix a typo in `Synonym.type` setter leading to a potential bug when
+  the given `type` is `None`.
+- Fix miscellaneous bugs found with `mypy`.
 
 ## [1.1.5] - 2020-01-25
 [1.1.5]: https://github.com/althonos/pronto/compare/v1.1.4...v1.1.5

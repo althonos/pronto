@@ -68,21 +68,21 @@ project_urls = dict(
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-        "sphinx.ext.autodoc",
-        "sphinx.ext.autosummary",
-        "sphinx.ext.doctest",
-        "sphinx.ext.intersphinx",
-        "sphinx.ext.napoleon",
-        "sphinx.ext.todo",
-        "sphinx.ext.coverage",
-        "sphinx.ext.mathjax",
-        "sphinx.ext.ifconfig",
-        "sphinx.ext.viewcode",
-        "sphinx.ext.githubpages",
-        "sphinx_bootstrap_theme",
-        "nbsphinx",
-        "recommonmark",
-        "IPython.sphinxext.ipython_console_highlighting",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.githubpages",
+    "sphinx_bootstrap_theme",
+    "nbsphinx",
+    "recommonmark",
+    "IPython.sphinxext.ipython_console_highlighting",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

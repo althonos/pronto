@@ -5,7 +5,7 @@
 [![TravisCI](https://img.shields.io/travis/althonos/pronto/master.svg?&maxAge=600&style=flat-square)](https://travis-ci.org/althonos/pronto/branches)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square&maxAge=2678400)](https://choosealicense.com/licenses/mit/)
 [![Source](https://img.shields.io/badge/source-GitHub-303030.svg?maxAge=2678400&style=flat-square)](https://github.com/althonos/pronto/)
-[![Docs](https://img.shields.io/readthedocs/pronto?style=flat-square&maxAge=3600)](http://pronto.readthedocs.io/en/latest/?badge=latest)
+[![Docs](https://img.shields.io/readthedocs/pronto?style=flat-square&maxAge=3600)](http://pronto.readthedocs.io/en/stable/?badge=stable)
 [![Coverage](https://img.shields.io/codecov/c/gh/althonos/pronto?style=flat-square&maxAge=3600)](https://www.codecov.com/gh/althonos/pronto/)
 [![Sanity](https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat-square&maxAge=3600)](https://codacy.com/app/althonos/pronto)
 [![PyPI](https://img.shields.io/pypi/v/pronto.svg?style=flat-square&maxAge=3600)](https://pypi.python.org/pypi/pronto)

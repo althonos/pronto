@@ -29,7 +29,7 @@ class SubclassesIterator(Iterator['Term']):
             term: 'Term',
             distance: Optional[int] = None,
             with_self: bool = True
-    ):
+    ) -> None:
         self._distmax: float = float("inf") if distance is None else distance
         self._ontology = ont = term._ontology
         self._graph = graph = ont()._subclassing_cache

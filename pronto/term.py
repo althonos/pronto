@@ -32,7 +32,7 @@ from .xref import Xref
 from .synonym import Synonym, SynonymData
 from .relationship import Relationship
 from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
-from .logic import SubclassesIterator
+from .logic import SubclassesIterator, SuperclassesIterator
 from .utils.impl import set
 from .utils.meta import typechecked
 
@@ -250,31 +250,7 @@ class Term(Entity):
             the ``is_a`` relationship is translated to in OWL2 language.
 
         """
-        distmax: float = distance if distance is not None else float("+inf")
-        is_a: Relationship = self._ontology().get_relationship("is_a")
-
-        # Search objects terms
-        sup: Set[Term] = set()
-        done: Set[Term] = set()
-        frontier: Deque[Tuple[Term, int]] = collections.deque()
-
-        # RDF semantics state that self is a subclass of self
-        frontier.append((self, 0))
-        sup.add(self)
-        if with_self:
-            yield self
-
-        # Explore the graph
-        while frontier:
-            node, distance = frontier.popleft()
-            neighbors: Set[Term] = set(node.relationships.get(is_a, ()))
-            if distance < distmax:
-                for node in sorted(neighbors - done):
-                    frontier.append((node, distance + 1))
-                for neighbor in sorted(neighbors - sup):
-                    sup.add(neighbor)
-                    yield neighbor
-            done.add(node)
+        return SuperclassesIterator(self, distance=distance, with_self=with_self)
 
     def subclasses(
             self,

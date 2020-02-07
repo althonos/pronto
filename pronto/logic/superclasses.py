@@ -12,15 +12,12 @@ if typing.TYPE_CHECKING:
     from ..ontology import Ontology
 
 
-class SuperclassesIterator(Iterator['Term']):
+class SuperclassesIterator(Iterator[Term]):
     """An iterator over the superclasses of a `~pronto.Term`.
     """
 
     def __init__(
-            self,
-            term: 'Term',
-            distance: Optional[int] = None,
-            with_self: bool = True,
+        self, term: Term, distance: Optional[int] = None, with_self: bool = True,
     ) -> None:
         self._distmax: float = float("inf") if distance is None else distance
         self._ontology = ont = term._ontology
@@ -35,11 +32,11 @@ class SuperclassesIterator(Iterator['Term']):
         if with_self:
             self._queue.append(term)
 
-    def __iter__(self) -> 'SuperclassesIterator':
+    def __iter__(self) -> SuperclassesIterator:
         return self
 
-    def __next__(self):
-        is_a: 'Relationship' = self._ontology().get_relationship('is_a')
+    def __next__(self) -> Term:
+        is_a: Relationship = self._ontology().get_relationship("is_a")
         while self._frontier or self._queue:
             # Return any element currently queued
             if self._queue:
@@ -58,8 +55,9 @@ class SuperclassesIterator(Iterator['Term']):
         # Stop iteration if no more elements to process
         raise StopIteration
 
-    def to_self(self) -> 'TermSet':
+    def to_self(self) -> TermSet:
         """Collect all superclasses into a `~pronto.TermSet`.
         """
         from ..term import TermSet
+
         return TermSet(self)

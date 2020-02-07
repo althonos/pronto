@@ -19,14 +19,15 @@ from ..pv import PropertyValue, LiteralPropertyValue, ResourcePropertyValue
 
 
 class FastoboSerializer:
-
     def _to_obodoc(self, o: Ontology) -> fastobo.doc.OboDoc:
         doc = fastobo.doc.OboDoc()
         if o.metadata:
             doc.header = self._to_header_frame(o.metadata)
         for termdata in sorted(self.ont._terms.values(), key=operator.attrgetter("id")):
             doc.append(self._to_term_frame(termdata))
-        for reldata in sorted(self.ont._relationships.values(), key=operator.attrgetter("id")):
+        for reldata in sorted(
+            self.ont._relationships.values(), key=operator.attrgetter("id")
+        ):
             doc.append(self._to_typedef_frame(reldata))
         return doc
 
@@ -46,26 +47,29 @@ class FastoboSerializer:
         for i in sorted(m.imports):
             frame.append(fastobo.header.ImportClause(i))
         for subset in sorted(m.subsetdefs):
-            frame.append(fastobo.header.SubsetdefClause(
-                subset=fastobo.id.parse(subset.name),
-                description=subset.description
-            ))
+            frame.append(
+                fastobo.header.SubsetdefClause(
+                    subset=fastobo.id.parse(subset.name), description=subset.description
+                )
+            )
         for syn in sorted(m.synonymtypedefs):
-            frame.append(fastobo.header.SynonymTypedefClause(
-                typedef=fastobo.id.parse(syn.id),
-                description=syn.description,
-                scope=syn.scope,
-            ))
+            frame.append(
+                fastobo.header.SynonymTypedefClause(
+                    typedef=fastobo.id.parse(syn.id),
+                    description=syn.description,
+                    scope=syn.scope,
+                )
+            )
         if m.default_namespace is not None:
-            frame.append(fastobo.header.DefaultNamespaceClause(
-                m.default_namespace
-            ))
+            frame.append(fastobo.header.DefaultNamespaceClause(m.default_namespace))
         if m.namespace_id_rule is not None:
             frame.append(fastobo.header.NamespaceIdRuleClause(m.namespace_id_rule))
         for id, (url, description) in sorted(m.idspaces.items()):
             frame.append(fastobo.header.IdspaceClause(id, url, description))
         for pv in sorted(m.annotations):
-            frame.append(fastobo.header.PropertyValueClause(self._to_property_value(pv)))
+            frame.append(
+                fastobo.header.PropertyValueClause(self._to_property_value(pv))
+            )
         for remark in sorted(m.remarks):
             frame.append(fastobo.header.RemarkClause(remark))
         if m.ontology is not None:
@@ -80,14 +84,11 @@ class FastoboSerializer:
     def _to_property_value(self, pv: PropertyValue) -> fastobo.pv.AbstractPropertyValue:
         try:
             return fastobo.pv.ResourcePropertyValue(
-                fastobo.id.parse(pv.property),
-                fastobo.id.parse(pv.resource),
+                fastobo.id.parse(pv.property), fastobo.id.parse(pv.resource),
             )
         except AttributeError:
             return fastobo.pv.LiteralPropertyValue(
-                fastobo.id.parse(pv.property),
-                pv.literal,
-                fastobo.id.parse(pv.datatype)
+                fastobo.id.parse(pv.property), pv.literal, fastobo.id.parse(pv.datatype)
             )
 
     def _to_synonym(self, syn: SynonymData) -> fastobo.syn.Synonym:
@@ -110,10 +111,12 @@ class FastoboSerializer:
         for alt in sorted(t.alternate_ids):
             frame.append(fastobo.term.AltIdClause(fastobo.id.parse(alt)))
         if t.definition is not None:
-            frame.append(fastobo.term.DefClause(
-                str(t.definition),
-                [self._to_xref(x) for x in sorted(t.definition.xrefs)],
-            ))
+            frame.append(
+                fastobo.term.DefClause(
+                    str(t.definition),
+                    [self._to_xref(x) for x in sorted(t.definition.xrefs)],
+                )
+            )
         if t.comment is not None:
             frame.append(fastobo.term.CommentClause(t.comment))
         for subset in sorted(t.subsets):
@@ -126,17 +129,16 @@ class FastoboSerializer:
             frame.append(fastobo.term.BuiltinClause(True))
         for pv in sorted(t.annotations):
             frame.append(fastobo.term.PropertyValueClause(self._to_property_value(pv)))
-        for superclass in sorted(t.relationships.get('is_a', ())):
+        for superclass in sorted(t.relationships.get("is_a", ())):
             frame.append(fastobo.term.IsAClause(fastobo.id.parse(superclass)))
-        for i in sorted(filter( lambda x: not isinstance(x, tuple), t.intersection_of)):
-            frame.append(fastobo.term.IntersectionOfClause(
-                term=fastobo.id.parse(i)
-            ))
-        for (i, j) in sorted(filter( lambda x: isinstance(x, tuple), t.intersection_of)):
-            frame.append(fastobo.term.IntersectionOfClause(
-                typedef=fastobo.id.parse(i),
-                term=fastobo.id.parse(j)
-            ))
+        for i in sorted(filter(lambda x: not isinstance(x, tuple), t.intersection_of)):
+            frame.append(fastobo.term.IntersectionOfClause(term=fastobo.id.parse(i)))
+        for (i, j) in sorted(filter(lambda x: isinstance(x, tuple), t.intersection_of)):
+            frame.append(
+                fastobo.term.IntersectionOfClause(
+                    typedef=fastobo.id.parse(i), term=fastobo.id.parse(j)
+                )
+            )
         for id_ in sorted(t.union_of):
             frame.append(fastobo.term.UnionOfClause(fastobo.id.parse(id_)))
         for id_ in sorted(t.equivalent_to):
@@ -154,11 +156,11 @@ class FastoboSerializer:
         if t.creation_date is not None:
             frame.append(fastobo.term.CreationDateClause(t.creation_date))
         if t.obsolete:
-           frame.append(fastobo.term.IsObsoleteClause(True))
+            frame.append(fastobo.term.IsObsoleteClause(True))
         for r in sorted(t.replaced_by):
             frame.append(fastobo.term.ReplacedByClause(fastobo.id.parse(r)))
         for c in sorted(t.consider):
-           frame.append(fastobo.term.ConsiderClause(fastobo.id.parse(c)))
+            frame.append(fastobo.term.ConsiderClause(fastobo.id.parse(c)))
         return frame
 
     def _to_typedef_frame(self, r: RelationshipData):
@@ -173,10 +175,12 @@ class FastoboSerializer:
         for alt in sorted(r.alternate_ids):
             frame.append(fastobo.typedef.AltIdClause(fastobo.id.parse(alt)))
         if r.definition is not None:
-            frame.append(fastobo.typedef.DefClause(
-                str(r.definition),
-                [self._to_xref(x) for x in sorted(r.definition.xrefs)],
-            ))
+            frame.append(
+                fastobo.typedef.DefClause(
+                    str(r.definition),
+                    [self._to_xref(x) for x in sorted(r.definition.xrefs)],
+                )
+            )
         if r.comment is not None:
             frame.append(fastobo.typedef.CommentClause(r.comment))
         for subset in sorted(r.subsets):
@@ -186,7 +190,9 @@ class FastoboSerializer:
         for xref in sorted(r.xrefs):
             frame.append(fastobo.typedef.XrefClause(self._to_xref(xref)))
         for pv in sorted(r.annotations):
-            frame.append(fastobo.typedef.PropertyValueClause(self._to_property_value(pv)))
+            frame.append(
+                fastobo.typedef.PropertyValueClause(self._to_property_value(pv))
+            )
         if r.domain is not None:
             frame.append(fastobo.typedef.DomainClause(fastobo.id.parse(r.domain)))
         if r.range is not None:
@@ -211,7 +217,7 @@ class FastoboSerializer:
             frame.append(fastobo.typedef.IsFunctionalClause(True))
         if r.inverse_functional:
             frame.append(fastobo.typedef.IsInverseFunctionalClause(True))
-        for superclass in sorted(r.relationships.get('is_a', ())):
+        for superclass in sorted(r.relationships.get("is_a", ())):
             frame.append(fastobo.typedef.IsAClause(fastobo.id.parse(superclass)))
         for i in sorted(r.intersection_of):
             frame.append(fastobo.typedef.IntersectionOfClause(fastobo.id.parse(i)))
@@ -222,7 +228,9 @@ class FastoboSerializer:
         for id_ in sorted(r.disjoint_from):
             frame.append(fastobo.typedef.DisjointFromClause(fastobo.id.parse(id_)))
         if r.inverse_of is not None:
-            frame.append(fastobo.typedef.InverseOfClause(fastobo.id.parse(r.inverse_of)))
+            frame.append(
+                fastobo.typedef.InverseOfClause(fastobo.id.parse(r.inverse_of))
+            )
         for id_ in sorted(r.transitive_over):
             frame.append(fastobo.typedef.TransitiveOverClause(fastobo.id.parse(id_)))
         for chain in sorted(r.equivalent_to_chain):
@@ -245,17 +253,19 @@ class FastoboSerializer:
         for r in sorted(r.replaced_by):
             frame.append(fastobo.typedef.ReplacedByClause(fastobo.id.parse(r)))
         for c in sorted(r.consider):
-           frame.append(fastobo.typedef.ConsiderClause(fastobo.id.parse(c)))
+            frame.append(fastobo.typedef.ConsiderClause(fastobo.id.parse(c)))
         for d in r.expand_assertion_to:
-            frame.append(fastobo.typedef.ExpandAssertionToClause(
-                str(d),
-                [self._to_xref(x) for x in sorted(d.xrefs)],
-            ))
+            frame.append(
+                fastobo.typedef.ExpandAssertionToClause(
+                    str(d), [self._to_xref(x) for x in sorted(d.xrefs)],
+                )
+            )
         for d in r.expand_expression_to:
-            frame.append(fastobo.typedef.ExpandExpressionToClause(
-                str(d),
-                [self._to_xref(x) for x in sorted(d.xrefs)],
-            ))
+            frame.append(
+                fastobo.typedef.ExpandExpressionToClause(
+                    str(d), [self._to_xref(x) for x in sorted(d.xrefs)],
+                )
+            )
         if r.metadata_tag:
             frame.append(fastobo.typedef.IsMetadataClause(True))
         if r.class_level:

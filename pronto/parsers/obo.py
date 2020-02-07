@@ -19,12 +19,14 @@ class OboParser(FastoboParser, BaseParser):
 
         # Extract metadata from the OBO header and resolve imports
         self.ont.metadata = self.extract_metadata(doc.header())
-        self.ont.imports.update(self.process_imports(
-            self.ont.metadata.imports,
-            self.ont.import_depth,
-            os.path.dirname(self.ont.path or str()),
-            self.ont.timeout,
-        ))
+        self.ont.imports.update(
+            self.process_imports(
+                self.ont.metadata.imports,
+                self.ont.import_depth,
+                os.path.dirname(self.ont.path or str()),
+                self.ont.timeout,
+            )
+        )
 
         # Extract frames from the current document.
         try:

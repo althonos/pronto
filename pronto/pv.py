@@ -45,15 +45,20 @@ class LiteralPropertyValue(PropertyValue):
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, LiteralPropertyValue):
-            return self.property == other.property \
-                and self.literal == other.literal \
+            return (
+                self.property == other.property
+                and self.literal == other.literal
                 and self.datatype == other.datatype
+            )
         return False
 
     def __lt__(self, other: object) -> bool:
         if isinstance(other, LiteralPropertyValue):
-            return (self.property, self.literal, self.datatype) \
-                < (other.property, other.literal, other.datatype)
+            return (self.property, self.literal, self.datatype) < (
+                other.property,
+                other.literal,
+                other.datatype,
+            )
         elif isinstance(other, ResourcePropertyValue):
             return self.property < other.property
         else:
@@ -61,6 +66,7 @@ class LiteralPropertyValue(PropertyValue):
 
     def __hash__(self) -> int:
         return hash((LiteralPropertyValue, self.property, self.literal, self.datatype))
+
 
 @roundrepr
 @functools.total_ordering

@@ -72,10 +72,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     @classmethod
     def from_obo_library(
-            cls,
-            slug: str,
-            import_depth: int = -1,
-            timeout: int = 5
+        cls, slug: str, import_depth: int = -1, timeout: int = 5
     ) -> Ontology:
         """Create an `Ontology` from a file in the OBO Library.
 
@@ -105,11 +102,11 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         return cls(f"http://purl.obolibrary.org/obo/{slug}", import_depth, timeout)
 
     def __init__(
-            self,
-            handle: Union[BinaryIO, str, None] = None,
-            import_depth: int = -1,
-            timeout: int = 5,
-            cache: bool = True,
+        self,
+        handle: Union[BinaryIO, str, None] = None,
+        import_depth: int = -1,
+        timeout: int = 5,
+        cache: bool = True,
     ):
         """Create a new `Ontology` instance.
 
@@ -270,6 +267,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
         """
         from .serializers import BaseSerializer
+
         for cls in BaseSerializer.__subclasses__():
             if cls.format == format:
                 cls(self).dump(file)
@@ -282,7 +280,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """
         s = io.BytesIO()
         self.dump(s, format=format)
-        return s.getvalue().decode('utf-8')
+        return s.getvalue().decode("utf-8")
 
     # --- Data accessors -----------------------------------------------------
 

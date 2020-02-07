@@ -205,9 +205,7 @@ class Term(Entity):
             done.add(node)
 
     def superclasses(
-            self,
-            distance: Optional[int] = None,
-            with_self: bool = True,
+        self, distance: Optional[int] = None, with_self: bool = True,
     ) -> Iterator[Term]:
         """Get an iterator over the superclasses of this `Term`.
 
@@ -255,9 +253,7 @@ class Term(Entity):
         return SuperclassesIterator(self, distance=distance, with_self=with_self)
 
     def subclasses(
-            self,
-            distance: Optional[int] = None,
-            with_self: bool = True,
+        self, distance: Optional[int] = None, with_self: bool = True,
     ) -> SubclassesIterator:
         """Get an iterator over the subclasses of this `Term`.
 
@@ -347,9 +343,7 @@ class Term(Entity):
         self._data().disjoint_from = set(term.id for term in terms)
 
     @property
-    def intersection_of(
-        self
-    ) -> FrozenSet[Union[Term, Tuple[Relationship, Term]]]:
+    def intersection_of(self) -> FrozenSet[Union[Term, Tuple[Relationship, Term]]]:
         """The terms or term relationships this term is an intersection of.
         """
         ont, termdata = self._ontology(), self._data()
@@ -411,7 +405,6 @@ class Term(Entity):
 
 
 class TermSet(MutableSet[Term]):
-
     def __init__(self, terms: Optional[Iterable[Term]] = None) -> None:
         self._ids: Set[str] = set()
         self._ontology: Optional[weakref.ReferenceType[Ontology]] = None
@@ -535,7 +528,7 @@ class TermSet(MutableSet[Term]):
 
     @property
     def ids(self) -> FrozenSet[str]:
-        return frozenset(map(operator.attrgetter('id'), iter(self)))
+        return frozenset(map(operator.attrgetter("id"), iter(self)))
 
     @property
     def alternate_ids(self) -> FrozenSet[str]:

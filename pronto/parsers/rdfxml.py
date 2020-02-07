@@ -90,12 +90,14 @@ class RdfXMLParser(BaseParser):
         self.ont.metadata = self._extract_meta(owl_ontology)
 
         # Process imports
-        self.ont.imports.update(self.process_imports(
-            self.ont.metadata.imports,
-            self.ont.import_depth,
-            os.path.dirname(self.ont.path or str()),
-            self.ont.timeout,
-        ))
+        self.ont.imports.update(
+            self.process_imports(
+                self.ont.metadata.imports,
+                self.ont.import_depth,
+                os.path.dirname(self.ont.path or str()),
+                self.ont.timeout,
+            )
+        )
 
         # Parse typedef first to handle OBO shorthand renaming
         for prop in tree.iterfind(_NS["owl"]["ObjectProperty"]):
@@ -140,13 +142,11 @@ class RdfXMLParser(BaseParser):
             warnings.warn(
                 f"{elem} contains text but no `xsd:datatype`",
                 SyntaxWarning,
-                stacklevel=3
+                stacklevel=3,
             )
             datatype = _NS["xsd"].raw("string")
         return LiteralPropertyValue(
-            property,
-            typing.cast(str, elem.text),
-            self._compact_datatype(datatype)
+            property, typing.cast(str, elem.text), self._compact_datatype(datatype)
         )
 
     def _extract_meta(self, elem: etree.Element):
@@ -173,7 +173,10 @@ class RdfXMLParser(BaseParser):
                 meta.saved_by = child.text
             elif child.tag == _NS["oboInOwl"]["auto-generated-by"]:
                 meta.auto_generated_by = child.text
-            elif child.tag in (_NS["oboInOwl"]["default-namespace"], _NS["oboInOwl"]["hasDefaultNamespace"]):
+            elif child.tag in (
+                _NS["oboInOwl"]["default-namespace"],
+                _NS["oboInOwl"]["hasDefaultNamespace"],
+            ):
                 meta.default_namespace = child.text
             elif child.tag == _NS["oboInOwl"]["date"]:
                 meta.date = datetime.datetime.strptime(child.text, "%d:%m:%Y %H:%M")
@@ -248,7 +251,7 @@ class RdfXMLParser(BaseParser):
                     warnings.warn(
                         f"could not extract subset value in {id_!r}",
                         SyntaxWarning,
-                        stacklevel=3
+                        stacklevel=3,
                     )
             elif tag == _NS["rdfs"]["comment"] and text is not None:
                 comments.append(text)
@@ -441,9 +444,8 @@ class RdfXMLParser(BaseParser):
             elif tag in (_NS["oboInOwl"]["created_by"], _NS["dc"]["creator"]):
                 reldata.created_by = text
             elif (
-                (tag == _NS["oboInOwl"]["creation_date"] or tag == _NS["dc"]["date"])
-                and text is not None
-            ):
+                tag == _NS["oboInOwl"]["creation_date"] or tag == _NS["dc"]["date"]
+            ) and text is not None:
                 reldata.creation_date = dateutil.parser.parse(text)
             elif tag == _NS["oboInOwl"]["hasOBONamespace"]:
                 if text != self.ont.metadata.default_namespace:
@@ -457,15 +459,9 @@ class RdfXMLParser(BaseParser):
                         SyntaxWarning,
                         stacklevel=3,
                     )
-            elif (
-                tag == _NS["rdfs"]["domain"]
-                and _NS["rdf"]["resource"] in attrib
-            ):
+            elif tag == _NS["rdfs"]["domain"] and _NS["rdf"]["resource"] in attrib:
                 reldata.domain = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
-            elif (
-                tag == _NS["rdfs"]["range"]
-                and _NS["rdf"]["resource"] in attrib
-            ):
+            elif tag == _NS["rdfs"]["range"] and _NS["rdf"]["resource"] in attrib:
                 reldata.range = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
             elif tag == _NS["obo"]["IAO_0000115"] and text is not None:
                 reldata.definition = Definition(text)
@@ -547,7 +543,9 @@ class RdfXMLParser(BaseParser):
 
         return rel
 
-    def _extract_annotation_property(self, elem: etree.Element, aliases: Dict[str, str]):
+    def _extract_annotation_property(
+        self, elem: etree.Element, aliases: Dict[str, str]
+    ):
         if __debug__:
             if elem.tag != _NS["owl"]["AnnotationProperty"]:
                 raise ValueError("expected `owl:ObjectProperty` element")
@@ -641,7 +639,6 @@ class RdfXMLParser(BaseParser):
             entity = self.ont[self._compact_id(resource)]
             type_ = elem.find(_NS["oboInOwl"]["hasSynonymType"])
 
-
             try:
                 synonym = next(
                     s._data()
@@ -677,7 +674,5 @@ class RdfXMLParser(BaseParser):
 
         else:
             warnings.warn(
-                f"unknown axiom property: {property!r}",
-                SyntaxWarning,
-                stacklevel=3,
+                f"unknown axiom property: {property!r}", SyntaxWarning, stacklevel=3,
             )

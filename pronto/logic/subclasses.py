@@ -12,25 +12,22 @@ if typing.TYPE_CHECKING:
     from ..ontology import Ontology
 
 
-class SubclassesIterator(Iterator['Term']):
+class SubclassesIterator(Iterator[Term]):
     """An iterator over the subclasses of a `~pronto.Term`.
     """
 
     @classmethod
-    def _build_cache(cls, ont: 'Ontology') -> Dict[str, Set[str]]:
-        is_a: 'Relationship' = ont.get_relationship("is_a")
+    def _build_cache(cls, ont: Ontology) -> Dict[str, Set[str]]:
+        is_a: Relationship = ont.get_relationship("is_a")
         graph: Dict[str, Set[str]] = dict()
-        empty: List['Term'] = list()
+        empty: List[Term] = list()
         for t in ont.terms():
             for t2 in t.relationships.get(is_a, []):
                 graph.setdefault(t2.id, set()).add(t.id)
         return graph
 
     def __init__(
-            self,
-            term: 'Term',
-            distance: Optional[int] = None,
-            with_self: bool = True
+        self, term: Term, distance: Optional[int] = None, with_self: bool = True
     ) -> None:
         self._distmax: float = float("inf") if distance is None else distance
         self._ontology = ont = term._ontology
@@ -50,10 +47,10 @@ class SubclassesIterator(Iterator['Term']):
         if with_self:
             self._queue.append(term.id)
 
-    def __iter__(self) -> 'SubclassesIterator':
+    def __iter__(self) -> SubclassesIterator:
         return self
 
-    def __next__(self):
+    def __next__(self) -> Term:
         while self._frontier or self._queue:
             # Return any element currently queued
             if self._queue:
@@ -72,7 +69,7 @@ class SubclassesIterator(Iterator['Term']):
         # Stop iteration if no more elements to process
         raise StopIteration
 
-    def __length_hint__(self):
+    def __length_hint__(self) -> int:
         """Get an estimate of the number of remaining terms in the iterator.
 
         **This method never underestimates*.
@@ -94,4 +91,5 @@ class SubclassesIterator(Iterator['Term']):
             ['CIO:0000034', 'CIO:0000035', 'CIO:0000036']
         """
         from ..term import TermSet
+
         return TermSet(self)

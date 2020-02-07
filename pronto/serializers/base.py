@@ -22,4 +22,4 @@ class BaseSerializer(abc.ABC):
     def dumps(self) -> str:
         s = io.BytesIO()
         self.dump(s)
-        return s.getvalue().decode('utf-8')
+        return s.getvalue().decode("utf-8")

@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
     from ..ontology import Ontology
 
 
-class SuperclassesIterator(Iterator[Term]):
+class SuperclassesIterator(Iterator["Term"]):
     """An iterator over the superclasses of a `~pronto.Term`.
     """
 

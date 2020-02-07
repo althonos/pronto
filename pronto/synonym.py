@@ -107,24 +107,46 @@ class SynonymData(object):
 @functools.total_ordering
 class Synonym(object):
 
-    _ontology: weakref.ReferenceType[Ontology]
-    _data: weakref.ReferenceType[SynonymData]
+    if typing.TYPE_CHECKING:
 
-    def __init__(self, ontology: Ontology, syndata: SynonymData):
-        if syndata.type is not None:
-            types = ontology.metadata.synonymtypedefs
-            if not any(t.id == syndata.type for t in types):
-                raise ValueError(f"undeclared synonym type: {syndata.type}")
+        __ontology: weakref.ReferenceType[Ontology]
+        __data: weakref.ReferenceType[SynonymData]
 
-        self._ontology = weakref.ref(ontology)
-        self._data = weakref.ref(syndata)
+        def __init__(self, ontology: Ontology, data: SynonymData):
+            self.__ontology = weakref.ref(ontology)
+            self.__data = weakref.ref(data)
 
-    def __eq__(self, other):
+        def _data(self) -> SynonymData:
+            rdata = self.__data()
+            if rdata is None:
+                raise RuntimeError("synonym data was deallocated")
+            return rdata
+
+        def _ontology(self) -> Ontology:
+            ontology = self.__ontology()
+            if ontology is None:
+                raise RuntimeError("referenced ontology was deallocated")
+            return ontology
+
+    else:
+
+        __slots__: Iterable[str] = ("__weakref__", "_ontology", "_data")
+
+        def __init__(self, ontology: Ontology, syndata: SynonymData):
+            if syndata.type is not None:
+                types = ontology.metadata.synonymtypedefs
+                if not any(t.id == syndata.type for t in types):
+                    raise ValueError(f"undeclared synonym type: {syndata.type}")
+
+            self._ontology = weakref.ref(ontology)
+            self._data = weakref.ref(syndata)
+
+    def __eq__(self, other: object):
         if isinstance(other, Synonym):
             return self._data() == other._data()
         return False
 
-    def __lt__(self, other):
+    def __lt__(self, other: object):
         if not isinstance(other, Synonym):
             return False
         return self._data().__lt__(other._data())
@@ -163,7 +185,7 @@ class Synonym(object):
     @typechecked(property=True)
     def type(self, type_: Optional[SynonymType]) -> None:
         synonyms = self._ontology().metadata.synonymtypedefs
-        if type is not None and type_.id not in synonyms:
+        if type_ is not None and type_.id not in synonyms:
             raise ValueError(f"undeclared synonym type: {type_.id}")
         self._data().type = type_.id if type_ is not None else None
 

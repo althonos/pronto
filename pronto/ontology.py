@@ -62,6 +62,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     import_depth: int
     timeout: int
     imports: Dict[str, "Ontology"]
+    path: Optional[str]
 
     # Private attributes
     _terms: Dict[str, TermData]
@@ -152,11 +153,11 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
             # Get the path and the handle from arguments
             if isinstance(handle, str):
-                self.path: str = handle
+                self.path = handle
                 self.handle = ctx << get_handle(handle, timeout)
                 _handle = ctx << decompress(self.handle)
             elif hasattr(handle, "read"):
-                self.path: str = get_location(handle)
+                self.path = get_location(handle)
                 self.handle = handle
                 _handle = decompress(self.handle)
             else:

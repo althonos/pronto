@@ -21,6 +21,7 @@ from ..utils.impl import etree
 from ..utils.warnings import SyntaxWarning, NotImplementedWarning
 
 if typing.TYPE_CHECKING:
+    from ..entity import Entity
     from ..ontology import Ontology
 
 
@@ -597,7 +598,7 @@ class RdfXMLParser(BaseParser):
         if property == _NS["obo"].raw("IAO_0000115") and elem_target.text is not None:
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
             resource = aliases.get(iri, iri)
-            entity = self.ont[self._compact_id(resource)]
+            entity: Entity = self.ont[self._compact_id(resource)]
 
             entity.definition = d = Definition(elem_target.text)
             for child in elem.iterfind(_NS["oboInOwl"]["hasDbXref"]):

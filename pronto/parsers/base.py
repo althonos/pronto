@@ -11,7 +11,7 @@ from ..ontology import Ontology
 
 class BaseParser(abc.ABC):
     def __init__(self, ont: Ontology):
-        self.ont = ont
+        self.ont: Ontology = ont
 
     @classmethod
     @abc.abstractmethod
@@ -33,7 +33,7 @@ class BaseParser(abc.ABC):
         timeout: int = 5,
     ) -> Dict[str, Ontology]:
         # check we did not reach the maximum import depth
-        resolved = {}
+        resolved: Dict[str, Ontology] = {}
         if import_depth == 0:
             return resolved
 

@@ -19,6 +19,9 @@ from ..pv import PropertyValue, LiteralPropertyValue, ResourcePropertyValue
 
 
 class FastoboSerializer:
+
+    ont: Ontology
+
     def _to_obodoc(self, o: Ontology) -> fastobo.doc.OboDoc:
         doc = fastobo.doc.OboDoc()
         if o.metadata:
@@ -83,10 +86,12 @@ class FastoboSerializer:
 
     def _to_property_value(self, pv: PropertyValue) -> fastobo.pv.AbstractPropertyValue:
         try:
+            pv = typing.cast(ResourcePropertyValue, pv)
             return fastobo.pv.ResourcePropertyValue(
                 fastobo.id.parse(pv.property), fastobo.id.parse(pv.resource),
             )
         except AttributeError:
+            pv = typing.cast(LiteralPropertyValue, pv)
             return fastobo.pv.LiteralPropertyValue(
                 fastobo.id.parse(pv.property), pv.literal, fastobo.id.parse(pv.datatype)
             )
@@ -106,7 +111,7 @@ class FastoboSerializer:
         if t.name is not None:
             frame.append(fastobo.term.NameClause(t.name))
         if t.namespace is not None:
-            if t.namespace != self.ont.default_namespace:
+            if t.namespace != self.ont.metadata.default_namespace:
                 frame.append(fastobo.term.NamespaceClause(t.namespace))
         for alt in sorted(t.alternate_ids):
             frame.append(fastobo.term.AltIdClause(fastobo.id.parse(alt)))
@@ -170,7 +175,7 @@ class FastoboSerializer:
         if r.name is not None:
             frame.append(fastobo.typedef.NameClause(r.name))
         if r.namespace is not None:
-            if r.namespace != self.ont.default_namespace:
+            if r.namespace != self.ont.metadata.default_namespace:
                 frame.append(fastobo.typedef.NamespaceClause(r.namespace))
         for alt in sorted(r.alternate_ids):
             frame.append(fastobo.typedef.AltIdClause(fastobo.id.parse(alt)))

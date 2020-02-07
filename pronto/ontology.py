@@ -210,13 +210,15 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             length=len(terms) + len(relationships),
         )
 
-    def __contains__(self, item: str) -> bool:
-        return (
-            any(item in i for i in self.imports.values())
-            or item in self._terms
-            or item in self._relationships
-            or item in relationship._BUILTINS
-        )
+    def __contains__(self, item: object) -> bool:
+        if isinstance(item, str):
+            return (
+                any(item in i for i in self.imports.values())
+                or item in self._terms
+                or item in self._relationships
+                or item in relationship._BUILTINS
+            )
+        return False
 
     def __getitem__(self, id: str) -> Union[Term, Relationship]:
         """Get any entity in the ontology graph with the given identifier.

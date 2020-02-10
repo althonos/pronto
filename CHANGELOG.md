@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix miscellaneous bugs found with `mypy`.
 - `fastobo` serializer crashing on namespace clauses because of a type
   issue.
+- `fastobo` parsers using data version clauses as format version clauses.
 
 ## [1.1.5] - 2020-01-25
 [1.1.5]: https://github.com/althonos/pronto/compare/v1.1.4...v1.1.5

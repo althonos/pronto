@@ -147,7 +147,7 @@ def _process_clause_header_auto_generated_by(clause, meta):
 
 @process_clause_header.register(fastobo.header.DataVersionClause)
 def _process_clause_header_data_version(clause, meta):
-    meta.format_version = clause.version
+    meta.data_version = clause.version
 
 
 @process_clause_header.register(fastobo.header.DateClause)

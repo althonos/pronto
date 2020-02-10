@@ -33,6 +33,6 @@ class OboJSONParser(FastoboParser, BaseParser):
                     self.enrich_term(frame)
                 elif isinstance(frame, fastobo.typedef.TypedefFrame):
                     self.enrich_relationship(frame)
-        except SyntaxError as s:
-            location = self.ont.path, s.lineno, s.offset, s.text
-            raise SyntaxError(s.args[0], location) from None
+        except SyntaxError as err:
+            location = self.ont.path, err.lineno, err.offset, err.text
+            raise SyntaxError(err.args[0], location) from None

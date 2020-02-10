@@ -1,7 +1,7 @@
 import datetime
 import functools
 import typing
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple
 
 from .synonym import SynonymType
 from .pv import PropertyValue

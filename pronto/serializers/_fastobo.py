@@ -110,7 +110,8 @@ class FastoboSerializer:
             frame.append(fastobo.term.NameClause(t.name))
         if t.namespace is not None:
             if t.namespace != self.ont.metadata.default_namespace:
-                frame.append(fastobo.term.NamespaceClause(t.namespace))
+                ns = fastobo.id.parse(t.namespace)
+                frame.append(fastobo.term.NamespaceClause(ns))
         for alt in sorted(t.alternate_ids):
             frame.append(fastobo.term.AltIdClause(fastobo.id.parse(alt)))
         if t.definition is not None:
@@ -174,7 +175,8 @@ class FastoboSerializer:
             frame.append(fastobo.typedef.NameClause(r.name))
         if r.namespace is not None:
             if r.namespace != self.ont.metadata.default_namespace:
-                frame.append(fastobo.typedef.NamespaceClause(r.namespace))
+                ns = fastobo.id.parse(r.namespace)
+                frame.append(fastobo.typedef.NamespaceClause(ns))
         for alt in sorted(r.alternate_ids):
             frame.append(fastobo.typedef.AltIdClause(fastobo.id.parse(alt)))
         if r.definition is not None:

@@ -27,7 +27,7 @@ def _load_tests_from_module(tests, module, globs, setUp=None, tearDown=None):
     """Load tests from module, iterating through submodules"""
     for attr in (getattr(module, x) for x in dir(module) if not x.startswith("_")):
         if isinstance(attr, types.ModuleType):
-            suite = doctest.DocTestSuite(attr, globs, setUp=setUp, tearDown=tearDown)
+            suite = doctest.DocTestSuite(attr, globs, setUp=setUp, tearDown=tearDown, optionflags=+doctest.ELLIPSIS)
             tests.addTests(suite)
     return tests
 

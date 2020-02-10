@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 import itertools
 import io
@@ -6,7 +7,6 @@ import os
 import urllib.parse
 from typing import BinaryIO, Dict, Iterator, Mapping, Optional, Set, Union
 
-import contexter
 import fastobo
 
 from . import relationship
@@ -134,7 +134,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """
         from .parsers import BaseParser
 
-        with contexter.Contexter() as ctx:
+        with contextlib.ExitStack() as ctx:
             self.import_depth = import_depth
             self.timeout = timeout
             self.imports = dict()
@@ -152,8 +152,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             # Get the path and the handle from arguments
             if isinstance(handle, str):
                 self.path = handle
-                self.handle = ctx << get_handle(handle, timeout)
-                _handle = ctx << decompress(self.handle)
+                self.handle = ctx.enter_context(get_handle(handle, timeout))
+                _handle = ctx.enter_context(decompress(self.handle))
             elif hasattr(handle, "read"):
                 self.path = get_location(handle)
                 self.handle = handle

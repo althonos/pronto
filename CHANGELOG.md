@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Moved code of `Term.subclasses` and `Term.superclasses` to a dedicated
   iterator class in the `pronto.logic` submodule.
+- Dropped `contexter` requirement.
 ### Fixed
 - Fix a typo in `Synonym.type` setter leading to a potential bug when
   the given `type` is `None`.

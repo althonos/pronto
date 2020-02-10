@@ -21,8 +21,8 @@ install:
 - pip install .
 
 script:
-- python -m coverage run --source=pronto -m unittest discover -v
-- python -O -m coverage run --source=pronto -m unittest discover -v
+- python    -m coverage run -p --source=pronto -m unittest discover -v
+- python -O -m coverage run -p --source=pronto -m unittest discover -v
 - coverage xml --include "pronto/*"
 
 after_success:

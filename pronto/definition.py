@@ -57,7 +57,7 @@ class Definition(str):
 
     __slots__ = ("__weakref__", "xrefs")
 
-    def __new__(cls, text: str, _xrefs=None) -> "Definition":
+    def __new__(cls, text: str, xrefs=None) -> "Definition":
         return super().__new__(cls, text)
 
     def __init__(self, text: str, xrefs: Optional[Iterable[Xref]] = None) -> None:

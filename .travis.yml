@@ -23,9 +23,10 @@ install:
 script:
 - python    -m coverage run -p --source=pronto -m unittest discover -v
 - python -O -m coverage run -p --source=pronto -m unittest discover -v
-- coverage xml --include "pronto/*"
 
 after_success:
+- coverage combine
+- coverage xml --include "pronto/*"
 - codecov
 - python-codacy-coverage -r coverage.xml
 

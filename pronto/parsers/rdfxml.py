@@ -141,7 +141,7 @@ class RdfXMLParser(BaseParser):
             warnings.warn(
                 f"{elem} contains text but no `xsd:datatype`",
                 SyntaxWarning,
-                stacklevel=3,
+                stacklevel=2,
             )
             datatype = _NS["xsd"].raw("string")
         return LiteralPropertyValue(
@@ -233,8 +233,10 @@ class RdfXMLParser(BaseParser):
         for child in elem:
 
             tag: str = child.tag
-            text: Optional[str] = child.text
             attrib: Dict[str, str] = child.attrib
+            text: Optional[str] = child.text
+            if text is not None and text.isspace():
+                text = None
 
             if tag == _NS["rdfs"]["subClassOf"]:
                 if _NS["rdf"]["resource"] in attrib:
@@ -250,7 +252,7 @@ class RdfXMLParser(BaseParser):
                     warnings.warn(
                         f"could not extract subset value in {id_!r}",
                         SyntaxWarning,
-                        stacklevel=3,
+                        stacklevel=2,
                     )
             elif tag == _NS["rdfs"]["comment"] and text is not None:
                 comments.append(text)
@@ -268,7 +270,7 @@ class RdfXMLParser(BaseParser):
                     warnings.warn(
                         f"`rdfs:label` without text literal in {id!r}",
                         SyntaxWarning,
-                        stacklevel=3,
+                        stacklevel=2,
                     )
             elif tag == _NS["obo"]["IAO_0000115"] and text is not None:
                 termdata.definition = Definition(text)
@@ -309,7 +311,7 @@ class RdfXMLParser(BaseParser):
                     warnings.warn(
                         "`owl:disjointWith` element without `rdf:resource`",
                         SyntaxWarning,
-                        stacklevel=3,
+                        stacklevel=2,
                     )
             elif tag == _NS["obo"]["IAO_0100001"]:
                 if _NS["rdf"]["resource"] in attrib:
@@ -321,7 +323,7 @@ class RdfXMLParser(BaseParser):
                     warnings.warn(
                         "could not extract ID from `IAO:0100001` annotation",
                         SyntaxWarning,
-                        stacklevel=3,
+                        stacklevel=2,
                     )
             elif tag == _NS["oboInOwl"]["consider"]:
                 if _NS["rdf"]["resource"] in attrib:
@@ -338,13 +340,13 @@ class RdfXMLParser(BaseParser):
             elif tag != _NS["oboInOwl"]["id"]:
                 if _NS["rdf"]["resource"] in attrib:
                     termdata.annotations.add(self._extract_resource_pv(child))
-                elif _NS["rdf"]["datatype"] and text is not None:
+                elif _NS["rdf"]["datatype"] in attrib and text is not None:
                     termdata.annotations.add(self._extract_literal_pv(child))
                 else:
                     warnings.warn(
-                        f"unknown element in `owl:Class`: {child}",
+                        f"unknown element in `owl:Class`: {child.tag}",
                         SyntaxWarning,
-                        stacklevel=3,
+                        stacklevel=2,
                     )
 
         # Owl to OBO post processing:
@@ -355,7 +357,7 @@ class RdfXMLParser(BaseParser):
                 warnings.warn(
                     f"several names found for {id_!r}, using {names[0]!r}",
                     SyntaxWarning,
-                    stacklevel=3,
+                    stacklevel=2,
                 )
             termdata.name = names[0]
         # check we got a single comment, or concatenate comments
@@ -364,7 +366,7 @@ class RdfXMLParser(BaseParser):
                 warnings.warn(
                     f"several names found for {id_!r}, concatenating",
                     SyntaxWarning,
-                    stacklevel=3,
+                    stacklevel=2,
                 )
             termdata.comment = "\n".join(comments)
 
@@ -404,8 +406,10 @@ class RdfXMLParser(BaseParser):
         for child in elem:
 
             tag: str = child.tag
-            text: Optional[str] = child.text
             attrib: Dict[str, str] = child.attrib
+            text: Optional[str] = child.text
+            if text is not None and text.isspace():
+                text = None
 
             if tag == _NS["rdfs"]["subObjectPropertyOf"]:
                 if _NS["rdf"]["resource"] in attrib:
@@ -456,7 +460,7 @@ class RdfXMLParser(BaseParser):
                     warnings.warn(
                         f"`rdfs:label` without text literal in {id!r}",
                         SyntaxWarning,
-                        stacklevel=3,
+                        stacklevel=2,
                     )
             elif tag == _NS["rdfs"]["domain"] and _NS["rdf"]["resource"] in attrib:
                 reldata.domain = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
@@ -505,18 +509,18 @@ class RdfXMLParser(BaseParser):
                     warnings.warn(
                         "could not extract ID from `oboInOwl:consider` annotation",
                         SyntaxWarning,
-                        stacklevel=3,
+                        stacklevel=2,
                     )
             elif tag not in (_NS["oboInOwl"]["id"], _NS["oboInOwl"]["shorthand"]):
                 if _NS["rdf"]["resource"] in attrib:
                     reldata.annotations.add(self._extract_resource_pv(child))
-                elif _NS["rdf"]["datatype"] and text is not None:
+                elif _NS["rdf"]["datatype"] in attrib and text is not None:
                     reldata.annotations.add(self._extract_literal_pv(child))
                 else:
                     warnings.warn(
                         f"unknown element in `owl:ObjectProperty`: {child}",
                         SyntaxWarning,
-                        stacklevel=3,
+                        stacklevel=2,
                     )
 
         # Owl to OBO post processing:
@@ -527,7 +531,7 @@ class RdfXMLParser(BaseParser):
                 warnings.warn(
                     f"several names found for {id_!r}, using {names[0]!r}",
                     SyntaxWarning,
-                    stacklevel=3,
+                    stacklevel=2,
                 )
             reldata.name = names[0]
         # check we got a single comment, or concatenate comments

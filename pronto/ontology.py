@@ -253,18 +253,18 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     # --- Serialization utils ------------------------------------------------
 
     def dump(self, file: BinaryIO, format: str = "obo"):
-        """Serialize the ontology to a given file-handle.
+        f"""Serialize the ontology to a given file-handle.
 
         Arguments:
             file (~typing.BinaryIO): A binary file handle open in reading mode
                 to write the serialized ontology into.
             format (str): The serialization format to use. Currently supported
-                formats are: **obo**, **obojson**.
+                formats are: **obo**, **json**.
 
         Example:
             >>> ms = pronto.Ontology.from_obo_library("ms.obo")
             >>> with open("ms.json", "wb") as f:
-            ...     ms.dump(f)
+            ...     ms.dump(f, format="json")
 
         """
         from .serializers import BaseSerializer
@@ -278,6 +278,13 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     def dumps(self, format: str = "obo") -> str:
         """Get a textual representation of the serialization ontology.
+
+        Example:
+            >>> go = pronto.Ontology("go.obo")
+            >>> print(go.dumps())
+            format-version: 1.2
+            data-version: releases/2019-07-01
+            ...
         """
         s = io.BytesIO()
         self.dump(s, format=format)

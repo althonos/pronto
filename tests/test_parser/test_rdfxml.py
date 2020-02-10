@@ -1,4 +1,5 @@
 import io
+import os
 import unittest
 import warnings
 import xml.etree.ElementTree as etree
@@ -27,13 +28,20 @@ class TestRdfXMLParser(unittest.TestCase):
         s = io.BytesIO(xml.encode('utf-8'))
         return pronto.Ontology(s, import_depth=0)
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
         warnings.simplefilter("error")
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         warnings.simplefilter(warnings.defaultaction)
+
+    # ---
+
+    def test_whole_ontology(self):
+        warnings.simplefilter("ignore")
+        path = os.path.join(__file__, "..", "..", "data", "iao.owl")
+        iao = pronto.Ontology(os.path.realpath(path))
+        self.assertEqual(len(iao.terms()), 245)
+
 
     # ------------------------------------------------------------------------
 

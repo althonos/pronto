@@ -67,7 +67,12 @@ _SYNONYMS_ATTRIBUTES = {
 
 
 class RdfXMLParser(BaseParser):
-    # TODO: extract annotation properties
+    """A parser for OWL2 ontologies serialized in RDF/XML format.
+
+    To Do:
+        * Extraction of annotation properties, which are currently simply
+          being ignored when parsing a document.
+    """
 
     # -- BaseParser interface ------------------------------------------------
 

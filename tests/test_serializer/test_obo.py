@@ -12,6 +12,54 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
 
     format = "obo"
 
+    def test_metadata_auto_generated_by(self):
+        self.assertRoundtrip(
+            f"""
+            format-version: 1.4
+            auto-generated-by: pronto v{pronto.__version__}
+            """
+        )
+
+    def test_metadata_date(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+            date: 28:01:2020 10:29
+            """
+        )
+
+    def test_metadata_namespace_id_rule(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+            namespace-id-rule: * MS:$sequence(7,0,9999999)$
+            """
+        )
+
+    def test_metadata_owl_axioms(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+            owl-axioms: AnnotationAssertion(<http://www.geneontology.org/formats/oboInOwl#hasOBONamespace> <http://purl.obolibrary.org/obo/MS_1000393> \\"MS\\"^^xsd:string)
+            """
+        )
+
+    def test_metadata_saved_by(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+            saved-by: Martin Larralde
+            """
+        )
+
+    def test_metadata_unreserved(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+            unreserved-thing: very much unreserved
+            """
+        )
+
     def test_term_anonymous(self):
         self.assertRoundtrip(
             """
@@ -31,6 +79,17 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             [Term]
             id: TST:001
             builtin: true
+            """
+        )
+
+    def test_term_comment(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+            comment: This is a very important comment.
             """
         )
 

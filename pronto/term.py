@@ -324,7 +324,7 @@ class Term(Entity):
     # --- Attributes ---------------------------------------------------------
 
     @property
-    def disjoint_from(self) -> 'TermSet':
+    def disjoint_from(self) -> "TermSet":
         """The terms declared as disjoint from this term.
 
         Two terms are disjoint if they have no instances or subclasses in
@@ -373,14 +373,14 @@ class Term(Entity):
         }
 
     @property
-    def replaced_by(self) -> 'TermSet':
+    def replaced_by(self) -> "TermSet":
         s = TermSet()
         s._ids = self._data().replaced_by
         s._ontology = weakref.ref(self._ontology())
         return s
 
     @property
-    def union_of(self) -> 'TermSet':
+    def union_of(self) -> "TermSet":
         s = TermSet()
         s._ids = self._data().union_of
         s._ontology = weakref.ref(self._ontology())
@@ -433,7 +433,7 @@ class TermSet(MutableSet[Term]):
         elements = (ontology[id_].__repr__() for id_ in self._ids)
         return f"{type(self).__name__}({{{', '.join(elements)}}})"
 
-    def __iand__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __iand__(self, other: AbstractSet[Term]) -> "TermSet":
         if isinstance(other, TermSet):
             self._ids &= other._ids
         else:
@@ -442,7 +442,7 @@ class TermSet(MutableSet[Term]):
             self._ontology = None
         return self
 
-    def __and__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __and__(self, other: AbstractSet[Term]) -> "TermSet":
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__and__(other._ids)
@@ -451,14 +451,14 @@ class TermSet(MutableSet[Term]):
             s = TermSet(super().__and__(other))
         return s
 
-    def __ior__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __ior__(self, other: AbstractSet[Term]) -> "TermSet":
         if not isinstance(other, TermSet):
             other = TermSet(other)
         self._ids |= other._ids
         self._ontology = self._ontology or other._ontology
         return self
 
-    def __or__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __or__(self, other: AbstractSet[Term]) -> "TermSet":
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__or__(other._ids)
@@ -467,7 +467,7 @@ class TermSet(MutableSet[Term]):
             s = TermSet(super().__or__(other))
         return s
 
-    def __isub__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __isub__(self, other: AbstractSet[Term]) -> "TermSet":
         if isinstance(other, TermSet):
             self._ids -= other._ids
         else:
@@ -476,7 +476,7 @@ class TermSet(MutableSet[Term]):
             self._ontology = None
         return self
 
-    def __sub__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __sub__(self, other: AbstractSet[Term]) -> "TermSet":
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__sub__(other._ids)
@@ -485,7 +485,7 @@ class TermSet(MutableSet[Term]):
             s = TermSet(super().__sub__(other))
         return s
 
-    def __ixor__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __ixor__(self, other: AbstractSet[Term]) -> "TermSet":
         if isinstance(other, TermSet):
             self._ids ^= other._ids
         else:
@@ -494,7 +494,7 @@ class TermSet(MutableSet[Term]):
             self._ontology = None
         return self
 
-    def __xor__(self, other: AbstractSet[Term]) -> 'TermSet':
+    def __xor__(self, other: AbstractSet[Term]) -> "TermSet":
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__xor__(other._ids)

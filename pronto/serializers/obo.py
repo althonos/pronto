@@ -16,7 +16,7 @@ class OboSerializer(FastoboSerializer, BaseSerializer):
             if self.ont.metadata:
                 header = self._to_header_frame(self.ont.metadata)
                 file.write(str(header).encode("utf-8"))
-                if self.ont._terms or self.ont._typedefs:
+                if self.ont._terms or self.ont._relationships:
                     file.write(b"\n")
             # dump terms
             if self.ont._terms:

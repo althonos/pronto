@@ -2,6 +2,7 @@ import collections
 import typing
 from typing import Deque, Dict, Iterator, Optional, Set, Tuple, List
 
+from .lineage import Lineage
 from ..utils.impl import set
 
 if typing.TYPE_CHECKING:
@@ -14,16 +15,6 @@ class SubclassesIterator(Iterator["Term"]):
     """An iterator over the subclasses of one or several `~pronto.Term`.
     """
 
-    @classmethod
-    def _build_cache(cls, ont: "Ontology") -> Dict[str, Set[str]]:
-        is_a: Relationship = ont.get_relationship("is_a")
-        graph: Dict[str, Set[str]] = dict()
-        empty: List[Term] = list()
-        for t in ont.terms():
-            for t2 in t.relationships.get(is_a, []):
-                graph.setdefault(t2.id, set()).add(t.id)
-        return graph
-
     def __init__(
         self,
         *terms: "Term",
@@ -32,10 +23,6 @@ class SubclassesIterator(Iterator["Term"]):
     ) -> None:
         self._distmax: float = float("inf") if distance is None else distance
         self._ontology = ont = terms[0]._ontology
-        self._graph = graph = ont()._subclassing_cache
-        if graph is None:
-            self._graph = ont()._subclassing_cache = self._build_cache(ont())
-
         self._maxlen = len(ont().terms())
 
         self._sub: Set[str] = set()
@@ -61,11 +48,11 @@ class SubclassesIterator(Iterator["Term"]):
             node, distance = self._frontier.popleft()
             self._done.add(node)
             # Process its neighbors if they are not too far
-            neighbors: Set[str] = self._graph.get(node)
+            neighbors: Set[str] = self._ontology()._inheritance.get(node, Lineage()).sub
             if neighbors and distance < self._distmax:
-                for node in sorted(neighbors - self._done):
+                for node in sorted(neighbors.difference(self._done)):
                     self._frontier.append((node, distance + 1))
-                for neighbor in sorted(neighbors - self._sub):
+                for neighbor in sorted(neighbors.difference(self._sub)):
                     self._sub.add(neighbor)
                     self._queue.append(neighbor)
         # Stop iteration if no more elements to process

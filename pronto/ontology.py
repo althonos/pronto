@@ -13,6 +13,7 @@ from . import relationship
 from .term import Term, TermData
 from .synonym import SynonymType
 from .relationship import Relationship, RelationshipData
+from .logic.lineage import Lineage
 from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
@@ -63,6 +64,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     path: Optional[str]
 
     # Private attributes
+    _inheritance: Dict[str, Lineage]
     _terms: Dict[str, TermData]
     _relationships: Dict[str, RelationshipData]
     _subclassing_cache: Optional[Dict[str, Set[str]]]  # cache for `Term.subclasses`
@@ -105,7 +107,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         handle: Union[BinaryIO, str, None] = None,
         import_depth: int = -1,
         timeout: int = 5,
-        cache: bool = True,
     ):
         """Create a new `Ontology` instance.
 
@@ -139,7 +140,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             self.timeout = timeout
             self.imports = dict()
 
-            self._subclassing_cache = dict() if cache else None
+            self._inheritance = dict()
             self._terms: Dict[str, TermData] = {}
             self._relationships: Dict[str, RelationshipData] = {}
 
@@ -171,8 +172,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 raise ValueError(f"could not find a parser to parse {handle!r}")
 
             # Populate the subclassing cache
-            if cache:
-                self._build_subclassing_cache()
+            self._build_inheritance_cache()
 
     # --- Magic Methods ------------------------------------------------------
 
@@ -243,12 +243,13 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     # --- Private helpers ----------------------------------------------------
 
-    def _build_subclassing_cache(self):
-        graph = self._subclassing_cache
-        graph.clear()
-        for t in self.terms():
-            for t2 in t._data().relationships.get("is_a", ()):
-                graph.setdefault(t2, set()).add(t.id)
+    def _build_inheritance_cache(self) -> None:
+        is_a = self.get_relationship("is_a")
+        self._inheritance.clear()
+        for t1 in self.terms():
+            for t2 in t1._data().relationships.get("is_a", []):
+                self._inheritance.setdefault(t2, Lineage()).sub.add(t1.id)
+                self._inheritance.setdefault(t1.id, Lineage()).sup.add(t2)
 
     # --- Serialization utils ------------------------------------------------
 
@@ -347,6 +348,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         if id in self:
             raise ValueError(f"identifier already in use: {id} ({self[id]})")
         self._terms[id] = termdata = TermData(id)
+        self._inheritance[id] = Lineage()
         return Term(self, termdata)
 
     @typechecked()

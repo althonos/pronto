@@ -368,9 +368,21 @@ class Term(Entity):
 
     @relationships.setter
     def relationships(self, r: Mapping[Relationship, Iterable["Term"]]):
-        self._data().relationships = {
+        self._data().relationships = relationships = {
             relation.id: set(t.id for t in terms) for relation, terms in r.items()
         }
+
+        ## FIXME: Maybe wrap in a single function 
+        cache = self._ontology()._inheritance
+        previous_super = cache[self.id].sup
+        new_super = relationships.get("is_a", set())
+        for removed in previous_super - new_super:
+            cache[removed].sub.remove(self.id)
+        for added in new_super - previous_super:
+            cache[added].sub.add(self.id)
+        cache[self.id].sup.clear()
+        cache[self.id].sup.update(new_super)
+
 
     @property
     def replaced_by(self) -> "TermSet":

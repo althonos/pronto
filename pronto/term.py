@@ -531,3 +531,29 @@ class TermSet(MutableSet[Term]):
     @property
     def alternate_ids(self) -> FrozenSet[str]:
         return frozenset(id for term in self for id in term.alternate_ids)
+
+    @property
+    def names(self) -> FrozenSet[str]:
+        return frozenset(map(operator.attrgetter("name"), iter(self)))
+
+    def subclasses(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> SubclassesIterator:
+        """Get an iterator over the subclasses of all terms in the set.
+        """
+        return SubclassesIterator(*self, distance=distance, with_self=with_self)
+
+    def superclasses(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> SubclassesIterator:
+        """Get an iterator over the superclasses of all terms in the set.
+
+        Example:
+            >>> ms = pronto.Ontology("ms.obo")
+            >>> s = pronto.TermSet({ms['MS:1000122'], ms['MS:1000124']})
+            >>> s.superclasses(with_self=False).to_set().ids
+            frozenset({'MS:1000031'})
+            >>> ms["MS:1000031"]
+            Term('MS:1000031', name='instrument model')
+        """
+        return SuperclassesIterator(*self, distance=distance, with_self=with_self)

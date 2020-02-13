@@ -11,7 +11,7 @@ if typing.TYPE_CHECKING:
 
 
 class SubclassesIterator(Iterator["Term"]):
-    """An iterator over the subclasses of a `~pronto.Term`.
+    """An iterator over the subclasses of one or several `~pronto.Term`.
     """
 
     @classmethod
@@ -25,10 +25,13 @@ class SubclassesIterator(Iterator["Term"]):
         return graph
 
     def __init__(
-        self, term: "Term", distance: Optional[int] = None, with_self: bool = True
+        self,
+        *terms: "Term",
+        distance: Optional[int] = None,
+        with_self: bool = True
     ) -> None:
         self._distmax: float = float("inf") if distance is None else distance
-        self._ontology = ont = term._ontology
+        self._ontology = ont = terms[0]._ontology
         self._graph = graph = ont()._subclassing_cache
         if graph is None:
             self._graph = ont()._subclassing_cache = self._build_cache(ont())
@@ -40,10 +43,11 @@ class SubclassesIterator(Iterator["Term"]):
         self._frontier: Deque[Tuple[str, int]] = collections.deque()
         self._queue: Deque[str] = collections.deque()
 
-        self._frontier.append((term.id, 0))
-        self._sub.add(term.id)
-        if with_self:
-            self._queue.append(term.id)
+        for term in terms:
+            self._frontier.append((term.id, 0))
+            self._sub.add(term.id)
+            if with_self:
+                self._queue.append(term.id)
 
     def __iter__(self) -> "SubclassesIterator":
         return self

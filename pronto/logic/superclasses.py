@@ -11,24 +11,25 @@ if typing.TYPE_CHECKING:
 
 
 class SuperclassesIterator(Iterator["Term"]):
-    """An iterator over the superclasses of a `~pronto.Term`.
+    """An iterator over the superclasses of one or several `~pronto.Term`.
     """
 
     def __init__(
-        self, term: "Term", distance: Optional[int] = None, with_self: bool = True,
+        self, *terms: "Term", distance: Optional[int] = None, with_self: bool = True,
     ) -> None:
         self._distmax: float = float("inf") if distance is None else distance
-        self._ontology = ont = term._ontology
+        self._ontology = ont = terms[0]._ontology
 
         self._sup: Set[Term] = set()
         self._done: Set[Term] = set()
         self._frontier: Deque[Tuple[Term, int]] = collections.deque()
         self._queue: Deque[Term] = collections.deque()
 
-        self._frontier.append((term, 0))
-        self._sup.add(term)
-        if with_self:
-            self._queue.append(term)
+        for term in terms:
+            self._frontier.append((term, 0))
+            self._sup.add(term)
+            if with_self:
+                self._queue.append(term)
 
     def __iter__(self) -> "SuperclassesIterator":
         return self
@@ -53,7 +54,7 @@ class SuperclassesIterator(Iterator["Term"]):
         # Stop iteration if no more elements to process
         raise StopIteration
 
-    def to_self(self) -> "TermSet":
+    def to_set(self) -> "TermSet":
         """Collect all superclasses into a `~pronto.TermSet`.
         """
         from ..term import TermSet

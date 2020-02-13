@@ -38,9 +38,11 @@ from .ontology import Ontology
 from .pv import LiteralPropertyValue, PropertyValue, ResourcePropertyValue
 from .relationship import Relationship, RelationshipData
 from .synonym import Synonym, SynonymData, SynonymType
-from .term import Term, TermData
+from .term import Term, TermData, TermSet
 from .xref import Xref
 
+# Using `__name__` attribute instead of directly using the name as a string
+# so the linter doesn't complaint about unused imports in the top module
 __all__ = [
     # modules
     "warnings",
@@ -49,6 +51,7 @@ __all__ = [
     Entity.__name__,
     Term.__name__,
     TermData.__name__,
+    TermSet.__name__,
     Metadata.__name__,
     Subset.__name__,
     Definition.__name__,

@@ -60,6 +60,18 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             """
         )
 
+    def test_term_alt_id(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+            alt_id: TST:002
+            alt_id: TST:003
+            """
+        )
+
     def test_term_anonymous(self):
         self.assertRoundtrip(
             """
@@ -107,6 +119,57 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             """
         )
 
+    def test_term_created_by(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+            created_by: Martin Larralde
+            """
+        )
+
+    def test_term_creation_date(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+            creation_date: 2020-02-11T15:32:35Z
+            """
+        )
+
+    def test_term_definition(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: GO:0000003
+            def: "The production of new individuals that contain some portion of genetic material inherited from one or more parent organisms." [GOC:go_curators, GOC:isa_complete, GOC:jl, ISBN:0198506732]
+            """
+        )
+
+    def test_term_disjoint_from(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+
+            [Term]
+            id: TST:002
+
+            [Term]
+            id: TST:003
+            disjoint_from: TST:001
+            disjoint_from: TST:002
+            """
+        )
+
     def test_term_intersection_of(self):
         self.assertRoundtrip(
             """
@@ -125,5 +188,77 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
 
             [Typedef]
             id: part_of
+            """
+        )
+
+    def test_term_is_a(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+
+            [Term]
+            id: TST:002
+
+            [Term]
+            id: TST:003
+            is_a: TST:001
+            is_a: TST:002
+            """
+        )
+
+    def test_term_is_obsolete(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+            is_obsolete: true
+            """
+        )
+
+    def test_term_replaced_by(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+
+            [Term]
+            id: TST:002
+            replaced_by: TST:001
+            """
+        )
+
+    def test_term_union_of(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+
+            [Term]
+            id: TST:002
+
+            [Term]
+            id: TST:003
+            union_of: TST:001
+            union_of: TST:002
+            """
+        )
+
+    def test_term_xref(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+            xref: PMC:135269
             """
         )

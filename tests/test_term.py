@@ -207,3 +207,50 @@ class TestTermSet(unittest.TestCase):
         s4 -= {self.ms['MS:1000015'], self.ms['MS:1000016']}
         self.assertEqual(sorted(s4.ids), [])
         self.assertIs(s4._ontology, None)
+
+    def test_subclasses_uniqueness(self):
+        ont = pronto.Ontology()
+        t1 = ont.create_term("TST:001")
+        t2 = ont.create_term("TST:002")
+        t3 = ont.create_term("TST:003")
+        t2.relationships = {ont['is_a']: [t1]}
+        t3.relationships = {ont['is_a']: [t2]}
+
+        self.assertEqual(
+            t1.subclasses().to_set().ids, {"TST:001", "TST:002", "TST:003"}
+        )
+        self.assertEqual(
+            t2.subclasses().to_set().ids, {"TST:002", "TST:003"}
+        )
+        self.assertEqual(
+            t3.subclasses().to_set().ids, {"TST:003"}
+        )
+
+        s = pronto.TermSet({t1, t2})
+        self.assertEqual(
+            sorted(t.id for t in s.subclasses(with_self=False)),
+            ["TST:003"]
+        )
+        self.assertEqual(
+            sorted(t.id for t in s.subclasses(with_self=True)),
+            ["TST:001", "TST:002", "TST:003"]
+        )
+
+    def test_superclasses_uniqueness(self):
+        ont = pronto.Ontology()
+        t1 = ont.create_term("TST:001")
+        t2 = ont.create_term("TST:002")
+        t3 = ont.create_term("TST:003")
+
+        t2.relationships = {ont['is_a']: [t1]}
+        t3.relationships = {ont['is_a']: [t1, t2]}
+
+        s = pronto.TermSet({t2, t3})
+        self.assertEqual(
+            sorted(t.id for t in s.superclasses(with_self=False)),
+            ["TST:001"]
+        )
+        self.assertEqual(
+            sorted(t.id for t in s.superclasses(with_self=True)),
+            ["TST:001", "TST:002", "TST:003"]
+        )

@@ -450,6 +450,9 @@ class Term(Entity):
 
 
 class TermSet(MutableSet[Term]):
+    """A specialized mutable set to store `Term` instances. 
+    """
+
     def __init__(self, terms: Optional[Iterable[Term]] = None) -> None:
         self._ids: Set[str] = set()
         self._ontology: "Optional[weakref.ReferenceType[Ontology]]" = None

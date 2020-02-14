@@ -18,6 +18,8 @@ if typing.TYPE_CHECKING:
 
 
 class RelationshipData(EntityData):
+    """Internal data storage of `Relationship` information.
+    """
 
     id: str
     anonymous: bool

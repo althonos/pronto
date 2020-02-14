@@ -55,6 +55,8 @@ class SynonymType(object):
 @functools.total_ordering
 @roundrepr
 class SynonymData(object):
+    """Internal data storage of `Synonym` information.
+    """
 
     description: str
     scope: Optional[str]
@@ -105,6 +107,8 @@ class SynonymData(object):
 
 @functools.total_ordering
 class Synonym(object):
+    """A synonym for an entity, with respects to the OBO terminology.
+    """
 
     if typing.TYPE_CHECKING:
 

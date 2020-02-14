@@ -18,6 +18,7 @@ An abstraction over a :math:`\mathcal{SHOIN}^\mathcal{(D)}` ontology.
 
    pronto.Ontology
 
+
 View Layer
 ----------
 
@@ -39,6 +40,8 @@ obtained from methods of existing `Ontology` or `Entity` instances, such as
    pronto.Relationship
    pronto.Synonym
    pronto.Term
+   pronto.TermSet
+
 
 Model Layer
 -----------

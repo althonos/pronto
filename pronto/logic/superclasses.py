@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
 class SuperclassesIterator(Iterator["Term"]):
     """An iterator over the superclasses of one or several `~pronto.Term`.
 
-    To Do:
+    Todo:
         * Rewrite directly using superclassing cache like `SubclassesIterator`
           and maybe refactor common parts of the code.
     """

@@ -9,7 +9,8 @@ from pronto.term import Term, TermData, TermSet
 from .utils import DATADIR
 
 
-class TestTerm(unittest.TestCase):
+class _TestTermMixin(object):
+
     @classmethod
     def setUpClass(cls):
         warnings.simplefilter('error')
@@ -21,6 +22,16 @@ class TestTerm(unittest.TestCase):
     def tearDownClass(cls):
         cls.file.close()
         warnings.simplefilter(warnings.defaultaction)
+
+    def setUp(self):
+        self.ont = ont = pronto.Ontology()
+        self.t1 = ont.create_term("TST:001")
+        self.t2 = ont.create_term("TST:002")
+        self.t3 = ont.create_term("TST:003")
+        self.has_part = ont.create_relationship("has_part")
+
+
+class TestTerm(_TestTermMixin, unittest.TestCase):
 
     def test_add_synonym(self):
         term = self.ms["MS:1000031"]
@@ -109,46 +120,77 @@ class TestTerm(unittest.TestCase):
             {"MS:1000123", "MS:1000489", "MS:1000031"},
         )
 
+    def test_consider(self):
+        self.assertEqual(self.t1.consider, TermSet())
+        self.t1.consider = {self.t2}
+        self.assertEqual(self.t1.consider, TermSet({self.t2}))
+        self.t1.consider.clear()
+        self.assertEqual(self.t1.consider, TermSet())
+        
+    def test_disjoint_from(self):
+        self.assertEqual(self.t1.disjoint_from, TermSet())
+        self.t1.disjoint_from = {self.t2}
+        self.assertEqual(self.t1.disjoint_from, TermSet({self.t2}))
+
+    def test_intersection_of(self):
+        self.assertEqual(self.t1.intersection_of, TermSet())
+        self.t1.intersection_of = {self.t2, self.t3}
+        self.assertEqual(self.t1.intersection_of, {self.t2, self.t3})
+        self.t1.intersection_of = {self.t2, (self.has_part, self.t3)}
+        self.assertEqual(self.t1.intersection_of, {self.t2, (self.has_part, self.t3)})
+
+    def test_intersection_of_type_error(self):
+        with self.assertRaises(TypeError):
+            self.t1.intersection_of = {0}
+
+    def test_union_of(self):
+        self.t1.union_of = {self.t2, self.t3}
+        self.assertEqual(self.t1.union_of, TermSet({self.t2, self.t3}))
+        self.assertEqual(self.t1._data().union_of, {self.t2.id, self.t3.id})
+
     @unittest.skipUnless(__debug__, "no type checking in optimized mode")
     def test_union_of_typechecked(self):
-        ont = pronto.Ontology()
-        t1 = ont.create_term("TST:001")
         with self.assertRaises(TypeError):
-            t1.union_of = 1
+            self.t1.union_of = 1
         with self.assertRaises(TypeError):
-            t1.union_of = { 1 }
+            self.t1.union_of = { 1 }
 
     def test_union_of_cardinality(self):
-        ont = pronto.Ontology()
-        t1 = ont.create_term("TST:001")
-        t2 = ont.create_term("TST:002")
         with self.assertRaises(ValueError):
-            t2.union_of = { t1 }
+            self.t2.union_of = { self.t1 }
 
     def test_replaced_by(self):
-        ont = pronto.Ontology()
-        t1 = ont.create_term("TST:001")
-        t2 = ont.create_term("TST:002")
-        t3 = ont.create_term("TST:003")
+        self.assertEqual(sorted(self.t1.replaced_by.ids), [])
 
-        self.assertEqual(sorted(t1.replaced_by.ids), [])
+        self.t1.replaced_by.add(self.t2)
+        self.assertEqual(sorted(self.t1.replaced_by.ids), [self.t2.id])
+        self.assertEqual(sorted(self.ont[self.t1.id].replaced_by.ids), [self.t2.id])
 
-        t1.replaced_by.add(t2)
-        self.assertEqual(sorted(t1.replaced_by.ids), ["TST:002"])
-        self.assertEqual(sorted(ont["TST:001"].replaced_by.ids), ["TST:002"])
+        self.t1.replaced_by.add(self.t3)
+        self.assertEqual(sorted(self.t1.replaced_by.ids), [self.t2.id, self.t3.id])
+        self.assertEqual(sorted(self.ont[self.t1.id].replaced_by.ids), [self.t2.id, self.t3.id])
 
-        t1.replaced_by.add(t3)
-        self.assertEqual(sorted(t1.replaced_by.ids), ["TST:002", "TST:003"])
-        self.assertEqual(sorted(ont["TST:001"].replaced_by.ids), ["TST:002", "TST:003"])
+    def test_repr(self):
+        self.assertEqual(repr(self.t1), f"Term({self.t1.id!r})")
+        self.t1.name = "test"
+        self.assertEqual(repr(self.t1), f"Term({self.t1.id!r}, name={self.t1.name!r})")
 
 
-class TestTermSet(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        warnings.simplefilter('error')
-        warnings.simplefilter('ignore', category=UnicodeWarning)
-        cls.file = open(os.path.join(DATADIR, "ms.obo"), "rb")
-        cls.ms = pronto.Ontology(cls.file)
+class TestTermSet(_TestTermMixin, unittest.TestCase):
+
+    def test_contains(self):
+        s = TermSet({self.t1, self.t2})
+        self.assertIn(self.t1, s)
+        self.assertIn(self.t2, s)
+        self.assertNotIn(self.t3, s)
+        self.assertIn(self.ont[self.t1.id], s)
+        self.assertIn(self.ont[self.t2.id], s)
+        self.assertNotIn(self.ont[self.t3.id], s)
+
+    def test_init_type(self):
+        self.assertRaises(TypeError, TermSet, {1, 2})
+        self.assertRaises(TypeError, TermSet, {"a", "b"})
+        self.assertRaises(TypeError, TermSet, {self.t1, "a"})
 
     def test_inplace_and(self):
         s1 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
@@ -209,48 +251,52 @@ class TestTermSet(unittest.TestCase):
         self.assertIs(s4._ontology, None)
 
     def test_subclasses_uniqueness(self):
-        ont = pronto.Ontology()
-        t1 = ont.create_term("TST:001")
-        t2 = ont.create_term("TST:002")
-        t3 = ont.create_term("TST:003")
-        t2.relationships = {ont['is_a']: [t1]}
-        t3.relationships = {ont['is_a']: [t2]}
+        self.t2.relationships = {self.ont['is_a']: [self.t1]}
+        self.t3.relationships = {self.ont['is_a']: [self.t2]}
 
         self.assertEqual(
-            t1.subclasses().to_set().ids, {"TST:001", "TST:002", "TST:003"}
+            self.t1.subclasses().to_set().ids, {self.t1.id, self.t2.id, self.t3.id}
         )
         self.assertEqual(
-            t2.subclasses().to_set().ids, {"TST:002", "TST:003"}
+            self.t2.subclasses().to_set().ids, {self.t2.id, self.t3.id}
         )
         self.assertEqual(
-            t3.subclasses().to_set().ids, {"TST:003"}
+            self.t3.subclasses().to_set().ids, {self.t3.id}
         )
 
-        s = pronto.TermSet({t1, t2})
+        s = pronto.TermSet({self.t1, self.t2})
         self.assertEqual(
             sorted(t.id for t in s.subclasses(with_self=False)),
-            ["TST:003"]
+            [self.t3.id]
         )
         self.assertEqual(
             sorted(t.id for t in s.subclasses(with_self=True)),
-            ["TST:001", "TST:002", "TST:003"]
+            [self.t1.id, self.t2.id, self.t3.id]
         )
 
     def test_superclasses_uniqueness(self):
-        ont = pronto.Ontology()
-        t1 = ont.create_term("TST:001")
-        t2 = ont.create_term("TST:002")
-        t3 = ont.create_term("TST:003")
+        self.t2.relationships = {self.ont['is_a']: [self.t1]}
+        self.t3.relationships = {self.ont['is_a']: [self.t1, self.t2]}
 
-        t2.relationships = {ont['is_a']: [t1]}
-        t3.relationships = {ont['is_a']: [t1, t2]}
-
-        s = pronto.TermSet({t2, t3})
+        s = pronto.TermSet({self.t2, self.t3})
         self.assertEqual(
             sorted(t.id for t in s.superclasses(with_self=False)),
-            ["TST:001"]
+            [self.t1.id]
         )
         self.assertEqual(
             sorted(t.id for t in s.superclasses(with_self=True)),
-            ["TST:001", "TST:002", "TST:003"]
+            [self.t1.id, self.t2.id, self.t3.id]
+        )
+
+    def test_repr(self):
+        s1 = TermSet({self.t1})
+        self.assertEqual(repr(s1), f"TermSet({{Term({self.t1.id!r})}})")
+
+        s2 = TermSet({self.t1, self.t2})
+        self.assertIn(
+            repr(s2),
+            [
+                f"TermSet({{Term({self.t1.id!r}), Term({self.t2.id!r})}})",
+                f"TermSet({{Term({self.t2.id!r}), Term({self.t1.id!r})}})"
+            ]
         )

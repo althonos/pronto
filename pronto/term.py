@@ -336,7 +336,6 @@ class Term(Entity):
         return s
 
     @disjoint_from.setter
-    @typechecked(property=True)
     def disjoint_from(self, terms: Iterable["Term"]):
         self._data().disjoint_from = set(term.id for term in terms)
 
@@ -353,6 +352,20 @@ class Term(Entity):
             else:
                 intersection_of.append(ont.get_term(typing.cast(str, item)))
         return frozenset(intersection_of)
+
+    @intersection_of.setter
+    def intersection_of(self, intersection_of: Iterable[Union["Term", Tuple[Relationship, "Term"]]]):
+        data = set()
+        for item in intersection_of:
+            if isinstance(item, Term):
+                data.add(item.id)
+            elif isinstance(item, collections.abc.Collection) and len(item) == 2:
+                rel, term = item
+                data.add((rel.id, term.id))
+            else:
+                msg = "expected iterable of `Term` or `Relationship`, `Term` couple, found: {}"
+                raise TypeError(msg.format(type(item).__name__))
+        self._data().intersection_of = data
 
     @property
     def relationships(self) -> Mapping[Relationship, FrozenSet["Term"]]:
@@ -372,7 +385,7 @@ class Term(Entity):
             relation.id: set(t.id for t in terms) for relation, terms in r.items()
         }
 
-        ## FIXME: Maybe wrap in a single function 
+        ## FIXME: Maybe wrap in a single function
         cache = self._ontology()._inheritance
         previous_super = cache[self.id].sup
         new_super = relationships.get("is_a", set())
@@ -383,13 +396,20 @@ class Term(Entity):
         cache[self.id].sup.clear()
         cache[self.id].sup.update(new_super)
 
-
     @property
     def replaced_by(self) -> "TermSet":
         s = TermSet()
         s._ids = self._data().replaced_by
         s._ontology = weakref.ref(self._ontology())
         return s
+
+    @replaced_by.setter
+    def replaced_by(self, replaced_by: Iterable["Term"]) -> None:
+        if isinstance(replaced_by, TermSet):
+            data = replaced_by._ids
+        else:
+            data = set(term.id for term in replaced_by)
+        self._data().replaced_by = data
 
     @property
     def union_of(self) -> "TermSet":
@@ -399,9 +419,16 @@ class Term(Entity):
         return s
 
     @union_of.setter
-    @typechecked(property=True)
-    def union_of(self, union_of: Set["Term"]):
-        data = set(term.id for term in union_of)
+    def union_of(self, union_of: Iterable["Term"]) -> None:
+        if isinstance(union_of, TermSet):
+            data = union_of._ids
+        else:
+            data = set()
+            for term in union_of:
+                if isinstance(term, Term):
+                    data.add(term.id)
+                else:
+                    raise TypeError(f"expected Term, found {type(term).__name__}")
         if len(data) == 1:
             raise ValueError("'union_of' cannot have a cardinality of 1")
         self._data().union_of = data
@@ -412,6 +439,14 @@ class Term(Entity):
         s._ids = self._data().consider
         s._ontology = weakref.ref(self._ontology())
         return s
+
+    @consider.setter
+    def consider(self, consider: Iterable["Term"]) -> None:
+        if isinstance(consider, TermSet):
+            data = consider._ids
+        else:
+            data = set(term.id for term in consider)
+        self._data().consider = data
 
 
 class TermSet(MutableSet[Term]):

@@ -5,7 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.0.0...HEAD
+
+## [2.0.0] - 2020-02-14
+[2.0.0]:https://github.com/althonos/pronto/compare/v1.2.0...v2.0.0
+### Added
+- `TermSet.subclasses` and `TermSet.superclasses` methods to query all    
+  the subclasses / superclasses of all `Term`.
+- `TermSet` class to the top-level `pronto` module.
+- Dynamic management of subclassing cache for the `Ontology` class.
+- Setters for `Term.consider`, `Term.union_of` and `Term.intersection_of`.
+### Removed
+- `cache` keyword argument for the `Ontology`.
+### Fixed
+- `SuperclassesIterator.to_set` being named `to_self` because of a typo.
+- Several bugs affecting the `fastobo`-backed serializer.
 
 ## [1.2.0] - 2020-02-10
 [1.2.0]: https://github.com/althonos/pronto/compare/v1.1.5...v1.2.0

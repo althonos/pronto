@@ -126,7 +126,7 @@ class TestTerm(_TestTermMixin, unittest.TestCase):
         self.assertEqual(self.t1.consider, TermSet({self.t2}))
         self.t1.consider.clear()
         self.assertEqual(self.t1.consider, TermSet())
-        
+
     def test_disjoint_from(self):
         self.assertEqual(self.t1.disjoint_from, TermSet())
         self.t1.disjoint_from = {self.t2}
@@ -187,7 +187,8 @@ class TestTermSet(_TestTermMixin, unittest.TestCase):
         self.assertIn(self.ont[self.t2.id], s)
         self.assertNotIn(self.ont[self.t3.id], s)
 
-    def test_init_type(self):
+    @unittest.skipUnless(__debug__, "no type checking in optimized mode")
+    def test_init_typechecked(self):
         self.assertRaises(TypeError, TermSet, {1, 2})
         self.assertRaises(TypeError, TermSet, {"a", "b"})
         self.assertRaises(TypeError, TermSet, {self.t1, "a"})

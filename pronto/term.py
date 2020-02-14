@@ -456,8 +456,8 @@ class TermSet(MutableSet[Term]):
 
         for term in terms if terms is not None else ():
             if __debug__ and not isinstance(term, Term):
-                ty = type(term).__name__
-                raise TypeError(f"'terms' must be iterator of `Term`, not {ty}")
+                err_msg = "'terms' must be iterable of Term, not {}"
+                raise TypeError(err_msg.format(type(term).__name__))
             if self._ontology is None:
                 self._ontology = weakref.ref(term._ontology())
             if self._ontology() is not term._ontology():

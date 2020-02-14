@@ -12,6 +12,8 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
 
     format = "obo"
 
+    # --- Metadata -----------------------------------------------------------
+
     def test_metadata_auto_generated_by(self):
         self.assertRoundtrip(
             f"""
@@ -59,6 +61,175 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             unreserved-thing: very much unreserved
             """
         )
+
+    # --- Relationship -------------------------------------------------------
+
+    def test_relationship_alt_id(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: TST:001
+            alt_id: TST:002
+            alt_id: TST:003
+            """
+        )
+
+    def test_relationship_anonymous(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: TST:001
+            is_anonymous: true
+            """
+        )
+
+    def test_relationship_asymmetric(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: part_of
+            is_anti_symmetric: true
+            """
+        )
+
+    def test_relationship_asymmetric(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: part_of
+            is_asymmetric: true
+            """
+        )
+
+    def test_relationship_comment(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: TST:001
+            comment: a very important comment
+            """
+        )
+
+    def test_relationship_definition(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: TST:001
+            def: "something something" [RO:0002091, RO:0002092]
+            """
+        )
+
+    def test_relationship_domain(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+
+            [Typedef]
+            id: rel
+            domain: TST:001
+            """
+        )
+
+    def test_relationship_functional(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: has_part
+            is_functional: true
+            """
+        )
+
+    def test_relationship_inverse_functional(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: has_part
+            is_inverse_functional: true
+            """
+        )
+
+    def test_relationship_range(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:001
+
+            [Typedef]
+            id: rel
+            range: TST:001
+            """
+        )
+
+    def test_relationship_reflexive(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: has_part
+            is_reflexive: true
+            """
+        )
+
+    def test_relationship_subset(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+            subsetdef: goslim_agr "AGR slim"
+            subsetdef: goslim_aspergillus "Aspergillus GO slim"
+            subsetdef: goslim_candida "Candida GO slim"
+
+            [Typedef]
+            id: has_part
+            subset: goslim_agr
+            subset: goslim_candida
+            """
+        )
+
+    def test_relationship_symmetric(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: sibling_of
+            is_symmetric: true
+            """
+        )
+
+    def test_relationship_transitive(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: has_part
+            is_transitive: true
+            """
+        )
+
+    # --- Term ---------------------------------------------------------------
 
     def test_term_alt_id(self):
         self.assertRoundtrip(

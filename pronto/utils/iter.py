@@ -1,10 +1,14 @@
-from typing import TypeVar, Generic, Iterator, Sized
+from collections.abc import Sized
+from typing import TypeVar, Generic, Iterator
 
 S = TypeVar("S")
 T = TypeVar("T")
 
 
 class SizedIterator(Generic[T], Iterator[T], Sized):
+    """A wrapper for iterators which lengths is known in advance.
+    """
+
     def __init__(self, it: Iterator[T], length: int):
         self._it = it
         self._length = length

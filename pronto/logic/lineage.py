@@ -1,7 +1,7 @@
 import abc
 import collections
 import typing
-from typing import AbstractSet, Deque, Dict, Iterator, Optional, Set, Tuple, List
+from typing import AbstractSet, Deque, Dict, Iterator, Optional, Set, Tuple
 
 from ..utils.impl import set
 from ..utils.meta import roundrepr
@@ -26,7 +26,7 @@ class Lineage(object):
     def __init__(
         self,
         sub: Optional[AbstractSet[str]] = None,
-        sup: Optional[AbstractSet[str]] = None
+        sup: Optional[AbstractSet[str]] = None,
     ):
         self.sub: Set[str] = set(sub) if sub is not None else set()  # type: ignore
         self.sup: Set[str] = set(sup) if sup is not None else set()  # type: ignore
@@ -56,14 +56,20 @@ class LineageIterator(Iterator["Term"]):
     # ---
 
     def __init__(
-        self,
-        *terms: "Term",
-        distance: Optional[int] = None,
-        with_self: bool = True
+        self, *terms: "Term", distance: Optional[int] = None, with_self: bool = True
     ) -> None:
+
         self._distmax = float("inf") if distance is None else distance
-        self._ontology = ont = terms[0]._ontology()
-        self._maxlen = len(ont.terms())
+
+        if terms:
+            self._ontology = ont = terms[0]._ontology()
+            self._maxlen = len(ont.terms())
+        else:
+            # if not term is given, `__next__` will raise `StopIterator` on
+            # the first call without ever accessing `self._ontology`, so it's
+            # safe to set it to `None` here.
+            self._ontology = typing.cast("Ontology", None)
+            self._maxlen = 0
 
         self._linked: Set[str] = set()
         self._done: Set[str] = set()
@@ -78,6 +84,14 @@ class LineageIterator(Iterator["Term"]):
 
     def __iter__(self) -> "LineageIterator":
         return self
+
+    def __length_hint__(self) -> int:
+        """Return an estimate of the number of remaining entities to yield.
+        """
+        if self._queue or self._frontier:
+            return self._maxlen - len(self._linked) + len(self._queue)
+        else:
+            return 0
 
     def __next__(self) -> "Term":
         while self._frontier or self._queue:

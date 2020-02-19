@@ -348,7 +348,9 @@ class Term(Entity):
         return frozenset(intersection_of)
 
     @intersection_of.setter
-    def intersection_of(self, intersection_of: Iterable[Union["Term", Tuple[Relationship, "Term"]]]):
+    def intersection_of(
+        self, intersection_of: Iterable[Union["Term", Tuple[Relationship, "Term"]]]
+    ):
         data = set()
         for item in intersection_of:
             if isinstance(item, Term):

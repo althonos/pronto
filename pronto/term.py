@@ -310,8 +310,8 @@ class Term(Entity):
             True
 
         Note:
-            This method has a runtime of :math:`O(n)` where :math:`n` is the
-            number of terms in the source ontology.
+            This method has a runtime of :math:`O(1)` as `Ontology` objects
+            internally cache the subclasses of each term.
         """
         return not self._ontology()._inheritance[self.id].sub
 

@@ -5,7 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.0.1...HEAD
+
+## [2.0.1] - 2020-02-19
+[2.0.1]:https://github.com/althonos/pronto/compare/v2.0.0...v2.0.1
+### Fixed
+- Internal handling of ontology data forcing an `Ontology` to outlive all
+  of the `Term`s created from it.
+- `Term.id` property missing a return type annotation.
+- `Term.equivalent_to` not returning a `TermSet` but a set of strings.
+### Changed
+- Refactored implementation of `SubclassesIterator` and  
+  `SuperclassesIterator` to make both use the interal subclassing cache.
+- Make `Term.is_leaf` use internal subclassing cache to make it run in
+  constant time.
 
 ## [2.0.0] - 2020-02-14
 [2.0.0]:https://github.com/althonos/pronto/compare/v1.2.0...v2.0.0

@@ -1,2 +1,1 @@
-from .subclasses import SubclassesIterator
-from .superclasses import SuperclassesIterator
+from .lineage import Lineage, SubclassesIterator, SuperclassesIterator

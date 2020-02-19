@@ -35,30 +35,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     - `OBO graphs <https://github.com/geneontology/obographs>`_ in
       `JSON <http://json.org/>`_ format.
 
-    Caution:
-        `Ontology` instances share all the data about a deserialized ontology
-        file as well as all of its imports, and contains entities which can be
-        created or viewed with several dedicated methods. These instances,
-        however, **must not outlive the ontology object instead**, as they are
-        only view-models (in the `design pattern sense of the definition
-        <https://en.wikipedia.org/wiki/Model-view-viewmodel>`_).
-
-        For instance, you cannot drop an `Ontology` while still using `Term`
-        instances you obtained from it, or you will get an error::
-
-            >>> subcls = pronto.Ontology("ms.obo")["MS:1000031"].subclasses()
-            Traceback (most recent call last):
-              ...
-            RuntimeError: referenced ontology was deallocated
-
-        Keeping a reference to the ontology somewhere will solve the problem,
-        and let you do what you want to do:
-
-            >>> ms = pronto.Ontology("ms.obo")
-            >>> instruments = ms["MS:1000031"].subclasses()
-            >>> next(i for i in instruments if i.is_leaf())
-            Term('MS:1000488', name='Hitachi instrument model')
-
     Attributes:
         metadata (Metadata): A data structure storing the metadata about the
             current ontology, either extracted from the ``owl:Ontology`` XML

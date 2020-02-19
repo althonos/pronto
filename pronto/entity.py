@@ -50,21 +50,13 @@ class Entity:
 
     if __debug__ or typing.TYPE_CHECKING:
 
-        __ontology: "weakref.ReferenceType[Ontology]"
         __data: "weakref.ReferenceType[EntityData]"
-
         __slots__: Iterable[str] = ("__weakref__",)
 
         def __init__(self, ontology: "Ontology", data: "EntityData"):
-            self.__ontology = weakref.ref(ontology)
             self.__data = weakref.ref(data)
             self.__id = data.id
-
-        def _ontology(self) -> "Ontology":
-            ontology = self.__ontology()
-            if ontology is None:
-                raise RuntimeError("referenced ontology was deallocated")
-            return ontology
+            self.__ontology = ontology
 
         def _data(self) -> "EntityData":
             rdata = self.__data()
@@ -74,14 +66,17 @@ class Entity:
 
     else:
 
-        __slots__: Iterable[str] = ("__weakref__", "_ontology", "_data")
+        __slots__: Iterable[str] = ("__weakref__", "_data")
 
         def __init__(self, ontology: "Ontology", data: "EntityData"):
-            self._ontology = weakref.ref(ontology)
             self._data = weakref.ref(data)
+            self.__ontology = ontology
             self.__id = data.id
 
+    # --- Private helpers ----------------------------------------------------
 
+    def _ontology(self) -> "Ontology":
+        return self.__ontology
 
     # --- Magic Methods ------------------------------------------------------
 

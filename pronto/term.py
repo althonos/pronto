@@ -4,7 +4,6 @@ import itertools
 import operator
 import typing
 import queue
-import weakref
 from typing import (
     Callable,
     Deque,
@@ -332,7 +331,7 @@ class Term(Entity):
         """
         s = TermSet()
         s._ids = self._data().disjoint_from
-        s._ontology = weakref.ref(self._ontology())
+        s._ontology = self._ontology()
         return s
 
     @disjoint_from.setter
@@ -400,7 +399,7 @@ class Term(Entity):
     def replaced_by(self) -> "TermSet":
         s = TermSet()
         s._ids = self._data().replaced_by
-        s._ontology = weakref.ref(self._ontology())
+        s._ontology = self._ontology()
         return s
 
     @replaced_by.setter
@@ -415,7 +414,7 @@ class Term(Entity):
     def union_of(self) -> "TermSet":
         s = TermSet()
         s._ids = self._data().union_of
-        s._ontology = weakref.ref(self._ontology())
+        s._ontology = self._ontology()
         return s
 
     @union_of.setter
@@ -437,7 +436,7 @@ class Term(Entity):
     def consider(self) -> "TermSet":
         s = TermSet()
         s._ids = self._data().consider
-        s._ontology = weakref.ref(self._ontology())
+        s._ontology = self._ontology()
         return s
 
     @consider.setter
@@ -450,20 +449,20 @@ class Term(Entity):
 
 
 class TermSet(MutableSet[Term]):
-    """A specialized mutable set to store `Term` instances. 
+    """A specialized mutable set to store `Term` instances.
     """
 
     def __init__(self, terms: Optional[Iterable[Term]] = None) -> None:
         self._ids: Set[str] = set()
-        self._ontology: "Optional[weakref.ReferenceType[Ontology]]" = None
+        self._ontology: "Optional[Ontology]" = None
 
         for term in terms if terms is not None else ():
             if __debug__ and not isinstance(term, Term):
                 err_msg = "'terms' must be iterable of Term, not {}"
                 raise TypeError(err_msg.format(type(term).__name__))
             if self._ontology is None:
-                self._ontology = weakref.ref(term._ontology())
-            if self._ontology() is not term._ontology():
+                self._ontology = term._ontology()
+            if self._ontology is not term._ontology():
                 raise ValueError("terms do not originate from the same ontology")
             self._ids.add(term.id)
 
@@ -473,13 +472,13 @@ class TermSet(MutableSet[Term]):
         return False
 
     def __iter__(self) -> Iterator[Term]:
-        return map(lambda t: self._ontology().get_term(t), iter(self._ids))
+        return map(lambda t: self._ontology.get_term(t), iter(self._ids))
 
     def __len__(self):
         return len(self._ids)
 
     def __repr__(self):
-        ontology = self._ontology()
+        ontology = self._ontology
         elements = (ontology[id_].__repr__() for id_ in self._ids)
         return f"{type(self).__name__}({{{', '.join(elements)}}})"
 
@@ -560,13 +559,14 @@ class TermSet(MutableSet[Term]):
 
     def clear(self) -> None:
         self._ids.clear()
+        self._ontology = None
 
     @typechecked()
     def discard(self, term: Term) -> None:
         self._ids.discard(term.id)
 
     def pop(self) -> Term:
-        return self._ontology().get_term(self._ids.pop())
+        return self._ontology.get_term(self._ids.pop())
 
     @typechecked()
     def remove(self, term: Term):

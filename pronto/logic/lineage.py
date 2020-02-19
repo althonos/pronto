@@ -61,15 +61,12 @@ class LineageIterator(Iterator["Term"]):
 
         self._distmax = float("inf") if distance is None else distance
 
+        # if not term is given, `__next__` will raise `StopIterator` on
+        # the first call without ever accessing `self._ontology`, so it's
+        # safe not to initialise it here in that case.
         if terms:
             self._ontology = ont = terms[0]._ontology()
             self._maxlen = len(ont.terms())
-        else:
-            # if not term is given, `__next__` will raise `StopIterator` on
-            # the first call without ever accessing `self._ontology`, so it's
-            # safe to set it to `None` here.
-            self._ontology = typing.cast("Ontology", None)
-            self._maxlen = 0
 
         self._linked: Set[str] = set()
         self._done: Set[str] = set()

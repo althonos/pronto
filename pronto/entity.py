@@ -48,7 +48,7 @@ class Entity:
     well as some common properties.
     """
 
-    if typing.TYPE_CHECKING:
+    if __debug__ or typing.TYPE_CHECKING:
 
         __ontology: "weakref.ReferenceType[Ontology]"
         __data: "weakref.ReferenceType[EntityData]"
@@ -60,17 +60,17 @@ class Entity:
             self.__data = weakref.ref(data)
             self.__id = data.id
 
-        def _data(self) -> "EntityData":
-            rdata = self.__data()
-            if rdata is None:
-                raise RuntimeError("entity data was deallocated")
-            return rdata
-
         def _ontology(self) -> "Ontology":
             ontology = self.__ontology()
             if ontology is None:
                 raise RuntimeError("referenced ontology was deallocated")
             return ontology
+
+        def _data(self) -> "EntityData":
+            rdata = self.__data()
+            if __debug__ and rdata is None:
+                raise RuntimeError("internal data was deallocated")
+            return rdata
 
     else:
 
@@ -80,6 +80,8 @@ class Entity:
             self._ontology = weakref.ref(ontology)
             self._data = weakref.ref(data)
             self.__id = data.id
+
+
 
     # --- Magic Methods ------------------------------------------------------
 

@@ -26,6 +26,9 @@ class Subset(object):
 
     __slots__ = ("__weakref__", "name", "description")
 
+    if typing.TYPE_CHECKING:
+        __annotations__: Dict[str, str]
+
     @typechecked()
     def __init__(self, name: str, description: str):
         self.name: str = name
@@ -108,6 +111,9 @@ class Metadata(object):
     remarks: Set[str]
     annotations: Set[PropertyValue]
     unreserved: Dict[str, Set[str]]
+
+    if typing.TYPE_CHECKING:
+        __annotations__: Dict[str, str]
 
     def __init__(
         self,

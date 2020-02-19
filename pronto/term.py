@@ -334,6 +334,19 @@ class Term(Entity):
         self._data().disjoint_from = set(term.id for term in terms)
 
     @property
+    def equivalent_to(self) -> FrozenSet[str]:
+        """The terms declared as equivalent to this term.
+        """
+        s = TermSet()
+        s._ids = self._data().equivalent_to
+        s._ontology = self._ontology()
+        return s
+
+    @equivalent_to.setter
+    def equivalent_to(self, terms:  Iterable["Term"]):
+        self._data().equivalent_to = set(equivalent_to.id for term in terms)
+
+    @property
     def intersection_of(self) -> FrozenSet[Union["Term", Tuple[Relationship, "Term"]]]:
         """The terms or term relationships this term is an intersection of.
         """

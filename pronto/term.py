@@ -313,12 +313,7 @@ class Term(Entity):
             This method has a runtime of :math:`O(n)` where :math:`n` is the
             number of terms in the source ontology.
         """
-        ont = self._ontology()
-        is_a = ont.get_relationship("is_a")
-        for t in self._ontology().terms():
-            if self in t.relationships.get(is_a, {}):
-                return False
-        return True
+        return not self._ontology()._inheritance[self.id].sub
 
     # --- Attributes ---------------------------------------------------------
 

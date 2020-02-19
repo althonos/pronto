@@ -225,7 +225,7 @@ class Entity:
         self._data().equivalent_to = set(equivalent_to)
 
     @property
-    def id(self):
+    def id(self) -> str:
         """`str`: The OBO identifier of the entity.
 
         Identifiers can be either prefixed (e.g. ``MS:1000031``), unprefixed

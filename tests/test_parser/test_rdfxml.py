@@ -8,7 +8,7 @@ import pronto
 
 
 
-class TestRdfXMLParser(unittest.TestCase):
+class TestRoundtrip(unittest.TestCase):
 
     @staticmethod
     def get_ontology(content):

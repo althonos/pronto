@@ -110,26 +110,21 @@ class Synonym(object):
     """A synonym for an entity, with respects to the OBO terminology.
     """
 
+    __ontology: "Ontology"
+
     if typing.TYPE_CHECKING:
 
-        __ontology: "weakref.ReferenceType[Ontology]"
         __data: "weakref.ReferenceType[SynonymData]"
 
         def __init__(self, ontology: "Ontology", data: "SynonymData"):
-            self.__ontology = weakref.ref(ontology)
             self.__data = weakref.ref(data)
+            self.__ontology = ontology
 
         def _data(self) -> SynonymData:
             rdata = self.__data()
             if rdata is None:
                 raise RuntimeError("synonym data was deallocated")
             return rdata
-
-        def _ontology(self) -> Ontology:
-            ontology = self.__ontology()
-            if ontology is None:
-                raise RuntimeError("referenced ontology was deallocated")
-            return ontology
 
     else:
 
@@ -140,9 +135,8 @@ class Synonym(object):
                 types = ontology.metadata.synonymtypedefs
                 if not any(t.id == syndata.type for t in types):
                     raise ValueError(f"undeclared synonym type: {syndata.type}")
-
-            self._ontology = weakref.ref(ontology)
             self._data = weakref.ref(syndata)
+            self._ontology = ontology
 
     def __eq__(self, other: object):
         if isinstance(other, Synonym):
@@ -177,7 +171,7 @@ class Synonym(object):
 
     @property
     def type(self) -> Optional[SynonymType]:
-        ontology, syndata = self._ontology(), self._data()
+        ontology, syndata = self._ontology, self._data()
         if syndata.type is not None:
             return next(
                 t for t in ontology.metadata.synonymtypedefs if t.id == syndata.type
@@ -187,7 +181,7 @@ class Synonym(object):
     @type.setter
     @typechecked(property=True)
     def type(self, type_: Optional[SynonymType]) -> None:
-        synonyms = self._ontology().metadata.synonymtypedefs
+        synonyms = self._ontology.metadata.synonymtypedefs
         if type_ is not None and type_.id not in synonyms:
             raise ValueError(f"undeclared synonym type: {type_.id}")
         self._data().type = type_.id if type_ is not None else None

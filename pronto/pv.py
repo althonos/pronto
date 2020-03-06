@@ -5,7 +5,6 @@ import functools
 
 import fastobo
 
-from .utils.impl import set
 from .utils.meta import roundrepr, typechecked
 
 

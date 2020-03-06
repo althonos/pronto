@@ -1,12 +1,12 @@
 import datetime
 import typing
-from typing import Any, Dict, FrozenSet, Mapping, Optional, Set, Tuple
+from typing import Dict, FrozenSet, Mapping, Optional, Set, Tuple
 
 import frozendict
 
 from .entity import Entity, EntityData
 from .definition import Definition
-from .synonym import Synonym, SynonymData
+from .synonym import SynonymData
 from .xref import Xref
 from .pv import PropertyValue
 from .utils.impl import set
@@ -14,7 +14,6 @@ from .utils.meta import typechecked
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
-    from .term import Term
 
 
 class RelationshipData(EntityData):

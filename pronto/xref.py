@@ -1,12 +1,10 @@
 """Cross-reference object definition.
 """
 
-import functools
 import typing
 
 import fastobo
 
-from .utils.impl import set
 from .utils.meta import roundrepr, typechecked
 
 

@@ -3,10 +3,7 @@ import datetime
 import itertools
 import operator
 import typing
-import queue
 from typing import (
-    Callable,
-    Deque,
     Dict,
     Iterator,
     Iterable,
@@ -28,9 +25,9 @@ from . import relationship
 from .entity import Entity, EntityData
 from .definition import Definition
 from .xref import Xref
-from .synonym import Synonym, SynonymData
+from .synonym import SynonymData
 from .relationship import Relationship
-from .pv import PropertyValue, ResourcePropertyValue, LiteralPropertyValue
+from .pv import PropertyValue
 from .logic import SubclassesIterator, SuperclassesIterator
 from .utils.impl import set
 from .utils.meta import typechecked

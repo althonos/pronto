@@ -1,24 +1,17 @@
 import contextlib
-import datetime
 import itertools
 import io
 import typing
-import os
-import urllib.parse
-from typing import BinaryIO, Dict, Iterator, Mapping, Optional, Set, Union
-
-import fastobo
+from typing import BinaryIO, Dict, Mapping, Optional, Set, Union
 
 from . import relationship
 from .term import Term, TermData
-from .synonym import SynonymType
 from .relationship import Relationship, RelationshipData
 from .logic.lineage import Lineage
 from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
 from .utils.meta import roundrepr, typechecked
-from .utils.impl import set
 
 
 class Ontology(Mapping[str, Union[Term, Relationship]]):

@@ -47,12 +47,12 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     timeout: int
     imports: Dict[str, "Ontology"]
     path: Optional[str]
+    handle: Optional[BinaryIO]
 
     # Private attributes
     _inheritance: Dict[str, Lineage]
     _terms: Dict[str, TermData]
     _relationships: Dict[str, RelationshipData]
-    _subclassing_cache: Optional[Dict[str, Set[str]]]  # cache for `Term.subclasses`
 
     # --- Constructors -------------------------------------------------------
 
@@ -220,7 +220,12 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     def __repr__(self):
         """Return a textual representation of `self` that should roundtrip.
         """
-        args = (self.path,) if self.path is not None else (self.handle,)
+        if self.path is not None:
+            args = (self.path,)
+        elif self.handle is not None:
+            args = (self.handle,)
+        else:
+            args = ()
         kwargs = {"timeout": (self.timeout, 5)}
         if self.import_depth > 0:
             kwargs["import_depth"] = (self.import_depth, -1)
@@ -229,7 +234,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     # --- Private helpers ----------------------------------------------------
 
     def _build_inheritance_cache(self) -> None:
-        is_a = self.get_relationship("is_a")
         self._inheritance.clear()
         for t1 in self.terms():
             for t2 in t1._data().relationships.get("is_a", []):

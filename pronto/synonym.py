@@ -198,5 +198,9 @@ class Synonym(object):
         self._data().scope = scope
 
     @property
-    def xrefs(self) -> FrozenSet[Xref]:
-        return frozenset(self._data().xrefs)
+    def xrefs(self) -> Set[Xref]:
+        return self._data().xrefs
+
+    @xrefs.setter
+    def xrefs(self, xrefs: Iterable[Xref]):
+        self._data().xrefs = set(xrefs)

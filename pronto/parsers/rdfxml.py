@@ -416,7 +416,7 @@ class RdfXMLParser(BaseParser):
             if text is not None and text.isspace():
                 text = None
 
-            if tag == _NS["rdfs"]["subObjectPropertyOf"]:
+            if tag == _NS["rdfs"]["subPropertyOf"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
                     reldata.relationships.setdefault("is_a", set()).add(iri)
@@ -483,6 +483,8 @@ class RdfXMLParser(BaseParser):
                 reldata.antisymmetric = text == "true"
             elif tag == _NS["owl"]["equivalentClass"] and text is not None:
                 reldata.equivalent_to.add(self._compact_id(text))
+            elif tag == _NS["owl"]["inverseOf"]:
+                reldata.inverse_of = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
             elif tag == _NS["owl"]["deprecated"]:
                 reldata.obsolete = text == "true"
             elif tag == _NS["oboInOwl"]["hasDbXref"]:

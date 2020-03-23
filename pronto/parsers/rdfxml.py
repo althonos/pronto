@@ -556,7 +556,7 @@ class RdfXMLParser(BaseParser):
     ):
         if __debug__:
             if elem.tag != _NS["owl"]["AnnotationProperty"]:
-                raise ValueError("expected `owl:ObjectProperty` element")
+                raise ValueError("expected `owl:AnnotationProperty` element")
 
         # special handling of `synonymtypedef` and `subsetdef`
         sub = elem.find(_NS["rdfs"]["subPropertyOf"])

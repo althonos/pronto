@@ -5,10 +5,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.1.0...HEAD
+
+## [2.1.0] - 2020-03-23
+[2.1.0]: https://github.com/althonos/pronto/compare/v2.0.1...v2.1.0
+### Added
+- `Synonym.xrefs` now has a setter. ([#70](https://github.com/althonos/pronto/issues/70))
+- `pickle` support for `Ontology`. ([#66](https://github.com/althonos/pronto/issues/66))
+- `RdfXmlParser` support for `owl:inverseOf` and `rdfs:subPropertyOf`.
+### Changed
+- `Synonym.xrefs` now returns a mutable set that can be used to add
+  `Xref` to the synonym directly.
+### Fixed
+- `SynonymType.type` setter does not consider all synonym types as 
+  undeclared anymore. ([#71](https://github.com/althonos/pronto/issues/71))
+- `RdfXmlParser` crashing on synonym types definition without a label
+  like in Uberon. ([#67](https://github.com/althonos/pronto/issues/67))
+- `FastoboSerializer` crashing when encountering a relationship with 
+  at least one `replaced_by` clause.
 
 ## [2.0.1] - 2020-02-19
-[2.0.1]:https://github.com/althonos/pronto/compare/v2.0.0...v2.0.1
+[2.0.1]: https://github.com/althonos/pronto/compare/v2.0.0...v2.0.1
 ### Fixed
 - Internal handling of ontology data forcing an `Ontology` to outlive all
   of the `Term`s created from it.

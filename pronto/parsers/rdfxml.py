@@ -566,6 +566,13 @@ class RdfXMLParser(BaseParser):
                 # extract ID and label of the synonymtypedef
                 id_ = self._compact_id(elem.attrib[_NS["rdf"]["about"]])
                 label = elem.find(_NS["rdfs"]["label"]).text
+                if label is None:
+                    label = ""
+                    warnings.warn(
+                        "`oboInOwl:SynonymTypeProperty` element has no label",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
                 # extract scope if any
                 elem_scope = elem.find(_NS["oboInOwl"]["hasScope"])
                 if elem_scope is not None:

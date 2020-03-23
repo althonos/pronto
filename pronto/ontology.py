@@ -231,6 +231,14 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             kwargs["import_depth"] = (self.import_depth, -1)
         return roundrepr.make("Ontology", *args, **kwargs)
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state["handle"] = None
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__ = state
+
     # --- Private helpers ----------------------------------------------------
 
     def _build_inheritance_cache(self) -> None:

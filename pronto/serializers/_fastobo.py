@@ -255,10 +255,10 @@ class FastoboSerializer:
             frame.append(fastobo.typedef.CreatedByClause(r.created_by))
         if r.creation_date is not None:
             frame.append(fastobo.typedef.CreationDateClause(r.creation_date))
-        for r in sorted(r.replaced_by):
-            frame.append(fastobo.typedef.ReplacedByClause(fastobo.id.parse(r)))
-        for c in sorted(r.consider):
-            frame.append(fastobo.typedef.ConsiderClause(fastobo.id.parse(c)))
+        for id_ in sorted(r.replaced_by):
+            frame.append(fastobo.typedef.ReplacedByClause(fastobo.id.parse(id_)))
+        for id_ in sorted(r.consider):
+            frame.append(fastobo.typedef.ConsiderClause(fastobo.id.parse(id_)))
         for d in r.expand_assertion_to:
             frame.append(
                 fastobo.typedef.ExpandAssertionToClause(

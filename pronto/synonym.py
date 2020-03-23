@@ -181,8 +181,8 @@ class Synonym(object):
     @type.setter
     @typechecked(property=True)
     def type(self, type_: Optional[SynonymType]) -> None:
-        synonyms = self._ontology.metadata.synonymtypedefs
-        if type_ is not None and type_.id not in synonyms:
+        synonyms: Set[SynonymType] = self._ontology.metadata.synonymtypedefs
+        if type_ is not None and not any(type_.id == s.id for s in synonyms):
             raise ValueError(f"undeclared synonym type: {type_.id}")
         self._data().type = type_.id if type_ is not None else None
 

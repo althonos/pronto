@@ -66,15 +66,33 @@ class TestSynonym(unittest.TestCase):
 
     def test_type(self):
         ont = pronto.Ontology()
-        t1 = pronto.SynonymType("declared", "a declared synonym type")
-        ont.metadata.synonymtypedefs.add(t1)
+        ty1 = pronto.SynonymType("declared", "a declared synonym type")
+        ont.metadata.synonymtypedefs.add(ty1)
         term = ont.create_term("TEST:001")
-        syn = term.add_synonym("something", type=t1)
-        self.assertEqual(syn.type, t1)
+        term.add_synonym("something", type=ty1)
 
     def test_type_undeclared(self):
         ont = pronto.Ontology()
         t1 = pronto.SynonymType("undeclared", "an undeclared synonym type")
         term = ont.create_term("TEST:001")
         with self.assertRaises(ValueError):
-            syn = term.add_synonym("something", type=t1)
+            term.add_synonym("something", type=t1)
+
+    def test_type_setter(self):
+        ont = pronto.Ontology()
+        ty1 = pronto.SynonymType("declared", "a declared synonym type")
+        ont.metadata.synonymtypedefs.add(ty1)
+        term = ont.create_term("TEST:001")
+        syn1 = term.add_synonym("something")
+        self.assertIsNone(syn1.type)
+        syn1.type = ty1
+        self.assertEqual(syn1.type, ty1)
+
+    def test_type_setter_undeclared(self):
+        ont = pronto.Ontology()
+        ty1 = pronto.SynonymType("undeclared", "an undeclared synonym type")
+        term = ont.create_term("TEST:001")
+        syn1 = term.add_synonym("something")
+        self.assertIsNone(syn1.type)
+        with self.assertRaises(ValueError):
+            syn1.type = ty1

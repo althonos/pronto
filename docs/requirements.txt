@@ -1,5 +1,5 @@
 semantic_version ~=2.8
-sphinx ~=2.3
+sphinx ~=3.0
 # sphinx-bootstrap-theme ~=0.7
 https://github.com/althonos/sphinx-bootstrap-theme/archive/master.zip
 recommonmark ~=0.6

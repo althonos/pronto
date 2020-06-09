@@ -107,9 +107,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             timeout (int): The timeout in seconds to use when performing
                 network I/O, for instance when connecting to the OBO library
                 to download imports.
-            cache (bool): Enable caching of subclassing relationships to make
-                `Term.subclasses` much faster, at the cost of a slightly
-                longer parsing step (about 5% of the total time).
 
         Raises:
             TypeError: When the given ``handle`` could not be used to parse

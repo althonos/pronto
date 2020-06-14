@@ -47,7 +47,7 @@ class typechecked(object):
                     return (False, f"frozenset of { type_name }")
             return (True, f"frozenset of { hint.__args__[0] }")
         # typing.Union needs to be a valid type
-        if getattr(hint, "__origin__", None) == typing.Union:
+        if getattr(hint, "__origin__", None) is typing.Union:
             results = {}
             for arg in hint.__args__:
                 results[arg] = cls.check_type(arg, value)
@@ -65,10 +65,12 @@ class typechecked(object):
         if not __debug__:
             return func
 
+        hints = typing.get_type_hints(func)
+        signature = inspect.signature(func)
+
         @functools.wraps(func)
         def newfunc(*args, **kwargs):
-            hints = typing.get_type_hints(func)
-            callargs = inspect.getcallargs(func, *args, **kwargs)
+            callargs = signature.bind(*args, **kwargs).arguments
             for name, value in callargs.items():
                 if name in hints:
                     well_typed, type_name = self.check_type(hints[name], value)

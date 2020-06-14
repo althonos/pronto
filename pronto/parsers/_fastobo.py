@@ -1,6 +1,7 @@
 import functools
 import typing
 import warnings
+import weakref
 from typing import Union
 from operator import attrgetter
 
@@ -114,9 +115,16 @@ def _extract_definition(clause: DefClause) -> Definition:
 
 def _extract_property_value(pv: fastobo.pv.AbstractPropertyValue) -> PropertyValue:
     if isinstance(pv, fastobo.pv.LiteralPropertyValue):
-        return LiteralPropertyValue(str(pv.relation), pv.value, str(pv.datatype))
+        lpv = LiteralPropertyValue.__new__(LiteralPropertyValue)
+        lpv.property = str(pv.relation)
+        lpv.literal = pv.value
+        lpv.datatype = str(pv.datatype)
+        return lpv
     elif isinstance(pv, fastobo.pv.ResourcePropertyValue):
-        return ResourcePropertyValue(str(pv.relation), str(pv.value))
+        rpv = ResourcePropertyValue.__new__(ResourcePropertyValue)
+        rpv.property = str(pv.relation)
+        rpv.resource = str(pv.value)
+        return rpv
     else:
         msg = "'pv' must be AbstractPropertyValue, not {}"
         raise TypeError(msg.format(type(pv).__name__))
@@ -129,7 +137,10 @@ def _extract_synonym_data(syn: fastobo.syn.Synonym) -> SynonymData:
 
 
 def _extract_xref(xref: fastobo.xref.Xref) -> Xref:
-    return Xref(str(xref.id), xref.desc)
+    x = Xref.__new__(Xref)
+    x.id = str(xref.id)
+    x.description = xref.desc
+    return x
 
 
 # --- Header clauses ---------------------------------------------------------

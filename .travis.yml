@@ -22,7 +22,7 @@ before_install:
 - pip install -r ci/requirements.txt
 
 install:
-- pip install .
+- pip install --only-binary=fastobo .
 
 script:
 - python    -m coverage run -p --source=pronto -m unittest discover -v

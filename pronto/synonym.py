@@ -13,7 +13,7 @@ if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
 
-_SCOPES = frozenset({"EXACT", "RELATED", "BROAD", "NARROW"})
+_SCOPES = frozenset({"EXACT", "RELATED", "BROAD", "NARROW", None})
 
 
 @functools.total_ordering
@@ -30,7 +30,7 @@ class SynonymType(object):
 
     @typechecked()
     def __init__(self, id: str, description: str, scope: Optional[str] = None):
-        if scope is not None and scope not in _SCOPES:
+        if scope not in _SCOPES:
             raise ValueError(f"invalid synonym scope: {scope}")
         self.id = id
         self.description = description
@@ -97,7 +97,7 @@ class SynonymData(object):
         type: Optional[str] = None,
         xrefs: Optional[Iterable[Xref]] = None,
     ):
-        if scope is not None and scope not in _SCOPES:
+        if scope not in _SCOPES:
             raise ValueError(f"invalid synonym scope: {scope}")
         self.description = description
         self.scope = scope

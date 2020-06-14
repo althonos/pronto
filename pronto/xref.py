@@ -64,7 +64,10 @@ class Xref(object):
 
         """
         # check the id is valid using fastobo
-        self.id: str = str(fastobo.id.parse(id))
+        if not fastobo.id.is_valid(id):
+            raise ValueError("invalid identifier: {}".format(id))
+
+        self.id: str = id
         self.description = description
 
     def __eq__(self, other: object) -> bool:

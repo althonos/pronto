@@ -37,9 +37,14 @@ class LiteralPropertyValue(PropertyValue):
                 Defaults to `xsd:string`.
 
         """
-        self.property = str(fastobo.id.parse(property))
+        if not fastobo.id.is_valid(property):
+            raise ValueError("invalid identifier: {}".format(property))
+        if not fastobo.id.is_valid(datatype):
+            raise ValueError("invalid identifier: {}".format(datatype))
+
+        self.property = property
         self.literal = literal
-        self.datatype = str(fastobo.id.parse(datatype))
+        self.datatype = datatype
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, LiteralPropertyValue):
@@ -84,8 +89,13 @@ class ResourcePropertyValue(PropertyValue):
             resource (str): The annotation entity value, as an OBO identifier.
 
         """
-        self.property = str(fastobo.id.parse(property))
-        self.resource = str(fastobo.id.parse(resource))
+        if not fastobo.id.is_valid(property):
+            raise ValueError("invalid identifier: {}".format(property))
+        if not fastobo.id.is_valid(resource):
+            raise ValueError("invalid identifier: {}".format(resource))
+
+        self.property = property
+        self.resource = resource
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, ResourcePropertyValue):

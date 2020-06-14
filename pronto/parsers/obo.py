@@ -13,7 +13,7 @@ class OboParser(FastoboParser, BaseParser):
 
     def parse_from(self, handle):
         # Load the OBO document through an iterator using fastobo
-        doc = fastobo.iter(handle)
+        doc = fastobo.iter(handle, ordered=True)
 
         # Extract metadata from the OBO header and resolve imports
         self.ont.metadata = self.extract_metadata(doc.header())

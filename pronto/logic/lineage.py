@@ -1,7 +1,8 @@
 import abc
 import collections
 import typing
-from typing import AbstractSet, Deque, Dict, Iterator, Optional, Set, Tuple
+import warnings
+from typing import AbstractSet, Deque, Dict, Iterator, Iterable, Optional, Set, Tuple
 
 from ..utils.meta import roundrepr
 
@@ -38,6 +39,91 @@ class Lineage(object):
     # `Lineage` is mutable so this is the explicit way to tell it's unhashable
     # (see https://docs.python.org/3/reference/datamodel.html#object.__hash__)
     __hash__ = None
+
+
+
+class LineageHandler(Iterable["Term"]):
+
+    def __init__(self, term: "Term", distance: int, with_self: Optional[int]):
+        self.term = term
+        self.distance = distance
+        self.with_self = with_self
+        # API compatibilty with previous iterator
+        self._it = None
+
+    def __next__(self):
+        if self._it is None:
+            warnings.warn(
+                "`Term.subclasses()` and `Term.superclasses()` will not return"
+                "iterator in next major version, but iterables. Update your "
+                "code to use `iter(...)` if needed.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            self._it = iter(self)
+        return next(self._it)
+
+    def to_set(self):
+        return iter(self).to_set()
+
+    def _add(self, subclass: "Term", superclass: "Term"):
+        if superclass._ontology() is not subclass._ontology():
+            raise ValueError("cannot use `Term` instances from different ontologies")
+        cache = subclass._ontology()._inheritance
+        cache[subclass.id].sup.add(superclass.id)
+        cache[superclass.id].sub.add(subclass.id)
+
+    def _remove(self, subclass: "Term", superclass: "Term"):
+        if superclass._ontology() is not subclass._ontology():
+            raise ValueError("cannot use `Term` instances from different ontologies")
+        cache = subclass._ontology()._inheritance
+        cache[subclass.id].sup.remove(superclass.id)
+        cache[superclass.id].sub.remove(subclass.id)
+
+
+class SuperclassesHandler(LineageHandler):
+
+    def __iter__(self):
+        return SuperclassesIterator(
+            self.term,
+            distance=self.distance,
+            with_self=self.with_self
+        )
+
+    def add(self, superclass: "Term"):
+        self._add(subclass=self.term, superclass=superclass)
+
+    def remove(self, superclass: "Term"):
+        self._remove(subclass=self.term, superclass=superclass)
+
+    def clear(self):
+        cache = self.term._ontology()._inheritance
+        for subclass in cache[self.term.id].sup:
+            cache[subclass].sub.remove(self.term.id)
+        cache[self.term.id].sup.clear()
+
+
+class SubclassesHandler(LineageHandler):
+
+    def __iter__(self):
+        return SubclassesIterator(
+            self.term,
+            distance=self.distance,
+            with_self=self.with_self
+        )
+
+    def add(self, subclass: "Term"):
+        self._add(superclass=self.term, subclass=subclass)
+
+    def remove(self, subclass: "Term"):
+        self._remove(superclass=self.term, subclass=subclass)
+
+    def clear(self):
+        cache = self.term._ontology()._inheritance
+        for superclass in cache[self.term.id].sub:
+            cache[superclass].sup.remove(self.term.id)
+        cache[self.term.id].sub.clear()
+
 
 
 class LineageIterator(Iterator["Term"]):

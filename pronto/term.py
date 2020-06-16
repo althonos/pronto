@@ -30,6 +30,7 @@ from .synonym import SynonymData
 from .relationship import Relationship
 from .pv import PropertyValue
 from .logic import SubclassesIterator, SuperclassesIterator
+from .logic.lineage import SubclassesHandler, SuperclassesHandler
 from .utils.meta import typechecked
 
 if typing.TYPE_CHECKING:
@@ -206,11 +207,11 @@ class Term(Entity):
 
     def superclasses(
         self, distance: Optional[int] = None, with_self: bool = True,
-    ) -> Iterator["Term"]:
-        """Get an iterator over the superclasses of this `Term`.
+    ) -> "TermSuperclasses":
+        """Get an handle over the superclasses of this `Term`.
 
         In order to follow the semantics of ``rdf:subClassOf``, which in turn
-        respects the mathematical inclusion of subset inclusion, ``is_a`` is
+        respects the mathematical definition of subset inclusion, ``is_a`` is
         defined as a transitive relationship, hence ``has_subclass`` is also
         transitive by closure property.
 
@@ -232,7 +233,7 @@ class Term(Entity):
 
         Example:
             >>> ms = pronto.Ontology.from_obo_library("ms.obo")
-            >>> sup = ms['MS:1000143'].superclasses()
+            >>> sup = iter(ms['MS:1000143'].superclasses())
             >>> next(sup)
             Term('MS:1000143', name='API 150EX')
             >>> next(sup)
@@ -250,12 +251,12 @@ class Term(Entity):
             the ``is_a`` relationship is translated to in OWL2 language.
 
         """
-        return SuperclassesIterator(self, distance=distance, with_self=with_self)
+        return SuperclassesHandler(self, distance=distance, with_self=with_self)
 
     def subclasses(
         self, distance: Optional[int] = None, with_self: bool = True,
-    ) -> SubclassesIterator:
-        """Get an iterator over the subclasses of this `Term`.
+    ) -> "SubclassesIterator":
+        """Get an handle over the subclasses of this `Term`.
 
         Arguments:
             distance (int, optional): The maximum distance between this term
@@ -275,7 +276,7 @@ class Term(Entity):
 
         Example:
             >>> ms = pronto.Ontology.from_obo_library("ms.obo")
-            >>> sub = ms['MS:1000031'].subclasses()
+            >>> sub = iter(ms['MS:1000031'].subclasses())
             >>> next(sub)
             Term('MS:1000031', name='instrument model')
             >>> next(sub)
@@ -296,7 +297,7 @@ class Term(Entity):
             reduced to an :math:`O(n)` operation.
 
         """
-        return SubclassesIterator(self, distance=distance, with_self=with_self)
+        return SubclassesHandler(self, distance=distance, with_self=with_self)
 
     def is_leaf(self) -> bool:
         """Check whether the term is a leaf in the ontology.
@@ -568,6 +569,8 @@ class TermSet(MutableSet[Term]):
 
     @typechecked()
     def add(self, term: Term) -> None:
+        if self._ontology is not None and self._ontology is not term._ontology():
+            raise ValueError("cannot use `Term` instances from different `Ontology`")
         self._ids.add(term.id)
 
     def clear(self) -> None:
@@ -583,6 +586,8 @@ class TermSet(MutableSet[Term]):
 
     @typechecked()
     def remove(self, term: Term):
+        if self._ontology is not None and self._ontology is not term._ontology():
+            raise ValueError("cannot use `Term` instances from different `Ontology`")
         self._ids.remove(term.id)
 
     # --- Attributes ---------------------------------------------------------

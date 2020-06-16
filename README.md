@@ -107,6 +107,18 @@ they contain from their identifier in compact form:
 Term('CL:0002116', name='B220-low CD38-positive unswitched memory B cell')
 ```
 
+### 🔝 Create a new term from scratch
+
+We can load an ontology, and edit it locally. Here, we add a new protein class
+to the Protein Ontology.
+```python
+>>> pr = Ontology.from_obo_library("pr.obo")
+>>> brh = ms.create_term("PR:XXXXXXXX")
+>>> brh.name = "Bacteriorhodopsin"
+>>> brh.superclasses().add(pr["PR:000001094"])  # is a rhodopsin-like G-protein
+>>> brh.disjoint_from.add(pr["PR:000036194"])   # disjoint from eukaryotic proteins
+```
+
 ### ✏️ Convert an OWL ontology to OBO format
 
 The `Ontology.dump` method can be used to serialize an ontology to any of the

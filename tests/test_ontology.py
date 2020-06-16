@@ -34,13 +34,13 @@ class TestOntology(unittest.TestCase):
         t2 = ont.create_term("TST:002")
         self.assertEqual(ont._inheritance, {t1.id: Lineage(), t2.id: Lineage()})
 
-        t2.relationships = { ont["is_a"]: [t1] }
+        t2.superclasses().add(t1)
         self.assertEqual(ont._inheritance, {
             t1.id: Lineage(sub={t2.id}),
             t2.id: Lineage(sup={t1.id})
         })
 
-        t2.relationships = {}
+        t2.superclasses().clear()
         self.assertEqual(ont._inheritance, {t1.id: Lineage(), t2.id: Lineage()})
 
 

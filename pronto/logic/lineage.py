@@ -35,6 +35,10 @@ class Lineage(object):
             return self.sub == other.sub and self.sup == other.sup
         return False
 
+    # `Lineage` is mutable so this is the explicit way to tell it's unhashable
+    # (see https://docs.python.org/3/reference/datamodel.html#object.__hash__)
+    __hash__ = None
+
 
 class LineageIterator(Iterator["Term"]):
 

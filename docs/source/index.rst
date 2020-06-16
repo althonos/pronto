@@ -52,7 +52,7 @@
 
 
 ``pronto`` is a Python agnostic library designed to work with ontologies. At the
-moment, it can parse `OBO`_, `OBO Graphs`_ or 
+moment, it can parse `OBO`_, `OBO Graphs`_ or
 `OWL in RDF/XML format <https://www.w3.org/TR/2012/REC-owl2-mapping-to-rdf-20121211/>`_,
 ntologies on the local host or from an network location, and export
 ontologies to `OBO`_ or `OBO Graphs`_ (in `JSON`_ format).
@@ -87,6 +87,7 @@ Library
 
    Installation <install>
    Examples <examples/index>
+   Update Guide <updating>
    API Reference <api>
    To-do <todo>
    Changelog <changes>

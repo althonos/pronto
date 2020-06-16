@@ -1,0 +1,151 @@
+{
+  "graphs" : [ {
+    "nodes" : [ {
+      "id" : "http://purl.obolibrary.org/obo/T/f1",
+      "type" : "INDIVIDUAL"
+    }, {
+      "id" : "http://purl.obolibrary.org/obo/T/Male",
+      "type" : "CLASS"
+    }, {
+      "id" : "http://purl.obolibrary.org/obo/T/m1",
+      "type" : "INDIVIDUAL"
+    }, {
+      "id" : "http://purl.obolibrary.org/obo/T/Female",
+      "type" : "CLASS"
+    }, {
+      "id" : "http://purl.obolibrary.org/obo/T/b",
+      "type" : "INDIVIDUAL"
+    } ],
+    "edges" : [ {
+      "sub" : "http://purl.obolibrary.org/obo/T/Female",
+      "pred" : "is_a",
+      "obj" : "http://purl.obolibrary.org/obo/T/Person"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/Male",
+      "pred" : "is_a",
+      "obj" : "http://purl.obolibrary.org/obo/T/Person"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/f1",
+      "pred" : "type",
+      "obj" : "http://purl.obolibrary.org/obo/T/Male"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/m1",
+      "pred" : "type",
+      "obj" : "http://purl.obolibrary.org/obo/T/Female"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/b",
+      "pred" : "http://purl.obolibrary.org/obo/T/father-of",
+      "obj" : "http://purl.obolibrary.org/obo/T/b1"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/b",
+      "pred" : "http://purl.obolibrary.org/obo/T/father-of",
+      "obj" : "http://purl.obolibrary.org/obo/T/b2"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/f1",
+      "pred" : "http://purl.obolibrary.org/obo/T/father-of",
+      "obj" : "http://purl.obolibrary.org/obo/T/b"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/f1",
+      "pred" : "http://purl.obolibrary.org/obo/T/father-of",
+      "obj" : "http://purl.obolibrary.org/obo/T/c"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/m1",
+      "pred" : "http://purl.obolibrary.org/obo/T/mother-of",
+      "obj" : "http://purl.obolibrary.org/obo/T/b"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/m1",
+      "pred" : "http://purl.obolibrary.org/obo/T/mother-of",
+      "obj" : "http://purl.obolibrary.org/obo/T/c"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/ancestor-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/genealogically-related-to"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/brother-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/sibling-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/child-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/descendant-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/descendant-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/genealogically-related-to"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/father-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/parent-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/grandfather-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/grandparent-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/grandmother-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/grandparent-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/grandparent-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/ancestor-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/mother-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/parent-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/parent-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/ancestor-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/sibling-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/genealogically-related-to"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/sister-of",
+      "pred" : "subPropertyOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/sibling-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/ancestor-of",
+      "pred" : "inverseOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/descendant-of"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/T/child-of",
+      "pred" : "inverseOf",
+      "obj" : "http://purl.obolibrary.org/obo/T/parent-of"
+    } ],
+    "id" : "http://purl.obolibrary.org/obo/T",
+    "meta" : {
+      "subsets" : [ ],
+      "xrefs" : [ ],
+      "basicPropertyValues" : [ ]
+    },
+    "equivalentNodesSets" : [ ],
+    "logicalDefinitionAxioms" : [ ],
+    "domainRangeAxioms" : [ {
+      "predicateId" : "http://purl.obolibrary.org/obo/T/brother-of",
+      "domainClassIds" : [ "http://purl.obolibrary.org/obo/T/Male" ]
+    }, {
+      "predicateId" : "http://purl.obolibrary.org/obo/T/father-of",
+      "domainClassIds" : [ "http://purl.obolibrary.org/obo/T/Male" ]
+    }, {
+      "predicateId" : "http://purl.obolibrary.org/obo/T/mother-of",
+      "domainClassIds" : [ "http://purl.obolibrary.org/obo/T/Female" ]
+    }, {
+      "predicateId" : "http://purl.obolibrary.org/obo/T/sister-of",
+      "domainClassIds" : [ "http://purl.obolibrary.org/obo/T/Female" ]
+    } ],
+    "propertyChainAxioms" : [ {
+      "predicateId" : "http://purl.obolibrary.org/obo/T/sibling-of",
+      "chainPredicateIds" : [ "http://purl.obolibrary.org/obo/T/child-of", "http://purl.obolibrary.org/obo/T/parent-of" ]
+    }, {
+      "predicateId" : "http://purl.obolibrary.org/obo/T/grandmother-of",
+      "chainPredicateIds" : [ "http://purl.obolibrary.org/obo/T/mother-of", "http://purl.obolibrary.org/obo/T/parent-of" ]
+    }, {
+      "predicateId" : "http://purl.obolibrary.org/obo/T/grandfather-of",
+      "chainPredicateIds" : [ "http://purl.obolibrary.org/obo/T/parent-of", "http://purl.obolibrary.org/obo/T/parent-of" ]
+    }, {
+      "predicateId" : "http://purl.obolibrary.org/obo/T/grandparent-of",
+      "chainPredicateIds" : [ "http://purl.obolibrary.org/obo/T/parent-of", "http://purl.obolibrary.org/obo/T/parent-of" ]
+    } ]
+  } ]
+}

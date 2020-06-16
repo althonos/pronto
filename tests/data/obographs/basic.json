@@ -1,0 +1,81 @@
+{
+  "graphs" : [ {
+    "nodes" : [ {
+      "id" : "http://purl.obolibrary.org/obo/BFO_0000050",
+      "meta" : {
+        "xrefs" : [ {
+          "val" : "BFO:0000050"
+        } ],
+        "basicPropertyValues" : [ {
+          "pred" : "http://www.geneontology.org/formats/oboInOwl#shorthand",
+          "val" : "part_of"
+        } ]
+      },
+      "type" : "PROPERTY"
+    }, {
+      "id" : "http://purl.obolibrary.org/obo/IAO_0000115",
+      "type" : "PROPERTY",
+      "lbl" : "definition"
+    }, {
+      "id" : "http://purl.obolibrary.org/obo/UBERON_0002101",
+      "type" : "CLASS",
+      "lbl" : "limb"
+    }, {
+      "id" : "http://purl.obolibrary.org/obo/UBERON_0002102",
+      "type" : "CLASS",
+      "lbl" : "forelimb"
+    }, {
+      "id" : "http://purl.obolibrary.org/obo/UBERON_0002398",
+      "meta" : {
+        "definition" : {
+          "val" : ".",
+          "xrefs" : [ ]
+        }
+      },
+      "type" : "CLASS",
+      "lbl" : "manus"
+    }, {
+      "id" : "http://purl.obolibrary.org/obo/UBERON_0002470",
+      "type" : "CLASS",
+      "lbl" : "autopod region"
+    }, {
+      "id" : "http://www.geneontology.org/formats/oboInOwl#hasDbXref",
+      "type" : "PROPERTY",
+      "lbl" : "database_cross_reference"
+    }, {
+      "id" : "http://www.geneontology.org/formats/oboInOwl#shorthand",
+      "type" : "PROPERTY",
+      "lbl" : "shorthand"
+    } ],
+    "edges" : [ {
+      "sub" : "http://purl.obolibrary.org/obo/UBERON_0002102",
+      "pred" : "is_a",
+      "obj" : "http://purl.obolibrary.org/obo/UBERON_0002101"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/UBERON_0002398",
+      "pred" : "is_a",
+      "obj" : "http://purl.obolibrary.org/obo/UBERON_0002470"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/UBERON_0002398",
+      "pred" : "http://purl.obolibrary.org/obo/BFO_0000050",
+      "obj" : "http://purl.obolibrary.org/obo/UBERON_0002102"
+    }, {
+      "sub" : "http://purl.obolibrary.org/obo/UBERON_0002470",
+      "pred" : "http://purl.obolibrary.org/obo/BFO_0000050",
+      "obj" : "http://purl.obolibrary.org/obo/UBERON_0002101"
+    } ],
+    "id" : "http://purl.obolibrary.org/obo/test.owl",
+    "meta" : {
+      "subsets" : [ ],
+      "xrefs" : [ ],
+      "basicPropertyValues" : [ {
+        "pred" : "http://www.w3.org/2000/01/rdf-schema#comment",
+        "val" : "test manus ontology"
+      } ]
+    },
+    "equivalentNodesSets" : [ ],
+    "logicalDefinitionAxioms" : [ ],
+    "domainRangeAxioms" : [ ],
+    "propertyChainAxioms" : [ ]
+  } ]
+}

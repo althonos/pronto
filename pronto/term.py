@@ -29,7 +29,6 @@ from .synonym import SynonymData
 from .relationship import Relationship
 from .pv import PropertyValue
 from .logic import SubclassesIterator, SuperclassesIterator
-from .utils.impl import set
 from .utils.meta import typechecked
 
 if typing.TYPE_CHECKING:

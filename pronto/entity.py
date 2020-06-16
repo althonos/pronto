@@ -8,7 +8,6 @@ from .synonym import Synonym, SynonymData, SynonymType
 from .pv import PropertyValue
 from .xref import Xref
 from .utils.meta import roundrepr, typechecked
-from .utils.impl import set
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology

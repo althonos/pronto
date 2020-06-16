@@ -6,7 +6,6 @@ import weakref
 from typing import Optional, Set, FrozenSet, Iterable
 
 from .xref import Xref
-from .utils.impl import set
 from .utils.meta import roundrepr, typechecked
 
 if typing.TYPE_CHECKING:

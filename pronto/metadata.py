@@ -5,7 +5,6 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from .synonym import SynonymType
 from .pv import PropertyValue
-from .utils.impl import set
 from .utils.meta import roundrepr, typechecked
 
 

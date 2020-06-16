@@ -9,7 +9,6 @@ from .definition import Definition
 from .synonym import SynonymData
 from .xref import Xref
 from .pv import PropertyValue
-from .utils.impl import set
 from .utils.meta import typechecked
 
 if typing.TYPE_CHECKING:

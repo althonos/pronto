@@ -3,7 +3,6 @@ import collections
 import typing
 from typing import AbstractSet, Deque, Dict, Iterator, Optional, Set, Tuple
 
-from ..utils.impl import set
 from ..utils.meta import roundrepr
 
 if typing.TYPE_CHECKING:

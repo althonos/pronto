@@ -3,7 +3,6 @@ from typing import Optional, Iterable
 
 from .xref import Xref
 from .utils.meta import roundrepr
-from .utils.impl import set
 
 
 class Definition(str):

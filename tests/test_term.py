@@ -288,6 +288,27 @@ class TestTermSet(_TestTermMixin, unittest.TestCase):
         self.assertEqual(sorted(s4.ids), ['MS:1000015', 'MS:1000016'])
         self.assertIsNot(s4._ontology, None)
 
+    def test_inplace_xor(self):
+        s1 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
+        s = s1 ^ TermSet((self.ms['MS:1000015'], self.ms['MS:1000016']))
+        self.assertEqual(sorted(s.ids), ['MS:1000014', 'MS:1000016'])
+        self.assertIsNot(s._ontology, None)
+
+        s2 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
+        s = s2 ^ {self.ms['MS:1000015'], self.ms['MS:1000016']}
+        self.assertEqual(sorted(s.ids), ['MS:1000014', 'MS:1000016'])
+        self.assertIsNot(s._ontology, None)
+
+        s3 = TermSet()
+        s = s3 ^ TermSet((self.ms['MS:1000015'], self.ms['MS:1000016']))
+        self.assertEqual(sorted(s.ids), ['MS:1000015', 'MS:1000016'])
+        self.assertIsNot(s._ontology, None)
+
+        s4 = TermSet({self.ms['MS:1000015'], self.ms['MS:1000016']})
+        s = s4 ^ s4
+        self.assertEqual(sorted(s.ids), [])
+        self.assertIs(s._ontology, None)
+
     def test_inplace_sub(self):
         s1 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
         s1 -= TermSet((self.ms['MS:1000015'], self.ms['MS:1000016']))

@@ -1,4 +1,5 @@
 import os
+import multiprocessing.pool
 
 import fastobo
 
@@ -11,7 +12,7 @@ class OboParser(FastoboParser, BaseParser):
     def can_parse(cls, path, buffer):
         return buffer.lstrip().startswith((b"format-version:", b"[Term", b"[Typedef"))
 
-    def parse_from(self, handle):
+    def parse_from(self, handle, threads=None):
         # Load the OBO document through an iterator using fastobo
         doc = fastobo.iter(handle, ordered=True)
 
@@ -28,11 +29,8 @@ class OboParser(FastoboParser, BaseParser):
 
         # Extract frames from the current document.
         try:
-            for frame in doc:
-                if isinstance(frame, fastobo.term.TermFrame):
-                    self.enrich_term(frame)
-                elif isinstance(frame, fastobo.typedef.TypedefFrame):
-                    self.enrich_relationship(frame)
+            with multiprocessing.pool.ThreadPool(threads) as pool:
+                pool.map(self.extract_entity, doc)
         except SyntaxError as s:
             location = self.ont.path, s.lineno, s.offset, s.text
             raise SyntaxError(s.args[0], location) from None

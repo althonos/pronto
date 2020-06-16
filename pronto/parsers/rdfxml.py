@@ -80,7 +80,7 @@ class RdfXMLParser(BaseParser):
     def can_parse(cls, path, buffer):
         return buffer.lstrip().startswith((b"<?xml", b"<rdf:RDF", b"<owl:"))
 
-    def parse_from(self, handle):
+    def parse_from(self, handle, threads=None):
         # Load the XML document into an XML Element tree
         tree: etree.ElementTree = etree.parse(handle)
 

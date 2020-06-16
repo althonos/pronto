@@ -58,7 +58,11 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     @classmethod
     def from_obo_library(
-        cls, slug: str, import_depth: int = -1, timeout: int = 5
+        cls,
+        slug: str,
+        import_depth: int = -1,
+        timeout: int = 5,
+        threads: Optional[int] = None,
     ) -> "Ontology":
         """Create an `Ontology` from a file in the OBO Library.
 
@@ -76,6 +80,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             timeout (int): The timeout in seconds to use when performing
                 network I/O, for instance when connecting to the OBO library
                 to download imports.
+            threads (int): The number of threads to use when parsing, for
+                parsers that support multithreading. Give `None` to autodetect
+                the number of CPUs on the host machine.
 
         Example:
             >>> ms = pronto.Ontology.from_obo_library("apo.obo")
@@ -85,13 +92,16 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             'http://purl.obolibrary.org/obo/apo.obo'
 
         """
-        return cls(f"http://purl.obolibrary.org/obo/{slug}", import_depth, timeout)
+        return cls(
+            f"http://purl.obolibrary.org/obo/{slug}", import_depth, timeout, threads
+        )
 
     def __init__(
         self,
         handle: Union[BinaryIO, str, None] = None,
         import_depth: int = -1,
         timeout: int = 5,
+        threads: Optional[int] = None,
     ):
         """Create a new `Ontology` instance.
 
@@ -107,6 +117,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             timeout (int): The timeout in seconds to use when performing
                 network I/O, for instance when connecting to the OBO library
                 to download imports.
+            threads (int): The number of threads to use when parsing, for
+                parsers that support multithreading. Give `None` to autodetect
+                the number of CPUs on the host machine.
 
         Raises:
             TypeError: When the given ``handle`` could not be used to parse
@@ -143,6 +156,10 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 _handle = decompress(self.handle)
             else:
                 raise TypeError(f"could not parse ontology from {handle!r}")
+
+            # check value of `threads`
+            if threads is not None and not threads > 0:
+                raise ValueError("`threads` must be None or strictly positive")
 
             # Parse the ontology using the appropriate parser
             buffer = _handle.peek(io.DEFAULT_BUFFER_SIZE)

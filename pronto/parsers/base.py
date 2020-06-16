@@ -2,7 +2,7 @@ import abc
 import os
 import typing
 import urllib.parse
-from typing import Dict, Set
+from typing import Dict, Optional, Set
 
 from ..ontology import Ontology
 
@@ -19,7 +19,7 @@ class BaseParser(abc.ABC):
         return NotImplemented
 
     @abc.abstractmethod
-    def parse_from(self, handle: typing.BinaryIO) -> None:
+    def parse_from(self, handle: typing.BinaryIO, threads: Optional[int] = None) -> None:
         return NotImplemented
 
     @classmethod

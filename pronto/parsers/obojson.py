@@ -11,7 +11,7 @@ class OboJSONParser(FastoboParser, BaseParser):
     def can_parse(cls, path, buffer):
         return buffer.lstrip().startswith(b"{")
 
-    def parse_from(self, handle):
+    def parse_from(self, handle, threads=None):
         # Load the OBO graph into a syntax tree using fastobo
         doc = fastobo.load_graph(handle)
 
@@ -28,11 +28,8 @@ class OboJSONParser(FastoboParser, BaseParser):
 
         # Extract frames from the current document.
         try:
-            for frame in doc:
-                if isinstance(frame, fastobo.term.TermFrame):
-                    self.enrich_term(frame)
-                elif isinstance(frame, fastobo.typedef.TypedefFrame):
-                    self.enrich_relationship(frame)
+            with multiprocessing.pool.ThreadPool(threads) as pool:
+                pool.map(self.extract_entity, doc)
         except SyntaxError as err:
             location = self.ont.path, err.lineno, err.offset, err.text
             raise SyntaxError(err.args[0], location) from None

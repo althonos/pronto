@@ -53,6 +53,16 @@ class FastoboParser:
         """
         return _extract_property_value(pv)
 
+    # --- Doc processing -----------------------------------------------------
+
+    def extract_entity(self, frame: fastobo.entity.EntityFrame):
+        if isinstance(frame, fastobo.term.TermFrame):
+            self.enrich_term(frame)
+        elif isinstance(frame, fastobo.typedef.TypedefFrame):
+            self.enrich_relationship(frame)
+        else:
+            raise NotImplementedError("cannot handle OBO instances")
+
     # --- Frame processing ---------------------------------------------------
 
     def extract_metadata(self, header: fastobo.header.HeaderFrame) -> Metadata:

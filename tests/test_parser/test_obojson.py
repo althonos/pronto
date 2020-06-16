@@ -15,7 +15,7 @@ class TestOboJsonExamples(unittest.TestCase):
 
     def test_abox(self):
         ont = pronto.Ontology(self.get_url("abox"))
-        self.assertEqual(len(ont.terms()), 2) # Male and Female
+        self.assertEqual(len(ont.terms()), 3) # Person (implicit), Male and Female
 
     @unittest.expectedFailure
     def test_basic(self):

@@ -4,6 +4,7 @@ import typing
 import urllib.parse
 from typing import Dict, Optional, Set
 
+from ..logic.lineage import Lineage
 from ..ontology import Ontology
 
 
@@ -52,3 +53,10 @@ class BaseParser(abc.ABC):
 
         # return the resolved imports
         return resolved
+
+    def symmetrize_inheritance(self):
+        for t in self.ont.terms():
+            self.ont._inheritance.setdefault(t.id, Lineage())
+        for subclass, lineage in self.ont._inheritance.items():
+            for superclass in lineage.sup:
+                self.ont._inheritance[superclass].sub.add(subclass)

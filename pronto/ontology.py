@@ -171,8 +171,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             else:
                 raise ValueError(f"could not find a parser to parse {handle!r}")
 
-            # Populate the subclassing cache
-            self._build_inheritance_cache()
 
     # --- Magic Methods ------------------------------------------------------
 

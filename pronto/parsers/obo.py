@@ -3,6 +3,7 @@ import multiprocessing.pool
 
 import fastobo
 
+from ..logic.lineage import Lineage
 from .base import BaseParser
 from ._fastobo import FastoboParser
 
@@ -27,6 +28,13 @@ class OboParser(FastoboParser, BaseParser):
             )
         )
 
+        # Merge inheritance cache from imports
+        for dep in self.ont.imports.values():
+            for id, lineage in dep._inheritance.items():
+                self.ont._inheritance.setdefault(id, Lineage())
+                self.ont._inheritance[id].sup.update(lineage.sup)
+                self.ont._inheritance[id].sub.update(lineage.sub)
+
         # Extract frames from the current document.
         try:
             with multiprocessing.pool.ThreadPool(threads) as pool:
@@ -34,3 +42,6 @@ class OboParser(FastoboParser, BaseParser):
         except SyntaxError as s:
             location = self.ont.path, s.lineno, s.offset, s.text
             raise SyntaxError(s.args[0], location) from None
+
+        # Update inheritance cache
+        self.symmetrize_inheritance()

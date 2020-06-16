@@ -103,6 +103,9 @@ class RdfXMLParser(BaseParser):
             )
         )
 
+        # Merge inheritance cache from imports
+        self.import_inheritance()
+
         # Parse typedef first to handle OBO shorthand renaming
         for prop in tree.iterfind(_NS["owl"]["ObjectProperty"]):
             self._extract_object_property(prop, aliases)
@@ -112,6 +115,9 @@ class RdfXMLParser(BaseParser):
             self._extract_term(class_, aliases)
         for axiom in tree.iterfind(_NS["owl"]["Axiom"]):
             self._process_axiom(axiom, aliases)
+
+        # Update inheritance cache with symmetric of `subClassOf`
+        self.symmetrize_inheritance()
 
     # -- Helper methods ------------------------------------------------------
 
@@ -245,8 +251,9 @@ class RdfXMLParser(BaseParser):
 
             if tag == _NS["rdfs"]["subClassOf"]:
                 if _NS["rdf"]["resource"] in attrib:
-                    iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
-                    termdata.relationships.setdefault("is_a", set()).add(iri)
+                    if attrib[_NS["rdf"]["resource"]] != _NS["owl"].raw("Thing"):
+                        iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
+                        self.ont._inheritance[id_].sup.add(iri)
                 else:
                     pass  # TODO: relationships
             elif tag == _NS["oboInOwl"]["inSubset"]:

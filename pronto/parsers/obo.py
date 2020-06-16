@@ -29,11 +29,7 @@ class OboParser(FastoboParser, BaseParser):
         )
 
         # Merge inheritance cache from imports
-        for dep in self.ont.imports.values():
-            for id, lineage in dep._inheritance.items():
-                self.ont._inheritance.setdefault(id, Lineage())
-                self.ont._inheritance[id].sup.update(lineage.sup)
-                self.ont._inheritance[id].sub.update(lineage.sub)
+        self.import_inheritance()
 
         # Extract frames from the current document.
         try:
@@ -43,5 +39,5 @@ class OboParser(FastoboParser, BaseParser):
             location = self.ont.path, s.lineno, s.offset, s.text
             raise SyntaxError(s.args[0], location) from None
 
-        # Update inheritance cache
+        # Update inheritance cache with symmetric of `subClassOf`
         self.symmetrize_inheritance()

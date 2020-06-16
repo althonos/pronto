@@ -60,3 +60,10 @@ class BaseParser(abc.ABC):
         for subclass, lineage in self.ont._inheritance.items():
             for superclass in lineage.sup:
                 self.ont._inheritance[superclass].sub.add(subclass)
+
+    def import_inheritance(self):
+        for dep in self.ont.imports.values():
+            for id, lineage in dep._inheritance.items():
+                self.ont._inheritance.setdefault(id, Lineage())
+                self.ont._inheritance[id].sup.update(lineage.sup)
+                self.ont._inheritance[id].sub.update(lineage.sub)

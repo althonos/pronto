@@ -21,6 +21,7 @@ from ..utils.warnings import NotImplementedWarning
 # --- Type Hint --------------------------------------------------------------
 
 DefClause = Union[fastobo.term.DefClause, fastobo.typedef.DefClause]
+EntityFrame = Union[fastobo.term.TermFrame, fastobo.typedef.TypedefFrame, fastobo.instance.InstanceFrame]
 
 # --- Parser interface -------------------------------------------------------
 
@@ -55,7 +56,7 @@ class FastoboParser:
 
     # --- Doc processing -----------------------------------------------------
 
-    def extract_entity(self, frame: fastobo.entity.EntityFrame):
+    def extract_entity(self, frame: EntityFrame) -> None:
         if isinstance(frame, fastobo.term.TermFrame):
             self.enrich_term(frame)
         elif isinstance(frame, fastobo.typedef.TypedefFrame):

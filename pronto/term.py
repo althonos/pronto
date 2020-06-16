@@ -525,7 +525,7 @@ class TermSet(MutableSet[Term]):
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__or__(other._ids)
-            s._ontology = self._ontology
+            s._ontology = self._ontology or other._ontology
         else:
             s = TermSet(super().__or__(other))
         return s
@@ -551,6 +551,7 @@ class TermSet(MutableSet[Term]):
     def __ixor__(self, other: AbstractSet[Term]) -> "TermSet":
         if isinstance(other, TermSet):
             self._ids ^= other._ids
+            self._ontology = self._ontology or other._ontology
         else:
             super().__ixor__(other)
         if not self._ids:
@@ -561,6 +562,7 @@ class TermSet(MutableSet[Term]):
         if isinstance(other, TermSet):
             s = TermSet()
             s._ids = self._ids.__xor__(other._ids)
+            s._ontology = self._ontology or other._ontology
         else:
             s = TermSet(super().__xor__(other))
         if not s._ids:

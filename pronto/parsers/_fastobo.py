@@ -189,7 +189,7 @@ def _process_clause_header_format_version(clause, meta):
 
 @process_clause_header.register(fastobo.header.IdspaceClause)
 def _process_clause_header_idspace(clause, meta):
-    meta.idspace[str(clause.prefix)] = str(clause.url), clause.description
+    meta.idspaces[str(clause.prefix)] = str(clause.url), clause.description
 
 
 @process_clause_header.register(fastobo.header.ImportClause)

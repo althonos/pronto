@@ -15,6 +15,7 @@ class TestOntology(unittest.TestCase):
     def setUpClass(cls):
         warnings.simplefilter('error')
         warnings.simplefilter('ignore', category=UnicodeWarning)
+        warnings.simplefilter('ignore', category=DeprecationWarning)
         cls.file = open(os.path.join(DATADIR, "ms.obo"), "rb")
         cls.ms = pronto.Ontology(cls.file)
 

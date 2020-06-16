@@ -411,7 +411,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """
         if id in relationship._BUILTINS:
             warnings.warn(
-                "using the `is_a` relationship not be supported in future versions"
+                "using the `is_a` relationship not be supported in future versions, "
                 "use `superclasses` and `subclasses` API of entities instead.",
                 category=DeprecationWarning,
                 stacklevel=2,

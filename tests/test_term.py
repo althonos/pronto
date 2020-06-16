@@ -15,12 +15,12 @@ class _TestTermMixin(object):
     def setUpClass(cls):
         warnings.simplefilter('error')
         warnings.simplefilter('ignore', category=UnicodeWarning)
-        cls.file = open(os.path.join(DATADIR, "ms.obo"), "rb")
-        cls.ms = pronto.Ontology(cls.file)
+        warnings.simplefilter('ignore', category=ResourceWarning)
+        with open(os.path.join(DATADIR, "ms.obo"), "rb") as f:
+            cls.ms = pronto.Ontology(f)
 
     @classmethod
     def tearDownClass(cls):
-        cls.file.close()
         warnings.simplefilter(warnings.defaultaction)
 
     def setUp(self):

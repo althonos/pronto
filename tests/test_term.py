@@ -15,7 +15,6 @@ class _TestTermMixin(object):
     def setUpClass(cls):
         warnings.simplefilter('error')
         warnings.simplefilter('ignore', category=UnicodeWarning)
-        warnings.simplefilter('ignore', category=DeprecationWarning)
         cls.file = open(os.path.join(DATADIR, "ms.obo"), "rb")
         cls.ms = pronto.Ontology(cls.file)
 
@@ -253,8 +252,8 @@ class TestTermSet(_TestTermMixin, unittest.TestCase):
         self.assertIs(s4._ontology, None)
 
     def test_subclasses_uniqueness(self):
-        self.t2.relationships = {self.ont['is_a']: [self.t1]}
-        self.t3.relationships = {self.ont['is_a']: [self.t2]}
+        self.t2.superclasses().add(self.t1)
+        self.t3.superclasses().add(self.t2)
 
         self.assertEqual(
             self.t1.subclasses().to_set().ids, {self.t1.id, self.t2.id, self.t3.id}
@@ -277,8 +276,9 @@ class TestTermSet(_TestTermMixin, unittest.TestCase):
         )
 
     def test_superclasses_uniqueness(self):
-        self.t2.relationships = {self.ont['is_a']: [self.t1]}
-        self.t3.relationships = {self.ont['is_a']: [self.t1, self.t2]}
+        self.t2.superclasses().add(self.t1)
+        self.t3.superclasses().add(self.t1)
+        self.t3.superclasses().add(self.t2)
 
         s = pronto.TermSet({self.t2, self.t3})
         self.assertEqual(

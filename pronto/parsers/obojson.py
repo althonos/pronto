@@ -1,4 +1,5 @@
 import os
+import multiprocessing.pool
 
 import fastobo
 

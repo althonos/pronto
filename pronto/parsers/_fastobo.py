@@ -62,7 +62,7 @@ class FastoboParser:
         elif isinstance(frame, fastobo.typedef.TypedefFrame):
             self.enrich_relationship(frame)
         else:
-            raise NotImplementedError("cannot handle OBO instances")
+            warnings.warn("cannot handle OBO instances", NotImplementedWarning, stacklevel=3)
 
     # --- Frame processing ---------------------------------------------------
 

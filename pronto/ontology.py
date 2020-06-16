@@ -408,7 +408,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 relationships of the ontology graph.
 
         """
-        if id in relationship._BUILTINS[id]:
+        if id in relationship._BUILTINS:
             warnings.warn(
                 "using the `is_a` relationship not be supported in future versions"
                 "use `superclasses` and `subclasses` API of entities instead.",

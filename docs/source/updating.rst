@@ -12,6 +12,23 @@ the `~pronto.Ontology` constructor.
 From ``v0.*``
 -------------
 
+Render to OBO
+^^^^^^^^^^^^^
+
+Exporting an ontology to the OBO (or other supported formats) is now done with
+the `~pronto.Ontology.dump` and `~pronto.Ontology.dumps` methods:
+
+.. code:: python
+
+    # before
+    print(ontology.obo)
+    open("out.obo", "w").write(ontology.obo)
+
+    # after
+    print(ontology.dumps())
+    ontoloy.dump(open("out.obo", "w"))
+
+
 Subclasses and superclasses
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

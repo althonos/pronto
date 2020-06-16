@@ -2,6 +2,7 @@ import contextlib
 import itertools
 import io
 import typing
+import warnings
 from typing import BinaryIO, Dict, Mapping, Optional, Set, Union
 
 from . import relationship

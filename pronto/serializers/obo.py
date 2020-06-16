@@ -1,6 +1,8 @@
 import io
 from typing import BinaryIO, ClassVar
 
+from ..term import Term, TermData
+from ..relationship import Relationship, RelationshipData
 from ._fastobo import FastoboSerializer
 from .base import BaseSerializer
 
@@ -21,14 +23,14 @@ class OboSerializer(FastoboSerializer, BaseSerializer):
             # dump terms
             if self.ont._terms:
                 for i, (id, data) in enumerate(self.ont._terms.items()):
-                    frame = self._to_term_frame(data)
+                    frame = self._to_term_frame(Term(self.ont, data))
                     file.write(str(frame).encode("utf-8"))
                     if i < len(self.ont._terms) - 1 or self.ont._relationships:
                         file.write(b"\n")
             # dump typedefs
             if self.ont._relationships:
                 for i, (id, data) in enumerate(self.ont._relationships.items()):
-                    frame = self._to_typedef_frame(data)
+                    frame = self._to_typedef_frame(Relationship(self.ont, data))
                     file.write(str(frame).encode("utf-8"))
                     if i < len(self.ont._relationships) - 1:
                         file.write(b"\n")

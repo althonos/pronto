@@ -11,7 +11,7 @@ from ..metadata import Metadata
 from ..ontology import Ontology
 from ..synonym import SynonymData
 from ..term import Term, TermData
-from ..relationship import RelationshipData
+from ..relationship import Relationship, RelationshipData
 from ..xref import Xref
 from ..pv import PropertyValue, LiteralPropertyValue, ResourcePropertyValue
 
@@ -25,11 +25,11 @@ class FastoboSerializer:
         if o.metadata:
             doc.header = self._to_header_frame(o.metadata)
         for termdata in sorted(self.ont._terms.values(), key=operator.attrgetter("id")):
-            doc.append(self._to_term_frame(termdata))
+            doc.append(self._to_term_frame(Term(self.ont, termdata)))
         for reldata in sorted(
             self.ont._relationships.values(), key=operator.attrgetter("id")
         ):
-            doc.append(self._to_typedef_frame(reldata))
+            doc.append(self._to_typedef_frame(Relationship(self.ont, reldata)))
         return doc
 
     def _to_header_frame(self, m: Metadata) -> fastobo.header.HeaderFrame:
@@ -102,7 +102,8 @@ class FastoboSerializer:
             map(self._to_xref, syn.xrefs),
         )
 
-    def _to_term_frame(self, t: TermData) -> fastobo.term.TermFrame:
+    def _to_term_frame(self, term: Term) -> fastobo.term.TermFrame:
+        t = term._data()
         frame = fastobo.term.TermFrame(fastobo.id.parse(t.id))
         if t.anonymous:
             frame.append(fastobo.term.IsAnonymousClause(True))
@@ -133,8 +134,8 @@ class FastoboSerializer:
             frame.append(fastobo.term.BuiltinClause(True))
         for pv in sorted(t.annotations):
             frame.append(fastobo.term.PropertyValueClause(self._to_property_value(pv)))
-        for superclass in sorted(t.relationships.get("is_a", ())):
-            frame.append(fastobo.term.IsAClause(fastobo.id.parse(superclass)))
+        for superclass in sorted(term.superclasses(with_self=False, distance=1)):
+            frame.append(fastobo.term.IsAClause(fastobo.id.parse(superclass.id)))
         for i in sorted(filter(lambda x: not isinstance(x, tuple), t.intersection_of)):
             frame.append(fastobo.term.IntersectionOfClause(term=fastobo.id.parse(i)))
         for (i, j) in sorted(filter(lambda x: isinstance(x, tuple), t.intersection_of)):
@@ -167,7 +168,8 @@ class FastoboSerializer:
             frame.append(fastobo.term.ConsiderClause(fastobo.id.parse(c)))
         return frame
 
-    def _to_typedef_frame(self, r: RelationshipData):
+    def _to_typedef_frame(self, relationship: Relationship):
+        r = relationship._data()
         frame = fastobo.typedef.TypedefFrame(fastobo.id.parse(r.id))
         if r.anonymous:
             frame.append(fastobo.typedef.IsAnonymousClause(True))

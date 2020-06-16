@@ -133,6 +133,18 @@ class TestRoundtrip(unittest.TestCase):
             ont = self.get_ontology(txt)
             self.assertIn(ont['TST:001'].name, ["A", "B"])
 
+    def test_term_subclass_of(self):
+        ont = self.get_ontology("""
+            <owl:Ontology/>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+            </owl:Class>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_002">
+                <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/TST_001"/>
+            </owl:Class>
+        """)
+        self.assertIn(ont["TST:001"], ont["TST:002"].superclasses().to_set())
+        self.assertIn(ont["TST:002"], ont["TST:001"].subclasses().to_set())
+
 
     # ------------------------------------------------------------------------
 

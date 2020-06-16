@@ -3,6 +3,7 @@ import datetime
 import itertools
 import operator
 import typing
+import warnings
 from typing import (
     Dict,
     Iterator,
@@ -156,6 +157,12 @@ class Term(Entity):
         """
 
         if r._data() is relationship._BUILTINS["is_a"]:
+            warnings.warn(
+                "using the `is_a` relationship with `Term.objects` will not be "
+                "supported in future versions, use `Term.superclasses` instead.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
             return self.superclasses()
 
         g = networkx.MultiDiGraph()

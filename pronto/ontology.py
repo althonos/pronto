@@ -408,6 +408,13 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 relationships of the ontology graph.
 
         """
+        if id in relationship._BUILTINS[id]:
+            warnings.warn(
+                "using the `is_a` relationship not be supported in future versions"
+                "use `superclasses` and `subclasses` API of entities instead.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
         try:
             return Relationship(self, self._relationships[id])
         except KeyError:

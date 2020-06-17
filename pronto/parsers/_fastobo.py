@@ -382,7 +382,7 @@ def _process_clause_entity_is_anonymous(clause, entity, ont):
 
 @process_clause_typedef.register(fastobo.typedef.IsAntiSymmetricClause)
 def _process_clause_typedef_is_anti_symmetric(clause, entity, ont):
-    entity.antisymmetric = clause.antisymmetric
+    entity.antisymmetric = clause.anti_symmetric
 
 
 @process_clause_typedef.register(fastobo.typedef.IsAsymmetricClause)

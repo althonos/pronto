@@ -22,14 +22,16 @@ class OboSerializer(FastoboSerializer, BaseSerializer):
                     file.write(b"\n")
             # dump terms
             if self.ont._terms:
-                for i, (id, data) in enumerate(self.ont._terms.items()):
+                for i, id in enumerate(sorted(self.ont._terms)):
+                    data = self.ont._terms[id]
                     frame = self._to_term_frame(Term(self.ont, data))
                     file.write(str(frame).encode("utf-8"))
                     if i < len(self.ont._terms) - 1 or self.ont._relationships:
                         file.write(b"\n")
             # dump typedefs
             if self.ont._relationships:
-                for i, (id, data) in enumerate(self.ont._relationships.items()):
+                for i, id in enumerate(sorted(self.ont._relationships)):
+                    data = self.ont._relationships[id]
                     frame = self._to_typedef_frame(Relationship(self.ont, data))
                     file.write(str(frame).encode("utf-8"))
                     if i < len(self.ont._relationships) - 1:

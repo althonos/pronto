@@ -470,7 +470,7 @@ def _process_clause_term_relationship(clause, entity, ont):
     entity.relationships.setdefault(str(clause.typedef), set()).add(str(clause.term))
 
 
-@process_clause_term.register(fastobo.typedef.RelationshipClause)
+@process_clause_typedef.register(fastobo.typedef.RelationshipClause)
 def _process_clause_typedef_relationship(clause, entity, ont):
     entity.relationships.setdefault(str(clause.typedef), set()).add(str(clause.target))
 

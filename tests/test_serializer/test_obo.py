@@ -225,6 +225,23 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             """
         )
 
+    def test_relationship_relationship(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Term]
+            id: TST:003
+
+            [Typedef]
+            id: TST:001
+
+            [Typedef]
+            id: TST:002
+            relationship: TST:001 TST:003
+            """
+        )
+
     def test_relationship_replaced_by(self):
         self.assertRoundtrip(
             """
@@ -273,6 +290,21 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             [Typedef]
             id: has_part
             is_transitive: true
+            """
+        )
+
+    def test_relationship_transitive_over(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: best_friend_of
+            is_a: friend_of
+
+            [Typedef]
+            id: friend_of
+            transitive_over: best_friend_of
             """
         )
 

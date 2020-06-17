@@ -8,7 +8,7 @@ import pronto
 
 
 
-class TestRoundtrip(unittest.TestCase):
+class TestRdfXMLParser(unittest.TestCase):
 
     @staticmethod
     def get_ontology(content):
@@ -208,6 +208,21 @@ class TestRoundtrip(unittest.TestCase):
         self.assertIn(ont["TST:001"], ont["TST:002"].superclasses().to_set())
         self.assertIn(ont["TST:002"], ont["TST:001"].subclasses().to_set())
 
+    def test_term_subset(self):
+        ont = self.get_ontology("""
+            <owl:Ontology rdf:about="http://purl.obolibrary.org/obo/tst.owl"/>
+            <owl:AnnotationProperty rdf:about="http://purl.obolibrary.org/obo/tst#ss">
+                <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">a subset</rdfs:comment>
+                <rdfs:subPropertyOf rdf:resource="http://www.geneontology.org/formats/oboInOwl#SubsetProperty"/>
+            </owl:AnnotationProperty>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+                <oboInOwl:inSubset rdf:resource="http://purl.obolibrary.org/obo/tst#ss"/>
+            </owl:Class>
+        """)
+        self.assertIn("TST:001", ont)
+        self.assertEqual(ont["TST:001"].subsets, {"ss"})
+
     def test_term_synonym_as_property(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
@@ -361,3 +376,44 @@ class TestRoundtrip(unittest.TestCase):
             warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
             ont = self.get_ontology(txt)
             self.assertIn(ont['TST:001'].name, ["A", "B"])
+
+    def test_relationship_reflexive(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology/>
+            <owl:ObjectProperty rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+                <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ReflexiveProperty"/>
+            </owl:ObjectProperty>
+            """
+        )
+        self.assertIn("TST:001", ont)
+        self.assertTrue(ont["TST:001"].reflexive)
+
+    def test_relationship_subset(self):
+        ont = self.get_ontology("""
+            <owl:Ontology rdf:about="http://purl.obolibrary.org/obo/tst.owl"/>
+            <owl:AnnotationProperty rdf:about="http://purl.obolibrary.org/obo/tst#ss">
+                <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">a subset</rdfs:comment>
+                <rdfs:subPropertyOf rdf:resource="http://www.geneontology.org/formats/oboInOwl#SubsetProperty"/>
+            </owl:AnnotationProperty>
+            <owl:ObjectProperty rdf:about="http://purl.obolibrary.org/obo/tst#friend_of">
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">friend_of</oboInOwl:id>
+                <oboInOwl:inSubset rdf:resource="http://purl.obolibrary.org/obo/tst#ss"/>
+            </owl:ObjectProperty>
+        """)
+        self.assertIn("friend_of", ont)
+        self.assertEqual(ont["friend_of"].subsets, {"ss"})
+
+    def test_relationship_symmetric(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology/>
+            <owl:ObjectProperty rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+                <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#SymmetricProperty"/>
+            </owl:ObjectProperty>
+            """
+        )
+        self.assertIn("TST:001", ont)
+        self.assertTrue(ont["TST:001"].symmetric)

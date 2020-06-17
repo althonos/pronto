@@ -5,7 +5,31 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.2.0...HEAD
+
+## [2.2.0] - 2020-06-17
+[2.2.0]: https://github.com/althonos/pronto/compare/v2.1.0...v2.2.0
+### Added
+- `threads` parameter to `Ontology` constructor to control the number of
+  threads used by parsers supporting multithreading (OBO and OBO JSON at
+  the moment).
+- Deprecation warnings for suspected uses of the `is_a` pseudo-relationship
+  since subclasses/superclasses is now to be handled by the owner `Ontology`.
+- Support for subclass/superclass edition directly from the objects returned
+  by `Term.subclasses()` and `Term.superclasses()`. ([#84](https://github.com/althonos/pronto/issues/84))
+### Changed
+- Updated `fastobo` to `v0.8`, which reduce memory footprint of identifiers,
+  and improves the parser speed.
+- Improved OBO parser performance using threading plus zero-copy validation
+  of identifiers on `Xref` instantiation.
+- Improved performance in debug mode by having the typechecker only extract
+  the wrapped function signature once.
+### Fixed
+- OBO parser crashing on files containing `idspace` clauses in their headers.
+- Reference management issue with binary operations of `TermSet`.
+### Removed
+- `nanoset` depency, which was not useful anymore in Python 3.8 and caused
+  issues with multithreading when processing OBO frames in parallel.
 
 ## [2.1.0] - 2020-03-23
 [2.1.0]: https://github.com/althonos/pronto/compare/v2.0.1...v2.1.0
@@ -17,11 +41,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `Synonym.xrefs` now returns a mutable set that can be used to add
   `Xref` to the synonym directly.
 ### Fixed
-- `SynonymType.type` setter does not consider all synonym types as 
+- `SynonymType.type` setter does not consider all synonym types as
   undeclared anymore. ([#71](https://github.com/althonos/pronto/issues/71))
 - `RdfXmlParser` crashing on synonym types definition without a label
   like in Uberon. ([#67](https://github.com/althonos/pronto/issues/67))
-- `FastoboSerializer` crashing when encountering a relationship with 
+- `FastoboSerializer` crashing when encountering a relationship with
   at least one `replaced_by` clause.
 
 ## [2.0.1] - 2020-02-19

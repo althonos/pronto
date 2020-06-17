@@ -145,6 +145,38 @@ class TestRoundtrip(unittest.TestCase):
         self.assertIn(ont["TST:001"], ont["TST:002"].superclasses().to_set())
         self.assertIn(ont["TST:002"], ont["TST:001"].subclasses().to_set())
 
+    def test_term_xref(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
+            ont = self.get_ontology("""
+                <owl:Ontology/>
+                <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                    <oboInOwl:hasDbXref rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ISBN:1234</oboInOwl:hasDbXref>
+                    <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+                </owl:Class>
+            """)
+        self.assertEqual(len(ont["TST:001"].xrefs), 1)
+        self.assertEqual(list(ont["TST:001"].xrefs)[0].id, "ISBN:1234")
+
+    def test_term_xref_with_description(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
+            ont = self.get_ontology("""
+                <owl:Ontology/>
+                <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                    <oboInOwl:hasDbXref rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ISBN:1234</oboInOwl:hasDbXref>
+                    <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+                </owl:Class>
+                <owl:Axiom>
+                    <owl:annotatedSource rdf:resource="http://purl.obolibrary.org/obo/TST_001"/>
+                    <owl:annotatedProperty rdf:resource="http://www.geneontology.org/formats/oboInOwl#hasDbXref"/>
+                    <owl:annotatedTarget rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ISBN:1234</owl:annotatedTarget>
+                    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">a great book</rdfs:label>
+                </owl:Axiom>
+            """)
+        self.assertEqual(len(ont["TST:001"].xrefs), 1)
+        self.assertEqual(list(ont["TST:001"].xrefs)[0].id, "ISBN:1234")
+        self.assertEqual(list(ont["TST:001"].xrefs)[0].description, "a great book")
 
     # ------------------------------------------------------------------------
 

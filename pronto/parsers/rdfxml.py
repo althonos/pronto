@@ -612,8 +612,8 @@ class RdfXMLParser(BaseParser):
         elem_target = elem.find(_NS["owl"]["annotatedTarget"])
 
         # assert source, target and property have a `rdf:resource` attribute.
-        for elem in (elem_source, elem_property, elem_target):
-            if elem is None or _NS["rdf"]["resource"] not in elem.attrib:
+        for x in (elem_source, elem_property):
+            if x is None or _NS["rdf"]["resource"] not in x.attrib:
                 return
 
         # check among known properties
@@ -653,9 +653,12 @@ class RdfXMLParser(BaseParser):
             label = elem.find(_NS["rdfs"]["label"])
 
             if label is not None and label.text is not None:
-                entity._data().xrefs.add(Xref(elem_target.text, label.text))
+                new_xref = Xref(elem_target.text, label.text)
             else:
-                entity._data().xrefs.add(Xref(elem_target.text))
+                new_xref = Xref(elem_target.text)
+            if new_xref in entity._data().xrefs:
+                entity._data().xrefs.remove(new_xref)
+            entity._data().xrefs.add(new_xref)
 
         elif property in _SYNONYMS:
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
@@ -697,6 +700,7 @@ class RdfXMLParser(BaseParser):
                     )
 
         else:
+
             warnings.warn(
                 f"unknown axiom property: {property!r}", SyntaxWarning, stacklevel=3,
             )

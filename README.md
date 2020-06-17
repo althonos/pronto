@@ -107,7 +107,7 @@ they contain from their identifier in compact form:
 Term('CL:0002116', name='B220-low CD38-positive unswitched memory B cell')
 ```
 
-### 🔝 Create a new term from scratch
+### 🖊️ Create a new term from scratch
 
 We can load an ontology, and edit it locally. Here, we add a new protein class
 to the Protein Ontology.

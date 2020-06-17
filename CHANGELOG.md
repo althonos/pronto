@@ -5,7 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.2.1...HEAD
+
+## [2.2.1] - 2020-06-17
+[2.2.1]: https://github.com/althonos/pronto/compare/v2.2.0...v2.2.1
+### Fixed
+- Extraction of subclasses/superclasses hierarchy from nested imports.
+- Serialization of OBO frames not being done in order.
+- Parsing issue with `anti_symmetric` clauses in OBO typedefs.
+- Xrefs not being extracted when declared as axioms in RDF/XML documents.
+- `ResourceWarning` when creating `Ontology` from file-handles not mapping
+  to a filesystem location.
 
 ## [2.2.0] - 2020-06-17
 [2.2.0]: https://github.com/althonos/pronto/compare/v2.1.0...v2.2.0

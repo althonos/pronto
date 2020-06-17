@@ -1,3 +1,4 @@
+import io
 import os
 import sys
 import pickle
@@ -15,9 +16,9 @@ class TestOntology(unittest.TestCase):
     def setUpClass(cls):
         warnings.simplefilter('error')
         warnings.simplefilter('ignore', category=UnicodeWarning)
-        warnings.simplefilter('ignore', category=ResourceWarning)
-        with open(os.path.join(DATADIR, "ms.obo"), "rb") as f:
-            cls.ms = pronto.Ontology(f)
+        # warnings.simplefilter('ignore', category=ResourceWarning)
+        # with open(os.path.join(DATADIR, "ms.obo"), "rb") as f:
+        #     cls.ms = pronto.Ontology(f)
 
     @classmethod
     def tearDownClass(cls):
@@ -41,6 +42,33 @@ class TestOntology(unittest.TestCase):
 
         t2.superclasses().clear()
         self.assertEqual(ont._inheritance, {t1.id: Lineage(), t2.id: Lineage()})
+
+    def test_repr_new(self):
+        ont = pronto.Ontology()
+        self.assertEqual(repr(ont), "Ontology()")
+
+    def test_repr_path(self):
+        path = os.path.join(DATADIR, "pato.obo")
+        ont = pronto.Ontology(path)
+        self.assertEqual(repr(ont), "Ontology({!r})".format(path))
+
+    def test_repr_path_with_import_depth(self):
+        path = os.path.join(DATADIR, "pato.obo")
+        ont = pronto.Ontology(path, import_depth=1)
+        self.assertEqual(repr(ont), "Ontology({!r}, import_depth=1)".format(path))
+
+    def test_repr_file(self):
+        path = os.path.join(DATADIR, "pato.obo")
+        with open(path, "rb") as src:
+            ont = pronto.Ontology(src)
+        self.assertEqual(repr(ont), "Ontology({!r})".format(path))
+
+    def test_repr_file_handle(self):
+        path = os.path.join(DATADIR, "pato.obo")
+        with open(path, "rb") as src:
+            handle = io.BytesIO(src.read())
+        ont = pronto.Ontology(handle)
+        self.assertEqual(repr(ont), "Ontology({!r})".format(handle))
 
 
 class TestPickling(object):

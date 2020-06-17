@@ -43,18 +43,20 @@ class TestRoundtrip(unittest.TestCase):
         iao = pronto.Ontology(os.path.realpath(path))
         self.assertEqual(len(iao.terms()), 245)
 
+    def test_invalid_xml_file(self):
+        self.assertRaises(ValueError, self.get_ontology, "")
 
     # ------------------------------------------------------------------------
 
-    def test_metadata_imports(self):
+    def test_metadata_auto_generated_by(self):
         ont = self.get_ontology(
             """
             <owl:Ontology>
-                <owl:imports rdf:resource="http://purl.obolibrary.org/obo/ms.obo"/>
+                <oboInOwl:auto-generated-by>pronto</oboInOwl:auto-generated-by>
             </owl:Ontology>
             """
         )
-        self.assertIn("http://purl.obolibrary.org/obo/ms.obo", ont.metadata.imports)
+        self.assertEqual(ont.metadata.auto_generated_by, "pronto")
 
     def test_metadata_default_namespace(self):
         ont = self.get_ontology(
@@ -82,6 +84,36 @@ class TestRoundtrip(unittest.TestCase):
             "<owl:Ontology><doap:Version>0.1.0</doap:Version></owl:Ontology>"
         )
         self.assertEqual(ont2.metadata.data_version, "0.1.0")
+
+    def test_metadata_format_version(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology>
+                <oboInOwl:hasOBOFormatVersion>1.2</oboInOwl:hasOBOFormatVersion>
+            </owl:Ontology>
+            """
+        )
+        self.assertEqual(ont.metadata.format_version, "1.2")
+
+    def test_metadata_imports(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology>
+                <owl:imports rdf:resource="http://purl.obolibrary.org/obo/ms.obo"/>
+            </owl:Ontology>
+            """
+        )
+        self.assertIn("http://purl.obolibrary.org/obo/ms.obo", ont.metadata.imports)
+
+    def test_metadata_saved_by(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology>
+                <oboInOwl:savedBy>Martin Larralde</oboInOwl:savedBy>
+            </owl:Ontology>
+            """
+        )
+        self.assertEqual(ont.metadata.saved_by, "Martin Larralde")
 
     # ------------------------------------------------------------------------
 
@@ -176,7 +208,60 @@ class TestRoundtrip(unittest.TestCase):
         self.assertIn(ont["TST:001"], ont["TST:002"].superclasses().to_set())
         self.assertIn(ont["TST:002"], ont["TST:001"].subclasses().to_set())
 
-    def test_term_xref_as_property(self):
+    def test_term_synonym_as_property(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
+            ont = self.get_ontology("""
+                <owl:Ontology/>
+                <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                    <oboInOwl:hasExactSynonym rdf:datatype="http://www.w3.org/2001/XMLSchema#string">stuff</oboInOwl:hasExactSynonym>
+                    <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+                </owl:Class>
+            """)
+        self.assertIn("TST:001", ont)
+        self.assertEqual(len(ont["TST:001"].synonyms), 1)
+        syn = next(iter(ont["TST:001"].synonyms))
+        self.assertEqual(syn.description, "stuff")
+        self.assertEqual(syn.scope, "EXACT")
+        self.assertEqual(syn.xrefs, set())
+
+    def test_term_synonym_as_axiom(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
+            ont = self.get_ontology("""
+                <owl:Ontology/>
+                <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                    <oboInOwl:hasExactSynonym rdf:datatype="http://www.w3.org/2001/XMLSchema#string">stuff</oboInOwl:hasExactSynonym>
+                    <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+                </owl:Class>
+                <owl:Axiom>
+                    <owl:annotatedSource rdf:resource="http://purl.obolibrary.org/obo/TST_001"/>
+                    <owl:annotatedProperty rdf:resource="http://www.geneontology.org/formats/oboInOwl#hasExactSynonym"/>
+                    <owl:annotatedTarget rdf:datatype="http://www.w3.org/2001/XMLSchema#string">stuff</owl:annotatedTarget>
+                    <oboInOwl:hasDbXref rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ISBN:1234</oboInOwl:hasDbXref>
+                </owl:Axiom>
+            """)
+            self.assertIn("TST:001", ont)
+            self.assertEqual(len(ont["TST:001"].synonyms), 1)
+            syn = next(iter(ont["TST:001"].synonyms))
+            self.assertEqual(syn.description, "stuff")
+            self.assertEqual(syn.scope, "EXACT")
+            self.assertEqual(syn.xrefs, {pronto.Xref("ISBN:1234")})
+
+    def test_term_xref_as_property_resource(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
+            ont = self.get_ontology("""
+                <owl:Ontology/>
+                <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                    <oboInOwl:hasDbXref rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ISBN:1234</oboInOwl:hasDbXref>
+                    <oboInOwl:id rdf:resource="http://purl.obolibrary.org/obo/ISBN_1234"/>
+                </owl:Class>
+            """)
+        self.assertEqual(len(ont["TST:001"].xrefs), 1)
+        self.assertEqual(list(ont["TST:001"].xrefs)[0].id, "ISBN:1234")
+
+    def test_term_xref_as_property_text(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
             ont = self.get_ontology("""

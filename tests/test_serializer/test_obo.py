@@ -87,7 +87,7 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             """
         )
 
-    def test_relationship_asymmetric(self):
+    def test_relationship_anti_symmetric(self):
         self.assertRoundtrip(
             """
             format-version: 1.4
@@ -117,6 +117,28 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             [Typedef]
             id: TST:001
             comment: a very important comment
+            """
+        )
+
+    def test_relationship_created_by(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: part_of
+            created_by: Martin Larralde
+            """
+        )
+
+    def test_relationship_cylic(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: part_of
+            is_cyclic: true
             """
         )
 
@@ -167,6 +189,17 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             """
         )
 
+    def test_relationship_is_obsolete(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: friend_of
+            is_obsolete: true
+            """
+        )
+
     def test_relationship_range(self):
         self.assertRoundtrip(
             """
@@ -189,6 +222,20 @@ class TestOboSerializer(TestSerializer, unittest.TestCase):
             [Typedef]
             id: has_part
             is_reflexive: true
+            """
+        )
+
+    def test_relationship_replaced_by(self):
+        self.assertRoundtrip(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: friend_of
+
+            [Typedef]
+            id: is_friend_of
+            replaced_by: friend_of
             """
         )
 

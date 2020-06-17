@@ -151,10 +151,12 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 self.path = handle
                 self.handle = ctx.enter_context(get_handle(handle, timeout))
                 _handle = ctx.enter_context(decompress(self.handle))
+                _detach = False
             elif hasattr(handle, "read"):
                 self.path = get_location(handle)
                 self.handle = handle
                 _handle = decompress(self.handle)
+                _detach = True
             else:
                 raise TypeError(f"could not parse ontology from {handle!r}")
 
@@ -171,6 +173,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             else:
                 raise ValueError(f"could not find a parser to parse {handle!r}")
 
+            if _detach:
+                _handle.detach()
 
     # --- Magic Methods ------------------------------------------------------
 

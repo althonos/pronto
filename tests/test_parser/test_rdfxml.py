@@ -15,6 +15,7 @@ class TestRoundtrip(unittest.TestCase):
         xml = f"""
         <rdf:RDF xmlns="http://purl.obolibrary.org/obo/TEMP#"
              xml:base="http://purl.obolibrary.org/obo/TEMP"
+             xmlns:obo="http://purl.obolibrary.org/obo/"
              xmlns:owl="http://www.w3.org/2002/07/owl#"
              xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
              xmlns:xml="http://www.w3.org/XML/1998/namespace"
@@ -112,6 +113,36 @@ class TestRoundtrip(unittest.TestCase):
         self.assertIn("TST:002", ont2)
         self.assertIn(ont2["TST:002"], ont2["TST:001"].consider)
 
+    def test_term_definition_as_property(self):
+        ont = self.get_ontology("""
+            <owl:Ontology/>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <obo:IAO_0000115 rdf:datatype="http://www.w3.org/2001/XMLSchema#string">a term</obo:IAO_0000115>
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+            </owl:Class>
+        """)
+        self.assertIn("TST:001", ont)
+        self.assertEqual(ont["TST:001"].definition, "a term")
+        self.assertEqual(len(ont["TST:001"].definition.xrefs), 0)
+
+    def test_term_definition_as_axiom(self):
+        ont = self.get_ontology("""
+            <owl:Ontology/>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                <obo:IAO_0000115 rdf:datatype="http://www.w3.org/2001/XMLSchema#string">a term</obo:IAO_0000115>
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+            </owl:Class>
+            <owl:Axiom>
+                <owl:annotatedSource rdf:resource="http://purl.obolibrary.org/obo/TST_001"/>
+                <owl:annotatedProperty rdf:resource="http://purl.obolibrary.org/obo/IAO_0000115"/>
+                <owl:annotatedTarget rdf:datatype="http://www.w3.org/2001/XMLSchema#string">a term</owl:annotatedTarget>
+                <oboInOwl:hasDbXref rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ISBN:1234</oboInOwl:hasDbXref>
+            </owl:Axiom>
+        """)
+        self.assertIn("TST:001", ont)
+        self.assertEqual(ont["TST:001"].definition, "a term")
+        self.assertEqual(list(ont["TST:001"].definition.xrefs)[0], pronto.Xref("ISBN:1234"))
+
     def test_term_multiple_labels(self):
         txt = """
             <owl:Ontology/>
@@ -145,7 +176,7 @@ class TestRoundtrip(unittest.TestCase):
         self.assertIn(ont["TST:001"], ont["TST:002"].superclasses().to_set())
         self.assertIn(ont["TST:002"], ont["TST:001"].subclasses().to_set())
 
-    def test_term_xref(self):
+    def test_term_xref_as_property(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
             ont = self.get_ontology("""
@@ -158,7 +189,26 @@ class TestRoundtrip(unittest.TestCase):
         self.assertEqual(len(ont["TST:001"].xrefs), 1)
         self.assertEqual(list(ont["TST:001"].xrefs)[0].id, "ISBN:1234")
 
-    def test_term_xref_with_description(self):
+    def test_term_xref_as_axiom_without_description(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
+            ont = self.get_ontology("""
+                <owl:Ontology/>
+                <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
+                    <oboInOwl:hasDbXref rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ISBN:1234</oboInOwl:hasDbXref>
+                    <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">TST:001</oboInOwl:id>
+                </owl:Class>
+                <owl:Axiom>
+                    <owl:annotatedSource rdf:resource="http://purl.obolibrary.org/obo/TST_001"/>
+                    <owl:annotatedProperty rdf:resource="http://www.geneontology.org/formats/oboInOwl#hasDbXref"/>
+                    <owl:annotatedTarget rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ISBN:1234</owl:annotatedTarget>
+                </owl:Axiom>
+            """)
+        self.assertEqual(len(ont["TST:001"].xrefs), 1)
+        self.assertEqual(list(ont["TST:001"].xrefs)[0].id, "ISBN:1234")
+        self.assertEqual(list(ont["TST:001"].xrefs)[0].description, None)
+
+    def test_term_xref_as_axiom_with_description(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
             ont = self.get_ontology("""

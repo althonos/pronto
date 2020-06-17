@@ -49,7 +49,7 @@ class BaseParser(abc.ABC):
                 else:
                     id_ = f"{ref}.obo" if not os.path.splitext(ref)[1] else ref
                     url = f"http://purl.obolibrary.org/obo/{id_}"
-            resolved[ref] = Ontology(url, max(import_depth - 1, 0), timeout)
+            resolved[ref] = Ontology(url, max(import_depth-1, -1), timeout)
 
         # return the resolved imports
         return resolved
@@ -63,7 +63,9 @@ class BaseParser(abc.ABC):
 
     def import_inheritance(self):
         for dep in self.ont.imports.values():
+            for term in dep.terms():
+                self.ont._inheritance[term.id] = Lineage()
+        for dep in self.ont.imports.values():
             for id, lineage in dep._inheritance.items():
-                self.ont._inheritance.setdefault(id, Lineage())
                 self.ont._inheritance[id].sup.update(lineage.sup)
                 self.ont._inheritance[id].sub.update(lineage.sub)

@@ -17,3 +17,11 @@ p {
     box-sizing: border-box;
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
 }
+
+.class dd {
+    margin-left: 2%
+}
+
+.exception dd {
+    margin-left: 2%
+}

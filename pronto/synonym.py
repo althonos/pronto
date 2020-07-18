@@ -15,8 +15,8 @@ if typing.TYPE_CHECKING:
 _SCOPES = frozenset({"EXACT", "RELATED", "BROAD", "NARROW", None})
 
 
-@functools.total_ordering
 @roundrepr
+@functools.total_ordering
 class SynonymType(object):
     """A user-defined synonym type.
     """
@@ -51,8 +51,8 @@ class SynonymType(object):
         return hash((SynonymType, self.id))
 
 
-@functools.total_ordering
 @roundrepr
+@functools.total_ordering
 class SynonymData(object):
     """Internal data storage of `Synonym` information.
     """
@@ -127,7 +127,7 @@ class Synonym(object):
 
     else:
 
-        __slots__: Iterable[str] = ("__weakref__", "_ontology", "_data")
+        __slots__: Iterable[str] = ("__weakref__", "__ontology", "_data")
 
         def __init__(self, ontology: "Ontology", syndata: "SynonymData"):
             if syndata.type is not None:
@@ -135,7 +135,7 @@ class Synonym(object):
                 if not any(t.id == syndata.type for t in types):
                     raise ValueError(f"undeclared synonym type: {syndata.type}")
             self._data = weakref.ref(syndata)
-            self._ontology = ontology
+            self.__ontology = ontology
 
     def __eq__(self, other: object):
         if isinstance(other, Synonym):
@@ -163,24 +163,24 @@ class Synonym(object):
     def description(self) -> str:
         return self._data().description
 
-    @description.setter
+    @description.setter  # type: ignore
     @typechecked(property=True)
     def description(self, description: str) -> None:
         self._data().description = description
 
     @property
     def type(self) -> Optional[SynonymType]:
-        ontology, syndata = self._ontology, self._data()
+        ontology, syndata = self.__ontology, self._data()
         if syndata.type is not None:
             return next(
                 t for t in ontology.metadata.synonymtypedefs if t.id == syndata.type
             )
         return None
 
-    @type.setter
+    @type.setter  # type: ignore
     @typechecked(property=True)
     def type(self, type_: Optional[SynonymType]) -> None:
-        synonyms: Set[SynonymType] = self._ontology.metadata.synonymtypedefs
+        synonyms: Set[SynonymType] = self.__ontology.metadata.synonymtypedefs
         if type_ is not None and not any(type_.id == s.id for s in synonyms):
             raise ValueError(f"undeclared synonym type: {type_.id}")
         self._data().type = type_.id if type_ is not None else None
@@ -189,7 +189,7 @@ class Synonym(object):
     def scope(self) -> Optional[str]:
         return self._data().scope
 
-    @scope.setter
+    @scope.setter  # type: ignore
     @typechecked(property=True)
     def scope(self, scope: Optional[str]):
         if scope not in _SCOPES:

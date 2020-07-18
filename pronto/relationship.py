@@ -13,6 +13,7 @@ from .utils.meta import typechecked
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
+    from .term import Term
 
 
 class RelationshipData(EntityData):
@@ -177,7 +178,7 @@ class Relationship(Entity):
         """
         return self._data().antisymmetric
 
-    @antisymmetric.setter
+    @antisymmetric.setter  # type: ignore
     @typechecked(property=True)
     def antisymmetric(self, value: bool) -> None:
         self._data().antisymmetric = value
@@ -188,7 +189,7 @@ class Relationship(Entity):
         """
         return self._data().asymmetric
 
-    @asymmetric.setter
+    @asymmetric.setter  # type: ignore
     @typechecked(property=True)
     def asymmetric(self, value: bool) -> None:
         self._data().asymmetric = value
@@ -197,7 +198,7 @@ class Relationship(Entity):
     def class_level(self) -> bool:
         return self._data().class_level
 
-    @class_level.setter
+    @class_level.setter  # type: ignore
     @typechecked(property=True)
     def class_level(self, value: bool) -> None:
         self._data().class_level = value
@@ -260,7 +261,7 @@ class Relationship(Entity):
     def functional(self) -> bool:
         return self._data().functional
 
-    @functional.setter
+    @functional.setter  # type: ignore
     @typechecked(property=True)
     def functional(self, value: bool) -> None:
         self._data().functional = value
@@ -269,7 +270,7 @@ class Relationship(Entity):
     def inverse_functional(self) -> bool:
         return self._data().inverse_functional
 
-    @inverse_functional.setter
+    @inverse_functional.setter  # type: ignore
     @typechecked(property=True)
     def inverse_functional(self, value: bool) -> None:
         self._data().inverse_functional = value
@@ -278,7 +279,7 @@ class Relationship(Entity):
     def metadata_tag(self) -> bool:
         return self._data().metadata_tag
 
-    @metadata_tag.setter
+    @metadata_tag.setter  # type: ignore
     @typechecked(property=True)
     def metadata_tag(self, value: bool):
         self._data().metadata_tag = value
@@ -337,7 +338,7 @@ class Relationship(Entity):
     def reflexive(self) -> bool:
         return self._data().reflexive
 
-    @reflexive.setter
+    @reflexive.setter  # type: ignore
     @typechecked(property=True)
     def reflexive(self, value: bool):
         self._data().reflexive = value
@@ -351,7 +352,7 @@ class Relationship(Entity):
     def symmetric(self) -> bool:
         return self._data().symmetric
 
-    @symmetric.setter
+    @symmetric.setter  # type: ignore
     @typechecked(property=True)
     def symmetric(self, value: bool):
         self._data().symmetric = value
@@ -360,7 +361,7 @@ class Relationship(Entity):
     def transitive(self) -> bool:
         return self._data().transitive
 
-    @transitive.setter
+    @transitive.setter  # type: ignore
     @typechecked(property=True)
     def transitive(self, value: bool):
         self._data().transitive = value

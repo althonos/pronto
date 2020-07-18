@@ -64,7 +64,7 @@ class Entity:
 
     else:
 
-        __slots__: Iterable[str] = ("__weakref__", "_data")
+        __slots__: Iterable[str] = ("__weakref__", "_data")  # type: ignore
 
         def __init__(self, ontology: "Ontology", data: "EntityData"):
             self._data = weakref.ref(data)
@@ -117,7 +117,7 @@ class Entity:
         """
         return frozenset(self._data().alternate_ids)
 
-    @alternate_ids.setter
+    @alternate_ids.setter    # type: ignore
     @typechecked(property=True)
     def alternate_ids(self, ids: FrozenSet[str]):
         self._data().alternate_ids = set(ids)
@@ -150,7 +150,7 @@ class Entity:
         """
         return self._data().builtin
 
-    @builtin.setter
+    @builtin.setter  # type: ignore
     @typechecked(property=True)
     def builtin(self, value: bool):
         self._data().builtin = value
@@ -184,7 +184,7 @@ class Entity:
         """
         return self._data().created_by
 
-    @created_by.setter
+    @created_by.setter  # type: ignore
     @typechecked(property=True)
     def created_by(self, value: Optional[str]):
         self._data().created_by = value
@@ -195,7 +195,7 @@ class Entity:
         """
         return self._data().creation_date
 
-    @creation_date.setter
+    @creation_date.setter  # type: ignore
     @typechecked(property=True)
     def creation_date(self, value: Optional[datetime.datetime]):
         self._data().creation_date = value
@@ -209,7 +209,7 @@ class Entity:
         """
         return self._data().definition
 
-    @definition.setter
+    @definition.setter  # type: ignore
     @typechecked(property=True)
     def definition(self, definition: Optional[Definition]):
         self._data().definition = definition
@@ -242,7 +242,7 @@ class Entity:
         """
         return self._data().name
 
-    @name.setter
+    @name.setter  # type: ignore
     @typechecked(property=True)
     def name(self, value: Optional[str]):
         self._data().name = value
@@ -253,7 +253,7 @@ class Entity:
         """
         return self._data().namespace
 
-    @namespace.setter
+    @namespace.setter  # type: ignore
     @typechecked(property=True)
     def namespace(self, ns: Optional[str]):
         self._data().namespace = ns
@@ -264,7 +264,7 @@ class Entity:
         """
         return self._data().obsolete
 
-    @obsolete.setter
+    @obsolete.setter    # type: ignore
     @typechecked(property=True)
     def obsolete(self, value: bool):
         self._data().obsolete = value
@@ -275,7 +275,7 @@ class Entity:
         """
         return frozenset(self._data().subsets)
 
-    @subsets.setter
+    @subsets.setter  # type: ignore
     @typechecked(property=True)
     def subsets(self, subsets: FrozenSet[str]):
         declared = set(s.name for s in self._ontology().metadata.subsetdefs)
@@ -291,7 +291,7 @@ class Entity:
         ontology, termdata = self._ontology(), self._data()
         return frozenset(Synonym(ontology, s) for s in termdata.synonyms)
 
-    @synonyms.setter
+    @synonyms.setter  # type: ignore
     @typechecked(property=True)
     def synonyms(self, synonyms: FrozenSet[Synonym]):
         self._data().synonyms = set(synonyms)
@@ -305,7 +305,7 @@ class Entity:
         """
         return frozenset(self._data().xrefs)
 
-    @xrefs.setter
+    @xrefs.setter  # type: ignore
     @typechecked(property=True)
     def xrefs(self, xrefs: FrozenSet[Xref]):
         self._data().xrefs = set(xrefs)

@@ -21,13 +21,13 @@ class typechecked(object):
         FrozenSet = typing.FrozenSet
 
     @classmethod
-    def check_type(cls, hint: object, value: object) -> Tuple[bool, Optional[str]]:
+    def check_type(cls, hint: object, value: object) -> Tuple[bool, str]:
         # None: check if None
         if hint is None.__class__:
             return (value is None, "None")
         # typing.Any is always true
         if typing.cast(str, getattr(hint, "_name", None)) == "typing.Any":
-            return (True, None)
+            return (True, "any object")
         # typing.Set needs to check member types
         if typing.cast(object, getattr(hint, "__origin__", None)) is cls.Set:
             if not isinstance(value, collections.abc.MutableSet):
@@ -56,7 +56,7 @@ class typechecked(object):
         # direct type annotation: simply do an instance check
         if isinstance(hint, type):
             return (isinstance(value, hint), hint.__name__)
-        return (False, "something")
+        return (False, "<unknown>")
 
     def __init__(self, property: bool = False) -> None:
         self.property = property
@@ -82,7 +82,7 @@ class typechecked(object):
                             raise TypeError(msg.format(name))
             return func(*args, **kwargs)
 
-        return newfunc
+        return newfunc  # type: ignore
 
 
 class roundrepr(object):
@@ -124,7 +124,7 @@ class roundrepr(object):
         )
         return "{}({})".format(class_name, ", ".join(arguments))
 
-    def __new__(self, cls: Type[T]) -> T:
+    def __new__(self, cls: Type[T]) -> T:  # type: ignore
         obj = super().__new__(self)
         obj.__init__()
         if isinstance(cls, type):
@@ -134,7 +134,7 @@ class roundrepr(object):
     def __call__(self, cls: T) -> T:
 
         # Extract signature of `__init__`
-        sig = inspect.signature(cls.__init__)
+        sig = inspect.signature(cls.__init__)  # type: ignore
         if not all(p.kind is p.POSITIONAL_OR_KEYWORD for p in sig.parameters.values()):
             raise TypeError(
                 "cannot use `roundrepr` on a class with variadic `__init__`"
@@ -153,5 +153,5 @@ class roundrepr(object):
             return self.make(cls.__name__, *args, **kwargs)
 
         # Hotpatch the class and return it
-        cls.__repr__ = __repr__
+        cls.__repr__ = __repr__  # type: ignore
         return cls

@@ -357,11 +357,11 @@ class Term(Entity):
         ont, termdata = self._ontology(), self._data()
         intersection_of: List[Union["Term", Tuple[Relationship, "Term"]]] = []
         for item in termdata.intersection_of:
-            if len(item) == 2:
+            if isinstance(item, str):
+                intersection_of.append(ont.get_term(typing.cast(str, item)))
+            else:
                 r, t = item
                 intersection_of.append((ont.get_relationship(r), ont.get_term(t)))
-            else:
-                intersection_of.append(ont.get_term(typing.cast(str, item)))
         return frozenset(intersection_of)
 
     @intersection_of.setter
@@ -373,8 +373,8 @@ class Term(Entity):
             if isinstance(item, Term):
                 data.add(item.id)
             elif isinstance(item, collections.abc.Collection) and len(item) == 2:
-                rel, term = item
-                data.add((rel.id, term.id))
+                rel, term = item  # type: ignore
+                data.add((rel.id, term.id))  # type: ignore
             else:
                 msg = "expected iterable of `Term` or `Relationship`, `Term` couple, found: {}"
                 raise TypeError(msg.format(type(item).__name__))

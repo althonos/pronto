@@ -293,8 +293,8 @@ class Entity:
 
     @synonyms.setter  # type: ignore
     @typechecked(property=True)
-    def synonyms(self, synonyms: FrozenSet[Synonym]):
-        self._data().synonyms = set(synonyms)
+    def synonyms(self, synonyms: Iterable[Synonym]):
+        self._data().synonyms = {syn.data for syn in synonyms}
 
     @property
     def xrefs(self) -> FrozenSet[Xref]:

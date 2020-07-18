@@ -44,11 +44,11 @@ class Lineage(object):
 
 class LineageHandler(Iterable["Term"]):
 
-    def __init__(self, term: "Term", distance: int, with_self: Optional[int]):
+    def __init__(self, term: "Term", distance: Optional[int], with_self: Optional[int]):
         self.term = term
         self.distance = distance
         self.with_self = with_self
-        # API compatibilty with previous iterator
+        # TODO: API compatibilty with previous iterator (remove for v3.0.0)
         self._it = None
 
     def __next__(self):

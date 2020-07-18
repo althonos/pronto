@@ -207,7 +207,7 @@ class Term(Entity):
 
     def superclasses(
         self, distance: Optional[int] = None, with_self: bool = True,
-    ) -> "TermSuperclasses":
+    ) -> "SuperclassesHandler":
         """Get an handle over the superclasses of this `Term`.
 
         In order to follow the semantics of ``rdf:subClassOf``, which in turn
@@ -255,7 +255,7 @@ class Term(Entity):
 
     def subclasses(
         self, distance: Optional[int] = None, with_self: bool = True,
-    ) -> "SubclassesIterator":
+    ) -> "SubclassesHandler":
         """Get an handle over the subclasses of this `Term`.
 
         Arguments:

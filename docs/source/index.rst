@@ -18,7 +18,7 @@
    :target: https://github.com/althonos/pronto/
 
 .. |Docs| image:: https://img.shields.io/readthedocs/pronto?style=flat-square&maxAge=3600
-   :target: http://pronto.readthedocs.io/en/latest/?badge=latest
+   :target: http://pronto.readthedocs.io/en/stable/?badge=stable
 
 .. |Coverage| image:: https://img.shields.io/codecov/c/gh/althonos/pronto?style=flat-square&maxAge=3600
    :target: https://www.codecov.com/gh/althonos/pronto/

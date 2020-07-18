@@ -199,8 +199,7 @@ class TestRdfXMLParser(unittest.TestCase):
     def test_term_subclass_of(self):
         ont = self.get_ontology("""
             <owl:Ontology/>
-            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001">
-            </owl:Class>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001"/>
             <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_002">
                 <rdfs:subClassOf rdf:resource="http://purl.obolibrary.org/obo/TST_001"/>
             </owl:Class>
@@ -262,6 +261,30 @@ class TestRdfXMLParser(unittest.TestCase):
             self.assertEqual(syn.description, "stuff")
             self.assertEqual(syn.scope, "EXACT")
             self.assertEqual(syn.xrefs, {pronto.Xref("ISBN:1234")})
+
+    def test_term_relationship(self):
+        ont = self.get_ontology("""
+            <owl:Ontology/>
+            <owl:ObjectProperty rdf:about="http://purl.obolibrary.org/obo/RO_0002202">
+                <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#TransitiveProperty"/>
+                <oboInOwl:hasDbXref rdf:datatype="http://www.w3.org/2001/XMLSchema#string">RO:0002202</oboInOwl:hasDbXref>
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></oboInOwl:id>
+                <oboInOwl:shorthand rdf:datatype="http://www.w3.org/2001/XMLSchema#string">develops_from</oboInOwl:shorthand>
+                <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">develops from</rdfs:label>
+            </owl:ObjectProperty>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_001"/>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/TST_002">
+                <rdfs:subClassOf>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="http://purl.obolibrary.org/obo/RO_0002202"/>
+                        <owl:someValuesFrom rdf:resource="http://purl.obolibrary.org/obo/TST_001"/>
+                    </owl:Restriction>
+                </rdfs:subClassOf>
+            </owl:Class>
+        """)
+        self.assertIn("develops_from", [r.id for r in ont.relationships()])
+        develops_from = ont.get_relationship("develops_from")
+        self.assertIn(ont["TST:001"], ont["TST:002"].relationships[develops_from])
 
     def test_term_xref_as_property_resource(self):
         with warnings.catch_warnings():

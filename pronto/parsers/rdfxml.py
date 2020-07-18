@@ -3,7 +3,7 @@ import os
 import re
 import typing
 import warnings
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import dateutil.parser
 
@@ -140,6 +140,41 @@ class RdfXMLParser(BaseParser):
             return f"xsd:{match.group(1)}"
         raise ValueError(f"invalid datatype: {iri!r}")
 
+    def _extract_term_relationship(self, elem: etree.Element) -> Tuple[Optional[str], Optional[str]]:
+        """Extract the relationship info from a `owl:Restriction` element.
+
+        This only handles the simplest case of `owl:someValuesFrom` annotation
+        and not extra cases described in the `class expression paragraph of the
+        OBO guide <http://owlcollab.github.io/oboformat/doc/obo-syntax.html#5.3>`_.
+        """
+
+        if __debug__:
+            if elem.tag != _NS["owl"]["Restriction"]:
+                raise ValueError("expected `owl:Restriction` element")
+
+        prop = elem.find(_NS["owl"]["onProperty"])
+        iri_prop = prop.get(_NS["rdf"]["resource"]) if prop is not None else None
+        if iri_prop is None:
+            warnings.warn(
+                "could not extract property IRI from `owl:Restriction`",
+                SyntaxWarning,
+                stacklevel=3,
+            )
+            return None, None
+
+        target = elem.find(_NS["owl"]["someValuesFrom"])
+        iri_target = target.get(_NS["rdf"]["resource"]) if target is not None else None
+        if iri_target is None:
+            warnings.warn(
+                "could not extract target IRI from `owl:Restriction`",
+                SyntaxWarning,
+                stacklevel=3,
+            )
+            return None, None
+
+        # TODO: check for `ObjectExactCardinality`, `ObjectAllValuesFrom`, etc.
+        return iri_prop, iri_target
+
     def _extract_resource_pv(self, elem: etree.Element) -> ResourcePropertyValue:
         property = re.sub("{|}", "", elem.tag)
         resource = elem.attrib[_NS["rdf"]["resource"]]
@@ -250,12 +285,22 @@ class RdfXMLParser(BaseParser):
                 text = None
 
             if tag == _NS["rdfs"]["subClassOf"]:
+                restriction = child.find(_NS["owl"]["Restriction"])
                 if _NS["rdf"]["resource"] in attrib:
                     if attrib[_NS["rdf"]["resource"]] != _NS["owl"].raw("Thing"):
                         iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
                         self.ont._inheritance[id_].sup.add(iri)
+                elif restriction is not None:
+                    r, t = self._extract_term_relationship(restriction)
+                    if r is not None and t is not None:
+                        r, t = aliases.get(r, r), self._compact_id(t)
+                        termdata.relationships.setdefault(r, set()).add(t)
                 else:
-                    pass  # TODO: relationships
+                    warnings.warn(
+                        "cannot process `rdfs:subClassOf` in this context",
+                        SyntaxWarning,
+                        stacklevel=2,
+                    )
             elif tag == _NS["oboInOwl"]["inSubset"]:
                 iri = attrib.get(_NS["rdf"]["resource"], text)
                 if iri is not None:

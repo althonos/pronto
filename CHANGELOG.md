@@ -5,7 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.2.2...HEAD
+
+## [2.2.2] - 2020-07-18
+[2.2.2]: https://github.com/althonos/pronto/compare/v2.2.1...v2.2.2
+### Added
+- Extraction of basic relationships from RDF/XML documents.
+### Fixed
+- Erroneous type annotations on `Term.subclasses` and `Term.superclasses`.
+- Bug with `Term.equivalent_to` setter crashing with a `NameError`.
+- Bug with `Entity.synonyms` setter not extracting synonym data.
 
 ## [2.2.1] - 2020-06-17
 [2.2.1]: https://github.com/althonos/pronto/compare/v2.2.0...v2.2.1

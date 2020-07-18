@@ -348,7 +348,7 @@ class Term(Entity):
 
     @equivalent_to.setter
     def equivalent_to(self, terms:  Iterable["Term"]):
-        self._data().equivalent_to = set(equivalent_to.id for term in terms)
+        self._data().equivalent_to = set(term.id for term in terms)
 
     @property
     def intersection_of(self) -> FrozenSet[Union["Term", Tuple[Relationship, "Term"]]]:
@@ -584,7 +584,11 @@ class TermSet(MutableSet[Term]):
         self._ids.discard(term.id)
 
     def pop(self) -> Term:
-        return self._ontology.get_term(self._ids.pop())
+        id_ = self._ids.pop()
+        term = self._ontology.get_term()  # type: ignore
+        if not self._ids:
+            self._ontology = None
+        return term
 
     @typechecked()
     def remove(self, term: Term):

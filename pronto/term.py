@@ -19,7 +19,7 @@ from typing import (
     AbstractSet,
 )
 
-import frozendict
+import immutabledict
 import networkx
 
 from . import relationship
@@ -383,7 +383,7 @@ class Term(Entity):
     @property
     def relationships(self) -> Mapping[Relationship, FrozenSet["Term"]]:
         ont, termdata = self._ontology(), self._data()
-        return frozendict.frozendict(
+        return immutabledict.immutabledict(
             {
                 Relationship(ont, ont.get_relationship(rel)._data()): frozenset(
                     Term(ont, ont.get_term(term)._data()) for term in terms

@@ -2,7 +2,7 @@ import datetime
 import typing
 from typing import Dict, FrozenSet, Mapping, Optional, Set, Tuple
 
-import frozendict
+import immutabledict
 
 from .entity import Entity, EntityData
 from .definition import Definition
@@ -287,7 +287,7 @@ class Relationship(Entity):
     @property
     def relationships(self) -> Mapping["Relationship", FrozenSet["Relationship"]]:
         ont, reldata = self._ontology(), self._data()
-        return frozendict.frozendict(
+        return immutabledict.immutabledict(
             {
                 ont.get_relationship(rel): frozenset(
                     ont.get_relationship(rel) for rel in rels

@@ -25,6 +25,7 @@ class OboParser(FastoboParser, BaseParser):
                 self.ont.import_depth,
                 os.path.dirname(self.ont.path or str()),
                 self.ont.timeout,
+                threads=threads,
             )
         )
 

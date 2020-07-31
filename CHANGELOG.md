@@ -5,7 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.2.2...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.2.3...HEAD
+
+## [2.2.3] - 2020-07-31
+[2.2.3]: https://github.com/althonos/pronto/compare/v2.2.2...v2.2.3
+### Changed
+- Replaced `frozendict` with `immutabledict` ([#90](https://github.com/althonos/pronto/pull/90)).
+- Bumped `fastobo` dependency to `v0.9.0` to support inline comments.
+- Parsers will now process their imports in parallel using a thread pool.
+### Fixed
+- Argument type checking in view layer is now disabled during the parsing
+  phase to reduce overhead.
 
 ## [2.2.2] - 2020-07-18
 [2.2.2]: https://github.com/althonos/pronto/compare/v2.2.1...v2.2.2

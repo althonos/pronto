@@ -16,8 +16,8 @@ Note:
     properties exposed in the public classes. This reproduces the behaviour
     of the Python standard library, to avoid common errors. This feature does
     however increase overhead, but can be disabled by executing Python in
-    optimized mode (with the ``-O`` flag). **The time to parse an OBO file is
-    reduced by about 60% in optimized mode.**
+    optimized mode (with the ``-O`` flag). *Parsing performances are not 
+    affected.*
 
 """
 

@@ -4,6 +4,7 @@ import multiprocessing.pool
 import fastobo
 
 from ..logic.lineage import Lineage
+from ..utils.meta import typechecked
 from .base import BaseParser
 from ._fastobo import FastoboParser
 
@@ -17,8 +18,11 @@ class OboParser(FastoboParser, BaseParser):
         # Load the OBO document through an iterator using fastobo
         doc = fastobo.iter(handle, ordered=True)
 
-        # Extract metadata from the OBO header and resolve imports
-        self.ont.metadata = self.extract_metadata(doc.header())
+        # Extract metadata from the OBO header
+        with typechecked.disabled():
+            self.ont.metadata = self.extract_metadata(doc.header())
+
+        # Resolve imported dependencies
         self.ont.imports.update(
             self.process_imports(
                 self.ont.metadata.imports,
@@ -33,12 +37,13 @@ class OboParser(FastoboParser, BaseParser):
         self.import_inheritance()
 
         # Extract frames from the current document.
-        try:
-            with multiprocessing.pool.ThreadPool(threads) as pool:
-                pool.map(self.extract_entity, doc)
-        except SyntaxError as s:
-            location = self.ont.path, s.lineno, s.offset, s.text
-            raise SyntaxError(s.args[0], location) from None
+        with typechecked.disabled():
+            try:
+                with multiprocessing.pool.ThreadPool(threads) as pool:
+                    pool.map(self.extract_entity, doc)
+            except SyntaxError as s:
+                location = self.ont.path, s.lineno, s.offset, s.text
+                raise SyntaxError(s.args[0], location) from None
 
         # Update inheritance cache with symmetric of `subClassOf`
         self.symmetrize_inheritance()

@@ -16,6 +16,7 @@ from ..relationship import Relationship
 from ..pv import ResourcePropertyValue, LiteralPropertyValue
 from ..xref import Xref
 from ..utils.impl import etree
+from ..utils.meta import typechecked
 from ..utils.warnings import SyntaxWarning, NotImplementedWarning
 
 if typing.TYPE_CHECKING:
@@ -91,7 +92,8 @@ class RdfXMLParser(BaseParser):
         owl_ontology = tree.find(_NS["owl"]["Ontology"])
         if owl_ontology is None:
             raise ValueError("could not find `owl:Ontology` element")
-        self.ont.metadata = self._extract_meta(owl_ontology)
+        with typechecked.disabled():
+            self.ont.metadata = self._extract_meta(owl_ontology)
 
         # Process imports
         self.ont.imports.update(
@@ -108,14 +110,15 @@ class RdfXMLParser(BaseParser):
         self.import_inheritance()
 
         # Parse typedef first to handle OBO shorthand renaming
-        for prop in tree.iterfind(_NS["owl"]["ObjectProperty"]):
-            self._extract_object_property(prop, aliases)
-        for prop in tree.iterfind(_NS["owl"]["AnnotationProperty"]):
-            self._extract_annotation_property(prop, aliases)
-        for class_ in tree.iterfind(_NS["owl"]["Class"]):
-            self._extract_term(class_, aliases)
-        for axiom in tree.iterfind(_NS["owl"]["Axiom"]):
-            self._process_axiom(axiom, aliases)
+        with typechecked.disabled():
+            for prop in tree.iterfind(_NS["owl"]["ObjectProperty"]):
+                self._extract_object_property(prop, aliases)
+            for prop in tree.iterfind(_NS["owl"]["AnnotationProperty"]):
+                self._extract_annotation_property(prop, aliases)
+            for class_ in tree.iterfind(_NS["owl"]["Class"]):
+                self._extract_term(class_, aliases)
+            for axiom in tree.iterfind(_NS["owl"]["Axiom"]):
+                self._process_axiom(axiom, aliases)
 
         # Update inheritance cache with symmetric of `subClassOf`
         self.symmetrize_inheritance()

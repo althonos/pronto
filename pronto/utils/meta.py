@@ -1,10 +1,11 @@
 import collections
+import contextlib
 import inspect
 import itertools
 import functools
 import sys
 import typing
-from typing import Callable, ClassVar, List, Optional, Tuple, Type
+from typing import Callable, ClassVar, Iterator, List, Optional, Tuple, Type
 
 
 T = typing.TypeVar("T")
@@ -12,6 +13,8 @@ F = typing.TypeVar("F", bound=Callable[..., object])
 
 
 class typechecked(object):
+
+    _disable = False
 
     if sys.version_info >= (3, 7):
         Set = set
@@ -58,6 +61,16 @@ class typechecked(object):
             return (isinstance(value, hint), hint.__name__)
         return (False, "<unknown>")
 
+    @classmethod
+    @contextlib.contextmanager
+    def disabled(cls) -> Iterator[None]:
+        initial_state = cls._disable
+        try:
+            #cls._disable = True
+            yield
+        finally:
+            cls._disable = initial_state
+
     def __init__(self, property: bool = False) -> None:
         self.property = property
 
@@ -70,16 +83,17 @@ class typechecked(object):
 
         @functools.wraps(func)
         def newfunc(*args, **kwargs):
-            callargs = signature.bind(*args, **kwargs).arguments
-            for name, value in callargs.items():
-                if name in hints:
-                    well_typed, type_name = self.check_type(hints[name], value)
-                    if not well_typed:
-                        msg = f"'{{}}' must be {type_name}, not {type(value).__name__}"
-                        if self.property:
-                            raise TypeError(msg.format(func.__name__))
-                        else:
-                            raise TypeError(msg.format(name))
+            if not self._disable:
+                callargs = signature.bind(*args, **kwargs).arguments
+                for name, value in callargs.items():
+                    if name in hints:
+                        well_typed, type_name = self.check_type(hints[name], value)
+                        if not well_typed:
+                            msg = f"'{{}}' must be {type_name}, not {type(value).__name__}"
+                            if self.property:
+                                raise TypeError(msg.format(func.__name__))
+                            else:
+                                raise TypeError(msg.format(name))
             return func(*args, **kwargs)
 
         return newfunc  # type: ignore

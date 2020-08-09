@@ -571,7 +571,9 @@ class TermSet(MutableSet[Term]):
 
     @typechecked()
     def add(self, term: Term) -> None:
-        if self._ontology is not None and self._ontology is not term._ontology():
+        if self._ontology is None:
+            self._ontology = term._ontology()
+        elif self._ontology is not term._ontology():
             raise ValueError("cannot use `Term` instances from different `Ontology`")
         self._ids.add(term.id)
 
@@ -585,7 +587,7 @@ class TermSet(MutableSet[Term]):
 
     def pop(self) -> Term:
         id_ = self._ids.pop()
-        term = self._ontology.get_term()  # type: ignore
+        term = self._ontology.get_term(id_)  # type: ignore
         if not self._ids:
             self._ontology = None
         return term

@@ -191,6 +191,17 @@ class TestTermSet(_TestTermMixin, unittest.TestCase):
         self.assertRaises(TypeError, TermSet, {"a", "b"})
         self.assertRaises(TypeError, TermSet, {self.t1, "a"})
 
+    def test_add_empty(self):
+        s1 = TermSet()
+        self.assertEqual(len(s1), 0)
+
+        s1.add(self.ms['MS:1000015'])
+        s1.add(self.ms['MS:1000014'])
+        self.assertEqual(len(s1), 2)
+
+        self.assertIn(s1.pop(), {self.ms['MS:1000015'], self.ms['MS:1000014']})
+        self.assertIn(s1.pop(), {self.ms['MS:1000015'], self.ms['MS:1000014']})
+
     def test_and(self):
         s1 = TermSet((self.ms['MS:1000015'], self.ms['MS:1000014']))
         s = s1 & TermSet((self.ms['MS:1000015'], self.ms['MS:1000016']))

@@ -123,10 +123,14 @@ class Entity:
         self._data().alternate_ids = set(ids)
 
     @property
-    def annotations(self) -> FrozenSet[PropertyValue]:
+    def annotations(self) -> Set[PropertyValue]:
         """`frozenset` of `PropertyValue`: Annotations relevant to the entity.
         """
-        return frozenset(self._data().annotations)
+        return self._data().annotations
+
+    @annotations.setter
+    def annotations(self, value: Iterable[PropertyValue]) -> None:
+        self._data().annotations = set(value)
 
     @property
     def anonymous(self) -> bool:

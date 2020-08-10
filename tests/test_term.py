@@ -31,6 +31,13 @@ class _TestTermMixin(object):
 
 class TestTerm(_TestTermMixin, unittest.TestCase):
 
+    def test_annotations(self):
+        ontology = pronto.Ontology()
+        term = ontology.create_term("TST:001")
+        term.annotations = {
+            pronto.LiteralPropertyValue("http://purl.org/dc/terms/creator", "Martin Larralde")
+        }
+
     def test_add_synonym(self):
         term = self.ms["MS:1000031"]
         s = term.add_synonym('instrument type')

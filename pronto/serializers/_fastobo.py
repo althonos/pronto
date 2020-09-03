@@ -151,11 +151,10 @@ class FastoboSerializer:
         for id_ in sorted(t.disjoint_from):
             frame.append(fastobo.term.DisjointFromClause(fastobo.id.parse(id_)))
         for r, values in t.relationships.items():
-            if r != "is_a":
-                r_id = fastobo.id.parse(r)
-                for value in values:
-                    t_id = fastobo.id.parse(value)
-                    frame.append(fastobo.term.RelationshipClause(r_id, t_id))
+            r_id = fastobo.id.parse(r)
+            for value in values:
+                t_id = fastobo.id.parse(value)
+                frame.append(fastobo.term.RelationshipClause(r_id, t_id))
         if t.created_by is not None:
             frame.append(fastobo.term.CreatedByClause(t.created_by))
         if t.creation_date is not None:

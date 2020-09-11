@@ -5,7 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.2.3...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.2.4...HEAD
+
+## [2.2.4] - 2020-09-11
+[2.2.4]: https://github.com/althonos/pronto/compare/v2.2.3...v2.2.4
+### Changed
+- Make `Entity.annotations` return a mutable set and add a setter.
+### Fixed
+- `Term.relationship` erroneously updating the `Ontology._lineage` cache.
+- Unneeded code in `pronto.serializers._fastobo` handling `is_a` clauses.
 
 ## [2.2.3] - 2020-07-31
 [2.2.3]: https://github.com/althonos/pronto/compare/v2.2.2...v2.2.3

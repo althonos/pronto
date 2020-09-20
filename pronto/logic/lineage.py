@@ -191,7 +191,7 @@ class SuperclassesHandler(SuperentitiesHandler, TermHandler):
 class SuperpropertiesHandler(SuperentitiesHandler, RelationshipHandler):
 
     def __iter__(self) -> "SuperclassesIterator":
-        return SuperclassesIterator(self.entity, distance=self.distance, with_self=self.with_self)
+        return SuperpropertiesIterator(self.entity, distance=self.distance, with_self=self.with_self)
 
 # --- Abstract iterators -----------------------------------------------------
 
@@ -208,11 +208,15 @@ class LineageIterator(typing.Generic[_E], Iterator[_E]):
     # ---
 
     @abc.abstractmethod
-    def _get_data(self):
+    def _get_data(self) -> "_DataGraph":
         return NotImplemented  # type: ignore
 
     @abc.abstractmethod
     def _get_neighbors(self, node: str) -> Set[str]:
+        return NotImplemented  # type: ignore
+
+    @abc.abstractmethod
+    def _get_entity(self, node: str) -> _E:
         return NotImplemented  # type: ignore
 
     @abc.abstractmethod
@@ -259,7 +263,7 @@ class LineageIterator(typing.Generic[_E], Iterator[_E]):
         while self._frontier or self._queue:
             # Return any element currently queued
             if self._queue:
-                return self._ontology.get_term(self._queue.popleft())
+                return self._get_entity(self._queue.popleft())
             # Get the next node in the frontier
             node, distance = self._frontier.popleft()
             self._done.add(node)
@@ -280,6 +284,9 @@ class TermIterator(LineageIterator["Term"]):
     def _maxlen(self):
         return len(self._ontology.terms())
 
+    def _get_entity(self, id):
+        return self._ontology.get_term(id)
+
     def _get_data(self):
         return self._ontology._terms
 
@@ -293,7 +300,7 @@ class TermIterator(LineageIterator["Term"]):
             >>> cio = pronto.Ontology("cio.obo")
             >>> sorted(cio['CIO:0000034'].subclasses().to_set().ids)
             ['CIO:0000034', 'CIO:0000035', 'CIO:0000036']
-            
+
         """
         from ..term import TermSet
 
@@ -304,6 +311,9 @@ class RelationshipIterator(LineageIterator["Relationship"]):
 
     def _maxlen(self):
         return len(self._ontology.relationships())
+
+    def _get_entity(self, id):
+        return self._ontology.get_relationship(id)
 
     def _get_data(self):
         return self._ontology._relationships
@@ -318,7 +328,7 @@ class SubentitiesIterator(LineageIterator):
 class SuperentitiesIterator(LineageIterator):
 
     def _get_neighbors(self, node: str) -> Set[str]:
-        return self._ontology._terms.lineage.get(node, Lineage()).sup
+        return self._get_data().lineage.get(node, Lineage()).sup
 
 
 # --- Concrete iterators -----------------------------------------------------

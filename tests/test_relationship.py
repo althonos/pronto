@@ -23,3 +23,17 @@ class TestRelationship(unittest.TestCase):
         """
         for r in RelationshipData.__slots__:
             self.assertTrue(hasattr(Relationship, r), f"no property for {r}")
+
+    def test_superproperties(self):
+        ont = pronto.Ontology()
+        friend_of = ont.create_relationship("friend_of")
+        best_friend_of = ont.create_relationship("best_friend_of")
+        best_friend_of.superproperties().add(friend_of)
+        self.assertIn(friend_of, sorted(best_friend_of.superproperties()))
+
+    def test_subproperties(self):
+        ont = pronto.Ontology()
+        best_friend_of = ont.create_relationship("best_friend_of")
+        friend_of = ont.create_relationship("friend_of")
+        friend_of.subproperties().add(best_friend_of)
+        self.assertIn(best_friend_of, sorted(friend_of.subproperties()))

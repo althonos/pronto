@@ -12,7 +12,9 @@ from .utils.meta import roundrepr, typechecked
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
+
 _D = typing.TypeVar("_D", bound="EntityData")
+
 
 class EntityData:
 
@@ -342,7 +344,7 @@ class Entity(typing.Generic[_D]):
         Returns:
             `~pronto.Synonym`: A new synonym for the terms. The synonym is
             already added to the `Entity.synonyms` collection.
-            
+
         """
         type_id = type.id if type is not None else None
         data = SynonymData(description, scope, type_id, xrefs=xrefs)

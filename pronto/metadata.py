@@ -30,6 +30,8 @@ class Subset(object):
 
     @typechecked()
     def __init__(self, name: str, description: str):
+        """Create a new subset with the given name and description.
+        """
         self.name: str = name
         self.description: str = description
 

@@ -9,7 +9,7 @@ from ..utils.meta import roundrepr
 if typing.TYPE_CHECKING:
     from ..entity import Entity
     from ..term import Term, TermSet, TermData
-    from ..relationship import Relationship, RelationshipData
+    from ..relationship import Relationship, RelationshipData, RelationshipSet
     from ..ontology import Ontology, _DataGraph
 
 
@@ -70,9 +70,6 @@ class LineageHandler(typing.Generic[_E], Iterable[_E]):
             self._it = iter(self)
         return next(self._it)
 
-    def to_set(self):
-        return iter(self).to_set()
-
     def _add(self, subclass: _E, superclass: _E):
         if superclass._ontology() is not subclass._ontology():
             ty = type(subclass).__name__
@@ -119,6 +116,9 @@ class TermHandler(LineageHandler["Term"]):
     def _get_data(self) -> "_DataGraph[TermData]":
         return self.entity._ontology()._terms
 
+    def to_set(self) -> "TermSet":
+        return iter(self).to_set()
+
 
 class RelationshipHandler(LineageHandler["Relationship"]):
 
@@ -128,6 +128,9 @@ class RelationshipHandler(LineageHandler["Relationship"]):
 
     def _get_data(self) -> "_DataGraph[RelationshipData]":
         return self.entity._ontology()._relationships
+
+    def to_set(self) -> "RelationshipSet":
+        return iter(self).to_set()
 
 
 class SuperentitiesHandler(LineageHandler):
@@ -193,8 +196,8 @@ class SuperpropertiesHandler(SuperentitiesHandler, RelationshipHandler):
     def __iter__(self) -> "SuperclassesIterator":
         return SuperpropertiesIterator(self.entity, distance=self.distance, with_self=self.with_self)
 
-# --- Abstract iterators -----------------------------------------------------
 
+# --- Abstract iterators -----------------------------------------------------
 
 class LineageIterator(typing.Generic[_E], Iterator[_E]):
 
@@ -290,7 +293,7 @@ class TermIterator(LineageIterator["Term"]):
     def _get_data(self):
         return self._ontology._terms
 
-    def to_set(self) -> "TermSet": # FIXME
+    def to_set(self) -> "TermSet":
         """Collect all classes into a `~pronto.TermSet`.
 
         Hint:
@@ -317,6 +320,18 @@ class RelationshipIterator(LineageIterator["Relationship"]):
 
     def _get_data(self):
         return self._ontology._relationships
+
+    def to_set(self) -> "RelationshipSet":
+        """Collect all relationshisp into a `~pronto.RelationshipSet`.
+
+        Hint:
+            This method is useful to query an ontology using a method chaining
+            syntax.
+
+        """
+        from ..relationship import RelationshipSet
+
+        return RelationshipSet(self)
 
 
 class SubentitiesIterator(LineageIterator):

@@ -52,7 +52,7 @@ class Entity(typing.Generic[_D]):
     if __debug__ or typing.TYPE_CHECKING:
 
         __data: "weakref.ReferenceType[_D]"
-        __slots__: Iterable[str] = ("__weakref__",)
+        __slots__: Iterable[str] = ()
 
         def __init__(self, ontology: "Ontology", data: "_D"):
             self.__data = weakref.ref(data)
@@ -67,7 +67,7 @@ class Entity(typing.Generic[_D]):
 
     else:
 
-        __slots__: Iterable[str] = ("__weakref__", "_data")  # type: ignore
+        __slots__: Iterable[str] = ("_data",)  # type: ignore
 
         def __init__(self, ontology: "Ontology", data: "_D"):
             self._data = weakref.ref(data)

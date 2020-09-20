@@ -16,7 +16,7 @@ from .utils.iter import SizedIterator
 from .utils.meta import roundrepr, typechecked
 
 
-_D = typing.TypeVar("_E", bound=EntityData)
+_D = typing.TypeVar("_D", bound=EntityData)
 
 class _DataGraph(typing.Generic[_D]):
     """A private data storage for a type of entity.

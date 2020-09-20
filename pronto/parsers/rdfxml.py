@@ -106,8 +106,8 @@ class RdfXMLParser(BaseParser):
             )
         )
 
-        # Merge inheritance cache from imports
-        self.import_inheritance()
+        # Merge lineage cache from imports
+        self.import_lineage()
 
         # Parse typedef first to handle OBO shorthand renaming
         with typechecked.disabled():
@@ -120,8 +120,8 @@ class RdfXMLParser(BaseParser):
             for axiom in tree.iterfind(_NS["owl"]["Axiom"]):
                 self._process_axiom(axiom, aliases)
 
-        # Update inheritance cache with symmetric of `subClassOf`
-        self.symmetrize_inheritance()
+        # Update lineage cache with symmetric of `subClassOf`
+        self.symmetrize_lineage()
 
     # -- Helper methods ------------------------------------------------------
 

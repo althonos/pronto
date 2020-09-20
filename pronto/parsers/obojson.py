@@ -33,8 +33,8 @@ class OboJSONParser(FastoboParser, BaseParser):
             )
         )
 
-        # Merge inheritance cache from imports
-        self.import_inheritance()
+        # Merge lineage cache from imports
+        self.import_lineage()
 
         # Extract frames from the current document.
         with typechecked.disabled():
@@ -52,5 +52,5 @@ class OboJSONParser(FastoboParser, BaseParser):
                 for superclass in lineage.sup.difference(self.ont._terms.lineage):
                     self.ont.create_term(superclass)
 
-        # Update inheritance cache
-        self.symmetrize_inheritance()
+        # Update lineage cache
+        self.symmetrize_lineage()

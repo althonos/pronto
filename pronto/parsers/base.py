@@ -1,5 +1,6 @@
 import abc
 import functools
+import operator
 import os
 import typing
 import urllib.parse
@@ -67,18 +68,28 @@ class BaseParser(abc.ABC):
         with multiprocessing.pool.ThreadPool(threads) as pool:
             return dict(pool.map(lambda i: (i, process(i)), imports))
 
-    def symmetrize_inheritance(self):
-        for t in self.ont.terms():
-            self.ont._terms.lineage.setdefault(t.id, Lineage())
-        for subclass, lineage in self.ont._terms.lineage.items():
-            for superclass in lineage.sup:
-                self.ont._terms.lineage[superclass].sub.add(subclass)
 
-    def import_inheritance(self):
-        for dep in self.ont.imports.values():
-            for term in dep.terms():
-                self.ont._terms.lineage[term.id] = Lineage()
-        for dep in self.ont.imports.values():
-            for id, lineage in dep._terms.lineage.items():
-                self.ont._terms.lineage[id].sup.update(lineage.sup)
-                self.ont._terms.lineage[id].sub.update(lineage.sub)
+    _entities = {
+        "Term": operator.attrgetter("terms", "_terms"),
+        "Relationship": operator.attrgetter("relationships", "_relationships"),
+    }
+
+    def symmetrize_lineage(self):
+        for getter in self._entities.values():
+            entities, graphdata = getter(self.ont)
+            for entity in entities():
+                graphdata.lineage.setdefault(entity.id, Lineage())
+            for subentity, lineage in graphdata.lineage.items():
+                for superentity in lineage.sup:
+                    graphdata.lineage[superentity].sub.add(subentity)
+
+    def import_lineage(self):
+        for getter in self._entities.values():
+            entities, graphdata = getter(self.ont)
+            for dep in self.ont.imports.values():
+                dep_entities, dep_graphdata = getter(dep)
+                for entity in dep_entities():
+                    graphdata.lineage[entity.id] = Lineage()
+                for id, lineage in dep_graphdata.lineage.items():
+                    graphdata.lineage[id].sup.update(lineage.sup)
+                    graphdata.lineage[id].sub.update(lineage.sub)

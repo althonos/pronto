@@ -33,8 +33,8 @@ class OboParser(FastoboParser, BaseParser):
             )
         )
 
-        # Merge inheritance cache from imports
-        self.import_inheritance()
+        # Merge lineage cache from imports
+        self.import_lineage()
 
         # Extract frames from the current document.
         with typechecked.disabled():
@@ -45,5 +45,5 @@ class OboParser(FastoboParser, BaseParser):
                 location = self.ont.path, s.lineno, s.offset, s.text
                 raise SyntaxError(s.args[0], location) from None
 
-        # Update inheritance cache with symmetric of `subClassOf`
-        self.symmetrize_inheritance()
+        # Update lineage cache with symmetric of `subClassOf`
+        self.symmetrize_lineage()

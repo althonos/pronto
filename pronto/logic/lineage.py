@@ -345,6 +345,6 @@ class SubpropertiesIterator(SubentitiesIterator, RelationshipIterator):
     """
 
 
-class SuperpropertiesHandler(SuperentitiesIterator, RelationshipIterator):
+class SuperpropertiesIterator(SuperentitiesIterator, RelationshipIterator):
     """An iterator over the superproperties of one or several `~pronto.Relationship`.
     """

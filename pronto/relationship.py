@@ -10,6 +10,8 @@ from .synonym import SynonymData
 from .xref import Xref
 from .pv import PropertyValue
 from .utils.meta import typechecked
+from .logic import SubpropertiesIterator, SuperpropertiesIterator
+from .logic.lineage import SubpropertiesHandler, SuperpropertiesHandler
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -170,7 +172,50 @@ class Relationship(Entity):
         def _data(self) -> "RelationshipData":
             return typing.cast("RelationshipData", super()._data())
 
-    # --- Data descriptors ---------------------------------------------------
+    # --- Methods ------------------------------------------------------------
+
+    def subproperties(self, distance: Optional[int] = None, with_self: bool = True) -> "SubpropertiesHandler":
+        """Get an handle over the subproperties of this `Relationship`.
+
+        Arguments:
+            distance (int, optional): The maximum distance between this
+                relationship and the yielded subproperties (`0` for the
+                relationship itself, `1` for its immediate children, etc.).
+                Use `None` to explore the entire directed graph transitively.
+            with_self (bool): Whether or not to include the current term in
+                the terms being yielded. RDF semantics state that the
+                ``rdfs:subClassOf`` property is reflexive (and therefore is
+                ``rdfs:subPropertyOf`` reflexive too by transitivity), so this
+                is enabled by default, but in most practical cases only the
+                distinct subproperties are desired.
+
+        """
+        return SubpropertiesHandler(self, distance=distance, with_self=with_self)
+
+    def superproperties(self, distance: Optional[int] = None, with_self: bool = True) -> "SuperpropertiesHandler":
+        """Get an handle over the superproperties of this `Relationship`.
+
+        In order to follow the semantics of ``rdf:subPropertyOf``, which in
+        turn respects the mathematical definition of subset inclusion, ``is_a``
+        is defined as a transitive relationship, hence the inverse relationship
+        is also transitive by closure property.
+
+        Arguments:
+            distance (int, optional): The maximum distance between this
+                relationship and the yielded subperoperties (`0` for the
+                relationship itself, `1` for its immediate parents, etc.).
+                Use `None` to explore the entire directed graph transitively.
+            with_self (bool): Whether or not to include the current term in
+                the terms being yielded. RDF semantics state that the
+                ``rdfs:subClassOf`` property is transitive (and therefore is
+                ``rdfs:subPropertyOf`` transitive too), so this is enabled
+                by default, but in most practical cases only the distinct
+                subproperties are desired.
+
+        """
+        return SuperpropertiesHandler(self, distance=distance, with_self=with_self)
+
+    # --- Attributes ---------------------------------------------------------
 
     @property
     def antisymmetric(self) -> bool:

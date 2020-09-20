@@ -24,6 +24,7 @@ class typechecked(object):
         FrozenSet = typing.FrozenSet
 
     @classmethod
+    @typing.no_type_check
     def check_type(cls, hint: object, value: object) -> Tuple[bool, str]:
         # None: check if None
         if hint is None.__class__:

@@ -212,8 +212,8 @@ class Term(Entity):
 
         In order to follow the semantics of ``rdf:subClassOf``, which in turn
         respects the mathematical definition of subset inclusion, ``is_a`` is
-        defined as a transitive relationship, hence ``has_subclass`` is also
-        transitive by closure property.
+        defined as a reflexive relationship, and so is its inverse
+        relationship.
 
         Arguments:
             distance (int, optional): The maximum distance between this term
@@ -222,7 +222,7 @@ class Term(Entity):
                 transitively the entire directed graph.
             with_self (bool): Whether or not to include the current term in
                 the terms being yielded. RDF semantics state that the
-                ``rdfs:subClassOf`` property is transitive, so this is enabled
+                ``rdfs:subClassOf`` property is reflexive, so this is enabled
                 by default, but in most practical cases only the distinct
                 subclasses are desired.
 
@@ -243,7 +243,7 @@ class Term(Entity):
 
         Note:
             The time complexity for this algorithm is in :math:`O(n)`, where
-            :math:`n` is the number of terms in the source ontology.
+            :math:`n` is the number of subclasses of initial term.
 
         See Also:
             The `RDF Schema 1.1 <https://www.w3.org/TR/rdf-schema/>`_
@@ -265,7 +265,7 @@ class Term(Entity):
                 entire directed graph transitively.
             with_self (bool): Whether or not to include the current term in
                 the terms being yielded. RDF semantics state that the
-                ``rdfs:subClassOf`` property is transitive, so this is enabled
+                ``rdfs:subClassOf`` property is reflexive, so this is enabled
                 by default, but in most practical cases only the distinct
                 subclasses are desired.
 
@@ -289,12 +289,12 @@ class Term(Entity):
             collect all subclasses into a `TermSet`.
 
         Note:
-            This method has a runtime of :math:`O(n^2)` where :math:`n` is the
-            number of terms in the source ontology in the worst case. This is
-            due to the fact that OBO and OWL only explicit *superclassing*
-            relationship, so we have to build the graph of *subclasses* from
-            the knowledge graph. By caching the graph however, this can be
-            reduced to an :math:`O(n)` operation.
+            This method has a runtime that is :math:`O(n)` where :math:`n` is
+            the number of subclasses of the initial term. While OBO and OWL
+            only explicit the *superclassing* relationship (equivalent to the
+            ``rdfs:subClassOf`` property in RDF), we can build a cache that
+            stores the edges of the resulting knowledge graph in an index
+            accessible by both endpoints of each edge.
 
         """
         return SubclassesHandler(self, distance=distance, with_self=with_self)

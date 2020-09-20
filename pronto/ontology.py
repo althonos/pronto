@@ -16,7 +16,9 @@ from .utils.iter import SizedIterator
 from .utils.meta import roundrepr, typechecked
 
 
+__all__ = ["Ontology"]
 _D = typing.TypeVar("_D", bound=EntityData)
+
 
 class _DataGraph(typing.Generic[_D]):
     """A private data storage for a type of entity.
@@ -311,7 +313,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             format-version: 1.2
             data-version: releases/2019-07-01
             ...
-            
+
         """
         s = io.BytesIO()
         self.dump(s, format=format)

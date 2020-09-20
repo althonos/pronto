@@ -18,6 +18,9 @@ if typing.TYPE_CHECKING:
     from .term import Term
 
 
+__all__ = ["Relationship", "RelationshipData"]
+
+
 class RelationshipData(EntityData):
     """Internal data storage of `Relationship` information.
     """

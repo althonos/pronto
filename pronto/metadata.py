@@ -8,6 +8,9 @@ from .pv import PropertyValue
 from .utils.meta import roundrepr, typechecked
 
 
+__all__ = ["Subset", "Metadata"]
+
+
 @roundrepr
 @functools.total_ordering
 class Subset(object):

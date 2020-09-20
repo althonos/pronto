@@ -37,6 +37,9 @@ if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
 
+__all__ = ["TermData", "Term", "TermSet"]
+
+
 class TermData(EntityData):  # noqa: R0902, R0903
     """Internal data storage of `Term` information.
     """
@@ -620,6 +623,6 @@ class TermSet(MutableSet[Term]):
             frozenset({'MS:1000031'})
             >>> ms["MS:1000031"]
             Term('MS:1000031', name='instrument model')
-            
+
         """
         return SuperclassesIterator(*self, distance=distance, with_self=with_self)

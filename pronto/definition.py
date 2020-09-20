@@ -5,6 +5,9 @@ from .xref import Xref
 from .utils.meta import roundrepr
 
 
+__all__ = ["Definition"]
+
+
 class Definition(str):
     """A human-readable text definition of an entity.
 

@@ -8,6 +8,9 @@ import fastobo
 from .utils.meta import roundrepr, typechecked
 
 
+__all__ = ["Xref"]
+
+
 @roundrepr
 class Xref(object):
     """A cross-reference to another document or resource.

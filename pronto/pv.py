@@ -8,6 +8,9 @@ import fastobo
 from .utils.meta import roundrepr, typechecked
 
 
+__all__ = ["PropertyValue", "LiteralPropertyValue", "ResourcePropertyValue"]
+
+
 class PropertyValue(object):
     """A property-value, which adds annotations to an entity.
     """

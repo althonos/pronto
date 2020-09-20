@@ -13,6 +13,7 @@ if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
 
+__all__ = ["EntityData", "Entity"]
 _D = typing.TypeVar("_D", bound="EntityData")
 
 

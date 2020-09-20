@@ -50,7 +50,7 @@ class Lineage(object):
 
 class LineageHandler(typing.Generic[_E], Iterable[_E]):
 
-    def __init__(self, entity: _E, distance: Optional[int], with_self: Optional[int]):
+    def __init__(self, entity: _E, distance: Optional[int] = None, with_self: bool = False):
         self.entity = entity
         self.distance = distance
         self.with_self = with_self
@@ -155,13 +155,6 @@ class SubentitiesHandler(LineageHandler):
     def __iter__(self) -> "SubentitiesIterator":
         return NotImplemented
 
-    def __iter__(self):
-        return SubclassesIterator(
-            self.entity,
-            distance=self.distance,
-            with_self=self.with_self
-        )
-
     def add(self, subclass: _E):
         self._add(superclass=self.entity, subclass=subclass)
 
@@ -206,7 +199,6 @@ class SuperpropertiesHandler(SuperentitiesHandler, RelationshipHandler):
 class LineageIterator(typing.Generic[_E], Iterator[_E]):
 
     _distmax: float
-    _maxlen: int
     _ontology: "Ontology"
     _linked: Set[str]
     _done: Set[str]

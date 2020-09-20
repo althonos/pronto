@@ -21,7 +21,7 @@ from ..utils.warnings import NotImplementedWarning
 # --- Type Hint --------------------------------------------------------------
 
 DefClause = Union[fastobo.term.DefClause, fastobo.typedef.DefClause]
-EntityFrame = Union[fastobo.term.TermFrame, fastobo.typedef.TypedefFrame, fastobo.instance.InstanceFrame]
+
 
 # --- Parser interface -------------------------------------------------------
 
@@ -32,7 +32,7 @@ class FastoboParser:
 
     # --- Doc processing -----------------------------------------------------
 
-    def extract_entity(self, frame: EntityFrame) -> None:
+    def extract_entity(self, frame: fastobo.abc.AbstractEntityFrame) -> None:
         if isinstance(frame, fastobo.term.TermFrame):
             self.enrich_term(frame)
         elif isinstance(frame, fastobo.typedef.TypedefFrame):
@@ -249,9 +249,17 @@ def process_clause_typedef(
 
 
 @process_clause_term.register(fastobo.term.AltIdClause)
+def _process_clause_term_alt_id(clause, entity, ont):
+    id_ = str(clause.alt_id)
+    entity.alternate_ids.add(id_)
+    ont._terms.aliases[id_] = entity
+
+
 @process_clause_typedef.register(fastobo.typedef.AltIdClause)
-def _process_clause_entity_alt_id(clause, entity, ont):
-    entity.alternate_ids.add(str(clause.alt_id))
+def _process_clause_typedef_alt_id(clause, entity, ont):
+    id_ = str(clause.alt_id)
+    entity.alternate_ids.add(id_)
+    ont._relationships.aliases[id_] = entity
 
 
 @process_clause_term.register(fastobo.term.BuiltinClause)

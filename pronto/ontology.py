@@ -3,7 +3,8 @@ import itertools
 import io
 import typing
 import warnings
-from typing import BinaryIO, Dict, Mapping, NamedTuple, Optional, Set, Union
+import weakref
+from typing import BinaryIO, Dict, Mapping, MutableMapping, NamedTuple, Optional, Set, Union
 
 from . import relationship
 from .entity import EntityData
@@ -20,7 +21,7 @@ __all__ = ["Ontology"]
 _D = typing.TypeVar("_D", bound=EntityData)
 
 
-class _DataGraph(typing.Generic[_D]):
+class _DataGraph(typing.Generic[_D], typing.Mapping[str, _D]):
     """A private data storage for a type of entity.
 
     This class is equivalent to a graph storing nodes in the ``entities``
@@ -28,12 +29,26 @@ class _DataGraph(typing.Generic[_D]):
     relationship between entities in the ``lineage`` attribute.
     """
 
-    entities: Dict[str, _D]
-    lineage: Dict[str, Lineage]
+    entities: MutableMapping[str, _D]
+    aliases: MutableMapping[str, _D]
+    lineage: MutableMapping[str, Lineage]
 
-    def __init__(self, entities=None, lineage=None):
+    def __init__(self, entities=None, lineage=None, aliases=None):
         self.entities = entities or {}
         self.lineage = lineage or {}
+        self.aliases = weakref.WeakValueDictionary(aliases or {})
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.entities or key in self.aliases
+
+    def __len__(self) -> int:
+        return len(self.entities)
+
+    def __iter__(self):
+        return iter(self.entities)
+
+    def __getitem__(self, key: str) -> _D:
+        return self.entities.get(key) or self.aliases[key]
 
 
 class Ontology(Mapping[str, Union[Term, Relationship]]):
@@ -237,8 +252,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         if isinstance(item, str):
             return (
                 any(item in i for i in self.imports.values())
-                or item in self._terms.entities
-                or item in self._relationships.entities
+                or item in self._terms
+                or item in self._relationships
                 or item in relationship._BUILTINS
             )
         return False
@@ -394,7 +409,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         self._relationships.lineage[id] = Lineage()
         return Relationship(self, reldata)
 
-    @typechecked()
+    # @typechecked()
     def get_term(self, id: str) -> Term:
         """Get a term in the ontology graph from the given identifier.
 
@@ -404,7 +419,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
         """
         try:
-            return Term(self, self._terms.entities[id])
+            return Term(self, self._terms[id])
         except KeyError:
             pass
         for dep in self.imports.values():
@@ -426,6 +441,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 relationships of the ontology graph.
 
         """
+        # TODO: remove block in v3.0.0
         if id in relationship._BUILTINS:
             warnings.warn(
                 "using the `is_a` relationship not be supported in future versions, "
@@ -433,17 +449,17 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 category=DeprecationWarning,
                 stacklevel=2,
             )
-        try:
-            return Relationship(self, self._relationships.entities[id])
-        except KeyError:
-            pass
-        try:
             return Relationship(self, relationship._BUILTINS[id])
+
+        try:
+            return Relationship(self, self._relationships[id])
         except KeyError:
             pass
+
         for dep in self.imports.values():
             try:
                 return Relationship(self, dep.get_relationship(id)._data())
             except KeyError:
                 pass
+
         raise KeyError(id)

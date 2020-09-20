@@ -1,0 +1,65 @@
+format-version: 1.2
+data-version: hp/releases/2020-08-11
+saved-by: Peter Robinson, Sebastian Koehler, Sandra Doelken, Chris Mungall, Melissa Haendel, Nicole Vasilevsky, Monarch Initiative, et al.
+subsetdef: hposlim_core "Core clinical terminology"
+subsetdef: secondary_consequence "Consequence of a disorder in another organ system."
+synonymtypedef: abbreviation "abbreviation"
+synonymtypedef: layperson "layperson term"
+synonymtypedef: obsolete_synonym "discarded/obsoleted synonym"
+synonymtypedef: plural_form "plural form"
+synonymtypedef: uk_spelling "UK spelling"
+default-namespace: human_phenotype
+remark: Please see license of HPO at http://www.human-phenotype-ontology.org
+ontology: hp.obo
+property_value: IAO:0000700 HP:0000001
+logical-definition-view-relation: has_part
+
+[Term]
+id: HP:0009381
+name: Short finger
+alt_id: HP:0004098
+alt_id: HP:0006015
+def: "Abnormally short finger associated with developmental hypoplasia." [HPO:probinson]
+subset: hposlim_core
+synonym: "Hypoplastic digits" EXACT []
+synonym: "Hypoplastic fingers" EXACT []
+synonym: "Hypoplastic/small fingers" EXACT []
+synonym: "Short finger" EXACT layperson []
+synonym: "Stubby finger" EXACT layperson [ORCID:0000-0001-5208-3432]
+synonym: "Stubby fingers" EXACT plural_form []
+xref: SNOMEDCT_US:249765007
+xref: UMLS:C0239594
+xref: UMLS:C1844548
+created_by: doelkens
+creation_date: 2009-01-13T01:07:38Z
+
+[Term]
+id: HP:0009882
+name: Short distal phalanx of finger
+alt_id: HP:0001198
+alt_id: HP:0001202
+alt_id: HP:0001221
+alt_id: HP:0001229
+alt_id: HP:0005669
+alt_id: HP:0006075
+alt_id: HP:0006076
+alt_id: HP:0006132
+alt_id: HP:0006199
+alt_id: HP:0006223
+def: "Short distance from the end of the finger to the most distal interphalangeal crease or the distal interphalangeal joint flexion point. That is, hypoplasia of one or more of the distal phalanx of finger." [HPO:probinson, PMID:19125433]
+comment: This term differs from Partial absence of the finger because in that term, the phalanx must be missing, whereas in this term it may be small, but present. Distal phalangeal lengths can be assessed subjectively by comparing that digit segment to the rest of the digit, to other normal digits in that patient, or to typical patients of that age or build. Regarding the subjective definition, for individuals who do not have flexion creases, one may determine this by flexing the DIP joint and estimating the length of the terminal segment of the digit. Alternatively, one may be able to palpate the joint.
+subset: hposlim_core
+synonym: "Brachytelophalangy" EXACT []
+synonym: "Distal phalangeal hypoplasia" EXACT []
+synonym: "Hypoplasia of the distal phalanges" EXACT []
+synonym: "Hypoplasia of the distal phalanges of the hand" EXACT []
+synonym: "Hypoplasic terminal phalanges" EXACT []
+synonym: "Hypoplastic distal phalanges" EXACT []
+synonym: "Hypoplastic terminal phalanges" EXACT []
+synonym: "Short distal phalanges" EXACT []
+synonym: "Short outermost finger bone" EXACT layperson [ORCID:0000-0001-5208-3432]
+synonym: "Terminal phalangeal hypoplasia of hand" EXACT []
+xref: UMLS:C1839829
+is_a: HP:0009381 ! Short finger
+created_by: doelkens
+creation_date: 2009-04-24T04:29:30Z

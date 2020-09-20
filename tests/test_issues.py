@@ -65,3 +65,9 @@ class TestIssues(unittest.TestCase):
 
         self.assertEqual(ims.imports["ms"].metadata.ontology, "ms")
         self.assertEqual(ims.imports["ms"].imports["uo.obo"].metadata.ontology, "uo")
+
+    def test_alt_id_access(self):
+        path = os.path.join(utils.DATADIR, "hp.obo")
+        hp = pronto.Ontology(path, import_depth=0)
+        self.assertIn("HP:0001198", hp)
+        self.assertEqual(hp["HP:0001198"].id, "HP:0009882")

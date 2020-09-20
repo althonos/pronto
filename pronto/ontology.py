@@ -3,9 +3,10 @@ import itertools
 import io
 import typing
 import warnings
-from typing import BinaryIO, Dict, Mapping, Optional, Set, Union
+from typing import BinaryIO, Dict, Mapping, NamedTuple, Optional, Set, Union
 
 from . import relationship
+from .entity import EntityData
 from .term import Term, TermData
 from .relationship import Relationship, RelationshipData
 from .logic.lineage import Lineage
@@ -13,6 +14,24 @@ from .metadata import Metadata
 from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
 from .utils.meta import roundrepr, typechecked
+
+
+_D = typing.TypeVar("_E", bound=EntityData)
+
+class _DataGraph(typing.Generic[_D]):
+    """A private data storage for a type of entity.
+
+    This class is equivalent to a graph storing nodes in the ``entities``
+    attribute, and directed edges corresponding to the sub-entity
+    relationship between entities in the ``lineage`` attribute.
+    """
+
+    entities: Dict[str, _D]
+    lineage: Dict[str, Lineage]
+
+    def __init__(self, entities=None, lineage=None):
+        self.entities = entities or {}
+        self.lineage = lineage or {}
 
 
 class Ontology(Mapping[str, Union[Term, Relationship]]):
@@ -51,9 +70,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     handle: Optional[BinaryIO]
 
     # Private attributes
-    _inheritance: Dict[str, Lineage]
-    _terms: Dict[str, TermData]
-    _relationships: Dict[str, RelationshipData]
+    _terms: _DataGraph[TermData]
+    _relationships: _DataGraph[RelationshipData]
 
     # --- Constructors -------------------------------------------------------
 
@@ -136,9 +154,11 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             self.timeout = timeout
             self.imports = dict()
 
-            self._inheritance = dict()
-            self._terms: Dict[str, TermData] = {}
-            self._relationships: Dict[str, RelationshipData] = {}
+            # self._inheritance = dict()
+            # self._terms: Dict[str, TermData] = {}
+            # self._relationships: Dict[str, RelationshipData] = {}
+            self._terms = _DataGraph(entities={}, lineage={})
+            self._relationships = _DataGraph(entities={}, lineage={})
 
             # Creating an ontology from scratch is supported
             if handle is None:
@@ -197,8 +217,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
         """
         return (
-            len(self._terms)
-            + len(self._relationships)
+            len(self._terms.entities)
+            + len(self._relationships.entities)
             + sum(map(len, self.imports.values()))
         )
 
@@ -215,8 +235,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         if isinstance(item, str):
             return (
                 any(item in i for i in self.imports.values())
-                or item in self._terms
-                or item in self._relationships
+                or item in self._terms.entities
+                or item in self._relationships.entities
                 or item in relationship._BUILTINS
             )
         return False
@@ -255,15 +275,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     def __setstate__(self, state):
         self.__dict__ = state
-
-    # --- Private helpers ----------------------------------------------------
-
-    def _build_inheritance_cache(self) -> None:
-        self._inheritance.clear()
-        for t1 in self.terms():
-            for t2 in t1._data().relationships.get("is_a", []):
-                self._inheritance.setdefault(t2, Lineage()).sub.add(t1.id)
-                self._inheritance.setdefault(t1.id, Lineage()).sup.add(t2)
 
     # --- Serialization utils ------------------------------------------------
 
@@ -317,10 +328,10 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                     for ref in self.imports.values()
                     for t in ref.terms()
                 ),
-                (Term(self, t) for t in self._terms.values()),
+                (Term(self, t) for t in self._terms.entities.values()),
             ),
             length=(
-                sum(len(r.terms()) for r in self.imports.values()) + len(self._terms)
+                sum(len(r.terms()) for r in self.imports.values()) + len(self._terms.entities)
             ),
         )
 
@@ -338,11 +349,11 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                     for ref in self.imports.values()
                     for r in ref.relationships()
                 ),
-                (self.get_relationship(r) for r in self._relationships),
+                (self.get_relationship(r) for r in self._relationships.entities),
             ),
             length=(
                 sum(len(r.relationships()) for r in self.imports.values())
-                + len(self._relationships)
+                + len(self._relationships.entities)
             ),
         )
 
@@ -361,8 +372,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """
         if id in self:
             raise ValueError(f"identifier already in use: {id} ({self[id]})")
-        self._terms[id] = termdata = TermData(id)
-        self._inheritance[id] = Lineage()
+        self._terms.entities[id] = termdata = TermData(id)
+        self._terms.lineage[id] = Lineage()
         return Term(self, termdata)
 
     @typechecked()
@@ -376,7 +387,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """
         if id in self:
             raise ValueError(f"identifier already in use: {id} ({self[id]})")
-        self._relationships[id] = reldata = RelationshipData(id)
+        self._relationships.entities[id] = reldata = RelationshipData(id)
+        self._relationships.lineage[id] = Lineage()
         return Relationship(self, reldata)
 
     @typechecked()
@@ -389,7 +401,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
         """
         try:
-            return Term(self, self._terms[id])
+            return Term(self, self._terms.entities[id])
         except KeyError:
             pass
         for dep in self.imports.values():
@@ -419,7 +431,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 stacklevel=2,
             )
         try:
-            return Relationship(self, self._relationships[id])
+            return Relationship(self, self._relationships.entities[id])
         except KeyError:
             pass
         try:

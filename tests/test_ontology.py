@@ -21,24 +21,24 @@ class TestOntology(unittest.TestCase):
     def tearDownClass(cls):
         warnings.simplefilter(warnings.defaultaction)
 
-    def test_inheritance_caching(self):
+    def test_lineage_caching(self):
         ont = pronto.Ontology()
-        self.assertEqual(ont._inheritance, {})
+        self.assertEqual(ont._terms.lineage, {})
 
         t1 = ont.create_term("TST:001")
-        self.assertEqual(ont._inheritance, {t1.id: Lineage()})
+        self.assertEqual(ont._terms.lineage, {t1.id: Lineage()})
 
         t2 = ont.create_term("TST:002")
-        self.assertEqual(ont._inheritance, {t1.id: Lineage(), t2.id: Lineage()})
+        self.assertEqual(ont._terms.lineage, {t1.id: Lineage(), t2.id: Lineage()})
 
         t2.superclasses().add(t1)
-        self.assertEqual(ont._inheritance, {
+        self.assertEqual(ont._terms.lineage, {
             t1.id: Lineage(sub={t2.id}),
             t2.id: Lineage(sup={t1.id})
         })
 
         t2.superclasses().clear()
-        self.assertEqual(ont._inheritance, {t1.id: Lineage(), t2.id: Lineage()})
+        self.assertEqual(ont._terms.lineage, {t1.id: Lineage(), t2.id: Lineage()})
 
     def test_repr_new(self):
         ont = pronto.Ontology()

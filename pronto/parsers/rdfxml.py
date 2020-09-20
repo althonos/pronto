@@ -293,7 +293,7 @@ class RdfXMLParser(BaseParser):
                 if _NS["rdf"]["resource"] in attrib:
                     if attrib[_NS["rdf"]["resource"]] != _NS["owl"].raw("Thing"):
                         iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
-                        self.ont._inheritance[id_].sup.add(iri)
+                        self.ont._terms.lineage[id_].sup.add(iri)
                 elif restriction is not None:
                     r, t = self._extract_term_relationship(restriction)
                     if r is not None and t is not None:

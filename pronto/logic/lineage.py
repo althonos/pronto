@@ -7,10 +7,15 @@ from typing import AbstractSet, Deque, Dict, Iterator, Iterable, Optional, Set, 
 from ..utils.meta import roundrepr
 
 if typing.TYPE_CHECKING:
-    from ..term import Term, TermSet
-    from ..relationship import Relationship
-    from ..ontology import Ontology
+    from ..entity import Entity
+    from ..term import Term, TermSet, TermData
+    from ..relationship import Relationship, RelationshipData
+    from ..ontology import Ontology, _DataGraph
 
+
+_E = typing.TypeVar("_E", bound="Entity")
+
+# --- Storage ----------------------------------------------------------------
 
 @roundrepr
 class Lineage(object):
@@ -41,22 +46,24 @@ class Lineage(object):
     __hash__ = None
 
 
+# --- Abstract handlers ------------------------------------------------------
 
-class LineageHandler(Iterable["Term"]):
+class LineageHandler(typing.Generic[_E], Iterable[_E]):
 
-    def __init__(self, term: "Term", distance: Optional[int], with_self: Optional[int]):
-        self.term = term
+    def __init__(self, entity: _E, distance: Optional[int], with_self: Optional[int]):
+        self.entity = entity
         self.distance = distance
         self.with_self = with_self
         # TODO: API compatibilty with previous iterator (remove for v3.0.0)
         self._it = None
 
-    def __next__(self):
+    def __next__(self) -> _E:
         if self._it is None:
+            ty = type(self.entity).__name__
             warnings.warn(
-                "`Term.subclasses()` and `Term.superclasses()` will not return"
-                "iterator in next major version, but iterables. Update your "
-                "code to use `iter(...)` if needed.",
+                f"`{ty}.subclasses()` and `{ty}.superclasses()` will not "
+                "return iterators in next major version, but iterables. "
+                "Update your code to use `iter(...)` if needed.",
                 category=DeprecationWarning,
                 stacklevel=2,
             )
@@ -66,67 +73,137 @@ class LineageHandler(Iterable["Term"]):
     def to_set(self):
         return iter(self).to_set()
 
-    def _add(self, subclass: "Term", superclass: "Term"):
+    def _add(self, subclass: _E, superclass: _E):
         if superclass._ontology() is not subclass._ontology():
-            raise ValueError("cannot use `Term` instances from different ontologies")
-        cache = subclass._ontology()._inheritance
-        cache[subclass.id].sup.add(superclass.id)
-        cache[superclass.id].sub.add(subclass.id)
+            ty = type(subclass).__name__
+            raise ValueError(f"cannot use `{ty}` instances from different ontologies")
+        lineage = self._get_data().lineage
+        lineage[subclass.id].sup.add(superclass.id)
+        lineage[superclass.id].sub.add(subclass.id)
 
-    def _remove(self, subclass: "Term", superclass: "Term"):
+    def _remove(self, subclass: _E, superclass: _E):
         if superclass._ontology() is not subclass._ontology():
-            raise ValueError("cannot use `Term` instances from different ontologies")
-        cache = subclass._ontology()._inheritance
-        cache[subclass.id].sup.remove(superclass.id)
-        cache[superclass.id].sub.remove(subclass.id)
+            ty = type(subclass).__name__
+            raise ValueError(f"cannot use `{ty}` instances from different ontologies")
+        lineage = self._get_data().lineage
+        lineage[subclass.id].sup.remove(superclass.id)
+        lineage[superclass.id].sub.remove(subclass.id)
+
+    @abc.abstractmethod
+    def __iter__(self) -> "LineageIterator[_E]":
+        return NotImplemented
+
+    @abc.abstractmethod
+    def _get_data(self) -> "_DataGraph":
+        return NotImplemented
+
+    @abc.abstractmethod
+    def add(self, other: _E) -> None:
+        return NotImplemented
+
+    @abc.abstractmethod
+    def remove(self, other: _E) -> None:
+        return NotImplemented
+
+    @abc.abstractmethod
+    def clear(self) -> None:
+        return NotImplemented
 
 
-class SuperclassesHandler(LineageHandler):
+class TermHandler(LineageHandler["Term"]):
 
-    def __iter__(self):
-        return SuperclassesIterator(
-            self.term,
-            distance=self.distance,
-            with_self=self.with_self
-        )
+    @abc.abstractmethod
+    def __iter__(self) -> "TermIterator":
+        return NotImplemented
 
-    def add(self, superclass: "Term"):
-        self._add(subclass=self.term, superclass=superclass)
+    def _get_data(self) -> "_DataGraph[TermData]":
+        return self.entity._ontology()._terms
 
-    def remove(self, superclass: "Term"):
-        self._remove(subclass=self.term, superclass=superclass)
+
+class RelationshipHandler(LineageHandler["Relationship"]):
+
+    @abc.abstractmethod
+    def __iter__(self) -> "RelationshipIterator":
+        return NotImplemented
+
+    def _get_data(self) -> "_DataGraph[RelationshipData]":
+        return self.entity._ontology()._relationships
+
+
+class SuperentitiesHandler(LineageHandler):
+
+    @abc.abstractmethod
+    def __iter__(self) -> "SuperentitiesIterator":
+        return NotImplemented
+
+    def add(self, superclass: _E):
+        self._add(subclass=self.entity, superclass=superclass)
+
+    def remove(self, superclass: _E):
+        self._remove(subclass=self.entity, superclass=superclass)
 
     def clear(self):
-        cache = self.term._ontology()._inheritance
-        for subclass in cache[self.term.id].sup:
-            cache[subclass].sub.remove(self.term.id)
-        cache[self.term.id].sup.clear()
+        lineage = self._get_data().lineage
+        for subclass in lineage[self.entity.id].sup:
+            lineage[subclass].sub.remove(self.entity.id)
+        lineage[self.entity.id].sup.clear()
 
 
-class SubclassesHandler(LineageHandler):
+class SubentitiesHandler(LineageHandler):
+
+    @abc.abstractmethod
+    def __iter__(self) -> "SubentitiesIterator":
+        return NotImplemented
 
     def __iter__(self):
         return SubclassesIterator(
-            self.term,
+            self.entity,
             distance=self.distance,
             with_self=self.with_self
         )
 
-    def add(self, subclass: "Term"):
-        self._add(superclass=self.term, subclass=subclass)
+    def add(self, subclass: _E):
+        self._add(superclass=self.entity, subclass=subclass)
 
-    def remove(self, subclass: "Term"):
-        self._remove(superclass=self.term, subclass=subclass)
+    def remove(self, subclass: _E):
+        self._remove(superclass=self.entity, subclass=subclass)
 
     def clear(self):
-        cache = self.term._ontology()._inheritance
-        for superclass in cache[self.term.id].sub:
-            cache[superclass].sup.remove(self.term.id)
-        cache[self.term.id].sub.clear()
+        lineage = self._get_data().lineage
+        for superclass in lineage[self.entity.id].sub:
+            lineage[superclass].sup.remove(self.entity.id)
+        lineage[self.entity.id].sub.clear()
 
 
+# --- Concrete handlers ------------------------------------------------------
 
-class LineageIterator(Iterator["Term"]):
+class SubclassesHandler(SubentitiesHandler, TermHandler):
+
+    def __iter__(self) -> "SubclassesIterator":
+        return SubclassesIterator(self.entity, distance=self.distance, with_self=self.with_self)
+
+
+class SubpropertiesHandler(SubentitiesHandler, RelationshipHandler):
+
+    def __iter__(self) -> "SubpropertiesIterator":
+        return SubpropertiesIterator(self.entity, distance=self.distance, with_self=self.with_self)
+
+
+class SuperclassesHandler(SuperentitiesHandler, TermHandler):
+
+    def __iter__(self) -> "SuperclassesIterator":
+        return SuperclassesIterator(self.entity, distance=self.distance, with_self=self.with_self)
+
+
+class SuperpropertiesHandler(SuperentitiesHandler, RelationshipHandler):
+
+    def __iter__(self) -> "SuperclassesIterator":
+        return SuperclassesIterator(self.entity, distance=self.distance, with_self=self.with_self)
+
+# --- Abstract iterators -----------------------------------------------------
+
+
+class LineageIterator(typing.Generic[_E], Iterator[_E]):
 
     _distmax: float
     _maxlen: int
@@ -139,13 +216,21 @@ class LineageIterator(Iterator["Term"]):
     # ---
 
     @abc.abstractmethod
+    def _get_data(self):
+        return NotImplemented  # type: ignore
+
+    @abc.abstractmethod
     def _get_neighbors(self, node: str) -> Set[str]:
+        return NotImplemented  # type: ignore
+
+    @abc.abstractmethod
+    def _maxlen(self) -> int:
         return NotImplemented  # type: ignore
 
     # ---
 
     def __init__(
-        self, *terms: "Term", distance: Optional[int] = None, with_self: bool = True
+        self, *entities: _E, distance: Optional[int] = None, with_self: bool = True
     ) -> None:
 
         self._distmax = float("inf") if distance is None else distance
@@ -153,33 +238,32 @@ class LineageIterator(Iterator["Term"]):
         # if not term is given, `__next__` will raise `StopIterator` on
         # the first call without ever accessing `self._ontology`, so it's
         # safe not to initialise it here in that case.
-        if terms:
-            self._ontology = ont = terms[0]._ontology()
-            self._maxlen = len(ont.terms())
+        if entities:
+            self._ontology = ont = entities[0]._ontology()
 
         self._linked: Set[str] = set()
         self._done: Set[str] = set()
         self._frontier: Deque[Tuple[str, int]] = collections.deque()
         self._queue: Deque[str] = collections.deque()
 
-        for term in terms:
-            self._frontier.append((term.id, 0))
-            self._linked.add(term.id)
+        for entity in entities:
+            self._frontier.append((entity.id, 0))
+            self._linked.add(entity.id)
             if with_self:
-                self._queue.append(term.id)
+                self._queue.append(entity.id)
 
-    def __iter__(self) -> "LineageIterator":
+    def __iter__(self) -> "LineageIterator[_E]":
         return self
 
     def __length_hint__(self) -> int:
         """Return an estimate of the number of remaining entities to yield.
         """
         if self._queue or self._frontier:
-            return self._maxlen - len(self._linked) + len(self._queue)
+            return self._maxlen() - len(self._linked) + len(self._queue)
         else:
             return 0
 
-    def __next__(self) -> "Term":
+    def __next__(self) -> "_E":
         while self._frontier or self._queue:
             # Return any element currently queued
             if self._queue:
@@ -198,7 +282,16 @@ class LineageIterator(Iterator["Term"]):
         # Stop iteration if no more elements to process
         raise StopIteration
 
-    def to_set(self) -> "TermSet":
+
+class TermIterator(LineageIterator["Term"]):
+
+    def _maxlen(self):
+        return len(self._ontology.terms())
+
+    def _get_data(self):
+        return self._ontology._terms
+
+    def to_set(self) -> "TermSet": # FIXME
         """Collect all classes into a `~pronto.TermSet`.
 
         Hint:
@@ -214,17 +307,44 @@ class LineageIterator(Iterator["Term"]):
         return TermSet(self)
 
 
-class SubclassesIterator(LineageIterator):
+class RelationshipIterator(LineageIterator["Relationship"]):
+
+    def _maxlen(self):
+        return len(self._ontology.relationships())
+
+    def _get_data(self):
+        return self._ontology._relationships
+
+
+class SubentitiesIterator(LineageIterator):
+
+    def _get_neighbors(self, node: str) -> Set[str]:
+        return self._get_data().lineage.get(node, Lineage()).sub
+
+
+class SuperentitiesIterator(LineageIterator):
+
+    def _get_neighbors(self, node: str) -> Set[str]:
+        return self._ontology._terms.lineage.get(node, Lineage()).sup
+
+
+# --- Concrete iterators -----------------------------------------------------
+
+class SubclassesIterator(SubentitiesIterator, TermIterator):
     """An iterator over the subclasses of one or several `~pronto.Term`.
     """
 
-    def _get_neighbors(self, node: str) -> Set[str]:
-        return self._ontology._inheritance.get(node, Lineage()).sub
 
-
-class SuperclassesIterator(LineageIterator):
+class SuperclassesIterator(SuperentitiesIterator, TermIterator):
     """An iterator over the superclasses of one or several `~pronto.Term`.
     """
 
-    def _get_neighbors(self, node: str) -> Set[str]:
-        return self._ontology._inheritance.get(node, Lineage()).sup
+
+class SubpropertiesIterator(SubentitiesIterator, RelationshipIterator):
+    """An iterator over the subproperties of one or several `~pronto.Relationship`.
+    """
+
+
+class SuperpropertiesHandler(SuperentitiesIterator, RelationshipIterator):
+    """An iterator over the superproperties of one or several `~pronto.Relationship`.
+    """

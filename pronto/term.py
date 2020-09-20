@@ -317,7 +317,7 @@ class Term(Entity):
             This method has a runtime of :math:`O(1)` as `Ontology` objects
             internally cache the subclasses of each term.
         """
-        return not self._ontology()._inheritance[self.id].sub
+        return not self._ontology()._terms.lineage[self.id].sub
 
     # --- Attributes ---------------------------------------------------------
 

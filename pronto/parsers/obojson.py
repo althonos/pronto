@@ -48,8 +48,8 @@ class OboJSONParser(FastoboParser, BaseParser):
             # OBOJSON can define classes implicitly using only `is_a` properties
             # mapping to unresolved identifiers: in this case, we create the
             # term ourselves
-            for lineage in list(self.ont._inheritance.values()):
-                for superclass in lineage.sup.difference(self.ont._inheritance):
+            for lineage in list(self.ont._terms.lineage.values()):
+                for superclass in lineage.sup.difference(self.ont._terms.lineage):
                     self.ont.create_term(superclass)
 
         # Update inheritance cache

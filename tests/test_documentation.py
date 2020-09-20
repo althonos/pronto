@@ -14,6 +14,7 @@ import pronto
 
 
 build_main = utils.try_import("sphinx.cmd.build:build_main", None)
+within_ci = os.getenv("CI", "false") == "true"
 
 
 class TestProntoDocumentation(unittest.TestCase):
@@ -43,12 +44,18 @@ class TestProntoDocumentation(unittest.TestCase):
             print(stderr.getvalue())
         self.assertEqual(res, 0, "sphinx exited with non-zero exit code")
 
+    @unittest.skipUnless(build_main, "sphinx not available")
+    @unittest.skipUnless(within_ci, "only build docs in CI")
     def test_html(self):
         self.assertBuilds("html")
 
+    @unittest.skipUnless(build_main, "sphinx not available")
+    @unittest.skipUnless(within_ci, "only build docs in CI")
     def test_json(self):
         self.assertBuilds("json")
 
+    @unittest.skipUnless(build_main, "sphinx not available")
+    @unittest.skipUnless(within_ci, "only build docs in CI")
     def test_xml(self):
         self.assertBuilds("xml")
 

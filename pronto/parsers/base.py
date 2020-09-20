@@ -69,16 +69,16 @@ class BaseParser(abc.ABC):
 
     def symmetrize_inheritance(self):
         for t in self.ont.terms():
-            self.ont._inheritance.setdefault(t.id, Lineage())
-        for subclass, lineage in self.ont._inheritance.items():
+            self.ont._terms.lineage.setdefault(t.id, Lineage())
+        for subclass, lineage in self.ont._terms.lineage.items():
             for superclass in lineage.sup:
-                self.ont._inheritance[superclass].sub.add(subclass)
+                self.ont._terms.lineage[superclass].sub.add(subclass)
 
     def import_inheritance(self):
         for dep in self.ont.imports.values():
             for term in dep.terms():
-                self.ont._inheritance[term.id] = Lineage()
+                self.ont._terms.lineage[term.id] = Lineage()
         for dep in self.ont.imports.values():
-            for id, lineage in dep._inheritance.items():
-                self.ont._inheritance[id].sup.update(lineage.sup)
-                self.ont._inheritance[id].sub.update(lineage.sub)
+            for id, lineage in dep._terms.lineage.items():
+                self.ont._terms.lineage[id].sup.update(lineage.sup)
+                self.ont._terms.lineage[id].sub.update(lineage.sub)

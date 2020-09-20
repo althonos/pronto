@@ -17,7 +17,7 @@ class TestRelationship(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         warnings.simplefilter(warnings.defaultaction)
-        
+
     def test_properties(self):
         """Assert the data stored in data layer can be accessed in the view.
         """

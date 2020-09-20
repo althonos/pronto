@@ -366,7 +366,7 @@ def _process_clause_typedef_inverse_of(clause, entity, ont):
 
 @process_clause_term.register(fastobo.term.IsAClause)
 def _process_clause_term_is_a(clause, entity, ont):
-    ont._inheritance[entity.id].sup.add(str(clause.term))
+    ont._terms.lineage[entity.id].sup.add(str(clause.term))
 
 
 @process_clause_typedef.register(fastobo.typedef.IsAClause)

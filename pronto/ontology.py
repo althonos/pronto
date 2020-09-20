@@ -12,6 +12,7 @@ from .term import Term, TermData
 from .relationship import Relationship, RelationshipData
 from .logic.lineage import Lineage
 from .metadata import Metadata
+from .synonym import SynonymType
 from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
 from .utils.meta import roundrepr, typechecked
@@ -336,6 +337,14 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     # --- Data accessors -----------------------------------------------------
 
+    def synonym_types(self) -> SizedIterator[SynonymType]:
+        """Iterate over the synonym types of the ontology graph.
+        """
+        sources = [ i.synonym_types() for i in self.imports.values() ]
+        sources.append(self.metadata.synonymtypedefs)
+        length = sum(map(len, sources))
+        return SizedIterator(itertools.chain.from_iterable(sources), length)
+
     def terms(self) -> SizedIterator[Term]:
         """Iterate over the terms of the ontology graph.
         """
@@ -349,7 +358,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 (Term(self, t) for t in self._terms.entities.values()),
             ),
             length=(
-                sum(len(r.terms()) for r in self.imports.values()) + len(self._terms.entities)
+                sum(len(r.terms()) for r in self.imports.values()) + len(self._terms)
             ),
         )
 
@@ -409,7 +418,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         self._relationships.lineage[id] = Lineage()
         return Relationship(self, reldata)
 
-    # @typechecked()
+    @typechecked()
     def get_term(self, id: str) -> Term:
         """Get a term in the ontology graph from the given identifier.
 

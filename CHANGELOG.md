@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `Relationship.subproperties` and `Relationship.superproperties` methods
   to add, remove, clear and iterate over the subproperties and superproperties
   of a `Relationship` instance.
+- `Ontology.synonym_types` method to count (via `SizedIterator`) and iterate
+  over the synonym types of an ontology and all of its imports.
 ### Changed
 - Management of sub-properties / super-properties is now consistent with
   the management of subclasses / superclasses.
@@ -24,6 +26,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Outdated documentation in `Term.subclasses` describing the performances of
   the previous algorithm.
 - Possible `AttributeError` with the setter of the `Entity.synonyms` property.
+- Issue with synonym types declared in imported ontologies not being usable
+  with synonyms of the actual ontology.
 - Various type annotations not updated since version [2.2.2].
 
 ## [2.2.4] - 2020-09-11

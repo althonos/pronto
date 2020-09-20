@@ -132,8 +132,7 @@ class Synonym(object):
 
         def __init__(self, ontology: "Ontology", syndata: "SynonymData"):
             if syndata.type is not None:
-                types = ontology.metadata.synonymtypedefs
-                if not any(t.id == syndata.type for t in types):
+                if not any(t.id == syndata.type for t in ontology.synonym_types()):
                     raise ValueError(f"undeclared synonym type: {syndata.type}")
             self._data = weakref.ref(syndata)
             self.__ontology = ontology
@@ -174,14 +173,14 @@ class Synonym(object):
         ontology, syndata = self.__ontology, self._data()
         if syndata.type is not None:
             return next(
-                t for t in ontology.metadata.synonymtypedefs if t.id == syndata.type
+                t for t in ontology.synonym_types() if t.id == syndata.type
             )
         return None
 
     @type.setter  # type: ignore
     @typechecked(property=True)
     def type(self, type_: Optional[SynonymType]) -> None:
-        synonyms: Set[SynonymType] = self.__ontology.metadata.synonymtypedefs
+        synonyms: Set[SynonymType] = self.__ontology.synonym_types()
         if type_ is not None and not any(type_.id == s.id for s in synonyms):
             raise ValueError(f"undeclared synonym type: {type_.id}")
         self._data().type = type_.id if type_ is not None else None

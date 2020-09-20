@@ -64,7 +64,7 @@ class Entity(typing.Generic[_D]):
 
         def _data(self) -> "EntityData":
             rdata = self.__data()
-            if __debug__ and rdata is None:
+            if rdata is None:
                 raise RuntimeError("internal data was deallocated")
             return rdata
 
@@ -73,7 +73,7 @@ class Entity(typing.Generic[_D]):
         __slots__: Iterable[str] = ("_data",)  # type: ignore
 
         def __init__(self, ontology: "Ontology", data: "_D"):
-            self._data = weakref.ref(data)
+            self._data = weakref.ref(data)  # type: ignore
             self.__ontology = ontology
             self.__id = data.id
 
@@ -225,14 +225,6 @@ class Entity(typing.Generic[_D]):
         self._data().definition = definition
 
     @property
-    def equivalent_to(self) -> FrozenSet[str]:
-        return frozenset(self._data().equivalent_to)
-
-    @equivalent_to.setter
-    def equivalent_to(self, equivalent_to: FrozenSet[str]):
-        self._data().equivalent_to = set(equivalent_to)
-
-    @property
     def id(self) -> str:
         """`str`: The OBO identifier of the entity.
 
@@ -304,7 +296,7 @@ class Entity(typing.Generic[_D]):
     @synonyms.setter  # type: ignore
     @typechecked(property=True)
     def synonyms(self, synonyms: Iterable[Synonym]):
-        self._data().synonyms = {syn.data for syn in synonyms}
+        self._data().synonyms = {syn._data() for syn in synonyms}
 
     @property
     def xrefs(self) -> FrozenSet[Xref]:
@@ -320,7 +312,7 @@ class Entity(typing.Generic[_D]):
     def xrefs(self, xrefs: FrozenSet[Xref]):
         self._data().xrefs = set(xrefs)
 
-    # --- Conveniene methods -------------------------------------------------
+    # --- Convenience methods ------------------------------------------------
 
     def add_synonym(
         self,
@@ -382,7 +374,7 @@ class EntitySet(typing.Generic[_E], MutableSet[_E]):
         return False
 
     def __iter__(self) -> Iterator[_E]:
-        return map(lambda t: self._ontology[t], iter(self._ids))
+        return map(lambda t: self._ontology[t], iter(self._ids))  # type: ignore
 
     def __len__(self):
         return len(self._ids)

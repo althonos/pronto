@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 [Unreleased]: https://github.com/althonos/pronto/compare/v2.2.4...HEAD
+### Added
+- `Relationship.subproperties` and `Relationship.superproperties` methods
+  to add, remove, clear and iterate over the subproperties and superproperties
+  of a `Relationship` instance.
+- `__all__` attribute to all modules of the data model.
+### Changed
+- Management of sub-properties / super-properties is now consistent with
+  the management of subclasses / superclasses.
+### Fixed
+- Outdated documentation in `Term.subclasses` describing the performances of
+  the previous algorithm.
 
 ## [2.2.4] - 2020-09-11
 [2.2.4]: https://github.com/althonos/pronto/compare/v2.2.3...v2.2.4

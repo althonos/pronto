@@ -341,7 +341,7 @@ class Term(Entity[TermData]):
         self._data().disjoint_from = set(term.id for term in terms)
 
     @property
-    def equivalent_to(self) -> FrozenSet[str]:
+    def equivalent_to(self) -> "TermSet":
         """`TermSet`: The terms declared as equivalent to this term.
         """
         s = TermSet()
@@ -475,7 +475,7 @@ class TermSet(EntitySet[Term]):
 
     def superclasses(
         self, distance: Optional[int] = None, with_self: bool = True
-    ) -> SubclassesIterator:
+    ) -> SuperclassesIterator:
         """Get an iterator over the superclasses of all terms in the set.
 
         Example:

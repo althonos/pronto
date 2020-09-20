@@ -342,6 +342,7 @@ class Entity(typing.Generic[_D]):
         Returns:
             `~pronto.Synonym`: A new synonym for the terms. The synonym is
             already added to the `Entity.synonyms` collection.
+            
         """
         type_id = type.id if type is not None else None
         data = SynonymData(description, scope, type_id, xrefs=xrefs)

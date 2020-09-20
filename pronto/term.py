@@ -156,7 +156,6 @@ class Term(Entity[TermData]):
             iterator with.
 
         """
-
         if r._data() is relationship._BUILTINS["is_a"]:
             warnings.warn(
                 "using the `is_a` relationship with `Term.objects` will not be "
@@ -316,6 +315,7 @@ class Term(Entity[TermData]):
         Note:
             This method has a runtime of :math:`O(1)` as `Ontology` objects
             internally cache the subclasses of each term.
+
         """
         return not self._ontology()._terms.lineage[self.id].sub
 
@@ -323,7 +323,7 @@ class Term(Entity[TermData]):
 
     @property
     def disjoint_from(self) -> "TermSet":
-        """The terms declared as disjoint from this term.
+        """`TermSet`: The terms declared as disjoint from this term.
 
         Two terms are disjoint if they have no instances or subclasses in
         common.
@@ -339,7 +339,7 @@ class Term(Entity[TermData]):
 
     @property
     def equivalent_to(self) -> FrozenSet[str]:
-        """The terms declared as equivalent to this term.
+        """`TermSet`: The terms declared as equivalent to this term.
         """
         s = TermSet()
         s._ids = self._data().equivalent_to
@@ -352,7 +352,7 @@ class Term(Entity[TermData]):
 
     @property
     def intersection_of(self) -> FrozenSet[Union["Term", Tuple[Relationship, "Term"]]]:
-        """The terms or term relationships this term is an intersection of.
+        """`frozenset`: The terms this term is an intersection of.
         """
         ont, termdata = self._ontology(), self._data()
         intersection_of: List[Union["Term", Tuple[Relationship, "Term"]]] = []
@@ -620,5 +620,6 @@ class TermSet(MutableSet[Term]):
             frozenset({'MS:1000031'})
             >>> ms["MS:1000031"]
             Term('MS:1000031', name='instrument model')
+            
         """
         return SuperclassesIterator(*self, distance=distance, with_self=with_self)

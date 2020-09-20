@@ -293,6 +293,7 @@ class TermIterator(LineageIterator["Term"]):
             >>> cio = pronto.Ontology("cio.obo")
             >>> sorted(cio['CIO:0000034'].subclasses().to_set().ids)
             ['CIO:0000034', 'CIO:0000035', 'CIO:0000036']
+            
         """
         from ..term import TermSet
 

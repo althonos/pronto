@@ -125,9 +125,10 @@ class roundrepr(object):
             >>> MyClass(None)
             MyClass('foo')
 
-        Credits:
-            `PyFilesystem2 <https://github.com/PyFilesystem/pyfilesystem2/blob/master/fs/_repr.py>`_
-            code developed by `Will McGugan <https://github.com/willmcgugan>`_.
+        Note:
+            This functions uses code developed by `Will McGugan <https://github.com/willmcgugan>`_
+            for `PyFilesystem2 <https://github.com/PyFilesystem/pyfilesystem2/blob/master/fs/_repr.py>`_
+
         """
         arguments: List[str] = [repr(arg) for arg in args]
         arguments.extend(
@@ -157,7 +158,7 @@ class roundrepr(object):
 
         # Derive the __repr__ implementation
         def __repr__(self_):
-            """A roundtripping implementation for `repr`. Computed by @roundrepr.
+            """Return a `repr` string that roundtrips. Computed by @roundrepr.
             """
             args, kwargs = [], {}
             for name, param in itertools.islice(sig.parameters.items(), 1, None):

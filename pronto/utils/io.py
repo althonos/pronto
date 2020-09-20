@@ -96,7 +96,6 @@ def decompress(
 ) -> BinaryIO:
     """Given a binary file-handle, decompress it if it is compressed.
     """
-
     buffered = BufferedReader(reader)
 
     # Decompress the stream if it is compressed

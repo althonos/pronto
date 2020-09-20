@@ -279,7 +279,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     # --- Serialization utils ------------------------------------------------
 
     def dump(self, file: BinaryIO, format: str = "obo"):
-        f"""Serialize the ontology to a given file-handle.
+        """Serialize the ontology to a given file-handle.
 
         Arguments:
             file (~typing.BinaryIO): A binary file handle open in reading mode
@@ -311,6 +311,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             format-version: 1.2
             data-version: releases/2019-07-01
             ...
+            
         """
         s = io.BytesIO()
         self.dump(s, format=format)

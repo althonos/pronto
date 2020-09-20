@@ -151,7 +151,6 @@ class RdfXMLParser(BaseParser):
         and not extra cases described in the `class expression paragraph of the
         OBO guide <http://owlcollab.github.io/oboformat/doc/obo-syntax.html#5.3>`_.
         """
-
         if __debug__:
             if elem.tag != _NS["owl"]["Restriction"]:
                 raise ValueError("expected `owl:Restriction` element")

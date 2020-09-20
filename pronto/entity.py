@@ -12,6 +12,7 @@ from .utils.meta import roundrepr, typechecked
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
 
+_D = typing.TypeVar("_D", bound="EntityData")
 
 class EntityData:
 
@@ -38,7 +39,7 @@ class EntityData:
     __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
 
 
-class Entity:
+class Entity(typing.Generic[_D]):
     """An entity in the ontology graph.
 
     With respects to the OBO semantics, an `Entity` is either a term or a
@@ -48,10 +49,10 @@ class Entity:
 
     if __debug__ or typing.TYPE_CHECKING:
 
-        __data: "weakref.ReferenceType[EntityData]"
+        __data: "weakref.ReferenceType[_D]"
         __slots__: Iterable[str] = ("__weakref__",)
 
-        def __init__(self, ontology: "Ontology", data: "EntityData"):
+        def __init__(self, ontology: "Ontology", data: "_D"):
             self.__data = weakref.ref(data)
             self.__id = data.id
             self.__ontology = ontology
@@ -66,7 +67,7 @@ class Entity:
 
         __slots__: Iterable[str] = ("__weakref__", "_data")  # type: ignore
 
-        def __init__(self, ontology: "Ontology", data: "EntityData"):
+        def __init__(self, ontology: "Ontology", data: "_D"):
             self._data = weakref.ref(data)
             self.__ontology = ontology
             self.__id = data.id

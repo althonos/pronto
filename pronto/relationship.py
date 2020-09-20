@@ -156,7 +156,7 @@ class RelationshipData(EntityData):
         self.class_level = class_level
 
 
-class Relationship(Entity):
+class Relationship(Entity[RelationshipData]):
     """A relationship, constitute the edges of the ontology graph.
 
     Also sometimes referede as typedefs, relationship types, properties or

@@ -118,7 +118,7 @@ class TermData(EntityData):  # noqa: R0902, R0903
         self.annotations = annotations or set()
 
 
-class Term(Entity):
+class Term(Entity[TermData]):
     """A term, corresponding to a node in the ontology graph.
 
     Formally a `Term` frame is equivalent to an ``owl:Class`` declaration in

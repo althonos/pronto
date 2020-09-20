@@ -223,8 +223,8 @@ class FastoboSerializer:
             frame.append(fastobo.typedef.IsFunctionalClause(True))
         if r.inverse_functional:
             frame.append(fastobo.typedef.IsInverseFunctionalClause(True))
-        for superclass in sorted(r.relationships.get("is_a", ())):
-            frame.append(fastobo.typedef.IsAClause(fastobo.id.parse(superclass)))
+        for superproperty in sorted(r.superproperties(with_self=False, distance=1)):
+            frame.append(fastobo.typedef.IsAClause(fastobo.id.parse(superproperty)))
         for i in sorted(r.intersection_of):
             frame.append(fastobo.typedef.IntersectionOfClause(fastobo.id.parse(i)))
         for id_ in sorted(r.union_of):

@@ -371,7 +371,7 @@ def _process_clause_term_is_a(clause, entity, ont):
 
 @process_clause_typedef.register(fastobo.typedef.IsAClause)
 def _process_clause_typedef_is_a(clause, entity, ont):
-    entity.relationships.setdefault("is_a", set()).add(str(clause.typedef))
+    ont._relationships.lineage[entity.id].sup.add(str(clause.typedef))
 
 
 @process_clause_term.register(fastobo.term.IsAnonymousClause)

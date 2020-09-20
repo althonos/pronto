@@ -475,7 +475,7 @@ class RdfXMLParser(BaseParser):
             if tag == _NS["rdfs"]["subPropertyOf"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
-                    reldata.relationships.setdefault("is_a", set()).add(iri)
+                    self.ont._relationships.lineage[id_].sup.add(iri)
                 else:
                     pass  # TODO: subclassing relationship for relationship
             elif tag == _NS["oboInOwl"]["inSubset"]:

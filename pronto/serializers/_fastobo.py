@@ -24,10 +24,10 @@ class FastoboSerializer:
         doc = fastobo.doc.OboDoc()
         if o.metadata:
             doc.header = self._to_header_frame(o.metadata)
-        for termdata in sorted(self.ont._terms.values(), key=operator.attrgetter("id")):
+        for termdata in sorted(self.ont._terms.entities.values(), key=operator.attrgetter("id")):
             doc.append(self._to_term_frame(Term(self.ont, termdata)))
         for reldata in sorted(
-            self.ont._relationships.values(), key=operator.attrgetter("id")
+            self.ont._relationships.entities.values(), key=operator.attrgetter("id")
         ):
             doc.append(self._to_typedef_frame(Relationship(self.ont, reldata)))
         return doc
@@ -223,7 +223,7 @@ class FastoboSerializer:
             frame.append(fastobo.typedef.IsFunctionalClause(True))
         if r.inverse_functional:
             frame.append(fastobo.typedef.IsInverseFunctionalClause(True))
-        for superproperty in sorted(r.superproperties(with_self=False, distance=1)):
+        for superproperty in sorted(relationship.superproperties(with_self=False, distance=1)):
             frame.append(fastobo.typedef.IsAClause(fastobo.id.parse(superproperty)))
         for i in sorted(r.intersection_of):
             frame.append(fastobo.typedef.IntersectionOfClause(fastobo.id.parse(i)))

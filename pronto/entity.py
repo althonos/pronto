@@ -1,7 +1,8 @@
 import datetime
-import weakref
+import operator
 import typing
-from typing import Any, Dict, Iterable, Optional, Set, FrozenSet
+import weakref
+from typing import Any, AbstractSet, Dict, Iterable, Iterator, MutableSet, Optional, Set, FrozenSet
 
 from .definition import Definition
 from .synonym import Synonym, SynonymData, SynonymType
@@ -15,6 +16,7 @@ if typing.TYPE_CHECKING:
 
 __all__ = ["EntityData", "Entity"]
 _D = typing.TypeVar("_D", bound="EntityData")
+_E = typing.TypeVar("_E", bound="Entity")
 
 
 class EntityData:
@@ -352,3 +354,155 @@ class Entity(typing.Generic[_D]):
         synonym = Synonym(self._ontology(), data)
         self._data().synonyms.add(data)
         return synonym
+
+
+class EntitySet(typing.Generic[_E], MutableSet[_E]):
+    """A specialized mutable set to store `Entity` instances.
+    """
+
+    # --- Magic methods ------------------------------------------------------
+
+    def __init__(self, entities: Optional[Iterable[_E]] = None) -> None:
+        self._ids: Set[str] = set()
+        self._ontology: "Optional[Ontology]" = None
+
+        for entity in entities if entities is not None else ():
+            if __debug__ and not isinstance(entity, Entity):
+                err_msg = "'entities' must be iterable of Entity, not {}"
+                raise TypeError(err_msg.format(type(entity).__name__))
+            if self._ontology is None:
+                self._ontology = entity._ontology()
+            if self._ontology is not entity._ontology():
+                raise ValueError("entities do not originate from the same ontology")
+            self._ids.add(entity.id)
+
+    def __contains__(self, other: object):
+        if isinstance(other, Entity):
+            return other.id in self._ids
+        return False
+
+    def __iter__(self) -> Iterator[_E]:
+        return map(lambda t: self._ontology[t], iter(self._ids))
+
+    def __len__(self):
+        return len(self._ids)
+
+    def __repr__(self):
+        ontology = self._ontology
+        elements = (repr(ontology[id_]) for id_ in self._ids)
+        return f"{type(self).__name__}({{{', '.join(elements)}}})"
+
+    def __iand__(self, other: AbstractSet[_E]) -> "EntitySet[_E]":
+        if isinstance(other, EntitySet):
+            self._ids &= other._ids
+        else:
+            super().__iand__(other)
+        if not self._ids:
+            self._ontology = None
+        return self
+
+    def __and__(self, other: AbstractSet[_E]) -> "EntitySet[_E]":
+        if isinstance(other, EntitySet):
+            s = type(self)()
+            s._ids = self._ids.__and__(other._ids)
+            s._ontology = self._ontology if s._ids else None
+        else:
+            s = type(self)(super().__and__(other))
+        return s
+
+    def __ior__(self, other: AbstractSet[_E]) -> "EntitySet[_E]":
+        if not isinstance(other, EntitySet):
+            other = type(self)(other)
+        self._ids |= other._ids
+        self._ontology = self._ontology or other._ontology
+        return self
+
+    def __or__(self, other: AbstractSet[_E]) -> "EntitySet[_E]":
+        if isinstance(other, EntitySet):
+            s = type(self)()
+            s._ids = self._ids.__or__(other._ids)
+            s._ontology = self._ontology or other._ontology
+        else:
+            s = type(self)(super().__or__(other))
+        return s
+
+    def __isub__(self, other: AbstractSet[_E]) -> "EntitySet[_E]":
+        if isinstance(other, EntitySet):
+            self._ids -= other._ids
+        else:
+            super().__isub__(other)
+        if not self._ids:
+            self._ontology = None
+        return self
+
+    def __sub__(self, other: AbstractSet[_E]) -> "EntitySet[_E]":
+        if isinstance(other, EntitySet):
+            s = type(self)()
+            s._ids = self._ids.__sub__(other._ids)
+            s._ontology = self._ontology
+        else:
+            s = type(self)(super().__sub__(other))
+        return s
+
+    def __ixor__(self, other: AbstractSet[_E]) -> "EntitySet[_E]":
+        if isinstance(other, EntitySet):
+            self._ids ^= other._ids
+            self._ontology = self._ontology or other._ontology
+        else:
+            super().__ixor__(other)
+        if not self._ids:
+            self._ontology = None
+        return self
+
+    def __xor__(self, other: AbstractSet[_E]) -> "EntitySet[_E]":
+        if isinstance(other, EntitySet):
+            s = type(self)()
+            s._ids = self._ids.__xor__(other._ids)
+            s._ontology = self._ontology or other._ontology
+        else:
+            s = type(self)(super().__xor__(other))
+        if not s._ids:
+            s._ontology = None
+        return s
+
+    # --- Methods ------------------------------------------------------------
+
+    def add(self, entity: _E) -> None:
+        if self._ontology is None:
+            self._ontology = entity._ontology()
+        elif self._ontology is not entity._ontology():
+            raise ValueError("cannot use `Entity` instances from different `Ontology`")
+        self._ids.add(term.id)
+
+    def clear(self) -> None:
+        self._ids.clear()
+        self._ontology = None
+
+    def discard(self, entity: _E) -> None:
+        self._ids.discard(entity.id)
+
+    def pop(self) -> _E:
+        id_ = self._ids.pop()
+        term = self._ontology[id_]  # type: ignore
+        if not self._ids:
+            self._ontology = None
+        return term
+
+    def remove(self, entity: _E):
+        if self._ontology is not None and self._ontology is not entity._ontology():
+            raise ValueError("cannot use `Term` instances from different `Ontology`")
+        self._ids.remove(entity.id)
+
+    # --- Attributes ---------------------------------------------------------
+
+    @property
+    def ids(self) -> FrozenSet[str]:
+        return frozenset(map(operator.attrgetter("id"), iter(self)))
+
+    @property
+    def alternate_ids(self) -> FrozenSet[str]:
+        return frozenset(id for term in self for id in term.alternate_ids)
+
+    @property
+    def names(self) -> FrozenSet[str]:
+        return frozenset(map(operator.attrgetter("name"), iter(self)))

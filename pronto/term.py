@@ -23,7 +23,7 @@ import immutabledict
 import networkx
 
 from . import relationship
-from .entity import Entity, EntityData
+from .entity import Entity, EntityData, EntitySet
 from .definition import Definition
 from .xref import Xref
 from .synonym import SynonymData
@@ -454,160 +454,22 @@ class Term(Entity[TermData]):
         self._data().consider = data
 
 
-class TermSet(MutableSet[Term]):
+class TermSet(EntitySet[Term]):
     """A specialized mutable set to store `Term` instances.
     """
 
-    def __init__(self, terms: Optional[Iterable[Term]] = None) -> None:
-        self._ids: Set[str] = set()
-        self._ontology: "Optional[Ontology]" = None
-
-        for term in terms if terms is not None else ():
-            if __debug__ and not isinstance(term, Term):
-                err_msg = "'terms' must be iterable of Term, not {}"
-                raise TypeError(err_msg.format(type(term).__name__))
-            if self._ontology is None:
-                self._ontology = term._ontology()
-            if self._ontology is not term._ontology():
-                raise ValueError("terms do not originate from the same ontology")
-            self._ids.add(term.id)
-
-    def __contains__(self, other: object):
-        if isinstance(other, Term):
-            return other.id in self._ids
-        return False
-
-    def __iter__(self) -> Iterator[Term]:
-        return map(lambda t: self._ontology.get_term(t), iter(self._ids))
-
-    def __len__(self):
-        return len(self._ids)
-
-    def __repr__(self):
-        ontology = self._ontology
-        elements = (ontology[id_].__repr__() for id_ in self._ids)
-        return f"{type(self).__name__}({{{', '.join(elements)}}})"
-
-    def __iand__(self, other: AbstractSet[Term]) -> "TermSet":
-        if isinstance(other, TermSet):
-            self._ids &= other._ids
-        else:
-            super().__iand__(other)
-        if not self._ids:
-            self._ontology = None
-        return self
-
-    def __and__(self, other: AbstractSet[Term]) -> "TermSet":
-        if isinstance(other, TermSet):
-            s = TermSet()
-            s._ids = self._ids.__and__(other._ids)
-            s._ontology = self._ontology if s._ids else None
-        else:
-            s = TermSet(super().__and__(other))
-        return s
-
-    def __ior__(self, other: AbstractSet[Term]) -> "TermSet":
-        if not isinstance(other, TermSet):
-            other = TermSet(other)
-        self._ids |= other._ids
-        self._ontology = self._ontology or other._ontology
-        return self
-
-    def __or__(self, other: AbstractSet[Term]) -> "TermSet":
-        if isinstance(other, TermSet):
-            s = TermSet()
-            s._ids = self._ids.__or__(other._ids)
-            s._ontology = self._ontology or other._ontology
-        else:
-            s = TermSet(super().__or__(other))
-        return s
-
-    def __isub__(self, other: AbstractSet[Term]) -> "TermSet":
-        if isinstance(other, TermSet):
-            self._ids -= other._ids
-        else:
-            super().__isub__(other)
-        if not self._ids:
-            self._ontology = None
-        return self
-
-    def __sub__(self, other: AbstractSet[Term]) -> "TermSet":
-        if isinstance(other, TermSet):
-            s = TermSet()
-            s._ids = self._ids.__sub__(other._ids)
-            s._ontology = self._ontology
-        else:
-            s = TermSet(super().__sub__(other))
-        return s
-
-    def __ixor__(self, other: AbstractSet[Term]) -> "TermSet":
-        if isinstance(other, TermSet):
-            self._ids ^= other._ids
-            self._ontology = self._ontology or other._ontology
-        else:
-            super().__ixor__(other)
-        if not self._ids:
-            self._ontology = None
-        return self
-
-    def __xor__(self, other: AbstractSet[Term]) -> "TermSet":
-        if isinstance(other, TermSet):
-            s = TermSet()
-            s._ids = self._ids.__xor__(other._ids)
-            s._ontology = self._ontology or other._ontology
-        else:
-            s = TermSet(super().__xor__(other))
-        if not s._ids:
-            s._ontology = None
-        return s
-
-    @typechecked()
-    def add(self, term: Term) -> None:
-        if self._ontology is None:
-            self._ontology = term._ontology()
-        elif self._ontology is not term._ontology():
-            raise ValueError("cannot use `Term` instances from different `Ontology`")
-        self._ids.add(term.id)
-
-    def clear(self) -> None:
-        self._ids.clear()
-        self._ontology = None
-
-    @typechecked()
-    def discard(self, term: Term) -> None:
-        self._ids.discard(term.id)
-
-    def pop(self) -> Term:
-        id_ = self._ids.pop()
-        term = self._ontology.get_term(id_)  # type: ignore
-        if not self._ids:
-            self._ontology = None
-        return term
-
-    @typechecked()
-    def remove(self, term: Term):
-        if self._ontology is not None and self._ontology is not term._ontology():
-            raise ValueError("cannot use `Term` instances from different `Ontology`")
-        self._ids.remove(term.id)
-
-    # --- Attributes ---------------------------------------------------------
-
-    @property
-    def ids(self) -> FrozenSet[str]:
-        return frozenset(map(operator.attrgetter("id"), iter(self)))
-
-    @property
-    def alternate_ids(self) -> FrozenSet[str]:
-        return frozenset(id for term in self for id in term.alternate_ids)
-
-    @property
-    def names(self) -> FrozenSet[str]:
-        return frozenset(map(operator.attrgetter("name"), iter(self)))
+    # --- Methods ------------------------------------------------------------
 
     def subclasses(
         self, distance: Optional[int] = None, with_self: bool = True
     ) -> SubclassesIterator:
         """Get an iterator over the subclasses of all terms in the set.
+
+        Caution:
+            Contrary to `Term.subclasses`, this method **does not** return a
+            handler that lets you edit the subclasses directly. Adding a new
+            subclass to all the members of the set must be done explicitly.
+
         """
         return SubclassesIterator(*self, distance=distance, with_self=with_self)
 

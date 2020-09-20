@@ -4,7 +4,7 @@ from typing import Dict, FrozenSet, Mapping, Optional, Set, Tuple
 
 import immutabledict
 
-from .entity import Entity, EntityData
+from .entity import Entity, EntityData, EntitySet
 from .definition import Definition
 from .synonym import SynonymData
 from .xref import Xref
@@ -18,7 +18,7 @@ if typing.TYPE_CHECKING:
     from .term import Term
 
 
-__all__ = ["Relationship", "RelationshipData"]
+__all__ = ["Relationship", "RelationshipData", "RelationshipSet"]
 
 
 class RelationshipData(EntityData):
@@ -423,6 +423,38 @@ class Relationship(Entity[RelationshipData]):
     def union_of(self) -> FrozenSet["Relationship"]:
         data, ont = self._data(), self._ontology()
         return frozenset(ont.get_relationship(r) for r in data.union_of)
+
+
+class RelationshipSet(EntitySet[Relationship]):
+    """A specialized mutable set to store `Relationship` instances.
+    """
+
+    # --- Methods ---------------------------------------------------------
+
+    def subproperties(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> SubpropertiesIterator:
+        """Get an iterator over the subproperties of all relationships in the set.
+        """
+        return SubpropertiesIterator(*self, distance=distance, with_self=with_self)
+
+    def superproperties(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> SuperpropertiesIterator:
+        """Get an iterator over the superproperties of all relationships in the set.
+
+        Example:
+            >>> pato = pronto.Ontology("pato.obo")
+            >>> proportionality_to = pato["PATO:0001470"]
+            >>> quality_mapping = pronto.RelationshipSet(
+            ...     r for r in pato.relationships()
+            ...     if r.domain == proportionality_to
+            ... )
+            >>> sorted(quality_mapping.subproperties().to_set().ids)
+            ['has_dividend_entity', 'has_dividend_quality', ...
+
+        """
+        return SuperpropertiesIterator(*self, distance=distance, with_self=with_self)
 
 
 _BUILTINS = {

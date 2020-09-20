@@ -117,7 +117,7 @@ class TermHandler(LineageHandler["Term"]):
         return self.entity._ontology()._terms
 
     def to_set(self) -> "TermSet":
-        return iter(self).to_set()
+        return self.__iter__().to_set()
 
 
 class RelationshipHandler(LineageHandler["Relationship"]):
@@ -130,7 +130,7 @@ class RelationshipHandler(LineageHandler["Relationship"]):
         return self.entity._ontology()._relationships
 
     def to_set(self) -> "RelationshipSet":
-        return iter(self).to_set()
+        return self.__iter__().to_set()
 
 
 class SuperentitiesHandler(LineageHandler):
@@ -193,7 +193,7 @@ class SuperclassesHandler(SuperentitiesHandler, TermHandler):
 
 class SuperpropertiesHandler(SuperentitiesHandler, RelationshipHandler):
 
-    def __iter__(self) -> "SuperclassesIterator":
+    def __iter__(self) -> "SuperpropertiesIterator":
         return SuperpropertiesIterator(self.entity, distance=self.distance, with_self=self.with_self)
 
 

@@ -15,6 +15,7 @@ if typing.TYPE_CHECKING:
 _SCOPES = frozenset({"EXACT", "RELATED", "BROAD", "NARROW", None})
 __all__ = ["SynonymType", "SynonymData", "Synonym"]
 
+
 @roundrepr
 @functools.total_ordering
 class SynonymType(object):

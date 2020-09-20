@@ -472,7 +472,7 @@ class EntitySet(typing.Generic[_E], MutableSet[_E]):
             self._ontology = entity._ontology()
         elif self._ontology is not entity._ontology():
             raise ValueError("cannot use `Entity` instances from different `Ontology`")
-        self._ids.add(term.id)
+        self._ids.add(entity.id)
 
     def clear(self) -> None:
         self._ids.clear()
@@ -483,14 +483,14 @@ class EntitySet(typing.Generic[_E], MutableSet[_E]):
 
     def pop(self) -> _E:
         id_ = self._ids.pop()
-        term = self._ontology[id_]  # type: ignore
+        entity = self._ontology[id_]  # type: ignore
         if not self._ids:
             self._ontology = None
-        return term
+        return entity
 
     def remove(self, entity: _E):
         if self._ontology is not None and self._ontology is not entity._ontology():
-            raise ValueError("cannot use `Term` instances from different `Ontology`")
+            raise ValueError("cannot use `Entity` instances from different `Ontology`")
         self._ids.remove(entity.id)
 
     # --- Attributes ---------------------------------------------------------
@@ -501,7 +501,7 @@ class EntitySet(typing.Generic[_E], MutableSet[_E]):
 
     @property
     def alternate_ids(self) -> FrozenSet[str]:
-        return frozenset(id for term in self for id in term.alternate_ids)
+        return frozenset(id for entity in self for id in entity.alternate_ids)
 
     @property
     def names(self) -> FrozenSet[str]:

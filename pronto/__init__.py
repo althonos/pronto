@@ -16,7 +16,7 @@ Note:
     properties exposed in the public classes. This reproduces the behaviour
     of the Python standard library, to avoid common errors. This feature does
     however increase overhead, but can be disabled by executing Python in
-    optimized mode (with the ``-O`` flag). *Parsing performances are not 
+    optimized mode (with the ``-O`` flag). *Parsing performances are not
     affected.*
 
 """
@@ -29,6 +29,14 @@ __version__ = (
     .decode("utf-8")
     .strip()
 )
+
+# Update the docstring with a link to the right version of the documentation
+# instead of the latest.
+if __doc__ is not None:
+    __doc__ += f"""See Also:
+    Online documentation for this version of the library on
+    `Read The Docs <https://pronto.readthedocs.io/en/v{__version__}/>`_
+    """
 
 from .utils import warnings
 from .entity import Entity

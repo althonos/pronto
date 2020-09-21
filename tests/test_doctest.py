@@ -43,11 +43,15 @@ def load_tests(loader, tests, ignore):
 
         Ontology = pronto.Ontology
         _from_obo_library = Ontology.from_obo_library
+        _cache = {}
 
         def from_obo_library(name):
-            if os.path.exists(os.path.join(utils.DATADIR, name)):
-                return Ontology(os.path.join(utils.DATADIR, name))
-            return _from_obo_library(name)
+            if name not in _cache:
+                if os.path.exists(os.path.join(utils.DATADIR, name)):
+                    _cache[name] = Ontology(os.path.join(utils.DATADIR, name), threads=1)
+                else:
+                    _cache[name] = _from_obo_library(name)
+            return _cache[name]
 
         self.m = mock.patch("pronto.Ontology.from_obo_library", from_obo_library)
         self.m.__enter__()

@@ -43,6 +43,23 @@ obtained from methods of existing `Ontology` or `Entity` instances, such as
    pronto.TermSet
 
 
+View Collections
+----------------
+
+The following classes are dedicated collections that are implemented to view
+a specific field of entities, such as relationships. These types cannot be
+instantiated directly, but are reachable through the right property on `Entity`
+instances.
+
+.. autosummary::
+    :nosignatures:
+    :template: summary.rst
+    :toctree: api/
+
+    pronto.entity.AlternateIDs
+    pronto.entity.Relationships
+
+
 Model Layer
 -----------
 

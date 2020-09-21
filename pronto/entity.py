@@ -681,6 +681,8 @@ class AlternateIDs(typing.MutableSet[str], typing.Generic[_E]):
 
 
 class Relationships(typing.MutableMapping["Relationship", _S], typing.Generic[_E, _S]):
+    """A dedicated mutable mapping to manage the relationships of an entity.
+    """
 
     def __init__(self, entity: _E):
         self._inner = entity._data().relationships

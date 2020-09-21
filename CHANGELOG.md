@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - `pronto.entity` package not being included in source distribution.
 
-## [2.3.0] - 2020-09-21
+## [2.3.0] - 2020-09-21 - **YANKED**
 [2.3.0]: https://github.com/althonos/pronto/compare/v2.2.4...v2.3.0
 ### Added
 - Retrieval of entities via their alternate IDs on the source `Ontology`.

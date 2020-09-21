@@ -2,7 +2,7 @@ import abc
 import collections
 import typing
 import warnings
-from typing import AbstractSet, Deque, Dict, Iterator, Iterable, Optional, Set, Tuple
+from typing import cast, AbstractSet, Deque, Dict, Optional, Set, Tuple
 
 from ..utils.meta import roundrepr
 
@@ -43,19 +43,19 @@ class Lineage(object):
 
     # `Lineage` is mutable so this is the explicit way to tell it's unhashable
     # (see https://docs.python.org/3/reference/datamodel.html#object.__hash__)
-    __hash__ = None
+    __hash__ = None  # type: ignore
 
 
 # --- Abstract handlers ------------------------------------------------------
 
-class LineageHandler(typing.Generic[_E], Iterable[_E]):
+class LineageHandler(typing.Generic[_E], typing.Iterable[_E]):
 
     def __init__(self, entity: _E, distance: Optional[int] = None, with_self: bool = False):
         self.entity = entity
         self.distance = distance
         self.with_self = with_self
         # TODO: API compatibilty with previous iterator (remove for v3.0.0)
-        self._it = None
+        self._it: typing.Optional[typing.Iterator[_E]] = None
 
     def __next__(self) -> _E:
         if self._it is None:
@@ -68,7 +68,7 @@ class LineageHandler(typing.Generic[_E], Iterable[_E]):
                 stacklevel=2,
             )
             self._it = iter(self)
-        return next(self._it)
+        return next(cast(typing.Iterator[_E], self._it))
 
     def _add(self, subclass: _E, superclass: _E):
         if superclass._ontology() is not subclass._ontology():
@@ -199,7 +199,7 @@ class SuperpropertiesHandler(SuperentitiesHandler, RelationshipHandler):
 
 # --- Abstract iterators -----------------------------------------------------
 
-class LineageIterator(typing.Generic[_E], Iterator[_E]):
+class LineageIterator(typing.Generic[_E], typing.Iterator[_E]):
 
     _distmax: float
     _ontology: "Ontology"

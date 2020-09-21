@@ -7,7 +7,7 @@ import typing
 import urllib.request
 import warnings
 from http.client import HTTPResponse
-from typing import ByteString, BinaryIO, Dict, Union, Optional
+from typing import cast, ByteString, BinaryIO, Dict, Union, Optional
 
 import chardet
 
@@ -123,8 +123,8 @@ def decompress(
 
     # Attempt to detect the encoding and decode the stream
     det: Dict[str, Union[str, float]] = chardet.detect(decompressed.peek())
-    confidence: float = 1.0 if encoding is not None else det["confidence"]
-    encoding = encoding if encoding is not None else det["encoding"]
+    confidence = 1.0 if encoding is not None else cast(float, det["confidence"])
+    encoding = encoding if encoding is not None else cast(str, det["encoding"])
 
     if encoding == "ascii":
         encoding = "UTF-8"

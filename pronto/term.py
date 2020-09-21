@@ -20,7 +20,6 @@ from typing import (
 )
 
 import immutabledict
-import networkx
 
 from . import relationship
 from .entity import Entity, EntityData, EntitySet
@@ -195,6 +194,9 @@ class Term(Entity["TermData", "TermSet"]):
             iterator with.
 
         """
+        # delegate import of NetworkX
+        import networkx
+
         if r._data() is relationship._BUILTINS["is_a"]:
             warnings.warn(
                 "using the `is_a` relationship with `Term.objects` will not be "
@@ -242,6 +244,9 @@ class Term(Entity["TermData", "TermSet"]):
                         red.add(other)
                         yield ont.get_term(other)
             done.add(node)
+
+        # Finish the traversal
+        raise StopIteration
 
     def superclasses(
         self, distance: Optional[int] = None, with_self: bool = True,

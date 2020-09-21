@@ -68,7 +68,6 @@ class BaseParser(abc.ABC):
         with multiprocessing.pool.ThreadPool(threads) as pool:
             return dict(pool.map(lambda i: (i, process(i)), imports))
 
-
     _entities = {
         "Term": operator.attrgetter("terms", "_terms"),
         "Relationship": operator.attrgetter("relationships", "_relationships"),

@@ -7,7 +7,7 @@ import weakref
 from typing import BinaryIO, Dict, Mapping, MutableMapping, NamedTuple, Optional, Set, Union
 
 from . import relationship
-from .entity import EntityData
+from .entity import Entity, EntityData
 from .term import Term, TermData
 from .relationship import Relationship, RelationshipData
 from .logic.lineage import Lineage
@@ -206,7 +206,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             buffer = _handle.peek(io.DEFAULT_BUFFER_SIZE)
             for cls in BaseParser.__subclasses__():
                 if cls.can_parse(typing.cast(str, self.path), buffer):
-                    cls(self).parse_from(_handle)
+                    cls(self).parse_from(_handle)  # type: ignore
                     break
             else:
                 raise ValueError(f"could not find a parser to parse {handle!r}")
@@ -244,8 +244,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """Yield the identifiers of all the entities part of the ontology.
         """
         terms, relationships = self.terms(), self.relationships()
+        entities: typing.Iterable[Entity] = itertools.chain(terms, relationships)
         return SizedIterator(
-            (entity.id for entity in itertools.chain(terms, relationships)),
+            (entity.id for entity in entities),
             length=len(terms) + len(relationships),
         )
 
@@ -315,7 +316,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
         for cls in BaseSerializer.__subclasses__():
             if cls.format == format:
-                cls(self).dump(file)
+                cls(self).dump(file)  # type: ignore
                 break
         else:
             raise ValueError(f"could not find a serializer to handle {format!r}")
@@ -341,7 +342,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """Iterate over the synonym types of the ontology graph.
         """
         sources = [ i.synonym_types() for i in self.imports.values() ]
-        sources.append(self.metadata.synonymtypedefs)
+        sources.append(self.metadata.synonymtypedefs)  # type: ignore
         length = sum(map(len, sources))
         return SizedIterator(itertools.chain.from_iterable(sources), length)
 

@@ -55,16 +55,11 @@ class TermData(EntityData):  # noqa: R0902, R0903
     namespace: Optional[str]
     xrefs: Set[Xref]
     intersection_of: Set[Union[str, Tuple[str, str]]]
-    union_of: Set[str]
-    disjoint_from: Set[str]
     relationships: Dict[str, Set[str]]
     obsolete: bool
-    replaced_by: Set[str]
-    consider: Set[str]
     builtin: bool
     created_by: Optional[str]
     creation_date: Optional[datetime.datetime]
-    equivalent_to: Set[str]
     annotations: Set[PropertyValue]
 
     if typing.TYPE_CHECKING:
@@ -121,7 +116,43 @@ class TermData(EntityData):  # noqa: R0902, R0903
         self.annotations = annotations or set()
 
 
-class Term(Entity[TermData]):
+class TermSet(EntitySet["Term"]):
+    """A specialized mutable set to store `Term` instances.
+    """
+
+    # --- Methods ------------------------------------------------------------
+
+    def subclasses(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> SubclassesIterator:
+        """Get an iterator over the subclasses of all terms in the set.
+
+        Caution:
+            Contrary to `Term.subclasses`, this method **does not** return a
+            handler that lets you edit the subclasses directly. Adding a new
+            subclass to all the members of the set must be done explicitly.
+
+        """
+        return SubclassesIterator(*self, distance=distance, with_self=with_self)
+
+    def superclasses(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> SuperclassesIterator:
+        """Get an iterator over the superclasses of all terms in the set.
+
+        Example:
+            >>> ms = pronto.Ontology("ms.obo")
+            >>> s = pronto.TermSet({ms['MS:1000122'], ms['MS:1000124']})
+            >>> s.superclasses(with_self=False).to_set().ids
+            frozenset({'MS:1000031'})
+            >>> ms["MS:1000031"]
+            Term('MS:1000031', name='instrument model')
+
+        """
+        return SuperclassesIterator(*self, distance=distance, with_self=with_self)
+
+
+class Term(Entity["TermData", "TermSet"]):
     """A term, corresponding to a node in the ontology graph.
 
     Formally a `Term` frame is equivalent to an ``owl:Class`` declaration in
@@ -140,6 +171,8 @@ class Term(Entity[TermData]):
 
         def _data(self) -> "TermData":
             return typing.cast("TermData", super()._data())
+
+    _Set = TermSet
 
     # --- Methods ------------------------------------------------------------
 
@@ -325,35 +358,6 @@ class Term(Entity[TermData]):
     # --- Attributes ---------------------------------------------------------
 
     @property
-    def disjoint_from(self) -> "TermSet":
-        """`TermSet`: The terms declared as disjoint from this term.
-
-        Two terms are disjoint if they have no instances or subclasses in
-        common.
-        """
-        s = TermSet()
-        s._ids = self._data().disjoint_from
-        s._ontology = self._ontology()
-        return s
-
-    @disjoint_from.setter
-    def disjoint_from(self, terms: Iterable["Term"]):
-        self._data().disjoint_from = set(term.id for term in terms)
-
-    @property
-    def equivalent_to(self) -> "TermSet":
-        """`TermSet`: The terms declared as equivalent to this term.
-        """
-        s = TermSet()
-        s._ids = self._data().equivalent_to
-        s._ontology = self._ontology()
-        return s
-
-    @equivalent_to.setter
-    def equivalent_to(self, terms:  Iterable["Term"]):
-        self._data().equivalent_to = set(term.id for term in terms)
-
-    @property
     def intersection_of(self) -> FrozenSet[Union["Term", Tuple[Relationship, "Term"]]]:
         """`frozenset`: The terms this term is an intersection of.
         """
@@ -400,91 +404,3 @@ class Term(Entity[TermData]):
         self._data().relationships = relationships = {
             relation.id: set(t.id for t in terms) for relation, terms in r.items()
         }
-
-    @property
-    def replaced_by(self) -> "TermSet":
-        s = TermSet()
-        s._ids = self._data().replaced_by
-        s._ontology = self._ontology()
-        return s
-
-    @replaced_by.setter
-    def replaced_by(self, replaced_by: Iterable["Term"]) -> None:
-        if isinstance(replaced_by, TermSet):
-            data = replaced_by._ids
-        else:
-            data = set(term.id for term in replaced_by)
-        self._data().replaced_by = data
-
-    @property
-    def union_of(self) -> "TermSet":
-        s = TermSet()
-        s._ids = self._data().union_of
-        s._ontology = self._ontology()
-        return s
-
-    @union_of.setter
-    def union_of(self, union_of: Iterable["Term"]) -> None:
-        if isinstance(union_of, TermSet):
-            data = union_of._ids
-        else:
-            data = set()
-            for term in union_of:
-                if isinstance(term, Term):
-                    data.add(term.id)
-                else:
-                    raise TypeError(f"expected Term, found {type(term).__name__}")
-        if len(data) == 1:
-            raise ValueError("'union_of' cannot have a cardinality of 1")
-        self._data().union_of = data
-
-    @property
-    def consider(self) -> "TermSet":
-        s = TermSet()
-        s._ids = self._data().consider
-        s._ontology = self._ontology()
-        return s
-
-    @consider.setter
-    def consider(self, consider: Iterable["Term"]) -> None:
-        if isinstance(consider, TermSet):
-            data = consider._ids
-        else:
-            data = set(term.id for term in consider)
-        self._data().consider = data
-
-
-class TermSet(EntitySet[Term]):
-    """A specialized mutable set to store `Term` instances.
-    """
-
-    # --- Methods ------------------------------------------------------------
-
-    def subclasses(
-        self, distance: Optional[int] = None, with_self: bool = True
-    ) -> SubclassesIterator:
-        """Get an iterator over the subclasses of all terms in the set.
-
-        Caution:
-            Contrary to `Term.subclasses`, this method **does not** return a
-            handler that lets you edit the subclasses directly. Adding a new
-            subclass to all the members of the set must be done explicitly.
-
-        """
-        return SubclassesIterator(*self, distance=distance, with_self=with_self)
-
-    def superclasses(
-        self, distance: Optional[int] = None, with_self: bool = True
-    ) -> SuperclassesIterator:
-        """Get an iterator over the superclasses of all terms in the set.
-
-        Example:
-            >>> ms = pronto.Ontology("ms.obo")
-            >>> s = pronto.TermSet({ms['MS:1000122'], ms['MS:1000124']})
-            >>> s.superclasses(with_self=False).to_set().ids
-            frozenset({'MS:1000031'})
-            >>> ms["MS:1000031"]
-            Term('MS:1000031', name='instrument model')
-
-        """
-        return SuperclassesIterator(*self, distance=distance, with_self=with_self)

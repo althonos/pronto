@@ -1,8 +1,9 @@
+import abc
 import datetime
 import operator
 import typing
 import weakref
-from typing import Any, AbstractSet, Dict, Iterable, Iterator, MutableSet, Optional, Set, FrozenSet
+from typing import Any, AbstractSet, Dict, Iterable, Iterator, Optional, Set, FrozenSet
 
 from .definition import Definition
 from .synonym import Synonym, SynonymData, SynonymType
@@ -17,6 +18,7 @@ if typing.TYPE_CHECKING:
 __all__ = ["EntityData", "Entity"]
 _D = typing.TypeVar("_D", bound="EntityData")
 _E = typing.TypeVar("_E", bound="Entity")
+_S = typing.TypeVar("_S", bound="EntitySet")
 
 
 class EntityData:
@@ -27,15 +29,19 @@ class EntityData:
     anonymous: bool
     builtin: bool
     comment: Optional[str]
+    consider: Set[str]
     created_by: Optional[str]
     creation_date: Optional[datetime.datetime]
+    disjoint_from: Set[str]
     definition: Optional[Definition]
     equivalent_to: Set[str]
     name: Optional[str]
     namespace: Optional[str]
     obsolete: bool
+    replaced_by: Set[str]
     subsets: Set[str]
     synonyms: Set[SynonymData]
+    union_of: Set[str]
     xrefs: Set[Xref]
 
     if typing.TYPE_CHECKING:
@@ -44,7 +50,7 @@ class EntityData:
     __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
 
 
-class Entity(typing.Generic[_D]):
+class Entity(typing.Generic[_D, _S]):
     """An entity in the ontology graph.
 
     With respects to the OBO semantics, an `Entity` is either a term or a
@@ -76,6 +82,8 @@ class Entity(typing.Generic[_D]):
             self._data = weakref.ref(data)  # type: ignore
             self.__ontology = ontology
             self.__id = data.id
+
+    _Set: typing.ClassVar[typing.Type[_S]] = NotImplemented
 
     # --- Private helpers ----------------------------------------------------
 
@@ -182,6 +190,21 @@ class Entity(typing.Generic[_D]):
         self._data().comment = value
 
     @property
+    def consider(self) -> _S:
+        s = self._Set()
+        s._ids = self._data().consider
+        s._ontology = self._ontology()
+        return s
+
+    @consider.setter
+    def consider(self, consider: Iterable[_E]) -> None:
+        if isinstance(consider, EntitySet):
+            data = consider._ids
+        else:
+            data = {entity.id for entity in consider}
+        self._data().consider = data
+
+    @property
     def created_by(self) -> Optional[str]:
         """`str` or `None`: the name of the creator of the entity, if any.
 
@@ -223,6 +246,44 @@ class Entity(typing.Generic[_D]):
     @typechecked(property=True)
     def definition(self, definition: Optional[Definition]):
         self._data().definition = definition
+
+    @property
+    def disjoint_from(self) -> _S:
+        """`EntitySet`: The entities declared as disjoint from this entity.
+
+        Two entities are disjoint if they have no instances in common. Two
+        entities that are disjoint cannot share any subentities, but the
+        opposite is not always true.
+        """
+        s = self._Set()
+        s._ids = self._data().disjoint_from
+        s._ontology = self._ontology()
+        return s
+
+    @disjoint_from.setter
+    def disjoint_from(self, disjoint: Iterable[_E]):
+        if isinstance(disjoint, EntitySet):
+            data = disjoint._ids
+        else:
+            data = {entity.id for entity in disjoint}
+        self._data().disjoint_from = data
+
+    @property
+    def equivalent_to(self) -> _S:
+        """`EntitySet`: The entities declared as equivalent to this entity.
+        """
+        s = self._Set()
+        s._ids = self._data().equivalent_to
+        s._ontology = self._ontology()
+        return s
+
+    @equivalent_to.setter
+    def equivalent_to(self, entities: Iterable[_E]):
+        if isinstance(entities, EntitySet):
+            data = entities._ids
+        else:
+            data = {entity.id for entity in entities}
+        self._data().equivalent_to = data
 
     @property
     def id(self) -> str:
@@ -272,6 +333,21 @@ class Entity(typing.Generic[_D]):
         self._data().obsolete = value
 
     @property
+    def replaced_by(self) -> _S:
+        s = self._Set()
+        s._ids = self._data().replaced_by
+        s._ontology = self._ontology()
+        return s
+
+    @replaced_by.setter
+    def replaced_by(self, replacements: Iterable[_E]) -> None:
+        if isinstance(replacements, EntitySet):
+            data = replacements._ids
+        else:
+            data = set(entity.id for entity in replacements)
+        self._data().replaced_by = data
+
+    @property
     def subsets(self) -> FrozenSet[str]:
         """`frozenset` of `str`: the subsets containing this entity.
         """
@@ -297,6 +373,28 @@ class Entity(typing.Generic[_D]):
     @typechecked(property=True)
     def synonyms(self, synonyms: Iterable[Synonym]):
         self._data().synonyms = {syn._data() for syn in synonyms}
+
+    @property
+    def union_of(self) -> _S:
+        s = self._Set()
+        s._ids = self._data().union_of
+        s._ontology = self._ontology()
+        return s
+
+    @union_of.setter
+    def union_of(self, union_of: Iterable[_E]) -> None:
+        if isinstance(union_of, EntitySet):
+            data = union_of._ids
+        else:
+            data = set()
+            for entity in union_of:
+                if not isinstance(entity, Entity):
+                    ty = type(entity).__name__
+                    raise TypeError(f"expected `Entity`, found {ty}")
+                data.add(entity.id)
+        if len(data) == 1:
+            raise ValueError("'union_of' cannot have a cardinality of 1")
+        self._data().union_of = data
 
     @property
     def xrefs(self) -> FrozenSet[Xref]:
@@ -348,7 +446,7 @@ class Entity(typing.Generic[_D]):
         return synonym
 
 
-class EntitySet(typing.Generic[_E], MutableSet[_E]):
+class EntitySet(typing.Generic[_E], typing.MutableSet[_E]):
     """A specialized mutable set to store `Entity` instances.
     """
 
@@ -478,7 +576,7 @@ class EntitySet(typing.Generic[_E], MutableSet[_E]):
         entity = self._ontology[id_]  # type: ignore
         if not self._ids:
             self._ontology = None
-        return entity
+        return entity  # type: ignore
 
     def remove(self, entity: _E):
         if self._ontology is not None and self._ontology is not entity._ontology():

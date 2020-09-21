@@ -49,9 +49,6 @@ class RelationshipData(EntityData):
     functional: bool
     inverse_functional: bool
     intersection_of: Set[str]
-    union_of: Set[str]
-    equivalent_to: Set[str]
-    disjoint_from: Set[str]
     inverse_of: Optional[str]
     transitive_over: Set[str]
     equivalent_to_chain: Set[Tuple[str, str]]
@@ -60,8 +57,6 @@ class RelationshipData(EntityData):
     obsolete: bool
     created_by: Optional[str]
     creation_date: Optional[datetime.datetime]
-    replaced_by: Set[str]
-    consider: Set[str]
     expand_assertion_to: Set[Definition]
     expand_expression_to: Set[Definition]
     metadata_tag: bool
@@ -159,7 +154,39 @@ class RelationshipData(EntityData):
         self.class_level = class_level
 
 
-class Relationship(Entity[RelationshipData]):
+class RelationshipSet(EntitySet["Relationship"]):
+    """A specialized mutable set to store `Relationship` instances.
+    """
+
+    # --- Methods ---------------------------------------------------------
+
+    def subproperties(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> SubpropertiesIterator:
+        """Get an iterator over the subproperties of all relationships in the set.
+        """
+        return SubpropertiesIterator(*self, distance=distance, with_self=with_self)
+
+    def superproperties(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> SuperpropertiesIterator:
+        """Get an iterator over the superproperties of all relationships in the set.
+
+        Example:
+            >>> pato = pronto.Ontology("pato.obo")
+            >>> proportionality_to = pato["PATO:0001470"]
+            >>> quality_mapping = pronto.RelationshipSet(
+            ...     r for r in pato.relationships()
+            ...     if r.domain == proportionality_to
+            ... )
+            >>> sorted(quality_mapping.subproperties().to_set().ids)
+            ['has_dividend_entity', 'has_dividend_quality', ...
+
+        """
+        return SuperpropertiesIterator(*self, distance=distance, with_self=with_self)
+
+
+class Relationship(Entity["RelationshipData", "RelationshipSet"]):
     """A relationship, constitute the edges of the ontology graph.
 
     Also sometimes referede as typedefs, relationship types, properties or
@@ -174,6 +201,10 @@ class Relationship(Entity[RelationshipData]):
 
         def _data(self) -> "RelationshipData":
             return typing.cast("RelationshipData", super()._data())
+
+    @classmethod
+    def _set_factory(cls):
+        return RelationshipSet()
 
     # --- Methods ------------------------------------------------------------
 
@@ -252,22 +283,8 @@ class Relationship(Entity[RelationshipData]):
         self._data().class_level = value
 
     @property
-    def consider(self) -> "RelationshipSet":
-        s = RelationshipSet()
-        s._ids = self._data().consider
-        s._ontology = self._ontology()
-        return s
-
-    @property
     def cyclic(self) -> bool:
         return self._data().cyclic
-
-    @property
-    def disjoint_from(self) -> "RelationshipSet":
-        s = RelationshipSet()
-        s._ids = self._data().disjoint_from
-        s._ontology = self._ontology()
-        return s
 
     @property
     def disjoint_over(self) -> "RelationshipSet":
@@ -284,7 +301,6 @@ class Relationship(Entity[RelationshipData]):
         return None
 
     @domain.setter
-    # @typechecked(property=True)
     def domain(self, value: Optional["Term"]) -> None:
         rshipdata, ontology = self._data(), self._ontology()
         if value is not None:
@@ -293,19 +309,6 @@ class Relationship(Entity[RelationshipData]):
             except KeyError:
                 raise ValueError(f"{value} is not a term in {ontology}")
         rshipdata.domain = value.id if value is not None else None
-
-    @property
-    def equivalent_to(self) -> "RelationshipSet":
-        """`RelationshipSet`: The relationships equivalent to this one.
-        """
-        s = RelationshipSet()
-        s._ids = self._data().equivalent_to
-        s._ontology = self._ontology()
-        return s
-
-    @equivalent_to.setter
-    def equivalent_to(self, terms: Iterable["Relationship"]):
-        self._data().equivalent_to = set(term.id for term in terms)
 
     @property
     def equivalent_to_chain(self) -> FrozenSet[Tuple["Relationship", "Relationship"]]:
@@ -413,13 +416,6 @@ class Relationship(Entity[RelationshipData]):
         self._data().reflexive = value
 
     @property
-    def replaced_by(self) -> "RelationshipSet":
-        s = RelationshipSet()
-        s._ids = self._data().replaced_by
-        s._ontology = self._ontology()
-        return s
-
-    @property
     def symmetric(self) -> bool:
         return self._data().symmetric
 
@@ -444,44 +440,6 @@ class Relationship(Entity[RelationshipData]):
         s._ontology = self._ontology()
         return s
 
-    @property
-    def union_of(self) -> "RelationshipSet":
-        s = RelationshipSet()
-        s._ids = self._data().union_of
-        s._ontology = self._ontology()
-        return s
-
-
-class RelationshipSet(EntitySet[Relationship]):
-    """A specialized mutable set to store `Relationship` instances.
-    """
-
-    # --- Methods ---------------------------------------------------------
-
-    def subproperties(
-        self, distance: Optional[int] = None, with_self: bool = True
-    ) -> SubpropertiesIterator:
-        """Get an iterator over the subproperties of all relationships in the set.
-        """
-        return SubpropertiesIterator(*self, distance=distance, with_self=with_self)
-
-    def superproperties(
-        self, distance: Optional[int] = None, with_self: bool = True
-    ) -> SuperpropertiesIterator:
-        """Get an iterator over the superproperties of all relationships in the set.
-
-        Example:
-            >>> pato = pronto.Ontology("pato.obo")
-            >>> proportionality_to = pato["PATO:0001470"]
-            >>> quality_mapping = pronto.RelationshipSet(
-            ...     r for r in pato.relationships()
-            ...     if r.domain == proportionality_to
-            ... )
-            >>> sorted(quality_mapping.subproperties().to_set().ids)
-            ['has_dividend_entity', 'has_dividend_quality', ...
-
-        """
-        return SuperpropertiesIterator(*self, distance=distance, with_self=with_self)
 
 
 _BUILTINS = {

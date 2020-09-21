@@ -13,6 +13,7 @@ from .utils.meta import roundrepr, typechecked
 
 if typing.TYPE_CHECKING:
     from .ontology import _DataGraph, Ontology
+    from .relationship import Relationship
 
 
 __all__ = ["EntityData", "Entity"]
@@ -38,6 +39,7 @@ class EntityData:
     name: Optional[str]
     namespace: Optional[str]
     obsolete: bool
+    relationships: Dict[str, Set[str]]
     replaced_by: Set[str]
     subsets: Set[str]
     synonyms: Set[SynonymData]
@@ -334,6 +336,17 @@ class Entity(typing.Generic[_D, _S]):
         self._data().obsolete = value
 
     @property
+    def relationships(self: _E) -> "Relationships[_E, _S]":
+        return Relationships(self)
+
+    @relationships.setter
+    def relationships(self, rels: typing.Mapping["Relationship", Iterable[_E]]):
+        self._data().relationships = {
+            relation.id: set(entity.id for entity in entities)
+            for relation, entities in rels.items()
+        }
+
+    @property
     def replaced_by(self) -> _S:
         s = self._Set()
         s._ids = self._data().replaced_by
@@ -607,6 +620,23 @@ class EntitySet(typing.Generic[_E], typing.MutableSet[_E]):
 
 
 class AlternateIDs(typing.MutableSet[str], typing.Generic[_E]):
+    """A dedicated mutable set to manage the alternate IDs of an entity.
+
+    Editing the alternate IDs of an entity also allows retrieving it in the
+    source ontology using its alternate IDs.
+
+    Example:
+        >>> ont = pronto.Ontology()
+        >>> t1 = ont.create_term("TST:001")
+        >>> ont["ALT:001"]
+        Traceback (most recent call last):
+          File "<stdin>", line 1, in <module>
+        KeyError: 'ALT:001'
+        >>> t1.alternate_ids.add("ALT:001")
+        >>> ont["ALT:001"]
+        Term('TST:001')
+
+    """
 
     def __init__(self, entity: _E):
         self._inner = entity._data().alternate_ids
@@ -648,3 +678,34 @@ class AlternateIDs(typing.MutableSet[str], typing.Generic[_E]):
     def update(self, items: Iterable[str]):
         for item in items:
             self.add(item)
+
+
+class Relationships(typing.MutableMapping["Relationship", _S], typing.Generic[_E, _S]):
+
+    def __init__(self, entity: _E):
+        self._inner = entity._data().relationships
+        self._entity = entity
+        self._ontology = entity._ontology()
+
+    def __getitem__(self, item: "Relationship") -> _S:
+        if item.id not in self._inner:
+            raise KeyError(item)
+        s = self._entity._Set()
+        s._ids = self._inner[item.id]
+        s._ontology = self._ontology
+        return s
+
+    def __delitem__(self, item: "Relationship"):
+        if item.id not in self._inner:
+            raise KeyError(item)
+        del self._inner[item.id]
+
+    def __len__(self) -> int:
+        return len(self._inner)
+
+    def __iter__(self) -> Iterator["Relationship"]:
+        from .relationship import Relationship
+        return (self._ontology.get_relationship(id_) for id_ in self._inner)
+
+    def __setitem__(self, key: "Relationship", entities: Iterable[_E]):
+        self._inner[key.id] = {entity.id for entity in entities}

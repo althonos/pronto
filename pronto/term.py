@@ -19,8 +19,6 @@ from typing import (
     AbstractSet,
 )
 
-import immutabledict
-
 from . import relationship
 from .entity import Entity, EntityData, EntitySet
 from .definition import Definition
@@ -54,7 +52,6 @@ class TermData(EntityData):  # noqa: R0902, R0903
     namespace: Optional[str]
     xrefs: Set[Xref]
     intersection_of: Set[Union[str, Tuple[str, str]]]
-    relationships: Dict[str, Set[str]]
     obsolete: bool
     builtin: bool
     created_by: Optional[str]
@@ -391,21 +388,3 @@ class Term(Entity["TermData", "TermSet"]):
                 msg = "expected iterable of `Term` or `Relationship`, `Term` couple, found: {}"
                 raise TypeError(msg.format(type(item).__name__))
         self._data().intersection_of = data
-
-    @property
-    def relationships(self) -> Mapping[Relationship, FrozenSet["Term"]]:
-        ont, termdata = self._ontology(), self._data()
-        return immutabledict.immutabledict(
-            {
-                Relationship(ont, ont.get_relationship(rel)._data()): frozenset(
-                    Term(ont, ont.get_term(term)._data()) for term in terms
-                )
-                for rel, terms in termdata.relationships.items()
-            }
-        )
-
-    @relationships.setter
-    def relationships(self, r: Mapping[Relationship, Iterable["Term"]]):
-        self._data().relationships = relationships = {
-            relation.id: set(t.id for t in terms) for relation, terms in r.items()
-        }

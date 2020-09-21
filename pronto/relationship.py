@@ -3,8 +3,6 @@ import operator
 import typing
 from typing import Dict, FrozenSet, Iterable, Mapping, Optional, Set, Tuple
 
-import immutabledict
-
 from .entity import Entity, EntityData, EntitySet
 from .definition import Definition
 from .synonym import SynonymData
@@ -54,7 +52,6 @@ class RelationshipData(EntityData):
     transitive_over: Set[str]
     equivalent_to_chain: Set[Tuple[str, str]]
     disjoint_over: Set[str]
-    relationships: Dict[str, Set[str]]
     obsolete: bool
     created_by: Optional[str]
     creation_date: Optional[datetime.datetime]
@@ -355,18 +352,6 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
     @typechecked(property=True)
     def metadata_tag(self, value: bool):
         self._data().metadata_tag = value
-
-    @property
-    def relationships(self) -> Mapping["Relationship", FrozenSet["Relationship"]]:
-        ont, reldata = self._ontology(), self._data()
-        return immutabledict.immutabledict(
-            {
-                ont.get_relationship(rel): frozenset(
-                    ont.get_relationship(rel) for rel in rels
-                )
-                for rel, rels in reldata.relationships.items()
-            }
-        )
 
     @property
     def holds_over_chain(self) -> FrozenSet[Tuple["Relationship", "Relationship"]]:

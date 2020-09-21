@@ -105,4 +105,6 @@ class Relationships(typing.MutableMapping["Relationship", _S], typing.Generic[_E
         return (self._ontology.get_relationship(id_) for id_ in self._inner)
 
     def __setitem__(self, key: "Relationship", entities: Iterable[_E]):
+        if key._ontology() is not self._ontology:
+            raise ValueError("cannot use a relationship from a different ontology")
         self._inner[key.id] = {entity.id for entity in entities}

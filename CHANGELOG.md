@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 [Unreleased]: https://github.com/althonos/pronto/compare/v2.2.4...HEAD
 ### Added
 - Retrieval of entities via their alternate IDs on the source `Ontology`.
+- Direct edition of entity relationships via the `Relationships` view.
 - `__all__` attribute to all modules of the data model.
 - `RelationshipSet` container like `TermSet` with shortcut attributes and
   proxying of actual `Relationship` instances.

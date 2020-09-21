@@ -12,7 +12,7 @@ from .xref import Xref
 from .utils.meta import roundrepr, typechecked
 
 if typing.TYPE_CHECKING:
-    from .ontology import Ontology
+    from .ontology import _DataGraph, Ontology
 
 
 __all__ = ["EntityData", "Entity"]
@@ -84,6 +84,7 @@ class Entity(typing.Generic[_D, _S]):
             self.__id = data.id
 
     _Set: typing.ClassVar[typing.Type[_S]] = NotImplemented
+    _data_getter: typing.Callable[["Ontology"], "_DataGraph"] = NotImplemented
 
     # --- Private helpers ----------------------------------------------------
 
@@ -126,15 +127,15 @@ class Entity(typing.Generic[_D, _S]):
     # --- Data descriptors ---------------------------------------------------
 
     @property
-    def alternate_ids(self) -> FrozenSet[str]:
+    def alternate_ids(self) -> "AlternateIds":
         """`frozenset` of `str`: A set of alternate IDs for this entity.
         """
-        return frozenset(self._data().alternate_ids)
+        return AlternateIDs(self)
 
     @alternate_ids.setter    # type: ignore
-    @typechecked(property=True)
-    def alternate_ids(self, ids: FrozenSet[str]):
-        self._data().alternate_ids = set(ids)
+    def alternate_ids(self, ids: Iterable[str]):
+        self.alternate_ids.clear()
+        self.alternate_ids.update(ids)
 
     @property
     def annotations(self) -> Set[PropertyValue]:
@@ -596,3 +597,47 @@ class EntitySet(typing.Generic[_E], typing.MutableSet[_E]):
     @property
     def names(self) -> FrozenSet[str]:
         return frozenset(map(operator.attrgetter("name"), iter(self)))
+
+
+class AlternateIDs(typing.MutableSet[str], typing.Generic[_E]):
+
+    def __init__(self, entity: _E):
+        self._inner = entity._data().alternate_ids
+        self._entity = entity
+        self._ontology = entity._ontology()
+
+    def __contains__(self, item):
+        return item in self._inner
+
+    def __len__(self):
+        return len(self._inner)
+
+    def __iter__(self):
+        return iter(self._inner)
+
+    @typechecked()
+    def add(self, id: str):
+        if id in self._ontology:
+            entity = self._ontology[id]
+            raise ValueError(f"identifier already in use: {id} ({entity})")
+        self._inner.add(id)
+        self._entity._data_getter(self._ontology).aliases[id] = self._entity._data()
+
+    @typechecked()
+    def discard(self, item: str):
+        self._inner.discard(item)
+        del self._entity._data_getter(self._ontology).aliases[item]
+
+    def clear(self):
+        for id_ in self._inner:
+            del self._entity._data_getter(self._ontology).aliases[id_]
+        self._inner.clear()
+
+    def pop(self):
+        id_ = self.pop()
+        del self._entity._data_getter(self._ontology).aliases[id_]
+        return id_
+
+    def update(self, items: Iterable[str]):
+        for item in items:
+            self.add(item)

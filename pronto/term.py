@@ -172,7 +172,10 @@ class Term(Entity["TermData", "TermSet"]):
         def _data(self) -> "TermData":
             return typing.cast("TermData", super()._data())
 
+    # --- Associated type variables ------------------------------------------
+
     _Set = TermSet
+    _data_getter = operator.attrgetter("_terms")
 
     # --- Methods ------------------------------------------------------------
 

@@ -1,4 +1,5 @@
 import datetime
+import operator
 import typing
 from typing import Dict, FrozenSet, Iterable, Mapping, Optional, Set, Tuple
 
@@ -202,9 +203,10 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
         def _data(self) -> "RelationshipData":
             return typing.cast("RelationshipData", super()._data())
 
-    @classmethod
-    def _set_factory(cls):
-        return RelationshipSet()
+    # --- Associated type variables ------------------------------------------
+
+    _Set = RelationshipSet
+    _data_getter = operator.attrgetter("_relationships")
 
     # --- Methods ------------------------------------------------------------
 

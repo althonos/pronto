@@ -129,7 +129,7 @@ class Entity(typing.Generic[_D, _S]):
     # --- Data descriptors ---------------------------------------------------
 
     @property
-    def alternate_ids(self) -> "AlternateIds":
+    def alternate_ids(self) -> "AlternateIDs":
         """`frozenset` of `str`: A set of alternate IDs for this entity.
         """
         return AlternateIDs(self)
@@ -454,13 +454,13 @@ class Entity(typing.Generic[_D, _S]):
 
         """
         # check the type is declared in the current ontology
-        if type is not None:
+        if type is None:
+            type_id: Optional[str] = None
+        else:
             try:
                 type_id = self._ontology().get_synonym_type(type.id).id
             except KeyError as ke:
                 raise ValueError(f"undeclared synonym type {type.id!r}") from ke
-        else:
-            type_id = None
 
         data = SynonymData(description, scope, type_id, xrefs=xrefs)
         self._data().synonyms.add(data)
@@ -643,13 +643,13 @@ class AlternateIDs(typing.MutableSet[str], typing.Generic[_E]):
         self._entity = entity
         self._ontology = entity._ontology()
 
-    def __contains__(self, item):
+    def __contains__(self, item: object) -> bool:
         return item in self._inner
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._inner)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self._inner)
 
     @typechecked()
@@ -670,7 +670,7 @@ class AlternateIDs(typing.MutableSet[str], typing.Generic[_E]):
             del self._entity._data_getter(self._ontology).aliases[id_]
         self._inner.clear()
 
-    def pop(self):
+    def pop(self) -> str:
         id_ = self.pop()
         del self._entity._data_getter(self._ontology).aliases[id_]
         return id_

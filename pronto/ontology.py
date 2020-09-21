@@ -39,7 +39,7 @@ class _DataGraph(typing.Generic[_D], typing.Mapping[str, _D]):
         self.lineage = lineage or {}
         self.aliases = weakref.WeakValueDictionary(aliases or {})
 
-    def __contains__(self, key: str) -> bool:
+    def __contains__(self, key: object) -> bool:
         return key in self.entities or key in self.aliases
 
     def __len__(self) -> int:

@@ -180,7 +180,7 @@ class Synonym(object):
     @type.setter  # type: ignore
     @typechecked(property=True)
     def type(self, type_: Optional[SynonymType]) -> None:
-        synonyms: Set[SynonymType] = self.__ontology.synonym_types()
+        synonyms: Iterable[SynonymType] = self.__ontology.synonym_types()
         if type_ is not None and not any(type_.id == s.id for s in synonyms):
             raise ValueError(f"undeclared synonym type: {type_.id}")
         self._data().type = type_.id if type_ is not None else None

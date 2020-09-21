@@ -440,11 +440,18 @@ class Entity(typing.Generic[_D, _S]):
             already added to the `Entity.synonyms` collection.
 
         """
-        type_id = type.id if type is not None else None
+        # check the type is declared in the current ontology
+        if type is not None:
+            try:
+                type_id = self._ontology().get_synonym_type(type.id)
+            except KeyError as ke:
+                raise ValueError(f"undeclared synonym type {type.id!r}") from ke
+        else:
+            type_id = None
+
         data = SynonymData(description, scope, type_id, xrefs=xrefs)
-        synonym = Synonym(self._ontology(), data)
         self._data().synonyms.add(data)
-        return synonym
+        return Synonym(self._ontology(), data)
 
 
 class EntitySet(typing.Generic[_E], typing.MutableSet[_E]):

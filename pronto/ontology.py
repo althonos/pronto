@@ -473,3 +473,22 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 pass
 
         raise KeyError(id)
+
+    @typechecked()
+    def get_synonym_type(self, id: str) -> SynonymType:
+        """Get a synonym type in the ontology graph from the given identifier.
+
+        Raises:
+            KeyError: if the provided ``id`` cannot be found in the
+                relationships of the ontology graph.
+
+        """
+        ty = next((ty for ty in self.metadata.synonymtypedefs if ty.id == id), None)
+        if ty is not None:
+            return ty
+        for dep in self.imports.values():
+            try:
+                return dep.get_synonym_type(id)
+            except KeyError:
+                pass
+        raise KeyError(id)

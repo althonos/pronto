@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   of a `Relationship` instance.
 - `Ontology.synonym_types` method to count (via `SizedIterator`) and iterate
   over the synonym types of an ontology and all of its imports.
+- `Ontology.get_synonym_type` method to retrieve a single synonym type by ID
+  from an ontology or one of its imports.
 ### Changed
 - Management of sub-properties / super-properties is now consistent with
   the management of subclasses / superclasses.

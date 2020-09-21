@@ -1,7 +1,7 @@
 """A Python frontend to ontologies.
 
-pronto is a Python agnostic library designed to work with ontologies. At the
-moment, it can parse ontologies in the OBO, OBO Graphs or OWL in RDF/XML
+**pronto** is a Python agnostic library designed to work with ontologies. At
+the moment, it can parse ontologies in the OBO, OBO Graphs or OWL in RDF/XML
 format, on either the local host or from an network location, and export
 ontologies to OBO or OBO Graphs (in JSON format).
 

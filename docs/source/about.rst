@@ -6,12 +6,15 @@ Authors
 
 **pronto** is developped and maintained by:
 
-+-----------------------------------+----------------------------------------------+
-|                                   | | **Martin Larralde**                        |
-|                                   | | PhD Candidate,                             |
-| .. image:: _static/embl.png       | | EMBL Heidelberg, Germany                   |
-|                                   | | martin.larralde@embl.de                    |
-+-----------------------------------+----------------------------------------------+
++-----------------------------------+--------------------------------------+
+|                                   | | **Martin Larralde** (`@althonos`_) |
+|                                   | | PhD Candidate, Zeller Team         |
+| .. image:: _static/embl.png       | | EMBL Heidelberg, Germany           |
+|                                   | | martin.larralde@embl.de            |
++-----------------------------------+--------------------------------------+
+
+.. _`@althonos`: https://github.com/althonos
+
 
 Contributors
 ------------
@@ -19,9 +22,8 @@ Contributors
 The following developers contributed both code and time to this project:
 
 - Alex Henrie (`@alexhenrie <https://github.com/alexhenrie>`_)
-- Spencer Mitchell (`@smitchell556 <https://github.com/smitchell556`_)
+- Spencer Mitchell (`@smitchell556 <https://github.com/smitchell556>`_)
 - Tatsuya Sakaguchi (`@ttyskg <https://github.com/ttyskg>`_)
-
 
 
 Reference

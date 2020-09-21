@@ -25,8 +25,8 @@ the `~pronto.Ontology.dump` and `~pronto.Ontology.dumps` methods:
     open("out.obo", "w").write(ontology.obo)
 
     # after
-    print(ontology.dumps())
-    ontoloy.dump(open("out.obo", "w"))
+    print(ontology.dumps(format="obo"))
+    ontoloy.dump(open("out.obo", "w"), format="obo")
 
 
 Subclasses and superclasses

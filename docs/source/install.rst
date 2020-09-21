@@ -41,9 +41,9 @@ everything may work as expected compared to a stable versioned release.
 GitHub + ``setuptools``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-If you do not have ``pip`` installed (the Makefile uses ``pip`` to install
-dependencies and then install ``pronto``), you can do the following (after
-having properly installed all the dependencies):
+If you do not have ``pip`` installed, you can still clone the repository and
+run the ``setup.py`` file manually, although you will need to install the
+project dependencies yourself:
 
 .. code:: console
 

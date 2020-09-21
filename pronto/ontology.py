@@ -479,8 +479,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """Get a synonym type in the ontology graph from the given identifier.
 
         Raises:
-            KeyError: if the provided ``id`` cannot be found in the
-                relationships of the ontology graph.
+            KeyError: if the provided ``id`` does not resolve to a synonym type
+                declared in this `Ontology` or one of its imports.
 
         """
         ty = next((ty for ty in self.metadata.synonymtypedefs if ty.id == id), None)

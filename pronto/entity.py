@@ -443,7 +443,7 @@ class Entity(typing.Generic[_D, _S]):
         # check the type is declared in the current ontology
         if type is not None:
             try:
-                type_id = self._ontology().get_synonym_type(type.id)
+                type_id = self._ontology().get_synonym_type(type.id).id
             except KeyError as ke:
                 raise ValueError(f"undeclared synonym type {type.id!r}") from ke
         else:

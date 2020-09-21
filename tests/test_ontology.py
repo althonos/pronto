@@ -48,17 +48,13 @@ class TestOntology(unittest.TestCase):
         ont = pronto.Ontology(handle)
         self.assertEqual(repr(ont), "Ontology({!r})".format(handle))
 
+    def test_threads_invalid(self):
+        hp = os.path.join(DATADIR, "hp.obo")
+        self.assertRaises(ValueError, pronto.Ontology, hp, threads=-1)
+        self.assertRaises(ValueError, pronto.Ontology, hp, threads=0)
+
 
 class TestOntologyLineage(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        warnings.simplefilter('error')
-        warnings.simplefilter('ignore', category=UnicodeWarning)
-
-    @classmethod
-    def tearDownClass(cls):
-        warnings.simplefilter(warnings.defaultaction)
-
     def test_edit_term(self):
         ont = pronto.Ontology()
         self.assertEqual(ont._terms.lineage, {})

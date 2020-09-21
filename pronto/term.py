@@ -245,9 +245,6 @@ class Term(Entity["TermData", "TermSet"]):
                         yield ont.get_term(other)
             done.add(node)
 
-        # Finish the traversal
-        raise StopIteration
-
     def superclasses(
         self, distance: Optional[int] = None, with_self: bool = True,
     ) -> "SuperclassesHandler":

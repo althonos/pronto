@@ -3,10 +3,9 @@ import functools
 import typing
 from typing import Dict, List, Optional, Set, Tuple
 
-from .synonym import SynonymType
 from .pv import PropertyValue
+from .synonym import SynonymType
 from .utils.meta import roundrepr, typechecked
-
 
 __all__ = ["Subset", "Metadata"]
 
@@ -33,8 +32,7 @@ class Subset(object):
 
     @typechecked()
     def __init__(self, name: str, description: str):
-        """Create a new subset with the given name and description.
-        """
+        """Create a new subset with the given name and description."""
         self.name: str = name
         self.description: str = description
 
@@ -158,6 +156,5 @@ class Metadata(object):
         self.unreserved = unreserved
 
     def __bool__(self) -> bool:
-        """Return `False` if the instance does not contain any metadata.
-        """
+        """Return `False` if the instance does not contain any metadata."""
         return any(bool(getattr(self, x)) for x in self.__annotations__)

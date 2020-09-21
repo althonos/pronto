@@ -1,12 +1,11 @@
 import collections
 import contextlib
+import functools
 import inspect
 import itertools
-import functools
 import sys
 import typing
 from typing import Callable, ClassVar, Iterator, List, Optional, Tuple, Type
-
 
 T = typing.TypeVar("T")
 F = typing.TypeVar("F", bound=Callable[..., object])
@@ -67,7 +66,7 @@ class typechecked(object):
     def disabled(cls) -> Iterator[None]:
         initial_state = cls._disable
         try:
-            #cls._disable = True
+            # cls._disable = True
             yield
         finally:
             cls._disable = initial_state
@@ -101,8 +100,7 @@ class typechecked(object):
 
 
 class roundrepr(object):
-    """A class-decorator to build a minimal `__repr__` method that roundtrips.
-    """
+    """A class-decorator to build a minimal `__repr__` method that roundtrips."""
 
     @staticmethod
     def make(class_name: str, *args: object, **kwargs: Tuple[object, object]) -> str:
@@ -158,8 +156,7 @@ class roundrepr(object):
 
         # Derive the __repr__ implementation
         def __repr__(self_):
-            """Return a `repr` string that roundtrips. Computed by @roundrepr.
-            """
+            """Return a `repr` string that roundtrips. Computed by @roundrepr."""
             args, kwargs = [], {}
             for name, param in itertools.islice(sig.parameters.items(), 1, None):
                 if param.default is inspect.Parameter.empty:

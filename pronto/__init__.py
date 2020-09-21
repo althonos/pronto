@@ -38,15 +38,15 @@ if __doc__ is not None:
     `Read The Docs <https://pronto.readthedocs.io/en/v{__version__}/>`_
     """
 
-from .utils import warnings
-from .entity import Entity
 from .definition import Definition
+from .entity import Entity
 from .metadata import Metadata, Subset
 from .ontology import Ontology
 from .pv import LiteralPropertyValue, PropertyValue, ResourcePropertyValue
 from .relationship import Relationship, RelationshipData, RelationshipSet
 from .synonym import Synonym, SynonymData, SynonymType
 from .term import Term, TermData, TermSet
+from .utils import warnings
 from .xref import Xref
 
 # Using `__name__` attribute instead of directly using the name as a string

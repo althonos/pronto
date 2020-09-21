@@ -5,30 +5,30 @@ import operator
 import typing
 import warnings
 from typing import (
+    AbstractSet,
     Dict,
-    Iterator,
+    FrozenSet,
     Iterable,
+    Iterator,
     List,
     Mapping,
+    MutableSet,
     Optional,
     Set,
     Tuple,
     Union,
-    FrozenSet,
-    MutableSet,
-    AbstractSet,
 )
 
 from . import relationship
-from .entity import Entity, EntityData, EntitySet
 from .definition import Definition
-from .xref import Xref
-from .synonym import SynonymData
-from .relationship import Relationship
-from .pv import PropertyValue
+from .entity import Entity, EntityData, EntitySet
 from .logic import SubclassesIterator, SuperclassesIterator
 from .logic.lineage import SubclassesHandler, SuperclassesHandler
+from .pv import PropertyValue
+from .relationship import Relationship
+from .synonym import SynonymData
 from .utils.meta import typechecked
+from .xref import Xref
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -38,8 +38,7 @@ __all__ = ["TermData", "Term", "TermSet"]
 
 
 class TermData(EntityData):  # noqa: R0902, R0903
-    """Internal data storage of `Term` information.
-    """
+    """Internal data storage of `Term` information."""
 
     id: str
     anonymous: bool
@@ -113,8 +112,7 @@ class TermData(EntityData):  # noqa: R0902, R0903
 
 
 class TermSet(EntitySet["Term"]):
-    """A specialized mutable set to store `Term` instances.
-    """
+    """A specialized mutable set to store `Term` instances."""
 
     # --- Methods ------------------------------------------------------------
 
@@ -243,7 +241,9 @@ class Term(Entity["TermData", "TermSet"]):
             done.add(node)
 
     def superclasses(
-        self, distance: Optional[int] = None, with_self: bool = True,
+        self,
+        distance: Optional[int] = None,
+        with_self: bool = True,
     ) -> "SuperclassesHandler":
         """Get an handle over the superclasses of this `Term`.
 
@@ -291,7 +291,9 @@ class Term(Entity["TermData", "TermSet"]):
         return SuperclassesHandler(self, distance=distance, with_self=with_self)
 
     def subclasses(
-        self, distance: Optional[int] = None, with_self: bool = True,
+        self,
+        distance: Optional[int] = None,
+        with_self: bool = True,
     ) -> "SubclassesHandler":
         """Get an handle over the subclasses of this `Term`.
 
@@ -361,8 +363,7 @@ class Term(Entity["TermData", "TermSet"]):
 
     @property
     def intersection_of(self) -> FrozenSet[Union["Term", Tuple[Relationship, "Term"]]]:
-        """`frozenset`: The terms this term is an intersection of.
-        """
+        """`frozenset`: The terms this term is an intersection of."""
         ont, termdata = self._ontology(), self._data()
         intersection_of: List[Union["Term", Tuple[Relationship, "Term"]]] = []
         for item in termdata.intersection_of:

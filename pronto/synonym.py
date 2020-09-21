@@ -3,10 +3,10 @@
 import functools
 import typing
 import weakref
-from typing import Optional, Set, FrozenSet, Iterable
+from typing import FrozenSet, Iterable, Optional, Set
 
-from .xref import Xref
 from .utils.meta import roundrepr, typechecked
+from .xref import Xref
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -19,8 +19,7 @@ __all__ = ["SynonymType", "SynonymData", "Synonym"]
 @roundrepr
 @functools.total_ordering
 class SynonymType(object):
-    """A user-defined synonym type.
-    """
+    """A user-defined synonym type."""
 
     id: str
     description: str
@@ -55,8 +54,7 @@ class SynonymType(object):
 @roundrepr
 @functools.total_ordering
 class SynonymData(object):
-    """Internal data storage of `Synonym` information.
-    """
+    """Internal data storage of `Synonym` information."""
 
     description: str
     scope: Optional[str]
@@ -107,8 +105,7 @@ class SynonymData(object):
 
 @functools.total_ordering
 class Synonym(object):
-    """A synonym for an entity, with respects to the OBO terminology.
-    """
+    """A synonym for an entity, with respects to the OBO terminology."""
 
     __ontology: "Ontology"
 
@@ -172,9 +169,7 @@ class Synonym(object):
     def type(self) -> Optional[SynonymType]:
         ontology, syndata = self.__ontology, self._data()
         if syndata.type is not None:
-            return next(
-                t for t in ontology.synonym_types() if t.id == syndata.type
-            )
+            return next(t for t in ontology.synonym_types() if t.id == syndata.type)
         return None
 
     @type.setter  # type: ignore

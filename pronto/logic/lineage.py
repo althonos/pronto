@@ -2,7 +2,7 @@ import abc
 import collections
 import typing
 import warnings
-from typing import cast, AbstractSet, Deque, Dict, Optional, Set, Tuple
+from typing import AbstractSet, Deque, Dict, Optional, Set, Tuple, cast
 
 from ..utils.meta import roundrepr
 
@@ -16,6 +16,7 @@ if typing.TYPE_CHECKING:
 _E = typing.TypeVar("_E", bound="Entity")
 
 # --- Storage ----------------------------------------------------------------
+
 
 @roundrepr
 class Lineage(object):
@@ -48,9 +49,11 @@ class Lineage(object):
 
 # --- Abstract handlers ------------------------------------------------------
 
-class LineageHandler(typing.Generic[_E], typing.Iterable[_E]):
 
-    def __init__(self, entity: _E, distance: Optional[int] = None, with_self: bool = False):
+class LineageHandler(typing.Generic[_E], typing.Iterable[_E]):
+    def __init__(
+        self, entity: _E, distance: Optional[int] = None, with_self: bool = False
+    ):
         self.entity = entity
         self.distance = distance
         self.with_self = with_self
@@ -108,7 +111,6 @@ class LineageHandler(typing.Generic[_E], typing.Iterable[_E]):
 
 
 class TermHandler(LineageHandler["Term"]):
-
     @abc.abstractmethod
     def __iter__(self) -> "TermIterator":
         return NotImplemented
@@ -121,7 +123,6 @@ class TermHandler(LineageHandler["Term"]):
 
 
 class RelationshipHandler(LineageHandler["Relationship"]):
-
     @abc.abstractmethod
     def __iter__(self) -> "RelationshipIterator":
         return NotImplemented
@@ -134,7 +135,6 @@ class RelationshipHandler(LineageHandler["Relationship"]):
 
 
 class SuperentitiesHandler(LineageHandler):
-
     @abc.abstractmethod
     def __iter__(self) -> "SuperentitiesIterator":
         return NotImplemented
@@ -153,7 +153,6 @@ class SuperentitiesHandler(LineageHandler):
 
 
 class SubentitiesHandler(LineageHandler):
-
     @abc.abstractmethod
     def __iter__(self) -> "SubentitiesIterator":
         return NotImplemented
@@ -173,31 +172,37 @@ class SubentitiesHandler(LineageHandler):
 
 # --- Concrete handlers ------------------------------------------------------
 
-class SubclassesHandler(SubentitiesHandler, TermHandler):
 
+class SubclassesHandler(SubentitiesHandler, TermHandler):
     def __iter__(self) -> "SubclassesIterator":
-        return SubclassesIterator(self.entity, distance=self.distance, with_self=self.with_self)
+        return SubclassesIterator(
+            self.entity, distance=self.distance, with_self=self.with_self
+        )
 
 
 class SubpropertiesHandler(SubentitiesHandler, RelationshipHandler):
-
     def __iter__(self) -> "SubpropertiesIterator":
-        return SubpropertiesIterator(self.entity, distance=self.distance, with_self=self.with_self)
+        return SubpropertiesIterator(
+            self.entity, distance=self.distance, with_self=self.with_self
+        )
 
 
 class SuperclassesHandler(SuperentitiesHandler, TermHandler):
-
     def __iter__(self) -> "SuperclassesIterator":
-        return SuperclassesIterator(self.entity, distance=self.distance, with_self=self.with_self)
+        return SuperclassesIterator(
+            self.entity, distance=self.distance, with_self=self.with_self
+        )
 
 
 class SuperpropertiesHandler(SuperentitiesHandler, RelationshipHandler):
-
     def __iter__(self) -> "SuperpropertiesIterator":
-        return SuperpropertiesIterator(self.entity, distance=self.distance, with_self=self.with_self)
+        return SuperpropertiesIterator(
+            self.entity, distance=self.distance, with_self=self.with_self
+        )
 
 
 # --- Abstract iterators -----------------------------------------------------
+
 
 class LineageIterator(typing.Generic[_E], typing.Iterator[_E]):
 
@@ -255,8 +260,7 @@ class LineageIterator(typing.Generic[_E], typing.Iterator[_E]):
         return self
 
     def __length_hint__(self) -> int:
-        """Return an estimate of the number of remaining entities to yield.
-        """
+        """Return an estimate of the number of remaining entities to yield."""
         if self._queue or self._frontier:
             return self._maxlen() - len(self._linked) + len(self._queue)
         else:
@@ -283,7 +287,6 @@ class LineageIterator(typing.Generic[_E], typing.Iterator[_E]):
 
 
 class TermIterator(LineageIterator["Term"]):
-
     def _maxlen(self):
         return len(self._ontology.terms())
 
@@ -311,7 +314,6 @@ class TermIterator(LineageIterator["Term"]):
 
 
 class RelationshipIterator(LineageIterator["Relationship"]):
-
     def _maxlen(self):
         return len(self._ontology.relationships())
 
@@ -335,34 +337,29 @@ class RelationshipIterator(LineageIterator["Relationship"]):
 
 
 class SubentitiesIterator(LineageIterator):
-
     def _get_neighbors(self, node: str) -> Set[str]:
         return self._get_data().lineage.get(node, Lineage()).sub
 
 
 class SuperentitiesIterator(LineageIterator):
-
     def _get_neighbors(self, node: str) -> Set[str]:
         return self._get_data().lineage.get(node, Lineage()).sup
 
 
 # --- Concrete iterators -----------------------------------------------------
 
+
 class SubclassesIterator(SubentitiesIterator, TermIterator):
-    """An iterator over the subclasses of one or several `~pronto.Term`.
-    """
+    """An iterator over the subclasses of one or several `~pronto.Term`."""
 
 
 class SuperclassesIterator(SuperentitiesIterator, TermIterator):
-    """An iterator over the superclasses of one or several `~pronto.Term`.
-    """
+    """An iterator over the superclasses of one or several `~pronto.Term`."""
 
 
 class SubpropertiesIterator(SubentitiesIterator, RelationshipIterator):
-    """An iterator over the subproperties of one or several `~pronto.Relationship`.
-    """
+    """An iterator over the subproperties of one or several `~pronto.Relationship`."""
 
 
 class SuperpropertiesIterator(SuperentitiesIterator, RelationshipIterator):
-    """An iterator over the superproperties of one or several `~pronto.Relationship`.
-    """
+    """An iterator over the superproperties of one or several `~pronto.Relationship`."""

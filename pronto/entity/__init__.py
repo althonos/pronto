@@ -3,13 +3,13 @@ import datetime
 import operator
 import typing
 import weakref
-from typing import Any, AbstractSet, Dict, Iterable, Iterator, Optional, Set, FrozenSet
+from typing import AbstractSet, Any, Dict, FrozenSet, Iterable, Iterator, Optional, Set
 
 from ..definition import Definition
-from ..synonym import Synonym, SynonymData, SynonymType
 from ..pv import PropertyValue
-from ..xref import Xref
+from ..synonym import Synonym, SynonymData, SynonymType
 from ..utils.meta import roundrepr, typechecked
+from ..xref import Xref
 
 if typing.TYPE_CHECKING:
     from ..ontology import _DataGraph, Ontology
@@ -130,20 +130,19 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def alternate_ids(self) -> "AlternateIDs":
-        """`frozenset` of `str`: A set of alternate IDs for this entity.
-        """
+        """`frozenset` of `str`: A set of alternate IDs for this entity."""
         from .attributes import AlternateIDs
+
         return AlternateIDs(self)
 
-    @alternate_ids.setter    # type: ignore
+    @alternate_ids.setter  # type: ignore
     def alternate_ids(self, ids: Iterable[str]):
         self.alternate_ids.clear()
         self.alternate_ids.update(ids)
 
     @property
     def annotations(self) -> Set[PropertyValue]:
-        """`frozenset` of `PropertyValue`: Annotations relevant to the entity.
-        """
+        """`frozenset` of `PropertyValue`: Annotations relevant to the entity."""
         return self._data().annotations
 
     @annotations.setter
@@ -228,8 +227,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def creation_date(self) -> Optional[datetime.datetime]:
-        """`~datetime.datetime` or None: the date the entity was created.
-        """
+        """`~datetime.datetime` or None: the date the entity was created."""
         return self._data().creation_date
 
     @creation_date.setter  # type: ignore
@@ -274,8 +272,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def equivalent_to(self) -> _S:
-        """`EntitySet`: The entities declared as equivalent to this entity.
-        """
+        """`EntitySet`: The entities declared as equivalent to this entity."""
         s = self._Set()
         s._ids = self._data().equivalent_to
         s._ontology = self._ontology()
@@ -316,8 +313,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def namespace(self) -> Optional[str]:
-        """`str` or `None`: the namespace this entity is defined in.
-        """
+        """`str` or `None`: the namespace this entity is defined in."""
         return self._data().namespace
 
     @namespace.setter  # type: ignore
@@ -327,11 +323,10 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def obsolete(self) -> bool:
-        """`bool`: whether or not the entity is obsolete.
-        """
+        """`bool`: whether or not the entity is obsolete."""
         return self._data().obsolete
 
-    @obsolete.setter    # type: ignore
+    @obsolete.setter  # type: ignore
     @typechecked(property=True)
     def obsolete(self, value: bool):
         self._data().obsolete = value
@@ -339,6 +334,7 @@ class Entity(typing.Generic[_D, _S]):
     @property
     def relationships(self: _E) -> "Relationships[_E, _S]":
         from .attributes import Relationships
+
         return Relationships(self)
 
     @relationships.setter
@@ -365,8 +361,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def subsets(self) -> FrozenSet[str]:
-        """`frozenset` of `str`: the subsets containing this entity.
-        """
+        """`frozenset` of `str`: the subsets containing this entity."""
         return frozenset(self._data().subsets)
 
     @subsets.setter  # type: ignore
@@ -380,8 +375,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def synonyms(self) -> FrozenSet[Synonym]:
-        """`frozenset` of `Synonym`: a set of synonyms for this entity.
-        """
+        """`frozenset` of `Synonym`: a set of synonyms for this entity."""
         ontology, termdata = self._ontology(), self._data()
         return frozenset(Synonym(ontology, s) for s in termdata.synonyms)
 
@@ -470,8 +464,7 @@ class Entity(typing.Generic[_D, _S]):
 
 
 class EntitySet(typing.Generic[_E], typing.MutableSet[_E]):
-    """A specialized mutable set to store `Entity` instances.
-    """
+    """A specialized mutable set to store `Entity` instances."""
 
     # --- Magic methods ------------------------------------------------------
 

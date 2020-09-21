@@ -7,17 +7,17 @@ from typing import Dict, List, Optional, Tuple
 
 import dateutil.parser
 
-from .base import BaseParser
 from ..definition import Definition
 from ..metadata import Metadata, Subset
-from ..term import Term
-from ..synonym import SynonymData, SynonymType
+from ..pv import LiteralPropertyValue, ResourcePropertyValue
 from ..relationship import Relationship
-from ..pv import ResourcePropertyValue, LiteralPropertyValue
-from ..xref import Xref
+from ..synonym import SynonymData, SynonymType
+from ..term import Term
 from ..utils.impl import etree
 from ..utils.meta import typechecked
-from ..utils.warnings import SyntaxWarning, NotImplementedWarning
+from ..utils.warnings import NotImplementedWarning, SyntaxWarning
+from ..xref import Xref
+from .base import BaseParser
 
 if typing.TYPE_CHECKING:
     from ..entity import Entity
@@ -126,8 +126,7 @@ class RdfXMLParser(BaseParser):
     # -- Helper methods ------------------------------------------------------
 
     def _compact_id(self, iri: str) -> str:
-        """Compact an OBO identifier into a prefixed identifier.
-        """
+        """Compact an OBO identifier into a prefixed identifier."""
         match = re.match("^http://purl.obolibrary.org/obo/([^#_]+)_(.*)$", iri)
         if match is not None:
             return ":".join(match.groups())
@@ -144,7 +143,9 @@ class RdfXMLParser(BaseParser):
             return f"xsd:{match.group(1)}"
         raise ValueError(f"invalid datatype: {iri!r}")
 
-    def _extract_term_relationship(self, elem: etree.Element) -> Tuple[Optional[str], Optional[str]]:
+    def _extract_term_relationship(
+        self, elem: etree.Element
+    ) -> Tuple[Optional[str], Optional[str]]:
         """Extract the relationship info from a `owl:Restriction` element.
 
         This only handles the simplest case of `owl:someValuesFrom` annotation
@@ -198,8 +199,7 @@ class RdfXMLParser(BaseParser):
         )
 
     def _extract_meta(self, elem: etree.Element):
-        """Extract the metadata from an `owl:Ontology` element.
-        """
+        """Extract the metadata from an `owl:Ontology` element."""
         meta = Metadata()
         if __debug__:
             if elem.tag != _NS["owl"]["Ontology"]:
@@ -257,8 +257,7 @@ class RdfXMLParser(BaseParser):
         return meta
 
     def _extract_term(self, elem: etree.Element, aliases: Dict[str, str]):
-        """Extract the term from a `owl:Class` element.
-        """
+        """Extract the term from a `owl:Class` element."""
         if __debug__:
             if elem.tag != _NS["owl"]["Class"]:
                 raise ValueError("expected `owl:Class` element")
@@ -431,8 +430,7 @@ class RdfXMLParser(BaseParser):
             termdata.comment = "\n".join(comments)
 
     def _extract_object_property(self, elem: etree.Element, aliases: Dict[str, str]):
-        """Extract the object property from an `owl:ObjectProperty` element.
-        """
+        """Extract the object property from an `owl:ObjectProperty` element."""
         if __debug__:
             if elem.tag != _NS["owl"]["ObjectProperty"]:
                 raise ValueError("expected `owl:ObjectProperty` element")
@@ -539,7 +537,9 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["owl"]["equivalentClass"] and text is not None:
                 reldata.equivalent_to.add(self._compact_id(text))
             elif tag == _NS["owl"]["inverseOf"]:
-                reldata.inverse_of = self._compact_id(child.attrib[_NS["rdf"]["resource"]])
+                reldata.inverse_of = self._compact_id(
+                    child.attrib[_NS["rdf"]["resource"]]
+                )
             elif tag == _NS["owl"]["deprecated"]:
                 reldata.obsolete = text == "true"
             elif tag == _NS["oboInOwl"]["hasDbXref"]:
@@ -750,5 +750,7 @@ class RdfXMLParser(BaseParser):
         else:
 
             warnings.warn(
-                f"unknown axiom property: {property!r}", SyntaxWarning, stacklevel=3,
+                f"unknown axiom property: {property!r}",
+                SyntaxWarning,
+                stacklevel=3,
             )

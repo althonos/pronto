@@ -1,5 +1,5 @@
 import typing
-from typing import Iterator, Iterable
+from typing import Iterable, Iterator
 
 from ..utils.meta import typechecked
 from . import Entity, EntitySet
@@ -76,8 +76,7 @@ class AlternateIDs(typing.MutableSet[str], typing.Generic[_E]):
 
 
 class Relationships(typing.MutableMapping["Relationship", _S], typing.Generic[_E, _S]):
-    """A dedicated mutable mapping to manage the relationships of an entity.
-    """
+    """A dedicated mutable mapping to manage the relationships of an entity."""
 
     def __init__(self, entity: _E):
         self._inner = entity._data().relationships
@@ -102,6 +101,7 @@ class Relationships(typing.MutableMapping["Relationship", _S], typing.Generic[_E
 
     def __iter__(self) -> Iterator["Relationship"]:
         from ..relationship import Relationship
+
         return (self._ontology.get_relationship(id_) for id_ in self._inner)
 
     def __setitem__(self, key: "Relationship", entities: Iterable[_E]):

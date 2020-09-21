@@ -1,1 +1,7 @@
-from .lineage import Lineage, SubclassesIterator, SuperclassesIterator, SubpropertiesIterator, SuperpropertiesIterator
+from .lineage import (
+    Lineage,
+    SubclassesIterator,
+    SubpropertiesIterator,
+    SuperclassesIterator,
+    SuperpropertiesIterator,
+)

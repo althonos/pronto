@@ -1,12 +1,12 @@
-import os
 import multiprocessing.pool
+import os
 
 import fastobo
 
 from ..logic.lineage import Lineage
 from ..utils.meta import typechecked
-from .base import BaseParser
 from ._fastobo import FastoboParser
+from .base import BaseParser
 
 
 class OboJSONParser(FastoboParser, BaseParser):

@@ -1,9 +1,8 @@
 import typing
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 
-from .xref import Xref
 from .utils.meta import roundrepr
-
+from .xref import Xref
 
 __all__ = ["Definition"]
 

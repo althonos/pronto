@@ -3,14 +3,14 @@ import operator
 import typing
 from typing import Dict, FrozenSet, Iterable, Mapping, Optional, Set, Tuple
 
-from .entity import Entity, EntityData, EntitySet
 from .definition import Definition
-from .synonym import SynonymData
-from .xref import Xref
-from .pv import PropertyValue
-from .utils.meta import typechecked
+from .entity import Entity, EntityData, EntitySet
 from .logic import SubpropertiesIterator, SuperpropertiesIterator
 from .logic.lineage import SubpropertiesHandler, SuperpropertiesHandler
+from .pv import PropertyValue
+from .synonym import SynonymData
+from .utils.meta import typechecked
+from .xref import Xref
 
 if typing.TYPE_CHECKING:
     from .ontology import Ontology
@@ -21,8 +21,7 @@ __all__ = ["Relationship", "RelationshipData", "RelationshipSet"]
 
 
 class RelationshipData(EntityData):
-    """Internal data storage of `Relationship` information.
-    """
+    """Internal data storage of `Relationship` information."""
 
     id: str
     anonymous: bool
@@ -153,16 +152,14 @@ class RelationshipData(EntityData):
 
 
 class RelationshipSet(EntitySet["Relationship"]):
-    """A specialized mutable set to store `Relationship` instances.
-    """
+    """A specialized mutable set to store `Relationship` instances."""
 
     # --- Methods ---------------------------------------------------------
 
     def subproperties(
         self, distance: Optional[int] = None, with_self: bool = True
     ) -> SubpropertiesIterator:
-        """Get an iterator over the subproperties of all relationships in the set.
-        """
+        """Get an iterator over the subproperties of all relationships in the set."""
         return SubpropertiesIterator(*self, distance=distance, with_self=with_self)
 
     def superproperties(
@@ -207,7 +204,9 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     # --- Methods ------------------------------------------------------------
 
-    def subproperties(self, distance: Optional[int] = None, with_self: bool = True) -> "SubpropertiesHandler":
+    def subproperties(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> "SubpropertiesHandler":
         """Get an handle over the subproperties of this `Relationship`.
 
         Arguments:
@@ -225,7 +224,9 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
         """
         return SubpropertiesHandler(self, distance=distance, with_self=with_self)
 
-    def superproperties(self, distance: Optional[int] = None, with_self: bool = True) -> "SuperpropertiesHandler":
+    def superproperties(
+        self, distance: Optional[int] = None, with_self: bool = True
+    ) -> "SuperpropertiesHandler":
         """Get an handle over the superproperties of this `Relationship`.
 
         In order to follow the semantics of ``rdf:subPropertyOf``, which in
@@ -252,8 +253,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def antisymmetric(self) -> bool:
-        """`bool`: whether this relationship is anti-symmetric.
-        """
+        """`bool`: whether this relationship is anti-symmetric."""
         return self._data().antisymmetric
 
     @antisymmetric.setter  # type: ignore
@@ -263,8 +263,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def asymmetric(self) -> bool:
-        """`bool`: whether this relationship is asymmetric.
-        """
+        """`bool`: whether this relationship is asymmetric."""
         return self._data().asymmetric
 
     @asymmetric.setter  # type: ignore
@@ -426,7 +425,6 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
         s._ids = self._data().transitive_over
         s._ontology = self._ontology()
         return s
-
 
 
 _BUILTINS = {

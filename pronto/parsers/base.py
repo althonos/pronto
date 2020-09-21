@@ -1,10 +1,10 @@
 import abc
 import functools
+import multiprocessing.pool
 import operator
 import os
 import typing
 import urllib.parse
-import multiprocessing.pool
 from typing import Dict, Optional, Set
 
 from ..logic.lineage import Lineage
@@ -18,12 +18,13 @@ class BaseParser(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def can_parse(cls, path: str, buffer: bytes) -> bool:
-        """Return `True` if this parser type can parse the given handle.
-        """
+        """Return `True` if this parser type can parse the given handle."""
         return NotImplemented
 
     @abc.abstractmethod
-    def parse_from(self, handle: typing.BinaryIO, threads: Optional[int] = None) -> None:
+    def parse_from(
+        self, handle: typing.BinaryIO, threads: Optional[int] = None
+    ) -> None:
         return NotImplemented
 
     @classmethod
@@ -45,7 +46,7 @@ class BaseParser(abc.ABC):
             else:
                 id_ = f"{ref}.obo" if not os.path.splitext(ref)[1] else ref
                 url = f"http://purl.obolibrary.org/obo/{id_}"
-        return Ontology(url, max(import_depth-1, -1), timeout)
+        return Ontology(url, max(import_depth - 1, -1), timeout)
 
     @classmethod
     def process_imports(
@@ -63,7 +64,7 @@ class BaseParser(abc.ABC):
             cls.process_import,
             import_depth=import_depth,
             basepath=basepath,
-            timeout=timeout
+            timeout=timeout,
         )
         with multiprocessing.pool.ThreadPool(threads) as pool:
             return dict(pool.map(lambda i: (i, process(i)), imports))

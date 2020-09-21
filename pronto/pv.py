@@ -12,8 +12,7 @@ __all__ = ["PropertyValue", "LiteralPropertyValue", "ResourcePropertyValue"]
 
 
 class PropertyValue(object):
-    """A property-value, which adds annotations to an entity.
-    """
+    """A property-value, which adds annotations to an entity."""
 
     property: str
     __slots__ = ("__weakref__", "property")
@@ -22,8 +21,7 @@ class PropertyValue(object):
 @roundrepr
 @functools.total_ordering
 class LiteralPropertyValue(PropertyValue):
-    """A property-value which adds a literal annotation to an entity.
-    """
+    """A property-value which adds a literal annotation to an entity."""
 
     literal: str
     datatype: str
@@ -77,8 +75,7 @@ class LiteralPropertyValue(PropertyValue):
 @roundrepr
 @functools.total_ordering
 class ResourcePropertyValue(PropertyValue):
-    """A property-value which adds a resource annotation to an entity.
-    """
+    """A property-value which adds a resource annotation to an entity."""
 
     resource: str
     __slots__ = ("resource",)

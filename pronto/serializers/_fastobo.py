@@ -1,7 +1,7 @@
 import abc
 import io
-import os
 import operator
+import os
 import typing
 from typing import BinaryIO, ClassVar
 
@@ -9,11 +9,11 @@ import fastobo
 
 from ..metadata import Metadata
 from ..ontology import Ontology
+from ..pv import LiteralPropertyValue, PropertyValue, ResourcePropertyValue
+from ..relationship import Relationship, RelationshipData
 from ..synonym import SynonymData
 from ..term import Term, TermData
-from ..relationship import Relationship, RelationshipData
 from ..xref import Xref
-from ..pv import PropertyValue, LiteralPropertyValue, ResourcePropertyValue
 
 
 class FastoboSerializer:
@@ -24,7 +24,9 @@ class FastoboSerializer:
         doc = fastobo.doc.OboDoc()
         if o.metadata:
             doc.header = self._to_header_frame(o.metadata)
-        for termdata in sorted(self.ont._terms.entities.values(), key=operator.attrgetter("id")):
+        for termdata in sorted(
+            self.ont._terms.entities.values(), key=operator.attrgetter("id")
+        ):
             doc.append(self._to_term_frame(Term(self.ont, termdata)))
         for reldata in sorted(
             self.ont._relationships.entities.values(), key=operator.attrgetter("id")
@@ -86,7 +88,8 @@ class FastoboSerializer:
         try:
             pv = typing.cast(ResourcePropertyValue, pv)
             return fastobo.pv.ResourcePropertyValue(
-                fastobo.id.parse(pv.property), fastobo.id.parse(pv.resource),
+                fastobo.id.parse(pv.property),
+                fastobo.id.parse(pv.resource),
             )
         except AttributeError:
             pv = typing.cast(LiteralPropertyValue, pv)
@@ -223,7 +226,9 @@ class FastoboSerializer:
             frame.append(fastobo.typedef.IsFunctionalClause(True))
         if r.inverse_functional:
             frame.append(fastobo.typedef.IsInverseFunctionalClause(True))
-        for superproperty in sorted(relationship.superproperties(with_self=False, distance=1)):
+        for superproperty in sorted(
+            relationship.superproperties(with_self=False, distance=1)
+        ):
             frame.append(fastobo.typedef.IsAClause(fastobo.id.parse(superproperty.id)))
         for i in sorted(r.intersection_of):
             frame.append(fastobo.typedef.IntersectionOfClause(fastobo.id.parse(i)))
@@ -263,13 +268,15 @@ class FastoboSerializer:
         for d in r.expand_assertion_to:
             frame.append(
                 fastobo.typedef.ExpandAssertionToClause(
-                    str(d), [self._to_xref(x) for x in sorted(d.xrefs)],
+                    str(d),
+                    [self._to_xref(x) for x in sorted(d.xrefs)],
                 )
             )
         for d in r.expand_expression_to:
             frame.append(
                 fastobo.typedef.ExpandExpressionToClause(
-                    str(d), [self._to_xref(x) for x in sorted(d.xrefs)],
+                    str(d),
+                    [self._to_xref(x) for x in sorted(d.xrefs)],
                 )
             )
         if r.metadata_tag:

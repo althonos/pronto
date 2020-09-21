@@ -2,21 +2,21 @@ import functools
 import typing
 import warnings
 import weakref
-from typing import Union
 from operator import attrgetter
+from typing import Union
 
 import fastobo
 
+from ..definition import Definition
 from ..entity import EntityData
 from ..metadata import Metadata, Subset
-from ..definition import Definition
 from ..ontology import Ontology
-from ..term import Term, TermData
-from ..pv import PropertyValue, LiteralPropertyValue, ResourcePropertyValue
-from ..xref import Xref
-from ..synonym import Synonym, SynonymData, SynonymType
+from ..pv import LiteralPropertyValue, PropertyValue, ResourcePropertyValue
 from ..relationship import Relationship, RelationshipData
+from ..synonym import Synonym, SynonymData, SynonymType
+from ..term import Term, TermData
 from ..utils.warnings import NotImplementedWarning
+from ..xref import Xref
 
 # --- Type Hint --------------------------------------------------------------
 
@@ -38,13 +38,14 @@ class FastoboParser:
         elif isinstance(frame, fastobo.typedef.TypedefFrame):
             self.enrich_relationship(frame)
         else:
-            warnings.warn("cannot handle OBO instances", NotImplementedWarning, stacklevel=3)
+            warnings.warn(
+                "cannot handle OBO instances", NotImplementedWarning, stacklevel=3
+            )
 
     # --- Frame processing ---------------------------------------------------
 
     def extract_metadata(self, header: fastobo.header.HeaderFrame) -> Metadata:
-        """Extract a `Metadata` from a `HeaderFrame`.
-        """
+        """Extract a `Metadata` from a `HeaderFrame`."""
         metadata = Metadata()
         for clause in header:
             process_clause_header(clause, metadata, self.ont)
@@ -53,8 +54,7 @@ class FastoboParser:
     __non_one_clause = {k: attrgetter(k) for k in ("union_of", "intersection_of")}
 
     def enrich_term(self, frame: fastobo.term.TermFrame) -> Term:
-        """Given a `TermFrame`, create a new `Term` or enrich an existing one.
-        """
+        """Given a `TermFrame`, create a new `Term` or enrich an existing one."""
         # Create a term, or get the existing one if any
         id_ = str(frame.id)
         try:
@@ -73,8 +73,7 @@ class FastoboParser:
         return term
 
     def enrich_relationship(self, frame: fastobo.typedef.TypedefFrame) -> Relationship:
-        """Given a `TypedefFrame`, create or enrich a `Relationship`.
-        """
+        """Given a `TypedefFrame`, create or enrich a `Relationship`."""
         # Create a relationship, or get the existing one if any
         id_ = str(frame.id)
         try:
@@ -134,7 +133,9 @@ def _extract_xref(xref: fastobo.xref.Xref) -> Xref:
 
 
 @functools.singledispatch
-def process_clause_header(clause: fastobo.header.BaseHeaderClause, meta: Metadata, ont: Ontology):
+def process_clause_header(
+    clause: fastobo.header.BaseHeaderClause, meta: Metadata, ont: Ontology
+):
     raise TypeError(f"unexpected type: {type(clause).__name__}")
 
 
@@ -233,9 +234,10 @@ def _process_clause_header_unreserved(clause, meta, ont):
 
 
 @functools.singledispatch
-def process_clause_term(clause: fastobo.term.BaseTermClause, term: TermData, ont: Ontology):
-    """Populate the proper `term` field with data extracted from `clause`.
-    """
+def process_clause_term(
+    clause: fastobo.term.BaseTermClause, term: TermData, ont: Ontology
+):
+    """Populate the proper `term` field with data extracted from `clause`."""
     raise TypeError(f"unexpected type: {type(clause).__name__}")
 
 
@@ -243,8 +245,7 @@ def process_clause_term(clause: fastobo.term.BaseTermClause, term: TermData, ont
 def process_clause_typedef(
     clause: fastobo.typedef.BaseTypedefClause, rel: RelationshipData, ont: Ontology
 ):
-    """Populate the proper `rel` field with data extracted from `clause`.
-    """
+    """Populate the proper `rel` field with data extracted from `clause`."""
     raise TypeError(f"unexpected type: {type(clause).__name__}")
 
 

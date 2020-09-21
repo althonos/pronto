@@ -1,22 +1,30 @@
 import contextlib
-import itertools
 import io
+import itertools
 import typing
 import warnings
 import weakref
-from typing import BinaryIO, Dict, Mapping, MutableMapping, NamedTuple, Optional, Set, Union
+from typing import (
+    BinaryIO,
+    Dict,
+    Mapping,
+    MutableMapping,
+    NamedTuple,
+    Optional,
+    Set,
+    Union,
+)
 
 from . import relationship
 from .entity import Entity, EntityData
-from .term import Term, TermData
-from .relationship import Relationship, RelationshipData
 from .logic.lineage import Lineage
 from .metadata import Metadata
+from .relationship import Relationship, RelationshipData
 from .synonym import SynonymType
+from .term import Term, TermData
 from .utils.io import decompress, get_handle, get_location
 from .utils.iter import SizedIterator
 from .utils.meta import roundrepr, typechecked
-
 
 __all__ = ["Ontology"]
 _D = typing.TypeVar("_D", bound=EntityData)
@@ -241,8 +249,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         )
 
     def __iter__(self) -> SizedIterator[str]:
-        """Yield the identifiers of all the entities part of the ontology.
-        """
+        """Yield the identifiers of all the entities part of the ontology."""
         terms, relationships = self.terms(), self.relationships()
         entities: typing.Iterable[Entity] = itertools.chain(terms, relationships)
         return SizedIterator(
@@ -261,8 +268,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         return False
 
     def __getitem__(self, id: str) -> Union[Term, Relationship]:
-        """Get any entity in the ontology graph with the given identifier.
-        """
+        """Get any entity in the ontology graph with the given identifier."""
         try:
             return self.get_relationship(id)
         except KeyError:
@@ -274,8 +280,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         raise KeyError(id)
 
     def __repr__(self):
-        """Return a textual representation of `self` that should roundtrip.
-        """
+        """Return a textual representation of `self` that should roundtrip."""
         if self.path is not None:
             args = (self.path,)
         elif self.handle is not None:
@@ -339,16 +344,14 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     # --- Data accessors -----------------------------------------------------
 
     def synonym_types(self) -> SizedIterator[SynonymType]:
-        """Iterate over the synonym types of the ontology graph.
-        """
-        sources = [ i.synonym_types() for i in self.imports.values() ]
+        """Iterate over the synonym types of the ontology graph."""
+        sources = [i.synonym_types() for i in self.imports.values()]
         sources.append(self.metadata.synonymtypedefs)  # type: ignore
         length = sum(map(len, sources))
         return SizedIterator(itertools.chain.from_iterable(sources), length)
 
     def terms(self) -> SizedIterator[Term]:
-        """Iterate over the terms of the ontology graph.
-        """
+        """Iterate over the terms of the ontology graph."""
         return SizedIterator(
             itertools.chain(
                 (

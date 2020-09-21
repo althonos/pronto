@@ -7,6 +7,7 @@ import pronto
 from pronto.relationship import Relationship, RelationshipData
 
 from .utils import DATADIR
+from .test_entity import _TestEntitySet
 
 
 class TestRelationship(unittest.TestCase):
@@ -37,3 +38,9 @@ class TestRelationship(unittest.TestCase):
         friend_of = ont.create_relationship("friend_of")
         friend_of.subproperties().add(best_friend_of)
         self.assertIn(best_friend_of, sorted(friend_of.subproperties()))
+
+
+class TestRelationshipSet(_TestEntitySet, unittest.TestCase):
+
+    def create_entity(self, ont, id):
+        return ont.create_relationship(id)

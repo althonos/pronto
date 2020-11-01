@@ -23,12 +23,7 @@ Note:
 
 __author__ = "Martin Larralde <martin.larralde@embl.de>"
 __license__ = "MIT"
-__version__ = (
-    __import__("pkg_resources")
-    .resource_string(__name__, "_version.txt")
-    .decode("utf-8")
-    .strip()
-)
+__version__ = "2.3.1"
 
 # Update the docstring with a link to the right version of the documentation
 # instead of the latest.

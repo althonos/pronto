@@ -2,4 +2,5 @@ include COPYING
 include CHANGELOG.md
 include README.rst
 include pronto/_version.txt
+include pronto/py.typed
 recursive-exclude tests *

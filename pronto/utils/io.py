@@ -122,7 +122,7 @@ def decompress(
     encoding = encoding if encoding is not None else cast(str, det["encoding"])
 
     if encoding == "ascii":
-        encoding = "UTF-8"
+        encoding = "utf-8"
     if confidence < 1.0:
         warnings.warn(
             f"unsound encoding, assuming {encoding} ({confidence:.0%} confidence)",
@@ -130,7 +130,7 @@ def decompress(
             stacklevel=3,
         )
 
-    if encoding == "UTF-8":
+    if encoding == "utf-8":
         return typing.cast(BinaryIO, decompressed)
     else:
         return typing.cast(

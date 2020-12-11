@@ -4,7 +4,7 @@ import itertools
 import typing
 import warnings
 import weakref
-from pathlib import Path
+from os import PathLike, fspath
 from typing import (
     BinaryIO,
     Dict,
@@ -144,7 +144,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     def __init__(
         self,
-        handle: Union[BinaryIO, str, Path, None] = None,
+        handle: Union[BinaryIO, str, PathLike, None] = None,
         import_depth: int = -1,
         timeout: int = 5,
         threads: Optional[int] = None,
@@ -152,7 +152,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """Create a new `Ontology` instance.
 
         Arguments:
-            handle (str, ~typing.BinaryIO, ~pathlib.Path, or None): Either the
+            handle (str, ~typing.BinaryIO, ~os.PathLike, or None): Either the
                 path to a file or a binary file handle that contains a
                 serialized version of the ontology. If `None` is given, an
                 empty `Ontology` is returned and can be populated manually.
@@ -194,8 +194,8 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 return
 
             # Get the path and the handle from arguments
-            if isinstance(handle, (str, Path)):
-                self.path = handle = str(handle)
+            if isinstance(handle, (str, PathLike)):
+                self.path = handle = fspath(handle)
                 self.handle = ctx.enter_context(get_handle(handle, timeout))
                 _handle = ctx.enter_context(decompress(self.handle))
                 _detach = False

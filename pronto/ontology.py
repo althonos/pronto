@@ -236,9 +236,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         Example:
             >>> ms = pronto.Ontology.from_obo_library("ms.obo")
             >>> len(ms)
-            6023
+            6022
             >>> len(ms.terms())
-            5995
+            5994
             >>> len(ms.relationships())
             28
 

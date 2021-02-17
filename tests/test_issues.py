@@ -62,6 +62,7 @@ class TestIssues(unittest.TestCase):
         """
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', UnicodeWarning)
+            warnings.simplefilter('ignore', DeprecationWarning)
             path = os.path.join(utils.DATADIR, "imagingMS.obo")
             ims = pronto.Ontology(path)
 

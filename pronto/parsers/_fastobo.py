@@ -58,9 +58,9 @@ class FastoboParser:
         # Create a term, or get the existing one if any
         id_ = str(frame.id)
         try:
-            term = self.ont.create_term(id_)
-        except ValueError:
             term = self.ont.get_term(id_)
+        except KeyError:
+            term = self.ont.create_term(id_)
         data = term._data()
         # Process all clauses in the frame
         for clause in frame:
@@ -77,9 +77,9 @@ class FastoboParser:
         # Create a relationship, or get the existing one if any
         id_ = str(frame.id)
         try:
-            rship = self.ont.create_relationship(id_)
-        except ValueError:
             rship = self.ont.get_relationship(id_)
+        except KeyError:
+            rship = self.ont.create_relationship(id_)
         data = rship._data()
         # Process all clauses in the frame
         for clause in frame:

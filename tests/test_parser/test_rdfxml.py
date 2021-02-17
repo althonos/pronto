@@ -363,7 +363,7 @@ class TestRdfXMLParser(unittest.TestCase):
             </owl:ObjectProperty>
             """
         )
-        self.assertIn("TST:001", ont)
+        self.assertIn("TST:001", ont.relationships())
         self.assertTrue(ont.get_relationship("TST:001").cyclic)
 
     def test_relationship_functional(self):
@@ -376,7 +376,7 @@ class TestRdfXMLParser(unittest.TestCase):
             </owl:ObjectProperty>
             """
         )
-        self.assertIn("TST:001", ont)
+        self.assertIn("TST:001", ont.relationships())
         self.assertTrue(ont.get_relationship("TST:001").functional)
 
     def test_relationship_multiple_labels(self):
@@ -398,7 +398,7 @@ class TestRdfXMLParser(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", pronto.warnings.SyntaxWarning)
             ont = self.get_ontology(txt)
-            self.assertIn(ont['TST:001'].name, ["A", "B"])
+            self.assertIn(ont.get_relationship('TST:001').name, ["A", "B"])
 
     def test_relationship_reflexive(self):
         ont = self.get_ontology(
@@ -410,7 +410,7 @@ class TestRdfXMLParser(unittest.TestCase):
             </owl:ObjectProperty>
             """
         )
-        self.assertIn("TST:001", ont)
+        self.assertIn("TST:001", ont.relationships())
         self.assertTrue(ont.get_relationship("TST:001").reflexive)
 
     def test_relationship_subset(self):
@@ -425,7 +425,7 @@ class TestRdfXMLParser(unittest.TestCase):
                 <oboInOwl:inSubset rdf:resource="http://purl.obolibrary.org/obo/tst#ss"/>
             </owl:ObjectProperty>
         """)
-        self.assertIn("friend_of", ont)
+        self.assertIn("friend_of", ont.relationships())
         self.assertEqual(ont.get_relationship("friend_of").subsets, {"ss"})
 
     def test_relationship_symmetric(self):
@@ -438,5 +438,5 @@ class TestRdfXMLParser(unittest.TestCase):
             </owl:ObjectProperty>
             """
         )
-        self.assertIn("TST:001", ont)
+        self.assertIn("TST:001", ont.relationships())
         self.assertTrue(ont.get_relationship("TST:001").symmetric)

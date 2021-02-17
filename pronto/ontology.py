@@ -7,12 +7,16 @@ import weakref
 from os import PathLike, fspath
 from typing import (
     BinaryIO,
+    Container,
     Dict,
+    Iterable,
+    Iterator,
     Mapping,
     MutableMapping,
     NamedTuple,
     Optional,
     Set,
+    Sized,
     Union,
 )
 
@@ -57,6 +61,41 @@ class _DataGraph(typing.Generic[_D], typing.Mapping[str, _D]):
 
     def __getitem__(self, key: str) -> _D:
         return self.entities[key]
+
+
+class _OntologyRelationships(Sized, Container, Iterable[Relationship]):
+    """A convenience wrapper over the relationships of an ontology.
+    """
+
+    def __init__(self, ontology):
+        self.__ontology = ontology
+
+    def __len__(self):
+        return (
+            sum(len(r.relationships()) for r in self.__ontology.imports.values())
+            + len(self.__ontology._relationships.entities)
+        )
+
+    def __iter__(self) -> Iterator[Relationship]:
+        return itertools.chain(
+            (
+                Relationship(self, r._data())
+                for ref in self.__ontology.imports.values()
+                for r in ref.relationships()
+            ),
+            (
+                self.__ontology.get_relationship(r)
+                for r in self.__ontology._relationships.entities
+            ),
+        )
+
+    def __contains__(self, item: object) -> bool:
+        if isinstance(item, str):
+            return (
+                any(item in i for i in self.__ontology.imports.values())
+                or item in self.__ontology._relationships
+            )
+        return False
 
 
 class Ontology(Mapping[str, Union[Term, Relationship]]):
@@ -234,11 +273,10 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         Example:
             >>> ms = pronto.Ontology.from_obo_library("ms.obo")
             >>> len(ms)
-            6022
+            6023
             >>> len(ms.terms())
-            5994
-            >>> len(ms.relationships())
-            28
+            5995
+
 
         """
         return (
@@ -258,12 +296,19 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     def __contains__(self, item: object) -> bool:
         if isinstance(item, str):
+            # TODO: remove in v3.0.0
+            if item in self._relationships or item in relationship._BUILTINS:
+                warnings.warn(
+                    "checking if an ontology contains a relationship with "
+                    "`<id> in Ontology` will not be supported in future "
+                    "versions, use `<id> in Ontology.relationships()`.",
+                    category=DeprecationWarning,
+                    stacklevel=2,
+                )
+                return True
             return (
                 any(item in i for i in self.imports.values())
                 or item in self._terms
-                or item in self._relationships
-                # TODO: remove in v3.0.0
-                or item in relationship._BUILTINS
             )
         return False
 
@@ -378,23 +423,23 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             ),
         )
 
-    def relationships(self) -> SizedIterator[Relationship]:
-        """Iterate over the relationships of the ontology graph.
+    def relationships(self) -> _OntologyRelationships:
+        """Query the relationships of an ontology.
+
+        Example:
+            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
+            >>> len(ms.relationships())
+            28
+            >>> "has_units" in ms.relationships()
+            True
+            >>> for r in ms.relationships():
+            ...     print(r)
+            Relationship('correlates_with', ...)
+            Relationship('decreased_in_magnitude_relative_to', ...)
+            ...
+
         """
-        return SizedIterator(
-            itertools.chain(
-                (
-                    Relationship(self, r._data())
-                    for ref in self.imports.values()
-                    for r in ref.relationships()
-                ),
-                (self.get_relationship(r) for r in self._relationships.entities),
-            ),
-            length=(
-                sum(len(r.relationships()) for r in self.imports.values())
-                + len(self._relationships.entities)
-            ),
-        )
+        return _OntologyRelationships(self)
 
     @typechecked()
     def create_term(self, id: str) -> Term:

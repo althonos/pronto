@@ -58,7 +58,7 @@ class TestOntology(unittest.TestCase):
         ont.create_relationship("brother_of")
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            self.assertRaises(DeprecationWarning, ont["brother_of"])
+            self.assertRaises(DeprecationWarning, ont.__getitem__, "brother_of")
 
 
 class TestOntologyLineage(unittest.TestCase):

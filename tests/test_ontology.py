@@ -53,6 +53,13 @@ class TestOntology(unittest.TestCase):
         self.assertRaises(ValueError, pronto.Ontology, hp, threads=-1)
         self.assertRaises(ValueError, pronto.Ontology, hp, threads=0)
 
+    def test_indexing_relationship_warning(self):
+        ont = pronto.Ontology()
+        ont.create_relationship("brother_of")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            self.assertRaises(DeprecationWarning, ont["brother_of"])
+
 
 class TestOntologyLineage(unittest.TestCase):
     def test_edit_term(self):

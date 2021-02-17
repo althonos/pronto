@@ -364,7 +364,7 @@ class TestRdfXMLParser(unittest.TestCase):
             """
         )
         self.assertIn("TST:001", ont)
-        self.assertTrue(ont["TST:001"].cyclic)
+        self.assertTrue(ont.get_relationship("TST:001").cyclic)
 
     def test_relationship_functional(self):
         ont = self.get_ontology(
@@ -377,7 +377,7 @@ class TestRdfXMLParser(unittest.TestCase):
             """
         )
         self.assertIn("TST:001", ont)
-        self.assertTrue(ont["TST:001"].functional)
+        self.assertTrue(ont.get_relationship("TST:001").functional)
 
     def test_relationship_multiple_labels(self):
         txt = """
@@ -411,7 +411,7 @@ class TestRdfXMLParser(unittest.TestCase):
             """
         )
         self.assertIn("TST:001", ont)
-        self.assertTrue(ont["TST:001"].reflexive)
+        self.assertTrue(ont.get_relationship("TST:001").reflexive)
 
     def test_relationship_subset(self):
         ont = self.get_ontology("""
@@ -426,7 +426,7 @@ class TestRdfXMLParser(unittest.TestCase):
             </owl:ObjectProperty>
         """)
         self.assertIn("friend_of", ont)
-        self.assertEqual(ont["friend_of"].subsets, {"ss"})
+        self.assertEqual(ont.get_relationship("friend_of").subsets, {"ss"})
 
     def test_relationship_symmetric(self):
         ont = self.get_ontology(
@@ -439,4 +439,4 @@ class TestRdfXMLParser(unittest.TestCase):
             """
         )
         self.assertIn("TST:001", ont)
-        self.assertTrue(ont["TST:001"].symmetric)
+        self.assertTrue(ont.get_relationship("TST:001").symmetric)

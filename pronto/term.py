@@ -28,6 +28,7 @@ from .pv import PropertyValue
 from .relationship import Relationship
 from .synonym import SynonymData
 from .utils.meta import typechecked
+from .utils.warnings import NotImplementedWarning
 from .xref import Xref
 
 if typing.TYPE_CHECKING:
@@ -180,7 +181,7 @@ class Term(Entity["TermData", "TermSet"]):
             >>> go = pronto.Ontology.from_obo_library("go.obo")
             >>> go['GO:0048870']
             Term('GO:0048870', name='cell motility')
-            >>> list(go['GO:0048870'].objects(go['part_of']))
+            >>> list(go['GO:0048870'].objects(go.get_relationship('part_of')))
             [Term('GO:0051674', name='localization of cell')]
 
         Todo:
@@ -200,6 +201,14 @@ class Term(Entity["TermData", "TermSet"]):
                 stacklevel=2,
             )
             return self.superclasses()
+
+        warnings.warn(
+            "`Term.objects` is not semantically correct, most of the logic "
+            "rules have not been implemented. Consider using an actual "
+            "reasoner instead.",
+            category=DeprecationWarning,
+            stacklevel=2
+        )
 
         g = networkx.MultiDiGraph()
         ont = self._ontology()

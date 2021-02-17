@@ -262,20 +262,33 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 any(item in i for i in self.imports.values())
                 or item in self._terms
                 or item in self._relationships
+                # TODO: remove in v3.0.0
                 or item in relationship._BUILTINS
             )
         return False
 
     def __getitem__(self, id: str) -> Union[Term, Relationship]:
         """Get any entity in the ontology graph with the given identifier."""
+        # TODO: remove block in v3.0.0
         try:
-            return self.get_relationship(id)
+            entity = self.get_relationship(id)
         except KeyError:
             pass
+        else:
+            warnings.warn(
+                "indexing an ontology to retrieve a relationship will not be "
+                "supported in future versions, use `Ontology.get_relationship` "
+                "directly.",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            return entity
+
         try:
             return self.get_term(id)
         except KeyError:
             pass
+
         raise KeyError(id)
 
     def __repr__(self):
@@ -367,10 +380,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
 
     def relationships(self) -> SizedIterator[Relationship]:
         """Iterate over the relationships of the ontology graph.
-
-        Builtin relationships (``is_a``) are not part of the yielded entities,
-        yet they can still be accessed with the `Ontology.get_relationship`
-        method.
         """
         return SizedIterator(
             itertools.chain(

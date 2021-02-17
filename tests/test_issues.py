@@ -77,8 +77,8 @@ class TestIssues(unittest.TestCase):
     def test_alt_id_access(self):
         path = os.path.join(utils.DATADIR, "hp.obo")
         hp = pronto.Ontology(path, import_depth=0)
-        self.assertIn("HP:0001198", hp)
-        self.assertEqual(hp["HP:0001198"].id, "HP:0009882")
+        self.assertNotIn("HP:0001198", hp)
+        self.assertIn("HP:0001198", hp["HP:0009882"].alternate_ids)
 
     @mock.patch("pronto.parsers.base.BaseParser.process_import", new=process_import)
     def test_synonym_type_in_import(self):

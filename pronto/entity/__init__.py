@@ -129,20 +129,17 @@ class Entity(typing.Generic[_D, _S]):
     # --- Data descriptors ---------------------------------------------------
 
     @property
-    def alternate_ids(self) -> "AlternateIDs":
-        """`frozenset` of `str`: A set of alternate IDs for this entity."""
-        from .attributes import AlternateIDs
-
-        return AlternateIDs(self)
+    def alternate_ids(self) -> Set[str]:
+        """`set` of `str`: A set of alternate IDs for this entity."""
+        return self._data().alternate_ids
 
     @alternate_ids.setter  # type: ignore
     def alternate_ids(self, ids: Iterable[str]):
-        self.alternate_ids.clear()
-        self.alternate_ids.update(ids)
+        self._data().alternate_ids = set(ids)
 
     @property
     def annotations(self) -> Set[PropertyValue]:
-        """`frozenset` of `PropertyValue`: Annotations relevant to the entity."""
+        """`set` of `PropertyValue`: Annotations relevant to the entity."""
         return self._data().annotations
 
     @annotations.setter

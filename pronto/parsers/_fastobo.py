@@ -253,14 +253,12 @@ def process_clause_typedef(
 def _process_clause_term_alt_id(clause, entity, ont):
     id_ = str(clause.alt_id)
     entity.alternate_ids.add(id_)
-    ont._terms.aliases[id_] = entity
 
 
 @process_clause_typedef.register(fastobo.typedef.AltIdClause)
 def _process_clause_typedef_alt_id(clause, entity, ont):
     id_ = str(clause.alt_id)
     entity.alternate_ids.add(id_)
-    ont._relationships.aliases[id_] = entity
 
 
 @process_clause_term.register(fastobo.term.BuiltinClause)

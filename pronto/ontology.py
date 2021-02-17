@@ -40,16 +40,14 @@ class _DataGraph(typing.Generic[_D], typing.Mapping[str, _D]):
     """
 
     entities: MutableMapping[str, _D]
-    aliases: MutableMapping[str, _D]
     lineage: MutableMapping[str, Lineage]
 
-    def __init__(self, entities=None, lineage=None, aliases=None):
+    def __init__(self, entities=None, lineage=None):
         self.entities = entities or {}
         self.lineage = lineage or {}
-        self.aliases = weakref.WeakValueDictionary(aliases or {})
 
     def __contains__(self, key: object) -> bool:
-        return key in self.entities or key in self.aliases
+        return key in self.entities
 
     def __len__(self) -> int:
         return len(self.entities)
@@ -58,7 +56,7 @@ class _DataGraph(typing.Generic[_D], typing.Mapping[str, _D]):
         return iter(self.entities)
 
     def __getitem__(self, key: str) -> _D:
-        return self.entities.get(key) or self.aliases[key]
+        return self.entities[key]
 
 
 class Ontology(Mapping[str, Union[Term, Relationship]]):

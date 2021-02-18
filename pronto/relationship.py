@@ -293,7 +293,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
         """`bool`: Whether this relationship is cyclic."""
         return self._data().cyclic
 
-    @class_level.setter  # type: ignore
+    @cyclic.setter  # type: ignore
     @typechecked(property=True)
     def cyclic(self, value: bool) -> None:
         self._data().cyclic = value

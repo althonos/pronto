@@ -5,7 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.3.2...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.0...HEAD
+
+## [2.4.0] - 2021-02-18
+[2.4.0]: https://github.com/althonos/pronto/compare/v2.3.2...v2.4.0
+### Added
+- Deprecation warnings for the retrieval of relationships via
+  indexing, to be deprecated in `v3`.
+### Changed
+- Replaced Travis-CI with GitHub Actions to handle continuous integration.
+- Bumped `fastobo` dependency to `v0.10.0`.
+### Removed
+- Retrieval of terms via their alternate IDs (introduced in `v2.3.0`,
+  caused multiple issues ([#120](https://github.com/althonos/pronto/issues/120),
+  [#126](https://github.com/althonos/pronto/issues/126)).
 
 ## [2.3.2] - 2020-12-17
 [2.3.2]: https://github.com/althonos/pronto/compare/v2.3.1...v2.3.2

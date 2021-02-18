@@ -63,36 +63,71 @@ class _DataGraph(typing.Generic[_D], typing.Mapping[str, _D]):
         return self.entities[key]
 
 
-class _OntologyRelationships(Sized, Container, Iterable[Relationship]):
-    """A convenience wrapper over the relationships of an ontology.
+class _OntologyTerms(Sized, Container, Iterable[Term]):
+    """A convenience wrapper over the terms of an ontology.
     """
 
-    def __init__(self, ontology):
+    def __init__(self, ontology: "Ontology") -> None:
         self.__ontology = ontology
 
-    def __len__(self):
+    def __len__(self) -> int:
         return (
-            sum(len(r.relationships()) for r in self.__ontology.imports.values())
-            + len(self.__ontology._relationships.entities)
+            sum(len(ref.terms()) for ref in self.__ontology.imports.values())
+            + len(self.__ontology._terms.entities)
         )
 
-    def __iter__(self) -> Iterator[Relationship]:
+    def __iter__(self) -> Iterator[Term]:
         return itertools.chain(
             (
-                Relationship(self, r._data())
+                Term(self.__ontology, t._data())
                 for ref in self.__ontology.imports.values()
-                for r in ref.relationships()
+                for t in ref.terms()
             ),
             (
-                self.__ontology.get_relationship(r)
-                for r in self.__ontology._relationships.entities
+                Term(self.__ontology, tdata)
+                for tdata in self.__ontology._terms.entities.values()
             ),
         )
 
     def __contains__(self, item: object) -> bool:
         if isinstance(item, str):
             return (
-                any(item in i for i in self.__ontology.imports.values())
+                any(item in ref for ref in self.__ontology.imports.values())
+                or item in self.__ontology._terms
+            )
+        return False
+
+
+class _OntologyRelationships(Sized, Container, Iterable[Relationship]):
+    """A convenience wrapper over the relationships of an ontology.
+    """
+
+    def __init__(self, ontology: "Ontology"):
+        self.__ontology = ontology
+
+    def __len__(self) -> int:
+        return (
+            sum(len(ref.relationships()) for ref in self.__ontology.imports.values())
+            + len(self.__ontology._relationships.entities)
+        )
+
+    def __iter__(self) -> Iterator[Relationship]:
+        return itertools.chain(
+            (
+                Relationship(self.__ontology, r._data())
+                for ref in self.__ontology.imports.values()
+                for r in ref.relationships()
+            ),
+            (
+                Relationship(self.__ontology, rdata)
+                for rdata in self.__ontology._relationships.entities.values()
+            ),
+        )
+
+    def __contains__(self, item: object) -> bool:
+        if isinstance(item, str):
+            return (
+                any(item in ref for ref in self.__ontology.imports.values())
                 or item in self.__ontology._relationships
             )
         return False
@@ -168,10 +203,10 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                 the number of CPUs on the host machine.
 
         Example:
-            >>> ms = pronto.Ontology.from_obo_library("apo.obo")
-            >>> ms.metadata.ontology
+            >>> apo = pronto.Ontology.from_obo_library("apo.obo")
+            >>> apo.metadata.ontology
             'apo'
-            >>> ms.path
+            >>> apo.path
             'http://purl.obolibrary.org/obo/apo.obo'
 
         """
@@ -276,7 +311,6 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             6023
             >>> len(ms.terms())
             5995
-
 
         """
         return (
@@ -407,21 +441,23 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         length = sum(map(len, sources))
         return SizedIterator(itertools.chain.from_iterable(sources), length)
 
-    def terms(self) -> SizedIterator[Term]:
-        """Iterate over the terms of the ontology graph."""
-        return SizedIterator(
-            itertools.chain(
-                (
-                    Term(self, t._data())
-                    for ref in self.imports.values()
-                    for t in ref.terms()
-                ),
-                (Term(self, t) for t in self._terms.entities.values()),
-            ),
-            length=(
-                sum(len(r.terms()) for r in self.imports.values()) + len(self._terms)
-            ),
-        )
+    def terms(self) -> _OntologyTerms:
+        """Query the terms of an ontology.
+
+        Example:
+            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
+            >>> len(ms.terms())
+            5995
+            >>> "MS:1000031" in ms.terms()
+            True
+            >>> for t in ms.terms():
+            ...     print(t)
+            Term('UO:0000000', name='unit')
+            Term('UO:0000001', name='length unit')
+            ...
+
+        """
+        return _OntologyTerms(self)
 
     def relationships(self) -> _OntologyRelationships:
         """Query the relationships of an ontology.

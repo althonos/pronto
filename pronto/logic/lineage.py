@@ -95,19 +95,19 @@ class LineageHandler(typing.Generic[_E], typing.Iterable[_E]):
 
     @abc.abstractmethod
     def _get_data(self) -> "_DataGraph":
-        return NotImplemented
+        return NotImplemented  # type: ignore
 
     @abc.abstractmethod
     def add(self, other: _E) -> None:
-        return NotImplemented
+        return NotImplemented  # type: ignore
 
     @abc.abstractmethod
     def remove(self, other: _E) -> None:
-        return NotImplemented
+        return NotImplemented  # type: ignore
 
     @abc.abstractmethod
     def clear(self) -> None:
-        return NotImplemented
+        return NotImplemented  # type: ignore
 
 
 class TermHandler(LineageHandler["Term"]):

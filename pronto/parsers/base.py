@@ -19,7 +19,7 @@ class BaseParser(abc.ABC):
     @abc.abstractmethod
     def can_parse(cls, path: str, buffer: bytes) -> bool:
         """Return `True` if this parser type can parse the given handle."""
-        return NotImplemented
+        return NotImplemented  # type: ignore
 
     @abc.abstractmethod
     def parse_from(

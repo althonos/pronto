@@ -14,7 +14,7 @@ from ..xref import Xref
 if typing.TYPE_CHECKING:
     from ..ontology import _DataGraph, Ontology
     from ..relationship import Relationship
-    from .attributes import AlternateIDs, Relationships
+    from .attributes import Relationships
 
 __all__ = ["EntityData", "Entity", "EntitySet"]
 _D = typing.TypeVar("_D", bound="EntityData")

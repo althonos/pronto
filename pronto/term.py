@@ -206,7 +206,7 @@ class Term(Entity["TermData", "TermSet"]):
             "`Term.objects` is not semantically correct, most of the logic "
             "rules have not been implemented. Consider using an actual "
             "reasoner instead.",
-            category=DeprecationWarning,
+            category=NotImplementedWarning,
             stacklevel=2
         )
 

@@ -191,6 +191,17 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def consider(self) -> _S:
+        """`EntitySet`: A set of potential substitutes for an obsolete term.
+
+        An obsolete entity can provide one or more entities which may be
+        appropriate substitutes, but needs to be looked at carefully by a
+        human expert before the replacement is done.
+
+        See Also:
+            `~Entity.replaced_by`, which provides a set of entities suitable
+            for automatic replacement.
+
+        """
         s = self._Set()
         s._ids = self._data().consider
         s._ontology = self._ontology()
@@ -206,7 +217,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def created_by(self) -> Optional[str]:
-        """`str` or `None`: the name of the creator of the entity, if any.
+        """`str` or `None`: The name of the creator of the entity, if any.
 
         This property gets translated to a ``dc:creator`` annotation in OWL2,
         which has very broad semantics. Some OBO ontologies may instead use
@@ -224,7 +235,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def creation_date(self) -> Optional[datetime.datetime]:
-        """`~datetime.datetime` or None: the date the entity was created."""
+        """`~datetime.datetime` or None: The date the entity was created."""
         return self._data().creation_date
 
     @creation_date.setter  # type: ignore
@@ -234,7 +245,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def definition(self) -> Optional[Definition]:
-        """`str` or None: the textual definition of the current entity.
+        """`str` or None: The textual definition of the current entity.
 
         Definitions in OBO are intended to be human-readable text describing
         the entity, with some additional cross-references if possible.
@@ -310,7 +321,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def namespace(self) -> Optional[str]:
-        """`str` or `None`: the namespace this entity is defined in."""
+        """`str` or `None`: The namespace this entity is defined in."""
         return self._data().namespace
 
     @namespace.setter  # type: ignore
@@ -320,7 +331,37 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def obsolete(self) -> bool:
-        """`bool`: whether or not the entity is obsolete."""
+        """`bool`: Whether or not the entity is obsolete.
+
+        Hint:
+            All OBO entities can be made obsolete through a boolean flag, and
+            map to one or several replacements. When querying an obsolete
+            entity, ``pronto`` will **not** attempt to perform any kind of
+            replacement itself ::
+
+                >>> ms = pronto.Ontology.from_obo_library("ms.obo")
+                >>> term = ms["MS:1001414"]
+                >>> term
+                Term('MS:1001414', name='MGF scans')
+                >>> term.obsolete
+                True
+
+            To always get the up-to-date, non-obsolete entity, you could use
+            the following snippet, going through a term replacement if there
+            is no ambiguity ::
+
+                >>> while term.obsolete:
+                ...     if len(term.replaced_by) != 1:
+                ...         raise ValueError(f"no replacement for {term.id}")
+                ...     term = term.replaced_by.pop()
+                >>> term
+                Term('MS:1000797', name='peak list scans')
+
+        See Also:
+            `~.Entity.consider` and `~Entity.replaced_by`, storing some
+            replacement options for an obsolete entity.
+
+        """
         return self._data().obsolete
 
     @obsolete.setter  # type: ignore
@@ -343,6 +384,17 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def replaced_by(self) -> _S:
+        """`EntitySet`: A set of of replacements for an obsolete term.
+
+        An obsolete entity can provide one or more replacement that can
+        safely be used to automatically reassign instances to non-obsolete
+        classes.
+
+        See Also:
+            `~Entity.consider`, which provides a set of entities suitable
+            for replacement but requiring expert curation.
+
+        """
         s = self._Set()
         s._ids = self._data().replaced_by
         s._ontology = self._ontology()
@@ -358,7 +410,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def subsets(self) -> FrozenSet[str]:
-        """`frozenset` of `str`: the subsets containing this entity."""
+        """`frozenset` of `str`: The subsets containing this entity."""
         return frozenset(self._data().subsets)
 
     @subsets.setter  # type: ignore
@@ -372,7 +424,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def synonyms(self) -> FrozenSet[Synonym]:
-        """`frozenset` of `Synonym`: a set of synonyms for this entity."""
+        """`frozenset` of `Synonym`: A set of synonyms for this entity."""
         ontology, termdata = self._ontology(), self._data()
         return frozenset(Synonym(ontology, s) for s in termdata.synonyms)
 
@@ -405,7 +457,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def xrefs(self) -> FrozenSet[Xref]:
-        """`frozenset` of `Xref`: a set of database cross-references.
+        """`frozenset` of `Xref`: A set of database cross-references.
 
         Xrefs can be used to describe an analogous entity in another
         vocabulary, such as a database or a semantic knowledge base.

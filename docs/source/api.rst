@@ -56,7 +56,6 @@ instances.
     :template: summary.rst
     :toctree: api/
 
-    pronto.entity.attributes.AlternateIDs
     pronto.entity.attributes.Relationships
 
 

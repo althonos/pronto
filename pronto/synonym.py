@@ -105,7 +105,7 @@ class SynonymData(object):
 
 @functools.total_ordering
 class Synonym(object):
-    """A synonym for an entity, with respects to the OBO terminology."""
+    """A synonym for an entity, with respect to the OBO terminology."""
 
     __ontology: "Ontology"
 

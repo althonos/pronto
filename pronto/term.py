@@ -123,9 +123,10 @@ class TermSet(EntitySet["Term"]):
         """Get an iterator over the subclasses of all terms in the set.
 
         Caution:
-            Contrary to `Term.subclasses`, this method **does not** return a
-            handler that lets you edit the subclasses directly. Adding a new
-            subclass to all the members of the set must be done explicitly.
+            Contrary to `pronto.Term.subclasses`, this method **does not**
+            return a handler that lets you edit the subclasses directly.
+            Adding a new subclass to all the members of the set must be
+            done explicitly.
 
         """
         return SubclassesIterator(*self, distance=distance, with_self=with_self)
@@ -134,6 +135,12 @@ class TermSet(EntitySet["Term"]):
         self, distance: Optional[int] = None, with_self: bool = True
     ) -> SuperclassesIterator:
         """Get an iterator over the superclasses of all terms in the set.
+
+        Caution:
+            Contrary to `pronto.Term.superclasses`, this method **does not**
+            return a handler that lets you edit the superclasses directly.
+            Adding a new superclass to all the members of the set must be
+            done explicitly.
 
         Example:
             >>> ms = pronto.Ontology("ms.obo")

@@ -445,15 +445,15 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """Query the terms of an ontology.
 
         Example:
-            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
-            >>> len(ms.terms())
-            5995
-            >>> "MS:1000031" in ms.terms()
+            >>> pato = pronto.Ontology.from_obo_library("pato.obo")
+            >>> len(pato.terms())
+            2661
+            >>> "PATO:0000186" in pato.terms()
             True
-            >>> for t in ms.terms():
-            ...     print(t)
-            Term('UO:0000000', name='unit')
-            Term('UO:0000001', name='length unit')
+            >>> for term in pato.terms():
+            ...     print(term)
+            Term('PATO:0000000', name='obsolete pato')
+            Term('PATO:0000001', name='quality')
             ...
 
         """
@@ -463,13 +463,13 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         """Query the relationships of an ontology.
 
         Example:
-            >>> ms = pronto.Ontology.from_obo_library("ms.obo")
-            >>> len(ms.relationships())
-            28
-            >>> "has_units" in ms.relationships()
+            >>> pato = pronto.Ontology.from_obo_library("pato.obo")
+            >>> len(pato.relationships())
+            24
+            >>> "reciprocal_of" in pato.relationships()
             True
-            >>> for r in ms.relationships():
-            ...     print(r)
+            >>> for relationship in pato.relationships():
+            ...     print(relationship)
             Relationship('correlates_with', ...)
             Relationship('decreased_in_magnitude_relative_to', ...)
             ...

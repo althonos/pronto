@@ -184,7 +184,7 @@ class RelationshipSet(EntitySet["Relationship"]):
 class Relationship(Entity["RelationshipData", "RelationshipSet"]):
     """A relationship, constitute the edges of the ontology graph.
 
-    Also sometimes referede as typedefs, relationship types, properties or
+    Also sometimes refered as typedefs, relationship types, properties or
     predicates. Formally equivalent to a property (either ``ObjectProperty``
     or ``AnnotationProperty``) in OWL2.
     """
@@ -253,7 +253,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def antisymmetric(self) -> bool:
-        """`bool`: whether this relationship is anti-symmetric."""
+        """`bool`: Whether this relationship is anti-symmetric."""
         return self._data().antisymmetric
 
     @antisymmetric.setter  # type: ignore
@@ -263,7 +263,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def asymmetric(self) -> bool:
-        """`bool`: whether this relationship is asymmetric."""
+        """`bool`: Whether this relationship is asymmetric."""
         return self._data().asymmetric
 
     @asymmetric.setter  # type: ignore
@@ -273,6 +273,14 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def class_level(self) -> bool:
+        """`bool`: Whether this relationship is applied at class level.
+
+        This tag affects how OBO ``relationship`` tags should be translated
+        in OWL2: by default, all relationship tags are taken to mean an
+        all-some relation over an instance level relation. With this flag
+        set to `True`, the relationship will be translated to an `owl:hasValue`
+        restriction.
+        """
         return self._data().class_level
 
     @class_level.setter  # type: ignore
@@ -282,10 +290,17 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def cyclic(self) -> bool:
+        """`bool`: Whether this relationship is cyclic."""
         return self._data().cyclic
+
+    @class_level.setter  # type: ignore
+    @typechecked(property=True)
+    def cyclic(self, value: bool) -> None:
+        self._data().cyclic = value
 
     @property
     def disjoint_over(self) -> "RelationshipSet":
+        """`frozenset`: The relationships this relationships is disjoint over."""
         s = RelationshipSet()
         s._ids = self._data().disjoint_over
         s._ontology = self._ontology()
@@ -293,6 +308,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def domain(self) -> Optional["Term"]:
+        """`Term` or `None`: The domain of the relationship, if any."""
         data, ontology = self._data(), self._ontology()
         if data.domain is not None:
             return ontology.get_term(data.domain)
@@ -327,6 +343,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def functional(self) -> bool:
+        """`bool`: Whether this relationship is functional."""
         return self._data().functional
 
     @functional.setter  # type: ignore
@@ -336,6 +353,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def inverse_functional(self) -> bool:
+        """`bool`: Whether this relationship is inverse functional."""
         return self._data().inverse_functional
 
     @inverse_functional.setter  # type: ignore
@@ -345,6 +363,13 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def metadata_tag(self) -> bool:
+        """`bool`: Whether or not this relationship is a metadata tag.
+
+        This tag affects how OBO typedefs should be translated in OWL2: by
+        default, all typedef tags are translated to an `owl:ObjectProperty`.
+        With this flag set to `True`, the typedef will be translated to an
+        `owl:AnnotationProperty`.
+        """
         return self._data().metadata_tag
 
     @metadata_tag.setter  # type: ignore
@@ -354,6 +379,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def holds_over_chain(self) -> FrozenSet[Tuple["Relationship", "Relationship"]]:
+        """`frozenset` of `Relationship` couples: The chains this relationship holds over."""
         ont: "Ontology" = self._ontology()
         data: "RelationshipData" = self._data()
         return frozenset(
@@ -362,6 +388,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def inverse_of(self) -> Optional["Relationship"]:
+        """`Relationship` or `None`: The inverse of this relationship, if any."""
         ont, reldata = self._ontology(), self._data()
         if reldata.inverse_of is not None:
             return ont.get_relationship(reldata.inverse_of)
@@ -373,6 +400,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def intersection_of(self) -> "RelationshipSet":
+        """`RelationshipSet`: The relations this relationship is an intersection of."""
         s = RelationshipSet()
         s._ids = self._data().intersection_of
         s._ontology = self._ontology()
@@ -380,6 +408,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def range(self) -> Optional["Term"]:
+        """`Term` or `None`: The range of the relationship, if any."""
         range, ont = self._data().range, self._ontology()
         return ont.get_term(range) if range is not None else None
 
@@ -394,6 +423,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def reflexive(self) -> bool:
+        """`bool`: Whether or not the relationship is reflexive."""
         return self._data().reflexive
 
     @reflexive.setter  # type: ignore
@@ -403,6 +433,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def symmetric(self) -> bool:
+        """`bool`: Whether or not the relationship is symmetric."""
         return self._data().symmetric
 
     @symmetric.setter  # type: ignore
@@ -412,6 +443,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def transitive(self) -> bool:
+        """`bool`: Whether or not the relationship is transitive."""
         return self._data().transitive
 
     @transitive.setter  # type: ignore
@@ -421,12 +453,14 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
 
     @property
     def transitive_over(self) -> "RelationshipSet":
+        """`RelationshipSet`: The relations this relationship is transitive over."""
         s = RelationshipSet()
         s._ids = self._data().transitive_over
         s._ontology = self._ontology()
         return s
 
 
+# TODO: remove in v3.0.0
 _BUILTINS = {
     "is_a": RelationshipData(
         id="is_a",

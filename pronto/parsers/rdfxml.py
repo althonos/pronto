@@ -154,7 +154,15 @@ class RdfXMLParser(BaseParser):
             iri = elem.get(_NS["rdf"]["about"])
             if iri is None:
                 continue
-            curies[iri] = self._compact_id(iri)
+            # attempt to extract the compact id of the term
+            elem_id = elem.find(_NS["oboInOwl"]["id"])
+            elem_sh = elem.find(_NS["oboInOwl"]["shorthand"])
+            if elem_sh is not None and elem_sh.text is not None:
+                curies[iri] = elem_sh.text
+            elif elem_id is not None and elem_id.text is not None:
+                curies[iri] = elem_id.text
+            else:
+                curies[iri] = self._compact_id(iri)
         return curies
 
     def _compact_id(self, iri: str) -> str:
@@ -502,8 +510,9 @@ class RdfXMLParser(BaseParser):
             if tag == _NS["rdfs"]["subPropertyOf"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
-                    curie = curies.get(iri) or self._compact_id(iri)
-                    self.ont._relationships.lineage[id_].sup.add(curie)
+                    if iri != _NS["owl"].raw("topObjectProperty"):
+                        curie = curies.get(iri) or self._compact_id(iri)
+                        self.ont._relationships.lineage[id_].sup.add(curie)
                 else:
                     pass  # TODO: subclassing relationship for relationship
             elif tag == _NS["oboInOwl"]["inSubset"]:
@@ -705,7 +714,19 @@ class RdfXMLParser(BaseParser):
         property = elem_property.attrib[_NS["rdf"]["resource"]]
         if property == _NS["obo"].raw("IAO_0000115") and elem_target.text is not None:
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
-            entity: Entity = self.ont[curies.get(iri) or self._compact_id(iri)]
+            curie = curies.get(iri) or self._compact_id(iri)
+
+            if curie in self.ont.terms():
+                entity: Entity = self.ont.get_term(curie)
+            elif curie in self.ont.relationships():
+                entity: Entity = self.ont.get_relationship(curie)
+            else:
+                warnings.warn(
+                    f"could not find axiom source: {curie!r}",
+                    SyntaxWarning,
+                    stacklevel=3,
+                )
+                return
 
             entity.definition = d = Definition(elem_target.text)
             for child in elem.iterfind(_NS["oboInOwl"]["hasDbXref"]):
@@ -735,19 +756,40 @@ class RdfXMLParser(BaseParser):
             entity = self.ont[curies.get(iri) or self._compact_id(iri)]
             label = elem.find(_NS["rdfs"]["label"])
 
-            if label is not None and label.text is not None:
-                new_xref = Xref(elem_target.text, label.text)
-            else:
-                new_xref = Xref(elem_target.text)
+            try:
+                if label is not None and label.text is not None:
+                    new_xref = Xref(elem_target.text, label.text)
+                else:
+                    new_xref = Xref(elem_target.text)
+            except ValueError:
+                warnings.warn(
+                    f"could not parse Xref: {elem_target.text!r}",
+                    SyntaxWarning,
+                    stacklevel=3,
+                )
+                return
+
             if new_xref in entity._data().xrefs:
                 entity._data().xrefs.remove(new_xref)
             entity._data().xrefs.add(new_xref)
 
         elif property in _SYNONYMS:
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
-            entity = self.ont[curies.get(iri) or self._compact_id(iri)]
-            type_ = elem.find(_NS["oboInOwl"]["hasSynonymType"])
+            curie = curies.get(iri) or self._compact_id(iri)
 
+            if curie in self.ont.terms():
+                entity: Entity = self.ont.get_term(curie)
+            elif curie in self.ont.relationships():
+                entity: Entity = self.ont.get_relationship(curie)
+            else:
+                warnings.warn(
+                    f"could not find axiom source: {curie!r}",
+                    SyntaxWarning,
+                    stacklevel=3,
+                )
+                return
+
+            type_ = elem.find(_NS["oboInOwl"]["hasSynonymType"])
             try:
                 synonym = next(
                     s._data()

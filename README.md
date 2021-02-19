@@ -107,18 +107,6 @@ they contain from their identifier in compact form:
 Term('CL:0002116', name='B220-low CD38-positive unswitched memory B cell')
 ```
 
-### 🔎 Get a term by alternate ID
-
-Retrieval of an entity by any alternate ID it was declared from is possible
-using the same syntax:
-```python
->>> hp = pronto.Ontology.from_obo_library("hp.obo")
->>> 'HP:0001198' in hp['HP:0009882'].alternate_ids
-True
->>> hp['HP:0001198']
-Term('HP:0009882', name='Short distal phalanx of finger')
-```
-
 ### 🖊️ Create a new term from scratch
 
 We can load an ontology, and edit it locally. Here, we add a new protein class

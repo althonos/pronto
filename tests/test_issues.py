@@ -97,3 +97,14 @@ class TestIssues(unittest.TestCase):
         s1 = t1.add_synonym("colour blindness", scope="EXACT", type=ty)
 
         self.assertEqual(s1.type, ty)
+
+    def test_rdfxml_aliased_typedef(self):
+        warnings.simplefilter("ignore")
+        path = os.path.join(__file__, "..", "data", "go-basic.owl")
+        go_basic = pronto.Ontology(os.path.realpath(path))
+        self.assertIn("regulates", go_basic.relationships())
+        self.assertIn("negatively_regulates", go_basic.relationships())
+        self.assertIn(
+            go_basic.get_relationship("regulates"),
+            go_basic.get_relationship("negatively_regulates").superproperties().to_set(),
+        )

@@ -453,7 +453,7 @@ class RdfXMLParser(BaseParser):
         # create the relationship
         rel = (
             self.ont.get_relationship
-            if id_ in self.ont
+            if id_ in self.ont.relationships()
             else self.ont.create_relationship
         )(id_)
         reldata = rel._data()
@@ -471,7 +471,10 @@ class RdfXMLParser(BaseParser):
 
             if tag == _NS["rdfs"]["subPropertyOf"]:
                 if _NS["rdf"]["resource"] in attrib:
-                    iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
+                    if attrib[_NS["rdf"]["resource"]] in aliases:
+                        iri = aliases[attrib[_NS["rdf"]["resource"]]]
+                    else:
+                        iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
                     self.ont._relationships.lineage[id_].sup.add(iri)
                 else:
                     pass  # TODO: subclassing relationship for relationship
@@ -535,11 +538,11 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["obo"]["IAO_0000427"] and text is not None:
                 reldata.antisymmetric = text == "true"
             elif tag == _NS["owl"]["equivalentClass"] and text is not None:
-                reldata.equivalent_to.add(self._compact_id(text))
+                curie = aliases.get(text) or self._compact_id(text)
+                reldata.equivalent_to.add(curie)
             elif tag == _NS["owl"]["inverseOf"]:
-                reldata.inverse_of = self._compact_id(
-                    child.attrib[_NS["rdf"]["resource"]]
-                )
+                iri = child.attrib[_NS["rdf"]["resource"]]
+                reldata.inverse_of = aliases.get(iri) or self._compact_id(iri)
             elif tag == _NS["owl"]["deprecated"]:
                 reldata.obsolete = text == "true"
             elif tag == _NS["oboInOwl"]["hasDbXref"]:
@@ -552,9 +555,11 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["obo"]["IAO_0100001"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
-                    reldata.replaced_by.add(self._compact_id(iri))
+                    curie = aliases.get(iri) or self._compact_id(iri)
+                    reldata.replaced_by.add(curie)
                 elif _NS["rdf"]["datatype"] in attrib:
-                    reldata.replaced_by.add(self._compact_id(text))
+                    curie = aliases.get(text) or self._compact_id(text)
+                    reldata.replaced_by.add(curie)
                 else:
                     warnings.warn(
                         "could not extract ID from IAO:0100001 annotation",
@@ -564,9 +569,11 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["oboInOwl"]["consider"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
-                    reldata.consider.add(self._compact_id(iri))
+                    curie = aliases.get(iri) or self._compact_id(iri)
+                    reldata.consider.add(curie)
                 elif _NS["rdf"]["datatype"] in attrib:
-                    reldata.consider.add(self._compact_id(text))
+                    curie = aliases.get(text) or self._compact_id(text)
+                    reldata.consider.add(curie)
                 else:
                     warnings.warn(
                         "could not extract ID from `oboInOwl:consider` annotation",

@@ -13,7 +13,7 @@ F = typing.TypeVar("F", bound=Callable[..., object])
 
 class typechecked(object):
 
-    _disable = False
+    _disable = 0
 
     if sys.version_info >= (3, 7):
         Set = set
@@ -64,12 +64,11 @@ class typechecked(object):
     @classmethod
     @contextlib.contextmanager
     def disabled(cls) -> Iterator[None]:
-        initial_state = cls._disable
+        cls._disable += 1
         try:
-            # cls._disable = True
             yield
         finally:
-            cls._disable = initial_state
+            cls._disable -= 1
 
     def __init__(self, property: bool = False) -> None:
         self.property = property

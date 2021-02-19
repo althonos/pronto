@@ -4,6 +4,7 @@ import re
 import typing
 import warnings
 from typing import Dict, List, Optional, Tuple
+from xml.etree import ElementTree as etree
 
 import dateutil.parser
 
@@ -13,7 +14,6 @@ from ..pv import LiteralPropertyValue, ResourcePropertyValue
 from ..relationship import Relationship
 from ..synonym import SynonymData, SynonymType
 from ..term import Term
-from ..utils.impl import etree
 from ..utils.meta import typechecked
 from ..utils.warnings import NotImplementedWarning, SyntaxWarning
 from ..xref import Xref

@@ -5,7 +5,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.1...HEAD
+
+## [2.4.1] - 2021-02-19
+[2.4.1]: https://github.com/althonos/pronto/compare/v2.4.0...v2.4.1
+### Changed
+- `pronto.pv.PropertyValue` is now an abstract class.
+- `pronto.parsers.RdfXmlParser` now ignores synonym Xrefs not in 
+  the right format.
+### Fixed
+- `pronto.Entity.definition` documentation now lists return type as
+  `pronto.definition.Definition` as expected.
+- CURIE compaction in RDF/XML not being handled consistently, causing
+  some crashes on ontologies using aliased relationships.
+- `pronto.utils.typechecked.disabled` is now reentrant and should
+  not be disabled in multithreaded contexts anymore.
+### Removed
+- Implicit injection of `lxml` instead of `xml.etree`, which caused
+  issues with `RdfXmlParser`.
 
 ## [2.4.0] - 2021-02-18
 [2.4.0]: https://github.com/althonos/pronto/compare/v2.3.2...v2.4.0

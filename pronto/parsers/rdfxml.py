@@ -746,7 +746,14 @@ class RdfXMLParser(BaseParser):
             entity._data().synonyms.add(typing.cast(SynonymData, synonym))
             for child in elem.iterfind(_NS["oboInOwl"]["hasDbXref"]):
                 if child.text is not None:
-                    synonym.xrefs.add(Xref(child.text))
+                    try:
+                        synonym.xrefs.add(Xref(child.text))
+                    except ValueError:
+                        warnings.warn(
+                            f"could not parse Xref: {child.text!r}",
+                            SyntaxWarning,
+                            stacklevel=3,
+                        )
                 else:
                     warnings.warn(
                         "`oboInOwl:hasDbXref` element has no text",

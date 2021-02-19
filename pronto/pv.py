@@ -1,6 +1,7 @@
 """Object hierarchy of property-value annotations in OBO files.
 """
 
+import abc
 import functools
 
 import fastobo
@@ -11,11 +12,19 @@ from .utils.meta import roundrepr, typechecked
 __all__ = ["PropertyValue", "LiteralPropertyValue", "ResourcePropertyValue"]
 
 
-class PropertyValue(object):
+class PropertyValue(abc.ABC):
     """A property-value, which adds annotations to an entity."""
 
     property: str
-    __slots__ = ("__weakref__", "property")
+    __slots__ = ("property",)
+
+    @abc.abstractmethod
+    def __eq__(self, other: object):
+        return NotImplemented
+
+    @abc.abstractmethod
+    def __lt__(self, other: object):
+        return NotImplemented
 
 
 @roundrepr

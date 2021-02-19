@@ -1,14 +1,11 @@
 import functools
-import typing
 import warnings
-import weakref
 from operator import attrgetter
 from typing import Union
 
 import fastobo
 
 from ..definition import Definition
-from ..entity import EntityData
 from ..metadata import Metadata, Subset
 from ..ontology import Ontology
 from ..pv import LiteralPropertyValue, PropertyValue, ResourcePropertyValue

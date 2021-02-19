@@ -3,7 +3,7 @@
 import functools
 import typing
 import weakref
-from typing import FrozenSet, Iterable, Optional, Set
+from typing import Iterable, Optional, Set
 
 from .utils.meta import roundrepr, typechecked
 from .xref import Xref

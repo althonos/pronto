@@ -1,7 +1,7 @@
 import datetime
 import operator
 import typing
-from typing import Dict, FrozenSet, Iterable, Mapping, Optional, Set, Tuple
+from typing import Dict, FrozenSet, Optional, Set, Tuple
 
 from .definition import Definition
 from .entity import Entity, EntityData, EntitySet

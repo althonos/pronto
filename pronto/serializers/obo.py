@@ -1,8 +1,7 @@
 import io
-from typing import BinaryIO, ClassVar
 
-from ..relationship import Relationship, RelationshipData
-from ..term import Term, TermData
+from ..relationship import Relationship
+from ..term import Term
 from ._fastobo import FastoboSerializer
 from .base import BaseSerializer
 

@@ -1,9 +1,5 @@
-import abc
-import io
 import operator
-import os
 import typing
-from typing import BinaryIO, ClassVar
 
 import fastobo
 

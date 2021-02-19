@@ -21,18 +21,6 @@ Note:
 
 """
 
-__author__ = "Martin Larralde <martin.larralde@embl.de>"
-__license__ = "MIT"
-__version__ = "2.4.0"
-
-# Update the docstring with a link to the right version of the documentation
-# instead of the latest.
-if __doc__ is not None:
-    __doc__ += f"""See Also:
-    Online documentation for this version of the library on
-    `Read The Docs <https://pronto.readthedocs.io/en/v{__version__}/>`_
-    """
-
 from .definition import Definition
 from .entity import Entity
 from .metadata import Metadata, Subset
@@ -69,3 +57,15 @@ __all__ = [
     ResourcePropertyValue.__name__,
     Xref.__name__,
 ]
+
+__author__ = "Martin Larralde <martin.larralde@embl.de>"
+__license__ = "MIT"
+__version__ = "2.4.0"
+
+# Update the docstring with a link to the right version of the documentation
+# instead of the latest.
+if __doc__ is not None:
+    __doc__ += f"""See Also:
+    Online documentation for this version of the library on
+    `Read The Docs <https://pronto.readthedocs.io/en/v{__version__}/>`_
+    """

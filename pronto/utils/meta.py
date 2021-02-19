@@ -5,7 +5,7 @@ import inspect
 import itertools
 import sys
 import typing
-from typing import Callable, ClassVar, Iterator, List, Optional, Tuple, Type
+from typing import Callable, Iterator, List, Tuple, Type
 
 T = typing.TypeVar("T")
 F = typing.TypeVar("F", bound=Callable[..., object])

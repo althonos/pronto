@@ -2,7 +2,7 @@ import abc
 import collections
 import typing
 import warnings
-from typing import AbstractSet, Deque, Dict, Optional, Set, Tuple, cast
+from typing import AbstractSet, Deque, Optional, Set, Tuple, cast
 
 from ..utils.meta import roundrepr
 

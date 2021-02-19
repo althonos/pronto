@@ -11,9 +11,7 @@ import dateutil.parser
 from ..definition import Definition
 from ..metadata import Metadata, Subset
 from ..pv import LiteralPropertyValue, ResourcePropertyValue
-from ..relationship import Relationship
 from ..synonym import SynonymData, SynonymType
-from ..term import Term
 from ..utils.meta import typechecked
 from ..utils.warnings import NotImplementedWarning, SyntaxWarning
 from ..xref import Xref
@@ -652,9 +650,7 @@ class RdfXMLParser(BaseParser):
 
         return rel
 
-    def _extract_annotation_property(
-        self, elem: etree.Element, curies: Dict[str, str]
-    ):
+    def _extract_annotation_property(self, elem: etree.Element, curies: Dict[str, str]):
         if __debug__:
             if elem.tag != _NS["owl"]["AnnotationProperty"]:
                 raise ValueError("expected `owl:AnnotationProperty` element")

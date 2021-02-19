@@ -1,6 +1,5 @@
 import abc
 import io
-import typing
 from typing import BinaryIO, ClassVar
 
 from ..ontology import Ontology
@@ -15,7 +14,7 @@ class BaseSerializer(abc.ABC):
 
     @abc.abstractmethod
     def dump(self, file: BinaryIO) -> None:
-        return NotImplemented
+        return NotImplemented  # type: ignore
 
     def dumps(self) -> str:
         s = io.BytesIO()

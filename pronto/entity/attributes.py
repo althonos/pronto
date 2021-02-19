@@ -7,8 +7,8 @@ from . import Entity, EntitySet
 if typing.TYPE_CHECKING:
     from ..relationship import Relationship
 
-_E = typing.TypeVar("_E", bound="Entity")
-_S = typing.TypeVar("_S", bound="EntitySet")
+_E = typing.TypeVar("_E", bound=Entity)
+_S = typing.TypeVar("_S", bound=EntitySet)
 
 
 class Relationships(typing.MutableMapping["Relationship", _S], typing.Generic[_E, _S]):

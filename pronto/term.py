@@ -5,14 +5,11 @@ import operator
 import typing
 import warnings
 from typing import (
-    AbstractSet,
     Dict,
     FrozenSet,
     Iterable,
     Iterator,
     List,
-    Mapping,
-    MutableSet,
     Optional,
     Set,
     Tuple,
@@ -214,7 +211,7 @@ class Term(Entity["TermData", "TermSet"]):
             "rules have not been implemented. Consider using an actual "
             "reasoner instead.",
             category=NotImplementedWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
         g = networkx.MultiDiGraph()
@@ -256,6 +253,7 @@ class Term(Entity["TermData", "TermSet"]):
                         yield ont.get_term(other)
             done.add(node)
 
+    @typechecked()
     def superclasses(
         self,
         distance: Optional[int] = None,
@@ -306,6 +304,7 @@ class Term(Entity["TermData", "TermSet"]):
         """
         return SuperclassesHandler(self, distance=distance, with_self=with_self)
 
+    @typechecked()
     def subclasses(
         self,
         distance: Optional[int] = None,

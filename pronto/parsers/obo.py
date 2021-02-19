@@ -3,7 +3,6 @@ import os
 
 import fastobo
 
-from ..logic.lineage import Lineage
 from ..utils.meta import typechecked
 from ._fastobo import FastoboParser
 from .base import BaseParser

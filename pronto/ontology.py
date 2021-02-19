@@ -3,7 +3,6 @@ import io
 import itertools
 import typing
 import warnings
-import weakref
 from os import PathLike, fspath
 from typing import (
     BinaryIO,
@@ -13,9 +12,7 @@ from typing import (
     Iterator,
     Mapping,
     MutableMapping,
-    NamedTuple,
     Optional,
-    Set,
     Sized,
     Union,
 )
@@ -64,16 +61,14 @@ class _DataGraph(typing.Generic[_D], typing.Mapping[str, _D]):
 
 
 class _OntologyTerms(Sized, Container, Iterable[Term]):
-    """A convenience wrapper over the terms of an ontology.
-    """
+    """A convenience wrapper over the terms of an ontology."""
 
     def __init__(self, ontology: "Ontology") -> None:
         self.__ontology = ontology
 
     def __len__(self) -> int:
-        return (
-            sum(len(ref.terms()) for ref in self.__ontology.imports.values())
-            + len(self.__ontology._terms.entities)
+        return sum(len(ref.terms()) for ref in self.__ontology.imports.values()) + len(
+            self.__ontology._terms.entities
         )
 
     def __iter__(self) -> Iterator[Term]:
@@ -99,17 +94,15 @@ class _OntologyTerms(Sized, Container, Iterable[Term]):
 
 
 class _OntologyRelationships(Sized, Container, Iterable[Relationship]):
-    """A convenience wrapper over the relationships of an ontology.
-    """
+    """A convenience wrapper over the relationships of an ontology."""
 
     def __init__(self, ontology: "Ontology"):
         self.__ontology = ontology
 
     def __len__(self) -> int:
-        return (
-            sum(len(ref.relationships()) for ref in self.__ontology.imports.values())
-            + len(self.__ontology._relationships.entities)
-        )
+        return sum(
+            len(ref.relationships()) for ref in self.__ontology.imports.values()
+        ) + len(self.__ontology._relationships.entities)
 
     def __iter__(self) -> Iterator[Relationship]:
         return itertools.chain(
@@ -340,10 +333,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
                     stacklevel=2,
                 )
                 return True
-            return (
-                any(item in i for i in self.imports.values())
-                or item in self._terms
-            )
+            return any(item in i for i in self.imports.values()) or item in self._terms
         return False
 
     def __getitem__(self, id: str) -> Union[Term, Relationship]:

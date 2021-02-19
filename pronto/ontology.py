@@ -450,7 +450,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             2661
             >>> "PATO:0000186" in pato.terms()
             True
-            >>> for term in pato.terms():
+            >>> for term in sorted(pato.terms()):
             ...     print(term)
             Term('PATO:0000000', name='obsolete pato')
             Term('PATO:0000001', name='quality')

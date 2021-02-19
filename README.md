@@ -107,6 +107,15 @@ they contain from their identifier in compact form:
 Term('CL:0002116', name='B220-low CD38-positive unswitched memory B cell')
 ```
 
+Note that when loading an OWL ontology, URIs will be compacted to CURIEs
+whenever possible:
+
+```python
+>>> aeo = Ontology.from_obo_library("aeo.owl")
+>>> aeo["AEO:0000078"]
+Term('AEO:0000078', name='lumen of tube')
+```
+
 ### 🖊️ Create a new term from scratch
 
 We can load an ontology, and edit it locally. Here, we add a new protein class

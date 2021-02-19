@@ -37,11 +37,20 @@ class TestRdfXMLParser(unittest.TestCase):
 
     # ---
 
-    def test_whole_ontology(self):
+    def test_iao(self):
         warnings.simplefilter("ignore")
         path = os.path.join(__file__, "..", "..", "data", "iao.owl")
         iao = pronto.Ontology(os.path.realpath(path))
         self.assertEqual(len(iao.terms()), 245)
+
+    def test_aeo(self):
+        warnings.simplefilter("ignore")
+        path = os.path.join(__file__, "..", "..", "data", "aeo.owl")
+        aeo = pronto.Ontology(os.path.realpath(path))
+        self.assertEqual(len(aeo.terms()), 250)
+        self.assertEqual(len(aeo.relationships()), 11)
+        self.assertEqual(aeo["AEO:0000099"].name, "keratin-based structure")
+        self.assertEqual(len(aeo["AEO:0000099"].definition.xrefs), 1)
 
     def test_invalid_xml_file(self):
         self.assertRaises(ValueError, self.get_ontology, "")

@@ -85,9 +85,6 @@ class RdfXMLParser(BaseParser):
         # Load the XML document into an XML Element tree
         tree: etree.ElementTree = etree.parse(handle)
 
-        # Keep a map of aliases (IRI -> local OBO id)
-        aliases: Dict[str, str] = dict()
-
         # Load metadata from the `owl:Ontology` element
         owl_ontology = tree.find(_NS["owl"]["Ontology"])
         if owl_ontology is None:
@@ -109,21 +106,56 @@ class RdfXMLParser(BaseParser):
         # Merge lineage cache from imports
         self.import_lineage()
 
-        # Parse typedef first to handle OBO shorthand renaming
+        # Disable typecheck to make parsing faster
         with typechecked.disabled():
+
+            curies = self._make_curies(tree)
+
             for prop in tree.iterfind(_NS["owl"]["ObjectProperty"]):
-                self._extract_object_property(prop, aliases)
+                self._extract_object_property(prop, curies)
             for prop in tree.iterfind(_NS["owl"]["AnnotationProperty"]):
-                self._extract_annotation_property(prop, aliases)
+                self._extract_annotation_property(prop, curies)
             for class_ in tree.iterfind(_NS["owl"]["Class"]):
-                self._extract_term(class_, aliases)
+                self._extract_term(class_, curies)
             for axiom in tree.iterfind(_NS["owl"]["Axiom"]):
-                self._process_axiom(axiom, aliases)
+                self._process_axiom(axiom, curies)
 
         # Update lineage cache with symmetric of `subClassOf`
         self.symmetrize_lineage()
 
     # -- Helper methods ------------------------------------------------------
+
+    def _make_curies(self, tree: etree.ElementTree):
+        curies = {}
+        # Extract `oboInOwl:id` or compact IRI for `owl:Class`
+        for elem in tree.iterfind(_NS["owl"]["Class"]):
+            iri = elem.get(_NS["rdf"]["about"])
+            if iri is None:
+                continue
+            e = elem.find(_NS["oboInOwl"]["id"])
+            id_: str = e.text if e is not None and e.text else self._compact_id(iri)
+            curies[iri] = id_
+        # Extract either `oboInOwl:shorthand` or `oboInOwl:id` for `owl:ObjectProperty`
+        for elem in tree.iterfind(_NS["owl"]["ObjectProperty"]):
+            iri = elem.get(_NS["rdf"]["about"])
+            if iri is None:
+                continue
+            # attempt to extract the compact id of the term
+            elem_id = elem.find(_NS["oboInOwl"]["id"])
+            elem_sh = elem.find(_NS["oboInOwl"]["shorthand"])
+            if elem_sh is not None and elem_sh.text is not None:
+                curies[iri] = elem_sh.text
+            elif elem_id is not None and elem_id.text is not None:
+                curies[iri] = elem_id.text
+            else:
+                curies[iri] = self._compact_id(iri)
+        # Compact IRI of owl:AnnotationProperty
+        for elem in tree.iterfind(_NS["owl"]["AnnotationProperty"]):
+            iri = elem.get(_NS["rdf"]["about"])
+            if iri is None:
+                continue
+            curies[iri] = self._compact_id(iri)
+        return curies
 
     def _compact_id(self, iri: str) -> str:
         """Compact an OBO identifier into a prefixed identifier."""
@@ -256,7 +288,7 @@ class RdfXMLParser(BaseParser):
         # return the extracted metadata
         return meta
 
-    def _extract_term(self, elem: etree.Element, aliases: Dict[str, str]):
+    def _extract_term(self, elem: etree.Element, curies: Dict[str, str]):
         """Extract the term from a `owl:Class` element."""
         if __debug__:
             if elem.tag != _NS["owl"]["Class"]:
@@ -267,9 +299,8 @@ class RdfXMLParser(BaseParser):
         if iri is None:
             return None
 
-        # attempt to extract the compact id of the term
-        e = elem.find(_NS["oboInOwl"]["id"])
-        id_: str = e.text if e is not None and e.text else self._compact_id(iri)
+        # get the CURIE corresponding to the term
+        id_ = curies[iri]
 
         # get or create the term
         term = (self.ont.get_term if id_ in self.ont else self.ont.create_term)(id_)
@@ -290,12 +321,13 @@ class RdfXMLParser(BaseParser):
                 restriction = child.find(_NS["owl"]["Restriction"])
                 if _NS["rdf"]["resource"] in attrib:
                     if attrib[_NS["rdf"]["resource"]] != _NS["owl"].raw("Thing"):
-                        iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
-                        self.ont._terms.lineage[id_].sup.add(iri)
+                        iri = attrib[_NS["rdf"]["resource"]]
+                        curie = curies.get(iri) or self._compact_id(iri)
+                        self.ont._terms.lineage[id_].sup.add(curie)
                 elif restriction is not None:
                     r, t = self._extract_term_relationship(restriction)
                     if r is not None and t is not None:
-                        r, t = aliases.get(r, r), self._compact_id(t)
+                        r, t = curies.get(r, r), self._compact_id(t)
                         termdata.relationships.setdefault(r, set()).add(t)
                 else:
                     warnings.warn(
@@ -306,7 +338,8 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["oboInOwl"]["inSubset"]:
                 iri = attrib.get(_NS["rdf"]["resource"], text)
                 if iri is not None:
-                    termdata.subsets.add(self._compact_id(iri))
+                    curie = curies.get(iri) or self._compact_id(iri)
+                    termdata.subsets.add(curie)
                 else:
                     warnings.warn(
                         f"could not extract subset value in {id_!r}",
@@ -345,7 +378,8 @@ class RdfXMLParser(BaseParser):
                         stacklevel=3,
                     )
             elif tag == _NS["owl"]["equivalentClass"] and text is not None:
-                termdata.equivalent_to.add(self._compact_id(text))
+                curie = curies.get(text) or self._compact_id(text)
+                termdata.equivalent_to.add(curie)
             elif tag == _NS["owl"]["deprecated"]:
                 termdata.obsolete = text == "true"
             elif tag == _NS["oboInOwl"]["hasDbXref"]:
@@ -357,15 +391,14 @@ class RdfXMLParser(BaseParser):
                 except ValueError:
                     pass
             elif tag == _NS["oboInOwl"]["hasAlternativeId"]:
-                if _NS["rdf"]["resource"] in attrib:
-                    iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
-                else:
-                    iri = self._compact_id(text)
-                termdata.alternate_ids.add(iri)
+                iri = attrib.get(_NS["rdf"]["resource"], text)
+                curie = curies.get(iri) or self._compact_id(iri)
+                termdata.alternate_ids.add(curie)
             elif tag == _NS["owl"]["disjointWith"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
-                    termdata.disjoint_from.add(self._compact_id(iri))
+                    curie = curies.get(iri) or self._compact_id(iri)
+                    termdata.disjoint_from.add(curie)
                 else:
                     warnings.warn(
                         "`owl:disjointWith` element without `rdf:resource`",
@@ -375,9 +408,11 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["obo"]["IAO_0100001"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
-                    termdata.replaced_by.add(self._compact_id(iri))
+                    curie = curies.get(iri) or self._compact_id(iri)
+                    termdata.replaced_by.add(curie)
                 elif _NS["rdf"]["datatype"] in attrib:
-                    termdata.replaced_by.add(self._compact_id(text))
+                    curie = curies.get(text) or self._compact_id(text)
+                    termdata.replaced_by.add(curie)
                 else:
                     warnings.warn(
                         "could not extract ID from `IAO:0100001` annotation",
@@ -387,9 +422,11 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["oboInOwl"]["consider"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
-                    termdata.consider.add(self._compact_id(iri))
+                    curie = curies.get(iri) or self._compact_id(iri)
+                    termdata.consider.add(curie)
                 elif _NS["rdf"]["datatype"] in attrib:
-                    termdata.consider.add(self._compact_id(text))
+                    curie = curies.get(text) or self._compact_id(text)
+                    termdata.consider.add(curie)
                 else:
                     warnings.warn(
                         "could not extract ID from `oboInOwl:consider` annotation",
@@ -429,7 +466,7 @@ class RdfXMLParser(BaseParser):
                 )
             termdata.comment = "\n".join(comments)
 
-    def _extract_object_property(self, elem: etree.Element, aliases: Dict[str, str]):
+    def _extract_object_property(self, elem: etree.Element, curies: Dict[str, str]):
         """Extract the object property from an `owl:ObjectProperty` element."""
         if __debug__:
             if elem.tag != _NS["owl"]["ObjectProperty"]:
@@ -440,15 +477,8 @@ class RdfXMLParser(BaseParser):
         if iri is None:  # ignore
             return None
 
-        # attempt to extract the compact id of the term
-        elem_id = elem.find(_NS["oboInOwl"]["id"])
-        elem_sh = elem.find(_NS["oboInOwl"]["shorthand"])
-        if elem_sh is not None and elem_sh.text is not None:
-            id_ = aliases[iri] = elem_sh.text
-        elif elem_id is not None and elem_id.text is not None:
-            id_ = aliases[iri] = elem_id.text
-        else:
-            id_ = self._compact_id(iri)
+        # get the CURIE of the typedef
+        id_ = curies[iri]
 
         # create the relationship
         rel = (
@@ -471,11 +501,9 @@ class RdfXMLParser(BaseParser):
 
             if tag == _NS["rdfs"]["subPropertyOf"]:
                 if _NS["rdf"]["resource"] in attrib:
-                    if attrib[_NS["rdf"]["resource"]] in aliases:
-                        iri = aliases[attrib[_NS["rdf"]["resource"]]]
-                    else:
-                        iri = self._compact_id(attrib[_NS["rdf"]["resource"]])
-                    self.ont._relationships.lineage[id_].sup.add(iri)
+                    iri = attrib[_NS["rdf"]["resource"]]
+                    curie = curies.get(iri) or self._compact_id(iri)
+                    self.ont._relationships.lineage[id_].sup.add(curie)
                 else:
                     pass  # TODO: subclassing relationship for relationship
             elif tag == _NS["oboInOwl"]["inSubset"]:
@@ -538,11 +566,11 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["obo"]["IAO_0000427"] and text is not None:
                 reldata.antisymmetric = text == "true"
             elif tag == _NS["owl"]["equivalentClass"] and text is not None:
-                curie = aliases.get(text) or self._compact_id(text)
+                curie = curies.get(text) or self._compact_id(text)
                 reldata.equivalent_to.add(curie)
             elif tag == _NS["owl"]["inverseOf"]:
                 iri = child.attrib[_NS["rdf"]["resource"]]
-                reldata.inverse_of = aliases.get(iri) or self._compact_id(iri)
+                reldata.inverse_of = curies.get(iri) or self._compact_id(iri)
             elif tag == _NS["owl"]["deprecated"]:
                 reldata.obsolete = text == "true"
             elif tag == _NS["oboInOwl"]["hasDbXref"]:
@@ -555,10 +583,10 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["obo"]["IAO_0100001"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
-                    curie = aliases.get(iri) or self._compact_id(iri)
+                    curie = curies.get(iri) or self._compact_id(iri)
                     reldata.replaced_by.add(curie)
                 elif _NS["rdf"]["datatype"] in attrib:
-                    curie = aliases.get(text) or self._compact_id(text)
+                    curie = curies.get(text) or self._compact_id(text)
                     reldata.replaced_by.add(curie)
                 else:
                     warnings.warn(
@@ -569,10 +597,10 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["oboInOwl"]["consider"]:
                 if _NS["rdf"]["resource"] in attrib:
                     iri = attrib[_NS["rdf"]["resource"]]
-                    curie = aliases.get(iri) or self._compact_id(iri)
+                    curie = curies.get(iri) or self._compact_id(iri)
                     reldata.consider.add(curie)
                 elif _NS["rdf"]["datatype"] in attrib:
-                    curie = aliases.get(text) or self._compact_id(text)
+                    curie = curies.get(text) or self._compact_id(text)
                     reldata.consider.add(curie)
                 else:
                     warnings.warn(
@@ -616,11 +644,15 @@ class RdfXMLParser(BaseParser):
         return rel
 
     def _extract_annotation_property(
-        self, elem: etree.Element, aliases: Dict[str, str]
+        self, elem: etree.Element, curies: Dict[str, str]
     ):
         if __debug__:
             if elem.tag != _NS["owl"]["AnnotationProperty"]:
                 raise ValueError("expected `owl:AnnotationProperty` element")
+
+        #
+        iri = elem.attrib[_NS["rdf"]["about"]]
+        id_ = curies[iri]
 
         # special handling of `synonymtypedef` and `subsetdef`
         sub = elem.find(_NS["rdfs"]["subPropertyOf"])
@@ -628,7 +660,6 @@ class RdfXMLParser(BaseParser):
             resource = sub.get(_NS["rdf"]["resource"])
             if resource == _NS["oboInOwl"].raw("SynonymTypeProperty"):
                 # extract ID and label of the synonymtypedef
-                id_ = self._compact_id(elem.attrib[_NS["rdf"]["about"]])
                 label = elem.find(_NS["rdfs"]["label"]).text
                 if label is None:
                     label = ""
@@ -647,7 +678,6 @@ class RdfXMLParser(BaseParser):
                 self.ont.metadata.synonymtypedefs.add(SynonymType(id_, label, scope))
                 return
             elif resource == _NS["oboInOwl"].raw("SubsetProperty"):
-                id_ = self._compact_id(elem.attrib[_NS["rdf"]["about"]])
                 elem_comment = elem.find(_NS["rdfs"]["comment"])
                 desc = elem_comment.text if elem_comment is not None else None
                 self.ont.metadata.subsetdefs.add(Subset(id_, desc or ""))
@@ -660,7 +690,7 @@ class RdfXMLParser(BaseParser):
             stacklevel=3,
         )
 
-    def _process_axiom(self, elem: etree.Element, aliases: Dict[str, str]):
+    def _process_axiom(self, elem: etree.Element, curies: Dict[str, str]):
         # get the source, property and target of the axiom.
         elem_source = elem.find(_NS["owl"]["annotatedSource"])
         elem_property = elem.find(_NS["owl"]["annotatedProperty"])
@@ -675,8 +705,7 @@ class RdfXMLParser(BaseParser):
         property = elem_property.attrib[_NS["rdf"]["resource"]]
         if property == _NS["obo"].raw("IAO_0000115") and elem_target.text is not None:
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
-            resource = aliases.get(iri, iri)
-            entity: Entity = self.ont[self._compact_id(resource)]
+            entity: Entity = self.ont[curies.get(iri) or self._compact_id(iri)]
 
             entity.definition = d = Definition(elem_target.text)
             for child in elem.iterfind(_NS["oboInOwl"]["hasDbXref"]):
@@ -703,8 +732,7 @@ class RdfXMLParser(BaseParser):
             and elem_target.text is not None
         ):
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
-            resource = aliases.get(iri, iri)
-            entity = self.ont[self._compact_id(resource)]
+            entity = self.ont[curies.get(iri) or self._compact_id(iri)]
             label = elem.find(_NS["rdfs"]["label"])
 
             if label is not None and label.text is not None:
@@ -717,8 +745,7 @@ class RdfXMLParser(BaseParser):
 
         elif property in _SYNONYMS:
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
-            resource = aliases.get(iri, iri)
-            entity = self.ont[self._compact_id(resource)]
+            entity = self.ont[curies.get(iri) or self._compact_id(iri)]
             type_ = elem.find(_NS["oboInOwl"]["hasSynonymType"])
 
             try:

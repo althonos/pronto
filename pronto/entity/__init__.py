@@ -235,7 +235,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def creation_date(self) -> Optional[datetime.datetime]:
-        """`~datetime.datetime` or None: The date the entity was created."""
+        """`~datetime.datetime` or `None`: The date the entity was created."""
         return self._data().creation_date
 
     @creation_date.setter  # type: ignore
@@ -245,10 +245,21 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def definition(self) -> Optional[Definition]:
-        """`str` or None: The textual definition of the current entity.
+        """`Definition` or `None`: The definition of the current entity.
 
         Definitions in OBO are intended to be human-readable text describing
         the entity, with some additional cross-references if possible.
+
+        Example:
+            >>> hp = pronto.Ontology.from_obo_library("hp.obo")
+            >>> term = hp["HP:0009882"]
+            >>> term.name
+            'Short distal phalanx of finger'
+            >>> str(term.definition)
+            'Short distance from the end of the finger to the most distal...'
+            >>> sorted(term.definition.xrefs)
+            [Xref('HPO:probinson'), Xref('PMID:19125433')]
+
         """
         return self._data().definition
 

@@ -47,7 +47,7 @@ parsing OBO or OBO Graphs document, you may wish to consider
 - [OBO Graphs](https://github.com/geneontology/obographs) in [JSON](http://json.org/)
   format. *The format is not yet stabilized to the results may change from file
   to file.*
-- [Ontology Web Language 2](https://www.w3.org/TR/owl2-overview/>)
+- [Ontology Web Language 2](https://www.w3.org/TR/owl2-overview/)
   in [RDF/XML format](https://www.w3.org/TR/2012/REC-owl2-mapping-to-rdf-20121211/).
   *OWL2 ontologies are reverse translated to OBO using the mapping defined in the
   [OBO 1.4 Semantics](http://owlcollab.github.io/oboformat/doc/obo-syntax.html).*

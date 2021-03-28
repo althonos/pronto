@@ -64,7 +64,7 @@ class FastoboSerializer:
         if m.namespace_id_rule is not None:
             frame.append(fastobo.header.NamespaceIdRuleClause(m.namespace_id_rule))
         for id, (url, description) in sorted(m.idspaces.items()):
-            frame.append(fastobo.header.IdspaceClause(id, url, description))
+            frame.append(fastobo.header.IdspaceClause(id, fastobo.id.Url(url), description))
         for pv in sorted(m.annotations):
             frame.append(
                 fastobo.header.PropertyValueClause(self._to_property_value(pv))

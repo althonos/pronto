@@ -108,3 +108,11 @@ class TestIssues(unittest.TestCase):
             go_basic.get_relationship("regulates"),
             go_basic.get_relationship("negatively_regulates").superproperties().to_set(),
         )
+
+    def test_idspaces_serialization(self):
+       ont = pronto.Ontology()
+       ont.metadata.idspaces["RHEA"] = ("http://identifier.org/rhea/", None)
+       try:
+           obo = ont.dumps()
+       except Exception as err:
+           self.fail("serialization failed with {}".format(err))

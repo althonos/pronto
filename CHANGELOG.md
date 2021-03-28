@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 [Unreleased]: https://github.com/althonos/pronto/compare/v2.4.1...HEAD
 
+### Fixed
+- Serialization of `Ontology` failing with non-empty `idspaces`.
+
 ## [2.4.1] - 2021-02-19
 [2.4.1]: https://github.com/althonos/pronto/compare/v2.4.0...v2.4.1
 ### Changed

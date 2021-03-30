@@ -3,7 +3,7 @@ sphinx ~=2.3
 # sphinx-bootstrap-theme ~=0.7
 https://github.com/althonos/sphinx-bootstrap-theme/archive/master.zip
 recommonmark ~=0.6
-nbsphinx ~=0.5
+nbsphinx ~=0.8
 pygments-style-monokailight ~=0.4
 ipython ~=7.11
 pygments ~=2.4

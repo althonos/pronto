@@ -1,0 +1,30 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: ipython
+    versions:
+    - "> 7.11, < 8"
+  - dependency-name: pygments
+    versions:
+    - "> 2.4, < 3"
+  - dependency-name: sphinx
+    versions:
+    - ">= 3.a, < 4"
+  - dependency-name: coverage
+    versions:
+    - "5.4"
+  - dependency-name: twine
+    versions:
+    - 3.3.0
+  - dependency-name: fastobo
+    versions:
+    - 0.9.3
+  - dependency-name: codecov
+    versions:
+    - 2.1.0

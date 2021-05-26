@@ -5,10 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.2...HEAD
 
+## [2.4.2] - 2021-05-26
+[2.4.2]: https://github.com/althonos/pronto/compare/v2.4.1...v2.4.2
+### Added
+- Support for `chardet` version `4.0` (in addition to older `3.0`).
 ### Fixed
 - Serialization of `Ontology` failing with non-empty `idspaces`.
+- Typo in OWL2 URL in `README.md` ([#130](https://github.com/althonos/pronto/issues/130)).
 
 ## [2.4.1] - 2021-02-19
 [2.4.1]: https://github.com/althonos/pronto/compare/v2.4.0...v2.4.1

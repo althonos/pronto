@@ -309,7 +309,7 @@ class RdfXMLParser(BaseParser):
         id_ = curies[iri]
 
         # get or create the term
-        term = (self.ont.get_term if id_ in self.ont else self.ont.create_term)(id_)
+        term = (self.ont.get_term if id_ in self.ont.terms() else self.ont.create_term)(id_)
         termdata = term._data()
         names: List[str] = []
         comments: List[str] = []

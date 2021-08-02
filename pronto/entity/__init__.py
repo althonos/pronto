@@ -12,7 +12,7 @@ from ..xref import Xref
 
 if typing.TYPE_CHECKING:
     from ..ontology import _DataGraph, Ontology
-    from ..relationship import Relationship
+    from ..relationship import Relationship, RelationshipSet
     from .attributes import Relationships
 
 __all__ = ["EntityData", "Entity", "EntitySet"]
@@ -381,6 +381,32 @@ class Entity(typing.Generic[_D, _S]):
 
     @property
     def relationships(self: _E) -> "Relationships[_E, _S]":
+        """`~.Relationships`: The links from an entity to other entities.
+
+        This property returns an object that maps a `~.Relationship` to
+        an `~.EntitySet` (either a `~.TermSet` for `Term.relationships`, or
+        a `~.RelationshipSet` for `Relationship.relationships`).
+
+        Hint:
+            The mapping is mutable, so relationships can be created or removed
+            using the usual interface of a `~collections.abc.MutableMapping`.
+
+        Example:
+            Get the ``MS:1000004`` term (*sample mass*) from the Mass
+            Spectrometry ontology::
+
+                >>> ms = pronto.Ontology.from_obo_library("ms.obo")
+                >>> sample_mass = ms["MS:1000004"]
+
+            Then use the ``relationships`` property to get the relevant
+            unit from the Unit Ontology::
+
+                >>> sorted(sample_mass.relationships.keys())
+                [Relationship('has_units', name='has_units')]
+                >>> sample_mass.relationships[ms.get_relationship('has_units')]
+                TermSet({Term('UO:0000021', name='gram')})
+
+        """
         from .attributes import Relationships
 
         return Relationships(self)

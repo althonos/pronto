@@ -5,7 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.2...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.3...HEAD
+
+## [2.4.3] - 2021-08-02
+[2.4.3]: https://github.com/althonos/pronto/compare/v2.4.2...v2.4.3
+### Added
+- Missing documentation for the `pronto.Entity.relationships` property.
+### Fixed
+- RDX/XML parser crashing on files containing a relationship and a term with the same ID ([#138](https://github.com/althonos/pronto/pull/138)).
 
 ## [2.4.2] - 2021-05-26
 [2.4.2]: https://github.com/althonos/pronto/compare/v2.4.1...v2.4.2

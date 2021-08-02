@@ -6,10 +6,10 @@
 
 *A Python frontend to ontologies.*
 
-|TravisCI| |License| |Source| |Docs| |Coverage| |Sanity| |PyPI| |Bioconda| |Versions| |Wheel| |Changelog| |Issues| |DOI| |Downloads|
+|Actions| |License| |Source| |Docs| |Coverage| |Sanity| |PyPI| |Bioconda| |Versions| |Wheel| |Changelog| |Issues| |DOI| |Downloads|
 
-.. |TravisCI| image:: https://img.shields.io/travis/althonos/pronto/master.svg?&maxAge=600&style=flat-square
-   :target: https://travis-ci.org/althonos/pronto/branches
+.. |Actions| image:: https://img.shields.io/github/workflow/status/althonos/pronto/Test/master?style=flat-square&maxAge=300
+   :target: https://github.com/althonos/pronto/actions
 
 .. |License| image:: https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square&maxAge=2678400
    :target: https://choosealicense.com/licenses/mit/

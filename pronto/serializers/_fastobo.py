@@ -136,7 +136,7 @@ class FastoboSerializer:
         for superclass in sorted(term.superclasses(with_self=False, distance=1)):
             frame.append(fastobo.term.IsAClause(fastobo.id.parse(superclass.id)))
         for i in sorted(filter(lambda x: not isinstance(x, tuple), t.intersection_of)):
-            frame.append(fastobo.term.IntersectionOfClause(term=fastobo.id.parse(i)))
+            frame.append(fastobo.term.IntersectionOfClause(term=fastobo.id.parse(i), typedef=None))
         for (i, j) in sorted(filter(lambda x: isinstance(x, tuple), t.intersection_of)):  # type: ignore
             frame.append(
                 fastobo.term.IntersectionOfClause(

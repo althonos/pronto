@@ -1,3 +1,4 @@
+import datetime
 import functools
 import warnings
 from operator import attrgetter
@@ -12,7 +13,7 @@ from ..pv import LiteralPropertyValue, PropertyValue, ResourcePropertyValue
 from ..relationship import Relationship, RelationshipData
 from ..synonym import Synonym, SynonymData, SynonymType
 from ..term import Term, TermData
-from ..utils.warnings import NotImplementedWarning
+from ..utils.warnings import NotImplementedWarning, SyntaxWarning
 from ..xref import Xref
 
 # --- Type Hint --------------------------------------------------------------
@@ -289,7 +290,16 @@ def _process_clause_entity_created_by(clause, entity, ont):
 @process_clause_term.register(fastobo.term.CreationDateClause)
 @process_clause_typedef.register(fastobo.typedef.CreationDateClause)
 def _process_clause_entity_creation_date(clause, entity, ont):
-    entity.creation_date = clause.date
+    date = clause.date
+    if isinstance(date, datetime.datetime):
+        entity.creation_date = date
+    else:
+        warnings.warn(
+            "source document contains incomplete creation date: {}".format(date.isoformat()),
+            SyntaxWarning,
+            stacklevel=3
+        )
+        entity.creation_date = datetime.datetime(date.year, date.month, date.day)
 
 
 @process_clause_term.register(fastobo.term.DefClause)

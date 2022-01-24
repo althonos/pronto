@@ -5,7 +5,6 @@ on:
   - pull_request
 
 jobs:
-
   test_linux:
     name: Test (Linux)
     runs-on: ubuntu-latest
@@ -58,3 +57,39 @@ jobs:
         name: test-python-${{ matrix.python-version }}
         fail_ci_if_error: true
         token: ${{ secrets.CODECOV_TOKEN }}
+  package:
+    needs: test_linux
+    environment: PyPI
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    runs-on: ubuntu-latest
+    name: Publish Python code
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v1
+      with:
+        python-version: "3.10"
+    - name: Install build package
+      run: python -m pip install -U build
+    - name: Build a wheel and source tarball
+      run: python -m build --sdist --wheel --outdir dist
+    - name: Publish distributions to PyPI
+      if: startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
+  release:
+    environment: GitHub Releases
+    runs-on: ubuntu-latest
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    name: Release
+    needs: package
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+    - name: Release a Changelog
+      uses: rasmus-saks/release-a-changelog-action@v1.0.1
+      with:
+        github-token: '${{ secrets.GITHUB_TOKEN }}'

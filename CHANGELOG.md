@@ -5,10 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.3...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.4...HEAD
 
 ## [2.4.4] - 2022-01-24
-[2.4.4]: https://github.com/althonos/pronto/compare/v2.4.3...HEAD
+[2.4.4]: https://github.com/althonos/pronto/compare/v2.4.3...v2.4.4
+### Added
+- `OwlFunctionalSerializer` to dump an `Ontology` to OWL Functional-style syntax.
+### Changed
+- Bumped `fastobo` dependency to `v0.11.1`.
+- Make `FastoboParser` raise a `SyntaxWarning` when encoutering creation dates that are not `datetime.datetime`.
 
 ## [2.4.3] - 2021-08-02
 [2.4.3]: https://github.com/althonos/pronto/compare/v2.4.2...v2.4.3

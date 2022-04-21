@@ -116,3 +116,23 @@ class TestIssues(unittest.TestCase):
            obo = ont.dumps()
        except Exception as err:
            self.fail("serialization failed with {}".format(err))
+
+    def test_metadata_tag_serialization(self):
+        """Assert relationships which are metadata tag serialize properly.
+
+        See `#164 <https://github.com/althonos/pronto/issues/164>`_.
+        """
+        ont = pronto.Ontology()
+        r = ont.create_relationship("TST:001")
+        r.metadata_tag = True
+        text = ont.dumps()
+        self.assertEqual(
+            text.strip(),
+            textwrap.dedent("""
+            format-version: 1.4
+
+            [Typedef]
+            id: TST:001
+            is_metadata_tag: true
+            """).strip()
+        )

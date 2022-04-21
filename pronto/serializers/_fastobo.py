@@ -276,7 +276,7 @@ class FastoboSerializer:
                 )
             )
         if r.metadata_tag:
-            frame.append(fastobo.typedef.IsMetadataClause(True))
+            frame.append(fastobo.typedef.IsMetadataTagClause(True))
         if r.class_level:
             frame.append(fastobo.typedef.IsClassLevel(True))
         return frame

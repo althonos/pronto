@@ -5,7 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.4...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.5...HEAD
+
+## [2.4.5] - 2022-04-21
+[2.4.5]: https://github.com/althonos/pronto/compare/v2.4.4...v2.4.5
+### Fixed
+- Serialization of *metadata tag* relationships by `fastobo` ([#164](https://github.com/althonos/pronto/issues/164)).
 
 ## [2.4.4] - 2022-01-24
 [2.4.4]: https://github.com/althonos/pronto/compare/v2.4.3...v2.4.4

@@ -253,6 +253,13 @@ class Term(Entity["TermData", "TermSet"]):
                         yield ont.get_term(other)
             done.add(node)
 
+    def get_uri(self, term, ontology):
+        prefix, local = term.id.split(":")
+        if prefix in ontology.metadata.idspaces:
+            return "{}{}".format(ontology.metadata.idspaces[prefix][0], local)
+        else:
+            return "http://purl.obolibrary.org/obo/{}_{}".format(prefix, local)
+
     @typechecked()
     def superclasses(
         self,

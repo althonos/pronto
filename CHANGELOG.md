@@ -5,7 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.5...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.4.6...HEAD
+
+## [2.4.6] - 2022-06-18
+[2.4.6]: https://github.com/althonos/pronto/compare/v2.4.5...v2.4.6
+### Added
+- Setters for the `holds_over_chain` and `equivalent_to_chain` properties of `Relationship` objects.
+### Fixed
+- Serialization of `holds_over_chain` properties with `fastobo`-based serializers ([#175](https://github.com/althonos/pronto/issues/175)).
 
 ## [2.4.5] - 2022-04-21
 [2.4.5]: https://github.com/althonos/pronto/compare/v2.4.4...v2.4.5

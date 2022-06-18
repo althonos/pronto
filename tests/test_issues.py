@@ -136,3 +136,12 @@ class TestIssues(unittest.TestCase):
             is_metadata_tag: true
             """).strip()
         )
+
+    def test_relationship_chains(self):
+        ont = pronto.Ontology()
+        r1 = ont.create_relationship("r1")
+        r2 = ont.create_relationship("r2")
+        r3 = ont.create_relationship("r3")
+        r3.holds_over_chain = { (r1, r2) }
+        r3.equivalent_to_chain = { (r1, r2) }
+        ont.dumps()

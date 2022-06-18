@@ -205,7 +205,8 @@ class FastoboSerializer:
         if r.builtin:
             frame.append(fastobo.typedef.BuiltinClause(True))
         for chain in sorted(r.holds_over_chain):
-            frame.append(fastobo.typedef.HoldsOverChainClause(*chain))
+            c1, c2 = map(fastobo.id.parse, chain)
+            frame.append(fastobo.typedef.HoldsOverChainClause(c1, c2))
         if r.antisymmetric:
             frame.append(fastobo.typedef.IsAntiSymmetricClause(True))
         if r.cyclic:

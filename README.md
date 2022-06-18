@@ -156,6 +156,22 @@ MS:1000001
 ...
 ```
 
+### 🤫 Silence warnings
+
+`pronto` is explicit about the parts of the code that are doing 
+non-standard assumptions, or missing capabilities to handle certain
+constructs. It does so by raising warnings with the `warnings` module, 
+which can get quite verbose. 
+
+If you are fine with the inconsistencies, you can manually disable 
+warning reports in your consumer code with the `filterwarnings` function:
+
+```python
+import warnings
+import pronto
+warnings.filterwarnings("ignore", category=pronto.warnings.ProntoWarning)
+```
+
 <!-- ### 🤝 Merging several ontologies -->
 
 ## 📖 API Reference

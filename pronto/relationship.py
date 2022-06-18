@@ -1,7 +1,7 @@
 import datetime
 import operator
 import typing
-from typing import Dict, FrozenSet, Optional, Set, Tuple
+from typing import Dict, Iterable, FrozenSet, Optional, Set, Tuple
 
 from .definition import Definition
 from .entity import Entity, EntityData, EntitySet
@@ -333,6 +333,14 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
             }
         )
 
+    @equivalent_to_chain.setter
+    def equivalent_to_chain(self, equivalent_to_chain: Iterable[Tuple["Relationship", "Relationship"]]):
+        data = self._data()
+        data.equivalent_to_chain = {
+            (r1.id, r2.id)
+            for r1, r2 in equivalent_to_chain
+        }
+
     @property
     def expand_assertion_to(self) -> FrozenSet[Definition]:
         return frozenset(self._data().expand_assertion_to)
@@ -383,8 +391,17 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
         ont: "Ontology" = self._ontology()
         data: "RelationshipData" = self._data()
         return frozenset(
-            {tuple(map(ont.get_term, chain)) for chain in data.holds_over_chain}
+            tuple(map(ont.get_term, chain))
+            for chain in data.holds_over_chain
         )
+
+    @holds_over_chain.setter
+    def holds_over_chain(self, holds_over_chain: Iterable[Tuple["Relationship", "Relationship"]]) -> None:
+        data: "RelationshipData" = self._data()
+        data.holds_over_chain = {
+            (r1.id, r2.id)
+            for r1, r2 in holds_over_chain
+        }
 
     @property
     def inverse_of(self) -> Optional["Relationship"]:

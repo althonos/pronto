@@ -665,8 +665,10 @@ class RdfXMLParser(BaseParser):
             resource = sub.get(_NS["rdf"]["resource"])
             if resource == _NS["oboInOwl"].raw("SynonymTypeProperty"):
                 # extract ID and label of the synonymtypedef
-                label = elem.find(_NS["rdfs"]["label"]).text
-                if label is None:
+                label_element = elem.find(_NS["rdfs"]["label"])
+                if label_element is not None:
+                    label = label_element.text
+                else:
                     label = ""
                     warnings.warn(
                         "`oboInOwl:SynonymTypeProperty` element has no label",

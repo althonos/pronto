@@ -145,3 +145,9 @@ class TestIssues(unittest.TestCase):
         r3.holds_over_chain = { (r1, r2) }
         r3.equivalent_to_chain = { (r1, r2) }
         ont.dumps()
+
+    def test_class_level_clause(self):
+        ont = pronto.Ontology()
+        r1 = ont.create_relationship("r1")
+        r1.class_level = True
+        ont.dumps()

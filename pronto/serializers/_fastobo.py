@@ -279,7 +279,7 @@ class FastoboSerializer:
         if r.metadata_tag:
             frame.append(fastobo.typedef.IsMetadataTagClause(True))
         if r.class_level:
-            frame.append(fastobo.typedef.IsClassLevel(True))
+            frame.append(fastobo.typedef.IsClassLevelClause(True))
         return frame
 
     def _to_xref(self, x: Xref) -> fastobo.xref.Xref:

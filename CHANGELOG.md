@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 [Unreleased]: https://github.com/althonos/pronto/compare/v2.4.6...HEAD
 
+## [2.4.7]
+[2.4.7]: https://github.com/althonos/pronto/compare/v2.4.6...v2.4.7
+### Fixed
+- Serialization of `is_class_level` properties with `fastobo`-based serializers ([#178](https://github.com/althonos/pronto/issues/178)).
+- Parsing of `SynonymTypeProperty` elements in RDF/XML without a label attribute ([#176](https://github.com/althonos/pronto/issues/176)).
+
 ## [2.4.6] - 2022-06-18
 [2.4.6]: https://github.com/althonos/pronto/compare/v2.4.5...v2.4.6
 ### Added

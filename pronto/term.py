@@ -112,6 +112,11 @@ class TermData(EntityData):  # noqa: R0902, R0903
 class TermSet(EntitySet["Term"]):
     """A specialized mutable set to store `Term` instances."""
 
+    # --- Magic methods ------------------------------------------------------
+
+    def __iter__(self) -> Iterator["Term"]:
+        return map(lambda t: self._ontology.get_term(t), iter(self._ids))  # type: ignore
+
     # --- Methods ------------------------------------------------------------
 
     def subclasses(

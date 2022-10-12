@@ -688,7 +688,7 @@ class EntitySet(typing.Generic[_E], typing.MutableSet[_E]):
 
     @property
     def ids(self) -> FrozenSet[str]:
-        return frozenset(map(operator.attrgetter("id"), iter(self)))
+        return frozenset(self._ids)
 
     @property
     def alternate_ids(self) -> FrozenSet[str]:

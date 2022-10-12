@@ -1,7 +1,7 @@
 import datetime
 import operator
 import typing
-from typing import Dict, Iterable, FrozenSet, Optional, Set, Tuple
+from typing import Dict, Iterable, FrozenSet, Optional, Set, Tuple, Iterator
 
 from .definition import Definition
 from .entity import Entity, EntityData, EntitySet
@@ -153,6 +153,11 @@ class RelationshipData(EntityData):
 
 class RelationshipSet(EntitySet["Relationship"]):
     """A specialized mutable set to store `Relationship` instances."""
+
+    # --- Magic methods ------------------------------------------------------
+
+    def __iter__(self) -> Iterator["Relationship"]:
+        return map(lambda t: self._ontology.get_relationship(t), iter(self._ids))  # type: ignore
 
     # --- Methods ---------------------------------------------------------
 

@@ -12,7 +12,6 @@ if typing.TYPE_CHECKING:
     from ..relationship import Relationship, RelationshipData, RelationshipSet
     from ..ontology import Ontology, _DataGraph
 
-
 _E = typing.TypeVar("_E", bound="Entity")
 
 # --- Storage ----------------------------------------------------------------
@@ -34,8 +33,8 @@ class Lineage(object):
         sub: Optional[AbstractSet[str]] = None,
         sup: Optional[AbstractSet[str]] = None,
     ):
-        self.sub: Set[str] = set(sub) if sub is not None else set()  # type: ignore
-        self.sup: Set[str] = set(sup) if sup is not None else set()  # type: ignore
+        self.sub: Set[str] = set(sub if sub is not None else ())  # type: ignore
+        self.sup: Set[str] = set(sup if sup is not None else ())  # type: ignore
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Lineage):
@@ -46,6 +45,9 @@ class Lineage(object):
     # (see https://docs.python.org/3/reference/datamodel.html#object.__hash__)
     __hash__ = None  # type: ignore
 
+# create an empty Lineage object to serve as a default
+Lineage._EMPTY: Lineage = Lineage()
+Lineage._EMPTY.sub = Lineage._EMPTY.sup = frozenset()
 
 # --- Abstract handlers ------------------------------------------------------
 
@@ -266,16 +268,16 @@ class LineageIterator(typing.Generic[_E], typing.Iterator[_E]):
         else:
             return 0
 
-    def __next__(self) -> "_E":
+    def _next_id(self) -> Optional[str]:
         while self._frontier or self._queue:
             # Return any element currently queued
             if self._queue:
-                return self._get_entity(self._queue.popleft())
+                return self._queue.popleft()
             # Get the next node in the frontier
             node, distance = self._frontier.popleft()
             self._done.add(node)
             # Process its neighbors if they are not too far
-            neighbors: Set[str] = set(self._get_neighbors(node))
+            neighbors: Set[str] = self._get_neighbors(node)
             if neighbors and distance < self._distmax:
                 for node in sorted(neighbors.difference(self._done)):
                     self._frontier.append((node, distance + 1))
@@ -283,7 +285,13 @@ class LineageIterator(typing.Generic[_E], typing.Iterator[_E]):
                     self._linked.add(neighbor)
                     self._queue.append(neighbor)
         # Stop iteration if no more elements to process
-        raise StopIteration
+        return None
+
+    def __next__(self) -> "_E":
+        id_ = self._next_id()
+        if id_ is None:
+            raise StopIteration
+        return self._get_entity(id_)
 
 
 class TermIterator(LineageIterator["Term"]):
@@ -311,7 +319,10 @@ class TermIterator(LineageIterator["Term"]):
         from ..term import TermSet
 
         with typechecked.disabled():
-            return TermSet(self)
+            term_set = TermSet()
+            term_set._ontology = self._ontology
+            term_set._ids.update(iter(self._next_id, None))
+            return term_set
 
 
 class RelationshipIterator(LineageIterator["Relationship"]):
@@ -335,17 +346,20 @@ class RelationshipIterator(LineageIterator["Relationship"]):
         from ..relationship import RelationshipSet
 
         with typechecked.disabled():
-            return RelationshipSet(self)
+            relationship_set = RelationshipSet()
+            relationship_set._ontology = self._ontology
+            relationship_set._ids.update(iter(self._next_id, None))
+            return relationship_set
 
 
 class SubentitiesIterator(LineageIterator):
     def _get_neighbors(self, node: str) -> Set[str]:
-        return self._get_data().lineage.get(node, Lineage()).sub
+        return self._get_data().lineage.get(node, Lineage._EMPTY).sub
 
 
 class SuperentitiesIterator(LineageIterator):
     def _get_neighbors(self, node: str) -> Set[str]:
-        return self._get_data().lineage.get(node, Lineage()).sup
+        return self._get_data().lineage.get(node, Lineage._EMPTY).sup
 
 
 # --- Concrete iterators -----------------------------------------------------

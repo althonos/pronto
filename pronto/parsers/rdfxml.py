@@ -179,7 +179,10 @@ class RdfXMLParser(BaseParser):
         match = re.match("^http://www.w3.org/2001/XMLSchema#(.*)$", iri)
         if match is not None:
             return f"xsd:{match.group(1)}"
-        raise ValueError(f"invalid datatype: {iri!r}")
+        match = re.match("^http://www.w3.org/2000/01/rdf-schema#(.*)$", iri)
+        if match is not None:
+            return f"rdfs:{match.group(1)}"
+        raise iri
 
     def _extract_term_relationship(
         self, elem: etree.Element

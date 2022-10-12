@@ -4,7 +4,7 @@ import typing
 import warnings
 from typing import AbstractSet, Deque, Optional, Set, Tuple, cast
 
-from ..utils.meta import roundrepr
+from ..utils.meta import roundrepr, typechecked
 
 if typing.TYPE_CHECKING:
     from ..entity import Entity
@@ -310,7 +310,8 @@ class TermIterator(LineageIterator["Term"]):
         """
         from ..term import TermSet
 
-        return TermSet(self)
+        with typechecked.disabled():
+            return TermSet(self)
 
 
 class RelationshipIterator(LineageIterator["Relationship"]):
@@ -333,7 +334,8 @@ class RelationshipIterator(LineageIterator["Relationship"]):
         """
         from ..relationship import RelationshipSet
 
-        return RelationshipSet(self)
+        with typechecked.disabled():
+            return RelationshipSet(self)
 
 
 class SubentitiesIterator(LineageIterator):

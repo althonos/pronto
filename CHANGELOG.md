@@ -5,7 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.1...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.2...HEAD
+
+## [v2.5.2]
+[v2.5.2]: https://github.com/althonos/pronto/compare/v2.5.1...v2.5.2
+### Added
+- Explicit support for Python 3.11.
+### Changed
+- Bumped `fastobo` dependency to `v0.12.2`.
+- Bumped `chardet` dependency to `v5.0`.
 
 ## [v2.5.1]
 [v2.5.1]: https://github.com/althonos/pronto/compare/v2.5.0...v2.5.1

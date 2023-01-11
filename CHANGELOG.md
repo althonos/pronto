@@ -5,9 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.2...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.3...HEAD
 
-## [v2.5.2]
+## [v2.5.3]
+[v2.5.3]: https://github.com/althonos/pronto/compare/v2.5.2...v2.5.3
+### Fixed
+- Crash in `LineageIterator.to_set` when starting from an empty set of entities.
+
+## [v2.5.2] - 2022-12-07
 [v2.5.2]: https://github.com/althonos/pronto/compare/v2.5.1...v2.5.2
 ### Added
 - Explicit support for Python 3.11.
@@ -15,7 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bumped `fastobo` dependency to `v0.12.2`.
 - Bumped `chardet` dependency to `v5.0`.
 
-## [v2.5.1]
+## [v2.5.1] - 2022-10-12
 [v2.5.1]: https://github.com/althonos/pronto/compare/v2.5.0...v2.5.1
 ### Fixed
 - `EntitySet.ids` iterating on its elements instead of copying the internal identifiers.
@@ -23,14 +28,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Disable typechecking when collecting entities in `to_set` methods.
 
-## [v2.5.0]
+## [v2.5.0] - 2022-07-12
 [v2.5.0]: https://github.com/althonos/pronto/compare/v2.4.7...v2.5.0
 ### Changed
 - Bumped `fastobo` dependecy to `v0.12.1`
 ### Removed
 - Support for Python 3.6.
 
-## [v2.4.7]
+## [v2.4.7] - 2022-06-28
 [v2.4.7]: https://github.com/althonos/pronto/compare/v2.4.6...v2.4.7
 ### Fixed
 - Serialization of `is_class_level` properties with `fastobo`-based serializers ([#178](https://github.com/althonos/pronto/issues/178)).

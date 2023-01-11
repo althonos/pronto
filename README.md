@@ -2,7 +2,7 @@
 
 *A Python frontend to ontologies.*
 
-[![Actions](https://img.shields.io/github/workflow/status/althonos/pronto/Test/master?logo=github&style=flat-square&maxAge=300)](https://github.com/althonos/pronto/actions)
+[![Actions](https://img.shields.io/github/actions/workflow/status/althonos/pronto/test.yml?branch=master&logo=github&style=flat-square&maxAge=300)](https://github.com/althonos/pronto/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square&maxAge=2678400)](https://choosealicense.com/licenses/mit/)
 [![Source](https://img.shields.io/badge/source-GitHub-303030.svg?maxAge=2678400&style=flat-square)](https://github.com/althonos/pronto/)
 [![Docs](https://img.shields.io/readthedocs/pronto?style=flat-square&maxAge=3600)](http://pronto.readthedocs.io/en/stable/?badge=stable)

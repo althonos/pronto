@@ -8,7 +8,7 @@
 
 |Actions| |License| |Source| |Docs| |Coverage| |Sanity| |PyPI| |Bioconda| |Versions| |Wheel| |Changelog| |Issues| |DOI| |Downloads|
 
-.. |Actions| image:: https://img.shields.io/github/workflow/status/althonos/pronto/Test/master?style=flat-square&maxAge=300
+.. |Actions| image:: https://img.shields.io/github/actions/workflow/status/althonos/pronto/test.yml?branch=master&style=flat-square&maxAge=300
    :target: https://github.com/althonos/pronto/actions
 
 .. |License| image:: https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square&maxAge=2678400

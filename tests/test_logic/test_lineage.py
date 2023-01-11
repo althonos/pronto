@@ -21,6 +21,7 @@ class TestLineage(unittest.TestCase):
 class TestSubclassesIterator(unittest.TestCase):
 
     def test_empty(self):
+        self.assertListEqual(list(lineage.SubclassesIterator().to_set()), [])
         self.assertListEqual(list(lineage.SubclassesIterator()), [])
         self.assertEqual(operator.length_hint(lineage.SubclassesIterator()), 0)
 
@@ -29,4 +30,5 @@ class TestSuperclassesIterator(unittest.TestCase):
 
     def test_empty(self):
         self.assertListEqual(list(lineage.SuperclassesIterator()), [])
+        self.assertListEqual(list(lineage.SuperclassesIterator().to_set()), [])
         self.assertEqual(operator.length_hint(lineage.SuperclassesIterator()), 0)

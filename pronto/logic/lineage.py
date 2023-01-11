@@ -209,7 +209,7 @@ class SuperpropertiesHandler(SuperentitiesHandler, RelationshipHandler):
 class LineageIterator(typing.Generic[_E], typing.Iterator[_E]):
 
     _distmax: float
-    _ontology: "Ontology"
+    _ontology: Optional["Ontology"]
     _linked: Set[str]
     _done: Set[str]
     _frontier: Deque[Tuple[str, int]]
@@ -245,7 +245,9 @@ class LineageIterator(typing.Generic[_E], typing.Iterator[_E]):
         # the first call without ever accessing `self._ontology`, so it's
         # safe not to initialise it here in that case.
         if entities:
-            self._ontology = ont = entities[0]._ontology()
+            self._ontology = entities[0]._ontology()
+        else:
+            self._ontology = None
 
         self._linked: Set[str] = set()
         self._done: Set[str] = set()

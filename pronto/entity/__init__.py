@@ -466,7 +466,7 @@ class Entity(typing.Generic[_D, _S]):
 
     @synonyms.setter  # type: ignore
     @typechecked(property=True)
-    def synonyms(self, synonyms: Iterable[Synonym]):
+    def synonyms(self, synonyms: FrozenSet[Synonym]):
         self._data().synonyms = {syn._data() for syn in synonyms}
 
     @property

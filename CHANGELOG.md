@@ -5,7 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.3...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.4...HEAD
+
+## [v2.5.4] - 2023-04-10
+[v2.5.4]: https://github.com/althonos/pronto/compare/v2.5.3...v2.5.4
+### Fixed
+- `Entity.synonyms` setter not accepting `frozenset` arguments as expected (#207).
+### Changed
+- Bump supported `networkx` version to `v3.0` (#206).
 
 ## [v2.5.3]
 [v2.5.3]: https://github.com/althonos/pronto/compare/v2.5.2...v2.5.3

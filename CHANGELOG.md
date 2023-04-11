@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Bump supported `networkx` version to `v3.0` (#206).
 
-## [v2.5.3]
+## [v2.5.3] - 2023-01-11
 [v2.5.3]: https://github.com/althonos/pronto/compare/v2.5.2...v2.5.3
 ### Fixed
 - Crash in `LineageIterator.to_set` when starting from an empty set of entities.

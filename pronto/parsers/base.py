@@ -1,6 +1,5 @@
 import abc
 import functools
-import multiprocessing.pool
 import operator
 import os
 import typing
@@ -66,8 +65,8 @@ class BaseParser(abc.ABC):
             basepath=basepath,
             timeout=timeout,
         )
-        with multiprocessing.pool.ThreadPool(threads) as pool:
-            return dict(pool.map(lambda i: (i, process(i)), imports))
+
+        return dict([(i, cls.process_import(i, import_depth=import_depth, basepath=basepath, timeout=timeout)) for i in imports])
 
     _entities = {
         "Term": operator.attrgetter("terms", "_terms"),

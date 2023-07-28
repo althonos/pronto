@@ -59,14 +59,21 @@ class BaseParser(abc.ABC):
         # check we did not reach the maximum import depth
         if import_depth == 0:
             return dict()
-        process = functools.partial(
-            cls.process_import,
-            import_depth=import_depth,
-            basepath=basepath,
-            timeout=timeout,
-        )
 
-        return dict([(i, cls.process_import(i, import_depth=import_depth, basepath=basepath, timeout=timeout)) for i in imports])
+        if threads:
+            from multiprocessing.pool import ThreadPool
+
+            process = functools.partial(
+                cls.process_import,
+                import_depth=import_depth,
+                basepath=basepath,
+                timeout=timeout,
+            )
+
+            with ThreadPool(threads) as pool:
+                return dict(pool.map(lambda i: (i, process(i)), imports))
+        else:
+            return dict([(i, cls.process_import(i, import_depth=import_depth, basepath=basepath, timeout=timeout)) for i in imports])
 
     _entities = {
         "Term": operator.attrgetter("terms", "_terms"),

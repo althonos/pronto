@@ -38,14 +38,14 @@ class OboJSONParser(FastoboParser, BaseParser):
         # Extract frames from the current document.
         with typechecked.disabled():
             try:
-                if threads:
+                if threads is not None and threads == 1:
+                    for single in doc:
+                        self.extract_entity(single)
+                else:
                     from multiprocessing.pool import ThreadPool
 
                     with ThreadPool(threads) as pool:
                         pool.map(self.extract_entity, doc)
-                else:
-                    for single in doc:
-                        self.extract_entity(single)
 
             except SyntaxError as err:
                 location = self.ont.path, err.lineno, err.offset, err.text

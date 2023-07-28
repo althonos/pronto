@@ -60,7 +60,10 @@ class BaseParser(abc.ABC):
         if import_depth == 0:
             return dict()
 
-        if threads:
+        if threads is not None and threads == 1:
+            return dict([(i, cls.process_import(i, import_depth=import_depth, basepath=basepath, timeout=timeout)) for i in imports])
+
+        else:
             from multiprocessing.pool import ThreadPool
 
             process = functools.partial(
@@ -72,8 +75,6 @@ class BaseParser(abc.ABC):
 
             with ThreadPool(threads) as pool:
                 return dict(pool.map(lambda i: (i, process(i)), imports))
-        else:
-            return dict([(i, cls.process_import(i, import_depth=import_depth, basepath=basepath, timeout=timeout)) for i in imports])
 
     _entities = {
         "Term": operator.attrgetter("terms", "_terms"),

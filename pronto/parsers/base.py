@@ -68,7 +68,7 @@ class BaseParser(abc.ABC):
         )
 
         if threads is not None and threads == 1:
-            return {i: process(i,) for i in imports}
+            return {i: process(i) for i in imports}
 
         else:
             from multiprocessing.pool import ThreadPool

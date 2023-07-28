@@ -61,7 +61,7 @@ class BaseParser(abc.ABC):
             return dict()
 
         if threads is not None and threads == 1:
-            return dict([(i, cls.process_import(i, import_depth=import_depth, basepath=basepath, timeout=timeout)) for i in imports])
+            return {i: cls.process_import(i, import_depth=import_depth, basepath=basepath, timeout=timeout) for i in imports}
 
         else:
             from multiprocessing.pool import ThreadPool

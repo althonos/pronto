@@ -60,18 +60,18 @@ class BaseParser(abc.ABC):
         if import_depth == 0:
             return dict()
 
+        process = functools.partial(
+            cls.process_import,
+            import_depth=import_depth,
+            basepath=basepath,
+            timeout=timeout,
+        )
+
         if threads is not None and threads == 1:
-            return {i: cls.process_import(i, import_depth=import_depth, basepath=basepath, timeout=timeout) for i in imports}
+            return {i: process(i,) for i in imports}
 
         else:
             from multiprocessing.pool import ThreadPool
-
-            process = functools.partial(
-                cls.process_import,
-                import_depth=import_depth,
-                basepath=basepath,
-                timeout=timeout,
-            )
 
             with ThreadPool(threads) as pool:
                 return dict(pool.map(lambda i: (i, process(i)), imports))

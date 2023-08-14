@@ -419,7 +419,7 @@ class RdfXMLParser(BaseParser):
                     iri = attrib[_NS["rdf"]["resource"]]
                     curie = curies.get(iri) or self._compact_id(iri)
                     termdata.replaced_by.add(curie)
-                elif _NS["rdf"]["datatype"] in attrib:
+                elif text is not None:
                     curie = curies.get(text) or self._compact_id(text)
                     termdata.replaced_by.add(curie)
                 else:
@@ -433,7 +433,7 @@ class RdfXMLParser(BaseParser):
                     iri = attrib[_NS["rdf"]["resource"]]
                     curie = curies.get(iri) or self._compact_id(iri)
                     termdata.consider.add(curie)
-                elif _NS["rdf"]["datatype"] in attrib:
+                elif text is not None:
                     curie = curies.get(text) or self._compact_id(text)
                     termdata.consider.add(curie)
                 else:

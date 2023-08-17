@@ -420,6 +420,12 @@ class RdfXMLParser(BaseParser):
                     curie = curies.get(iri) or self._compact_id(iri)
                     termdata.replaced_by.add(curie)
                 elif text is not None:
+                    if _NS["rdf"]["datatype"] not in attrib:
+                        warnings.warn(
+                            "no datatype in `IAO:0100001` annotation",
+                            SyntaxWarning,
+                            stacklevel=2,
+                        )
                     curie = curies.get(text) or self._compact_id(text)
                     termdata.replaced_by.add(curie)
                 else:
@@ -434,6 +440,12 @@ class RdfXMLParser(BaseParser):
                     curie = curies.get(iri) or self._compact_id(iri)
                     termdata.consider.add(curie)
                 elif text is not None:
+                    if _NS["rdf"]["datatype"] not in attrib:
+                        warnings.warn(
+                            "no datatype in `oboInOwl:consider` annotation",
+                            SyntaxWarning,
+                            stacklevel=2,
+                        )
                     curie = curies.get(text) or self._compact_id(text)
                     termdata.consider.add(curie)
                 else:

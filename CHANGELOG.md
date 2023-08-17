@@ -5,7 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.4...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.5...HEAD
+
+## [v2.5.5] - 2023-08-17
+[v2.5.5]: https://github.com/althonos/pronto/compare/v2.5.4...v2.5.5
+### Fixed
+- `replaced_by` and `consider` attributes not being extracted from RDF/XML documents on missing RDF datatype ([#209](https://github.com/althonos/pronto/issues/209)).
+- Hard requirement on `multiprocessing.pool` preventing the package to work single-threaded on more restrictive environments ([#208](https://github.com/althonos/pronto/pull/208)).
 
 ## [v2.5.4] - 2023-04-10
 [v2.5.4]: https://github.com/althonos/pronto/compare/v2.5.3...v2.5.4

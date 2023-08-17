@@ -1,4 +1,3 @@
-import multiprocessing.pool
 import os
 
 import fastobo
@@ -39,7 +38,7 @@ class OboJSONParser(FastoboParser, BaseParser):
         # Extract frames from the current document.
         with typechecked.disabled():
             try:
-                with multiprocessing.pool.ThreadPool(threads) as pool:
+                with self.pool(threads) as pool:
                     pool.map(self.extract_entity, doc)
             except SyntaxError as err:
                 location = self.ont.path, err.lineno, err.offset, err.text

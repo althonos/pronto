@@ -1,6 +1,5 @@
 import abc
 import functools
-import multiprocessing.pool
 import operator
 import os
 import typing
@@ -9,6 +8,7 @@ from typing import Dict, Optional, Set
 
 from ..logic.lineage import Lineage
 from ..ontology import Ontology
+from ..utils.pool import ThreadPool
 
 
 class BaseParser(abc.ABC):
@@ -26,6 +26,10 @@ class BaseParser(abc.ABC):
         self, handle: typing.BinaryIO, threads: Optional[int] = None
     ) -> None:
         return NotImplemented
+
+    @classmethod
+    def pool(cls, threads: int) -> ThreadPool:
+        return ThreadPool(threads)
 
     @classmethod
     def process_import(
@@ -66,7 +70,7 @@ class BaseParser(abc.ABC):
             basepath=basepath,
             timeout=timeout,
         )
-        with multiprocessing.pool.ThreadPool(threads) as pool:
+        with cls.pool(threads) as pool:
             return dict(pool.map(lambda i: (i, process(i)), imports))
 
     _entities = {

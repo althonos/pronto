@@ -47,7 +47,7 @@
 .. |DOI| image:: https://img.shields.io/badge/doi-10.5281%2Fzenodo.595572-purple?style=flat-square&maxAge=2678400
    :target: https://doi.org/10.5281/zenodo.595572
 
-.. |Downloads| image:: https://img.shields.io/badge/dynamic/json?style=flat-square&color=303f9f&maxAge=86400&label=downloads&query=%24.total_downloads&url=https%3A%2F%2Fapi.pepy.tech%2Fapi%2Fprojects%2Fpronto
+.. |Downloads| image:: https://img.shields.io/pypi/dm/pronto?style=flat-square&color=303f9f&maxAge=86400&label=downloads
    :target: https://pepy.tech/project/pronto
 
 

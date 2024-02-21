@@ -5,7 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.5...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.6...HEAD
+
+## [v2.5.6] - 2024-02-21
+[v2.5.6]: https://github.com/althonos/pronto/compare/v2.5.5...v2.5.6
+### Added
+- Explicit support for Python 3.12.
+### Fixed
+- Synonym types not being properly extracted by RDF/XML parser ([#218](https://github.com/althonos/pronto/issues/218)).
 
 ## [v2.5.5] - 2023-08-17
 [v2.5.5]: https://github.com/althonos/pronto/compare/v2.5.4...v2.5.5

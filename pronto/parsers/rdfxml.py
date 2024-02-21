@@ -802,14 +802,27 @@ class RdfXMLParser(BaseParser):
                 )
                 return
 
-            type_ = elem.find(_NS["oboInOwl"]["hasSynonymType"])
+            # extract synonym type name or IRI
+            elem_type = elem.find(_NS["oboInOwl"]["hasSynonymType"])
+            if elem_type is None:
+                type_ = None
+            elif _NS["rdf"]["resource"] in elem_type.attrib:
+                type_iri = elem_type.attrib[_NS["rdf"]["resource"]]
+                type_ = curies.get(type_iri) or self._compact_id(type_iri)
+            else:
+                type_ = elem_type.text
+
             try:
+                # recover existing synonym on the entity if there's one already
                 synonym = next(
                     s._data()
                     for s in entity.synonyms
                     if s.description == elem_target.text
                     and s.scope == _SYNONYMS[property]
                 )
+                # update synonym type of existing synonym if we got one
+                if type_ is not None:
+                    synonym.type = type_
             except StopIteration:
                 description = elem_target.get(_NS["rdf"]["resource"], elem_target.text)
                 if description is None:
@@ -822,7 +835,7 @@ class RdfXMLParser(BaseParser):
                 synonym = SynonymData(
                     description,
                     scope=_SYNONYMS[property],
-                    type=type_.text if type_ is not None else None,
+                    type=type_,
                 )
 
             entity._data().synonyms.add(typing.cast(SynonymData, synonym))

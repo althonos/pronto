@@ -449,3 +449,58 @@ class TestRdfXMLParser(unittest.TestCase):
         )
         self.assertIn("TST:001", ont.relationships())
         self.assertTrue(ont.get_relationship("TST:001").symmetric)
+
+    def test_existing_synonym_type_extraction(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology rdf:about="http://purl.obolibrary.org/obo/chebi.owl"/>
+
+            <owl:AnnotationProperty rdf:about="http://purl.obolibrary.org/obo/chebi#BRAND_NAME">
+                <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">BRAND NAME</rdfs:label>
+                <rdfs:subPropertyOf rdf:resource="http://www.geneontology.org/formats/oboInOwl#SynonymTypeProperty"/>
+            </owl:AnnotationProperty>
+
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/CHEBI_4508">
+                <oboInOwl:hasRelatedSynonym rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cataflam</oboInOwl:hasRelatedSynonym>
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CHEBI:4508</oboInOwl:id>
+            </owl:Class>
+            <owl:Axiom>
+                <owl:annotatedSource rdf:resource="http://purl.obolibrary.org/obo/CHEBI_4508"/>
+                <owl:annotatedProperty rdf:resource="http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym"/>
+                <owl:annotatedTarget rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cataflam</owl:annotatedTarget>
+                <oboInOwl:hasDbXref rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DrugBank</oboInOwl:hasDbXref>
+                <oboInOwl:hasSynonymType rdf:resource="http://purl.obolibrary.org/obo/chebi#BRAND_NAME"/>
+            </owl:Axiom>
+            """
+        )
+        syntype, = ont.metadata.synonymtypedefs
+        synonym, = ont["CHEBI:4508"].synonyms
+        self.assertEqual(synonym.scope, "RELATED")
+        self.assertEqual(synonym.type, syntype)
+
+    def test_missing_synonym_type_extraction(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology rdf:about="http://purl.obolibrary.org/obo/chebi.owl"/>
+
+            <owl:AnnotationProperty rdf:about="http://purl.obolibrary.org/obo/chebi#BRAND_NAME">
+                <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">BRAND NAME</rdfs:label>
+                <rdfs:subPropertyOf rdf:resource="http://www.geneontology.org/formats/oboInOwl#SynonymTypeProperty"/>
+            </owl:AnnotationProperty>
+
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/CHEBI_4508">
+                <oboInOwl:id rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CHEBI:4508</oboInOwl:id>
+            </owl:Class>
+            <owl:Axiom>
+                <owl:annotatedSource rdf:resource="http://purl.obolibrary.org/obo/CHEBI_4508"/>
+                <owl:annotatedProperty rdf:resource="http://www.geneontology.org/formats/oboInOwl#hasRelatedSynonym"/>
+                <owl:annotatedTarget rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cataflam</owl:annotatedTarget>
+                <oboInOwl:hasDbXref rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DrugBank</oboInOwl:hasDbXref>
+                <oboInOwl:hasSynonymType rdf:resource="http://purl.obolibrary.org/obo/chebi#BRAND_NAME"/>
+            </owl:Axiom>
+            """
+        )
+        syntype, = ont.metadata.synonymtypedefs
+        synonym, = ont["CHEBI:4508"].synonyms
+        self.assertEqual(synonym.scope, "RELATED")
+        self.assertEqual(synonym.type, syntype)

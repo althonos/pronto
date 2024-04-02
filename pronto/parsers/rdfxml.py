@@ -176,7 +176,7 @@ class RdfXMLParser(BaseParser):
         match = re.match("^http://www.w3.org/1999/02/22-rdf-syntax-ns#(.*)", iri)
         if match is not None:
             return f"rdf:{match.group(1)}"
-        raise ValueError(iri)
+        return iri
 
     def _compact_datatype(self, iri: str) -> str:
         match = re.match("^http://www.w3.org/2001/XMLSchema#(.*)$", iri)

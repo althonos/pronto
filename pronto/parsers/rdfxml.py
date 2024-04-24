@@ -185,7 +185,7 @@ class RdfXMLParser(BaseParser):
         match = re.match("^http://www.w3.org/1999/02/22-rdf-syntax-ns#(.*)", iri)
         if match is not None:
             return f"rdf:{match.group(1)}"
-        raise iri
+        raise ValueError(f"Invalid datatype IRI: {iri!r}")
 
     def _extract_term_relationship(
         self, elem: etree.Element

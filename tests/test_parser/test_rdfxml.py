@@ -12,7 +12,13 @@ class TestRdfXMLParser(unittest.TestCase):
 
     @staticmethod
     def get_ontology(content):
-        xml = f"""
+        xml = f"""<?xml version="1.0"?>
+
+        <!DOCTYPE rdf:RDF [
+            <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+            <!ENTITY Hugo "http://ncicb.nci.nih.gov/xml/owl/EVS/Hugo.owl#">
+        ]>
+
         <rdf:RDF xmlns="http://purl.obolibrary.org/obo/TEMP#"
              xml:base="http://purl.obolibrary.org/obo/TEMP"
              xmlns:obo="http://purl.obolibrary.org/obo/"
@@ -22,7 +28,8 @@ class TestRdfXMLParser(unittest.TestCase):
              xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
              xmlns:doap="http://usefulinc.com/ns/doap#"
              xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-             xmlns:oboInOwl="http://www.geneontology.org/formats/oboInOwl#">
+             xmlns:oboInOwl="http://www.geneontology.org/formats/oboInOwl#"
+             xmlns:Hugo="http://ncicb.nci.nih.gov/xml/owl/EVS/Hugo.owl#">
             {content}
         </rdf:RDF>
         """
@@ -504,3 +511,23 @@ class TestRdfXMLParser(unittest.TestCase):
         synonym, = ont["CHEBI:4508"].synonyms
         self.assertEqual(synonym.scope, "RELATED")
         self.assertEqual(synonym.type, syntype)
+
+    def test_rdf_datatype(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology/>
+
+            <owl:Class rdf:about="http://ncicb.nci.nih.gov/xml/owl/EVS/Hugo.owl#HGNC_9990">
+                <Hugo:COSMIC_ID rdf:datatype="&rdf;XMLLiteral">RGS2</Hugo:COSMIC_ID>
+            </owl:Class>
+            """
+        )
+        with self.assertRaises(ValueError):
+            self.get_ontology(
+                """
+                <owl:Ontology/>
+                <owl:Class rdf:about="http://ncicb.nci.nih.gov/xml/owl/EVS/Hugo.owl#HGNC_9990">
+                    <Hugo:COSMIC_ID rdf:datatype="http://example.com/something">RGS2</Hugo:COSMIC_ID>
+                </owl:Class>
+                """
+            )

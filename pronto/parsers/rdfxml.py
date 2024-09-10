@@ -696,7 +696,14 @@ class RdfXMLParser(BaseParser):
                 # extract scope if any
                 elem_scope = elem.find(_NS["oboInOwl"]["hasScope"])
                 if elem_scope is not None:
-                    scope = _SYNONYMS.get(elem_scope.attrib[_NS["rdf"]["resource"]])
+                    scope_resource = elem_scope.attrib.get(_NS["rdf"]["resource"])
+                    scope = _SYNONYMS.get(scope_resource)
+                    if scope is None:
+                        warnings.warn(
+                            "failed to extract scope from `oboInOwl:SynonymTypeProperty`",
+                            SyntaxWarning,
+                            stacklevel=3,
+                        )
                 else:
                     scope = None
                 # add the synonymtypedef to the metadata

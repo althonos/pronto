@@ -29,7 +29,8 @@ class TestRdfXMLParser(unittest.TestCase):
              xmlns:doap="http://usefulinc.com/ns/doap#"
              xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
              xmlns:oboInOwl="http://www.geneontology.org/formats/oboInOwl#"
-             xmlns:Hugo="http://ncicb.nci.nih.gov/xml/owl/EVS/Hugo.owl#">
+             xmlns:Hugo="http://ncicb.nci.nih.gov/xml/owl/EVS/Hugo.owl#"
+             xmlns:chebi="http://purl.obolibrary.org/obo/chebi/">
             {content}
         </rdf:RDF>
         """
@@ -531,3 +532,25 @@ class TestRdfXMLParser(unittest.TestCase):
                 </owl:Class>
                 """
             )
+
+    def test_implicit_annotations(self):
+        ont = self.get_ontology(
+            """
+            <owl:Ontology rdf:about="http://purl.obolibrary.org/obo/chebi.owl"/>
+            <owl:Class rdf:about="http://purl.obolibrary.org/obo/CHEBI_65">
+                <chebi:charge rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0</chebi:charge>
+                <chebi:formula rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C15H12O6</chebi:formula>
+                <chebi:inchi>InChI=1S/C15H12O6/c16-7-1-2-9(11(18)3-7)10-6-21-13-5-8(17)4-12(19)14(13)15(10)20/h1-5,10,16-19H,6H2</chebi:inchi>
+                <chebi:inchikey>WNHXBLZBOWXNQO-UHFFFAOYSA-N</chebi:inchikey>
+                <chebi:mass rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">288.255</chebi:mass>
+                <chebi:monoisotopicmass rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">288.06339</chebi:monoisotopicmass>
+            </owl:Class>
+            """
+        )
+        term = ont["CHEBI:65"]
+        annotations = sorted(term.annotations, key=lambda pv: pv.property)
+        self.assertEqual(len(annotations), 6)
+        self.assertEqual(annotations[0].datatype, "xsd:integer")
+        self.assertEqual(annotations[1].datatype, "xsd:string")
+        self.assertEqual(annotations[2].datatype, "xsd:string")
+        self.assertEqual(annotations[4].datatype, "xsd:decimal")

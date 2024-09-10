@@ -232,11 +232,6 @@ class RdfXMLParser(BaseParser):
         property = re.sub("{|}", "", elem.tag)
         datatype = elem.get(_NS["rdf"]["datatype"])
         if datatype is None:
-            warnings.warn(
-                f"{elem} contains text but no `xsd:datatype`",
-                SyntaxWarning,
-                stacklevel=2,
-            )
             datatype = _NS["xsd"].raw("string")
         return LiteralPropertyValue(
             property, typing.cast(str, elem.text), self._compact_datatype(datatype)
@@ -461,6 +456,8 @@ class RdfXMLParser(BaseParser):
                 if _NS["rdf"]["resource"] in attrib:
                     termdata.annotations.add(self._extract_resource_pv(child))
                 elif _NS["rdf"]["datatype"] in attrib and text is not None:
+                    termdata.annotations.add(self._extract_literal_pv(child))
+                elif text is not None:
                     termdata.annotations.add(self._extract_literal_pv(child))
                 else:
                     warnings.warn(

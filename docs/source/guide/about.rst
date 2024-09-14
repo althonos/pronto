@@ -6,12 +6,12 @@ Authors
 
 **pronto** is developped and maintained by:
 
-+-----------------------------------+--------------------------------------+
-|                                   | | **Martin Larralde** (`@althonos`_) |
-|                                   | | PhD Candidate, Zeller Team         |
-| .. image:: _static/embl.png       | | EMBL Heidelberg, Germany           |
-|                                   | | martin.larralde@embl.de            |
-+-----------------------------------+--------------------------------------+
++--------------------------------------+--------------------------------------+
+|                                      | | **Martin Larralde** (`@althonos`_) |
+| .. image:: ../_static/embl.png       | | PhD Candidate, Zeller Team         |
+|    :class: dark-light                | | EMBL Heidelberg, Germany           |
+|                                      | | martin.larralde@embl.de            |
++--------------------------------------+--------------------------------------+
 
 .. _`@althonos`: https://github.com/althonos
 

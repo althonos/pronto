@@ -16,4 +16,4 @@ This section contains guides and documents about Pronto usage.
 
    Update Guide <updating> 
    Changelog <changes>
-   Copyright Notice <copyright>
+   About <about>

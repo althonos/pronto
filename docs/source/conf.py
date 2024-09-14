@@ -179,7 +179,7 @@ napoleon_use_rtype = False
 
 autoclass_content = "class"
 autodoc_member_order = 'bysource'
-autosummary_generate = ['api']
+autosummary_generate = ['api/index']
 
 # -- Options for intersphinx extension ---------------------------------------
 

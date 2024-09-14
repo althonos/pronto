@@ -14,11 +14,7 @@ An abstraction over a :math:`\mathcal{SHOIN}^\mathcal{(D)}` ontology.
 .. autosummary::
    :nosignatures:
    :template: summary.rst
-
-   pronto.Ontology
-
-.. toctree::
-   :hidden:
+   :toctree: 
    :caption: Ontology
 
    pronto.Ontology
@@ -39,16 +35,7 @@ obtained from methods of existing `Ontology` or `Entity` instances, such as
 .. autosummary::
    :nosignatures:
    :template: summary.rst
-
-   pronto.Entity
-   pronto.Relationship
-   pronto.Synonym
-   pronto.Term
-   pronto.TermSet
-
-
-.. toctree::
-   :hidden:
+   :toctree: 
    :caption: View Layer
 
    pronto.Entity
@@ -69,12 +56,7 @@ instances.
 .. autosummary::
    :nosignatures:
    :template: summary.rst
-
-   pronto.entity.attributes.Relationships
-
-
-.. toctree::
-   :hidden:
+   :toctree: 
    :caption: View Collections
 
    pronto.entity.attributes.Relationships
@@ -92,18 +74,7 @@ accessed and mutated directly.*
 .. autosummary::
    :nosignatures:
    :template: summary.rst
-
-   pronto.Metadata
-   pronto.Definition
-   pronto.Subset
-   pronto.SynonymType
-   pronto.LiteralPropertyValue
-   pronto.ResourcePropertyValue
-   pronto.Xref
-
-
-.. toctree::
-   :hidden:
+   :toctree: 
    :caption: Model Layer
 
    pronto.Metadata
@@ -125,15 +96,7 @@ exception of custom parser implementations.
 .. autosummary::
    :nosignatures:
    :template: summary.rst
-   :toctree:
-
-   pronto.RelationshipData
-   pronto.SynonymData
-   pronto.TermData
-
-
-.. toctree::
-   :hidden:
+   :toctree: 
    :caption: Data Layer
 
    pronto.RelationshipData

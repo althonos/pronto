@@ -66,7 +66,7 @@ Setup
 
 Run ``pip install pronto`` in a shell to download the latest release and all
 its dependencies from PyPi, or have a look at the
-:doc:`Installation page <install>` to find other ways to install ``pronto``.
+:doc:`Installation page <guide/install>` to find other ways to install ``pronto``.
 
 .. note::
 
@@ -85,13 +85,8 @@ Library
 .. toctree::
    :maxdepth: 2
 
-   Installation <install>
-   Examples <examples/index>
-   Update Guide <updating>
-   API Reference <api>
-   To-do <todo>
-   Changelog <changes>
-   About <about>
+   User Guide <guide/index>
+   API Reference <api/index>
 
 
 Indices and tables

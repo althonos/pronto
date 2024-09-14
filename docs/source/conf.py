@@ -24,18 +24,6 @@ docssrc_dir = os.path.abspath(os.path.join(__file__, ".."))
 project_dir = os.path.dirname(os.path.dirname(docssrc_dir))
 sys.path.insert(0, project_dir)
 
-# -- Sphinx Setup ------------------------------------------------------------
-
-def setup(app):
-    # Add custom stylesheet
-    app.add_css_file("css/main.css")
-    app.add_js_file("js/apitoc.js")
-    app.add_js_file("js/example-admonition.js")
-    # Copy `CHANGELOG.md` from project directory
-    changelog_src = os.path.join(project_dir, "CHANGELOG.md")
-    changelog_dst = os.path.join(docssrc_dir, "changes.md")
-    shutil.copy(changelog_src, changelog_dst)
-
 # -- Project information -----------------------------------------------------
 
 import pronto

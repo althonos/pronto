@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [v2.5.7] - 2024-04-24
 [v2.5.7]: https://github.com/althonos/pronto/compare/v2.5.6...v2.5.7
 ### Fixed
-- Handling of RDF datatypes in RDF/XML parser ([#223](https://github.com/althonos/pronto/pull/223], by [@chrishmorris](https://github.com/chrishmorris)).
+- Handling of RDF datatypes in RDF/XML parser ([#223](https://github.com/althonos/pronto/pull/223), by [@chrishmorris](https://github.com/chrishmorris)).
 
 ## [v2.5.6] - 2024-02-21
 [v2.5.6]: https://github.com/althonos/pronto/compare/v2.5.5...v2.5.6

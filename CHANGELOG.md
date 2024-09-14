@@ -5,7 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.7...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.8...HEAD
+
+## [v2.5.8] - 2024-09-14
+[v2.5.8]: https://github.com/althonos/pronto/compare/v2.5.7...v2.5.8
+### Fixed
+- Extraction of implicit string annotation in RDF/XML files ([#231](https://github.com/althonos/pronto/issues/231)).
+- RDF/XML parser crash on `oboInOwl:SynonymTypeProperty` when missing a scope ([#230](https://github.com/althonos/pronto/issues/230)).
+### Changed
+- Migrate documentation to PyData theme.
 
 ## [v2.5.7] - 2024-04-24
 [v2.5.7]: https://github.com/althonos/pronto/compare/v2.5.6...v2.5.7

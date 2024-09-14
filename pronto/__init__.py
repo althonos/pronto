@@ -60,7 +60,7 @@ __all__ = [
 
 __author__ = "Martin Larralde <martin.larralde@embl.de>"
 __license__ = "MIT"
-__version__ = "2.5.7"
+__version__ = "2.5.8"
 
 # Update the docstring with a link to the right version of the documentation
 # instead of the latest.

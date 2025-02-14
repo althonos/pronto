@@ -390,13 +390,16 @@ class RdfXMLParser(BaseParser):
             elif tag == _NS["owl"]["deprecated"]:
                 termdata.obsolete = text == "true"
             elif tag == _NS["oboInOwl"]["hasDbXref"]:
+                resource = text if text is not None else attrib.get(_NS["rdf"]["resource"])
                 try:
-                    if text is not None:
-                        termdata.xrefs.add(Xref(text))
-                    else:
-                        termdata.xrefs.add(Xref(attrib[_NS["rdf"]["resource"]]))
+                    if resource is not None:
+                        termdata.xrefs.add(Xref(resource.strip()))
                 except ValueError:
-                    pass
+                    warnings.warn(
+                        f"could not parse Xref in {id!r}: {resource!r}",
+                        SyntaxWarning,
+                        stacklevel=3,
+                    )
             elif tag == _NS["oboInOwl"]["hasAlternativeId"]:
                 iri = attrib.get(_NS["rdf"]["resource"], text)
                 curie = curies.get(iri) or self._compact_id(iri)

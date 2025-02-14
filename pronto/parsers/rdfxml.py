@@ -723,16 +723,22 @@ class RdfXMLParser(BaseParser):
         # get the source, property and target of the axiom.
         elem_source = elem.find(_NS["owl"]["annotatedSource"])
         elem_property = elem.find(_NS["owl"]["annotatedProperty"])
-        elem_target = elem.find(_NS["owl"]["annotatedTarget"])
 
-        # assert source, target and property have a `rdf:resource` attribute.
+        # assert source and property have a `rdf:resource` attribute.
         for x in (elem_source, elem_property):
             if x is None or _NS["rdf"]["resource"] not in x.attrib:
                 return
 
+        # check if text is added as an attribute 
+        elem_target = elem.find(_NS["owl"]["annotatedTarget"])
+        if elem_target is not None:
+            target = elem_target.text
+        else:
+            target = elem.attrib.get(_NS["owl"]["annotatedTarget"])
+
         # check among known properties
         property = elem_property.attrib[_NS["rdf"]["resource"]]
-        if property == _NS["obo"].raw("IAO_0000115") and elem_target.text is not None:
+        if property == _NS["obo"].raw("IAO_0000115") and target is not None:
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
             curie = curies.get(iri) or self._compact_id(iri)
 
@@ -748,7 +754,7 @@ class RdfXMLParser(BaseParser):
                 )
                 return
 
-            entity.definition = d = Definition(elem_target.text)
+            entity.definition = d = Definition(target)
             for child in elem.iterfind(_NS["oboInOwl"]["hasDbXref"]):
                 if child.text is not None:
                     try:
@@ -770,7 +776,7 @@ class RdfXMLParser(BaseParser):
 
         elif (
             property == _NS["oboInOwl"].raw("hasDbXref")
-            and elem_target.text is not None
+            and target is not None
         ):
             iri = elem_source.attrib[_NS["rdf"]["resource"]]
             entity = self.ont[curies.get(iri) or self._compact_id(iri)]
@@ -778,12 +784,12 @@ class RdfXMLParser(BaseParser):
 
             try:
                 if label is not None and label.text is not None:
-                    new_xref = Xref(elem_target.text, label.text)
+                    new_xref = Xref(target, label.text)
                 else:
-                    new_xref = Xref(elem_target.text)
+                    new_xref = Xref(target)
             except ValueError:
                 warnings.warn(
-                    f"could not parse Xref: {elem_target.text!r}",
+                    f"could not parse Xref: {target!r}",
                     SyntaxWarning,
                     stacklevel=3,
                 )
@@ -824,7 +830,7 @@ class RdfXMLParser(BaseParser):
                 synonym = next(
                     s._data()
                     for s in entity.synonyms
-                    if s.description == elem_target.text
+                    if s.description == target
                     and s.scope == _SYNONYMS[property]
                 )
                 # update synonym type of existing synonym if we got one

@@ -1,0 +1,92 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pronto"
+dynamic = ["version"]
+description = "Python frontend to ontologies."
+readme = "README.md"
+requires-python = ">=3.7"
+license = { file = "COPYING" }
+authors = [
+  { name = "Martin Larralde", email = "martin.larralde@embl.de" },
+]
+keywords = ["bioinformatics", "ontology", "OBO", "OWL"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Healthcare Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = [
+    "chardet ~=5.0",
+    "fastobo ~=0.13.0",
+    "networkx >=2.3,<4.0",
+    "python-dateutil ~=2.8",
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/althonos/pronto/issues"
+"Changelog" = "https://pronto.readthedocs.io/en/latest/changes.html"
+"Documentation" = "https://pronto.readthedocs.io/en/latest/"
+"Coverage" = "https://app.codecov.io/gh/althonos/pronto"
+"CI" = "https://github.com/althonos/pronto/actions"
+
+[tool.setuptools.packages]
+find = {namespaces = false}
+
+[tool.setuptools.dynamic]
+version = {attr = "pronto.__version__"}
+
+[too.coverage.report]
+include = ["pronto/*"]
+omit = ["tests/*"]
+show_missing = true
+exclude_lines = [
+   "pragma: no cover",
+   "raise NotImplementedError",
+   "if __name__ == .__main__.:",
+   "except ImportError:",
+   "if typing.TYPE_CHECKING:",
+   "@abc.abstractmethod",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["pronto"]
+
+[tool.pydocstyle]
+inherit = false
+ignore = ["D100", "D101", "D102", "D105", "D107", "D200", "D203", "D213", "D406", "D407"]
+match-dir = "(?!tests)(?!resources)(?!docs)(?!build)[^\\.].*"
+match = "(?!test)(?!setup)[^\\._].*\\.py"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+["tool.mypy-pronto.*"]
+disallow_any_decorated = false
+disallow_any_generics = false
+disallow_any_unimported = false
+disallow_subclassing_any = true
+disallow_untyped_calls = false
+disallow_untyped_defs = false
+ignore_missing_imports = false
+warn_unused_ignores = false
+warn_return_any = false

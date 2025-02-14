@@ -5,7 +5,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.5.8...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.6.0...HEAD
+
+## [v2.6.0] - 2025-02-14
+[v2.6.0]: https://github.com/althonos/pronto/compare/v2.5.8...v2.6.0
+### Added
+- Explicit support for Python 3.13.
+- OWL/XML and RDF/XML format support for `Ontology.dump` ([#232](https://github.com/althonos/pronto/issues/232), [#149](https://github.com/althonos/pronto/issues/149)).
+### Changed
+- Bump `fastobo` to `v0.13.0`.
+- Use `pyproject.toml` to store project metadata instead of `setup.cfg`.
+### Fixed
+- RDF/XML parser not supporting `owl:annotatedTarget` given as attributes.
+- Warn when failing to parse a xref in RDF/XML class parser.
+- Allow undeclared synonym types in RDF/XML parser ([#229](https://github.com/althonos/pronto/issues/229)).
 
 ## [v2.5.8] - 2024-09-14
 [v2.5.8]: https://github.com/althonos/pronto/compare/v2.5.7...v2.5.8

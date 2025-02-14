@@ -1,6 +1,11 @@
 [
     {
-        "name": "v2.5 (stable)",
+        "name": "v2.6 (stable)",
+        "version": "2.6.0",
+        "url": "https://pronto.readthedocs.io/en/v2.6.0/"
+    },
+    {
+        "name": "v2.5",
         "version": "2.5.8",
         "url": "https://pronto.readthedocs.io/en/v2.5.8/"
     },

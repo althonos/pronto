@@ -4,7 +4,9 @@
 
 import configparser
 import doctest
+import importlib
 import os
+import pkgutil
 import re
 import sys
 import shutil
@@ -61,10 +63,30 @@ def load_tests(loader, tests, ignore):
         os.chdir(self.rundir)
         warnings.simplefilter(warnings.defaultaction)
 
-    globs = {"pronto": pronto}
-    if not sys.argv[0].endswith("green"):
-        for pkg in get_packages():
-            top = __import__(pkg)
-            module = top if pkg == 'pronto' else getattr(top, pkg.split('.', maxsplit=1)[-1])
-            tests = _load_tests_from_module(tests, module, globs, setUp, tearDown)
+    # doctests are not compatible with `green`, so we may want to bail out
+    # early if `green` is running the tests
+    if sys.argv[0].endswith("green"):
+        return tests
+
+    # recursively traverse all library submodules and load tests from them
+    packages = [None, pronto]
+    for pkg in iter(packages.pop, None):
+        for (_, subpkgname, subispkg) in pkgutil.walk_packages(pkg.__path__):
+            # import the submodule and add it to the tests
+            module = importlib.import_module(".".join([pkg.__name__, subpkgname]))
+            globs = dict(pronto=pronto, **module.__dict__)
+            tests.addTests(
+                doctest.DocTestSuite(
+                    module,
+                    globs=globs,
+                    setUp=setUp,
+                    tearDown=tearDown,
+                    optionflags=+doctest.ELLIPSIS,
+                )
+            )
+            # if the submodule is a package, we need to process its submodules
+            # as well, so we add it to the package queue
+            if subispkg and subpkgname != "tests":
+                packages.append(module)
+
     return tests

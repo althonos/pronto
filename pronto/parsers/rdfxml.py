@@ -504,6 +504,15 @@ class RdfXMLParser(BaseParser):
         # get the CURIE of the typedef
         id_ = curies[iri]
 
+        # handle the case where an ontology tries to redefine `is_a` as an object property 
+        if id_ == "is_a":
+            warnings.warn(
+                "attempting to redefine the `is_a` relationship",
+                SyntaxWarning,
+                stacklevel=2,
+            )
+            return
+
         # create the relationship
         rel = (
             self.ont.get_relationship

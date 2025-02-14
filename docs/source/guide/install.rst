@@ -32,21 +32,8 @@ the repository and install the repository by running (with the admin rights):
 
 .. code:: console
 
-	$ pip install --user https://github.com/althonos/pronto/archive/master.zip
+	$ pip install --user git+https://github.com/althonos/pronto/
 
 Keep in mind this will install the development version of the library, so not
 everything may work as expected compared to a stable versioned release.
 
-
-GitHub + ``setuptools``
-^^^^^^^^^^^^^^^^^^^^^^^
-
-If you do not have ``pip`` installed, you can still clone the repository and
-run the ``setup.py`` file manually, although you will need to install the
-project dependencies yourself:
-
-.. code:: console
-
-	$ git clone https://github.com/althonos/pronto
-	$ cd pronto
-	# python setup.py install

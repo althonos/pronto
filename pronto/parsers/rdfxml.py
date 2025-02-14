@@ -367,7 +367,7 @@ class RdfXMLParser(BaseParser):
                     names.append(text)
                 else:
                     warnings.warn(
-                        f"`rdfs:label` without text literal in {id!r}",
+                        f"`rdfs:label` without text literal in {id_!r}",
                         SyntaxWarning,
                         stacklevel=2,
                     )
@@ -396,7 +396,7 @@ class RdfXMLParser(BaseParser):
                         termdata.xrefs.add(Xref(resource.strip()))
                 except ValueError:
                     warnings.warn(
-                        f"could not parse Xref in {id!r}: {resource!r}",
+                        f"could not parse Xref in {id_!r}: {resource!r}",
                         SyntaxWarning,
                         stacklevel=3,
                     )
@@ -827,6 +827,15 @@ class RdfXMLParser(BaseParser):
                 type_ = curies.get(type_iri) or self._compact_id(type_iri)
             else:
                 type_ = elem_type.text
+
+            # check if type is declared anywhere, and declare it if needed
+            if type_ is not None and not any(ty.id == type_ for ty in self.ont.synonym_types()):
+                warnings.warn(
+                    f"undeclared synonym type: {type_!r}",
+                    SyntaxWarning,
+                    stacklevel=3,
+                )
+                self.ont.metadata.synonymtypedefs.add(SynonymType(type_, description=""))
 
             try:
                 # recover existing synonym on the entity if there's one already

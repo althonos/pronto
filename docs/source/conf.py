@@ -6,7 +6,6 @@
 
 # -- Imports -----------------------------------------------------------------
 
-import configparser
 import datetime
 import os
 import re
@@ -39,15 +38,6 @@ semver = semantic_version.Version.coerce(pronto.__version__)
 version = "{v.major}.{v.minor}.{v.patch}".format(v=semver)
 # The full version, including alpha/beta/rc tags
 release = str(semver)
-
-# Project URLs
-_parser = configparser.ConfigParser()
-_parser.read(os.path.join(project_dir, "setup.cfg"))
-project_urls = dict(
-    map(str.strip, line.split(" = ", 1))
-    for line in _parser.get("metadata", "project_urls").splitlines()
-    if line.strip()
-)
 
 # -- General configuration ---------------------------------------------------
 

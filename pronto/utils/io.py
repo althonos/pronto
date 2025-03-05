@@ -52,16 +52,6 @@ class EncodedFile(codecs.StreamRecoder):
         self.data_encoding = data_encoding
         self.file_encoding = file_encoding
 
-    def read(self, size: Optional[int] = -1) -> bytes:
-        chunk = super().read(-1 if size is None else size)
-        return chunk.replace(b"\r\n", b"\n")
-
-    def readinto(self, buffer: ByteString) -> int:
-        chunk = self.read(len(buffer) // 2)
-        typing.cast(bytearray, buffer)[: len(chunk)] = chunk
-        return len(chunk)
-
-
 def get_handle(path: str, timeout: int = 2) -> BinaryIO:
     """Given a path or URL, get a binary handle for that path."""
     try:
@@ -140,7 +130,7 @@ def decompress(
                     io.RawIOBase,
                     EncodedFile(
                         typing.cast(typing.BinaryIO, decompressed),
-                        "UTF-8",
+                        "utf-8",
                         typing.cast(str, det["encoding"]),
                     ),
                 )

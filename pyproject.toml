@@ -48,13 +48,18 @@ dependencies = [
 "Coverage" = "https://app.codecov.io/gh/althonos/pronto"
 "CI" = "https://github.com/althonos/pronto/actions"
 
-[tool.setuptools.packages]
-find = {namespaces = false}
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+namespaces = false
+include = ["pronto*"]
+exclude = ["docs", "tests"]
 
 [tool.setuptools.dynamic]
 version = {attr = "pronto.__version__"}
 
-[too.coverage.report]
+[tool.coverage.report]
 include = ["pronto/*"]
 omit = ["tests/*"]
 show_missing = true

@@ -10,7 +10,8 @@ from .base import BaseParser
 class OboParser(FastoboParser, BaseParser):
     @classmethod
     def can_parse(cls, path, buffer):
-        return buffer.lstrip().startswith((b"format-version:", b"[Term", b"[Typedef"))
+        start = 3 if buffer.startswith((b'\xef\xbb\xbf', b'\xbf\xbb\xef')) else 0
+        return buffer.lstrip().startswith((b"format-version:", b"[Term", b"[Typedef"), start)
 
     def parse_from(self, handle, threads=None):
         # Load the OBO document through an iterator using fastobo

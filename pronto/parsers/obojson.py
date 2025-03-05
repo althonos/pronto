@@ -11,7 +11,8 @@ from .base import BaseParser
 class OboJSONParser(FastoboParser, BaseParser):
     @classmethod
     def can_parse(cls, path, buffer):
-        return buffer.lstrip().startswith(b"{")
+        start = 3 if buffer.startswith((b'\xef\xbb\xbf', b'\xbf\xbb\xef')) else 0
+        return buffer.lstrip().startswith(b"{", start)
 
     def parse_from(self, handle, threads=None):
         # Load the OBO graph into a syntax tree using fastobo

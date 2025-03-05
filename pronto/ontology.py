@@ -213,6 +213,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
         import_depth: int = -1,
         timeout: int = 5,
         threads: Optional[int] = None,
+        encoding: Optional[str] = None,
     ):
         """Create a new `Ontology` instance.
 
@@ -231,6 +232,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             threads (int): The number of threads to use when parsing, for
                 parsers that support multithreading. Give `None` to autodetect
                 the number of CPUs on the host machine.
+            encoding (str): The encoding to use for decoding the file if
+                needed. If `None` given (the default), uses `chardet` to
+                detect the encoding when needed.
 
         Raises:
             TypeError: When the given ``handle`` could not be used to parse
@@ -262,7 +266,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             if isinstance(handle, (str, PathLike)):
                 self.path = handle = fspath(handle)
                 self.handle = ctx.enter_context(get_handle(handle, timeout))
-                _handle = ctx.enter_context(decompress(self.handle))
+                _handle = ctx.enter_context(decompress(self.handle, encoding=encoding))
                 _detach = False
             elif hasattr(handle, "read"):
                 self.path = get_location(handle)

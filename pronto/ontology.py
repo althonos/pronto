@@ -242,6 +242,9 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
             ValueError: When the given ``handle`` contains a serialized
                 ontology not supported by any of the builtin parsers.
 
+        .. versionadded:: 2.7.0
+            The `encoding` keyword argument.
+
         """
         from .parsers import BaseParser
 

@@ -5,7 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.6.0...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.7.0...HEAD
+
+## [v2.7.0] - 2025-03-05
+[v2.7.0]: https://github.com/althonos/pronto/compare/v2.6.0...v2.7.0
+### Added
+- `encoding` argument to `Ontology` constructor to skip auto-detection if needed ([#221](https://github.com/althonos/pronto/issues/221), [#241](https://github.com/althonos/pronto/issues/241)).
+### Fixed
+- Broken implementation of `EncodedFile.readinto` causing issues with some encodings ([#109](https://github.com/althonos/pronto/issues/109)).
+- `tests` module being included in site-install ([#237](https://github.com/althonos/pronto/issues/237)).
+- Ignore Unicode BOM in `BaseParser.can_parse` if any.
 
 ## [v2.6.0] - 2025-02-14
 [v2.6.0]: https://github.com/althonos/pronto/compare/v2.5.8...v2.6.0

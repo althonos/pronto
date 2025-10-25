@@ -36,7 +36,7 @@ classifiers = [
 ]
 dependencies = [
     "chardet ~=5.0",
-    "fastobo ~=0.13.0",
+    "fastobo >=0.13.0,<0.15.0",
     "networkx >=2.3,<4.0",
     "python-dateutil ~=2.8",
 ]

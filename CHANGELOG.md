@@ -5,7 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.7.0...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.7.1...HEAD
+
+## [v2.7.1] - 2025-10-25
+[v2.7.1]: https://github.com/althonos/pronto/compare/v2.7.0...v2.7.1
+### Changed
+- Relax dependencies to support both `fastobo` versions `v0.13` and `v0.14`.
 
 ## [v2.7.0] - 2025-03-05
 [v2.7.0]: https://github.com/althonos/pronto/compare/v2.6.0...v2.7.0

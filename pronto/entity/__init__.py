@@ -1,7 +1,9 @@
 import datetime
+import dataclasses
 import operator
 import typing
 import weakref
+from dataclasses import dataclass, field
 from typing import AbstractSet, Any, Dict, FrozenSet, Iterable, Iterator, Optional, Set
 
 from ..definition import Definition
@@ -21,34 +23,35 @@ _E = typing.TypeVar("_E", bound="Entity")
 _S = typing.TypeVar("_S", bound="EntitySet")
 
 
+@dataclass(init=True, slots=True, weakref_slot=True)
 class EntityData:
 
     id: str
-    alternate_ids: Set[str]
-    annotations: Set[PropertyValue]
-    anonymous: bool
-    builtin: bool
-    comment: Optional[str]
-    consider: Set[str]
-    created_by: Optional[str]
-    creation_date: Optional[datetime.datetime]
-    disjoint_from: Set[str]
-    definition: Optional[Definition]
-    equivalent_to: Set[str]
-    name: Optional[str]
-    namespace: Optional[str]
-    obsolete: bool
-    relationships: Dict[str, Set[str]]
-    replaced_by: Set[str]
-    subsets: Set[str]
-    synonyms: Set[SynonymData]
-    union_of: Set[str]
-    xrefs: Set[Xref]
+    alternate_ids: Set[str] = field(default_factory=set)
+    annotations: Set[PropertyValue] = field(default_factory=set)
+    anonymous: bool = field(default=False)
+    builtin: bool = field(default=False)
+    comment: Optional[str] = field(default=None)
+    consider: Set[str] = field(default_factory=set)
+    created_by: Optional[str] = field(default=None)
+    creation_date: Optional[datetime.datetime] = field(default=None)
+    disjoint_from: Set[str] = field(default_factory=set)
+    definition: Optional[Definition] = field(default=None)
+    equivalent_to: Set[str] = field(default_factory=set)
+    name: Optional[str] = field(default=None)
+    namespace: Optional[str] = field(default=None)
+    obsolete: bool = field(default=False)
+    relationships: Dict[str, Set[str]] = field(default_factory=dict)
+    replaced_by: Set[str] = field(default_factory=set)
+    subsets: Set[str] = field(default_factory=set)
+    synonyms: Set[SynonymData] = field(default_factory=set)
+    union_of: Set[str] = field(default_factory=set)
+    xrefs: Set[Xref] = field(default_factory=set)
 
     if typing.TYPE_CHECKING:
         __annotations__: Dict[str, str]
 
-    __slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
+    #__slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
 
 
 class Entity(typing.Generic[_D, _S]):

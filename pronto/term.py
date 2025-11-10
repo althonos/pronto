@@ -4,6 +4,7 @@ import itertools
 import operator
 import typing
 import warnings
+from dataclasses import dataclass, field
 from typing import (
     Dict,
     FrozenSet,
@@ -35,78 +36,12 @@ if typing.TYPE_CHECKING:
 __all__ = ["TermData", "Term", "TermSet"]
 
 
+
+@dataclass(init=True, slots=True, weakref_slot=True)
 class TermData(EntityData):  # noqa: R0902, R0903
     """Internal data storage of `Term` information."""
 
-    id: str
-    anonymous: bool
-    name: Optional[str]
-    alternate_ids: Set[str]
-    definition: Optional[Definition]
-    comment: Optional[str]
-    synonyms: Set[SynonymData]
-    subsets: Set[str]
-    namespace: Optional[str]
-    xrefs: Set[Xref]
-    intersection_of: Set[Union[str, Tuple[str, str]]]
-    obsolete: bool
-    builtin: bool
-    created_by: Optional[str]
-    creation_date: Optional[datetime.datetime]
-    annotations: Set[PropertyValue]
-
-    if typing.TYPE_CHECKING:
-        __annotations__: Dict[str, str]
-
-    __slots__ = tuple(__annotations__)  # noqa: E0602
-
-    def __init__(
-        self,
-        id,
-        anonymous=False,
-        name=None,
-        alternate_ids=None,
-        definition=None,
-        comment=None,
-        synonyms=None,
-        subsets=None,
-        namespace=None,
-        xrefs=None,
-        intersection_of=None,
-        union_of=None,
-        disjoint_from=None,
-        relationships=None,
-        obsolete=False,
-        replaced_by=None,
-        consider=None,
-        builtin=False,
-        created_by=None,
-        creation_date=None,
-        equivalent_to=None,
-        annotations=None,
-    ):
-        self.id = id
-        self.anonymous = anonymous
-        self.name = name
-        self.alternate_ids = alternate_ids or set()
-        self.definition = definition
-        self.comment = comment
-        self.synonyms = synonyms or set()
-        self.subsets = subsets or set()
-        self.namespace = namespace or None
-        self.xrefs = xrefs or set()
-        self.intersection_of = intersection_of or set()
-        self.union_of = union_of or set()
-        self.disjoint_from = disjoint_from or set()
-        self.relationships = relationships or dict()
-        self.obsolete = obsolete
-        self.replaced_by = replaced_by or set()
-        self.consider = consider or set()
-        self.builtin = builtin
-        self.created_by = created_by
-        self.creation_date = creation_date
-        self.equivalent_to = equivalent_to or set()
-        self.annotations = annotations or set()
+    intersection_of: Set[Union[str, Tuple[str, str]]] = field(default_factory=set)
 
 
 class TermSet(EntitySet["Term"]):

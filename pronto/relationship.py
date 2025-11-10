@@ -1,6 +1,7 @@
 import datetime
 import operator
 import typing
+from dataclasses import dataclass, field
 from typing import Dict, Iterable, FrozenSet, Optional, Set, Tuple, Iterator
 
 from .definition import Definition
@@ -20,135 +21,30 @@ if typing.TYPE_CHECKING:
 __all__ = ["Relationship", "RelationshipData", "RelationshipSet"]
 
 
+@dataclass(init=True, slots=True, weakref_slot=True)
 class RelationshipData(EntityData):
     """Internal data storage of `Relationship` information."""
 
-    id: str
-    anonymous: bool
-    name: Optional[str]
-    namespace: Optional[str]
-    alternate_ids: Set[str]
-    definition: Optional[Definition]
-    comment: Optional[str]
-    subsets: Set[str]
-    synonyms: Set[SynonymData]
-    xrefs: Set[Xref]
-    annotations: Set[PropertyValue]
-    domain: Optional[str]
-    range: Optional[str]
-    builtin: bool
-    holds_over_chain: Set[Tuple[str, str]]
-    antisymmetric: bool
-    cyclic: bool
-    reflexive: bool
-    asymmetric: bool
-    symmetric: bool
-    transitive: bool
-    functional: bool
-    inverse_functional: bool
-    intersection_of: Set[str]
-    inverse_of: Optional[str]
-    transitive_over: Set[str]
-    equivalent_to_chain: Set[Tuple[str, str]]
-    disjoint_over: Set[str]
-    obsolete: bool
-    created_by: Optional[str]
-    creation_date: Optional[datetime.datetime]
-    expand_assertion_to: Set[Definition]
-    expand_expression_to: Set[Definition]
-    metadata_tag: bool
-    class_level: bool
-
-    if typing.TYPE_CHECKING:
-        __annotations__: Dict[str, str]
-
-    __slots__ = tuple(__annotations__)  # noqa: E0602
-
-    def __init__(
-        self,
-        id: str,
-        anonymous: bool = False,
-        name: Optional[str] = None,
-        namespace: Optional[str] = None,
-        alternate_ids: Optional[Set[str]] = None,
-        definition: Optional[Definition] = None,
-        comment: Optional[str] = None,
-        subsets: Optional[Set[str]] = None,
-        synonyms: Optional[Set[SynonymData]] = None,
-        xrefs: Optional[Set[Xref]] = None,
-        annotations: Optional[Set[PropertyValue]] = None,
-        domain: Optional[str] = None,
-        range: Optional[str] = None,
-        builtin: bool = False,
-        holds_over_chain: Optional[Set[Tuple[str, str]]] = None,
-        antisymmetric: bool = False,
-        cyclic: bool = False,
-        reflexive: bool = False,
-        asymmetric: bool = False,
-        symmetric: bool = False,
-        transitive: bool = False,
-        functional: bool = False,
-        inverse_functional: bool = False,
-        intersection_of: Optional[Set[str]] = None,
-        union_of: Optional[Set[str]] = None,
-        equivalent_to: Optional[Set[str]] = None,
-        disjoint_from: Optional[Set[str]] = None,
-        inverse_of: Optional[str] = None,
-        transitive_over: Optional[Set[str]] = None,
-        equivalent_to_chain: Optional[Set[Tuple[str, str]]] = None,
-        disjoint_over: Optional[Set[str]] = None,
-        relationships: Optional[Dict[str, Set[str]]] = None,
-        obsolete: bool = False,
-        created_by: Optional[str] = None,
-        creation_date: Optional[datetime.datetime] = None,
-        replaced_by: Optional[Set[str]] = None,
-        consider: Optional[Set[str]] = None,
-        expand_assertion_to: Optional[Set[Definition]] = None,
-        expand_expression_to: Optional[Set[Definition]] = None,
-        metadata_tag: bool = False,
-        class_level: bool = False,
-    ):
-        self.id = id
-        self.anonymous = anonymous
-        self.name = name
-        self.namespace = namespace
-        self.alternate_ids = alternate_ids or set()
-        self.definition = definition
-        self.comment = comment
-        self.subsets = subsets or set()
-        self.synonyms = synonyms or set()
-        self.xrefs = xrefs or set()
-        self.annotations = annotations or set()
-        self.domain = domain
-        self.range = range
-        self.builtin = builtin
-        self.holds_over_chain = holds_over_chain or set()
-        self.antisymmetric = antisymmetric
-        self.cyclic = cyclic
-        self.reflexive = reflexive
-        self.asymmetric = asymmetric
-        self.symmetric = symmetric
-        self.transitive = transitive
-        self.functional = functional
-        self.inverse_functional = inverse_functional
-        self.intersection_of = intersection_of or set()
-        self.union_of = union_of or set()
-        self.equivalent_to = equivalent_to or set()
-        self.disjoint_from = disjoint_from or set()
-        self.inverse_of = inverse_of
-        self.transitive_over = transitive_over or set()
-        self.equivalent_to_chain = equivalent_to_chain or set()
-        self.disjoint_over = disjoint_over or set()
-        self.relationships = relationships or dict()
-        self.obsolete = obsolete
-        self.created_by = created_by
-        self.creation_date = creation_date
-        self.replaced_by = replaced_by or set()
-        self.consider = consider or set()
-        self.expand_assertion_to = expand_assertion_to or set()
-        self.expand_expression_to = expand_expression_to or set()
-        self.metadata_tag = metadata_tag
-        self.class_level = class_level
+    domain: Optional[str] = field(default=None)
+    range: Optional[str] = field(default=None)
+    holds_over_chain: Set[Tuple[str, str]] = field(default_factory=set)
+    antisymmetric: bool = field(default=False)
+    cyclic: bool = field(default=False)
+    reflexive: bool = field(default=False)
+    asymmetric: bool = field(default=False)
+    symmetric: bool = field(default=False)
+    transitive: bool = field(default=False)
+    functional: bool = field(default=False)
+    inverse_functional: bool = field(default=False)
+    intersection_of: Set[str] = field(default_factory=set)
+    inverse_of: Optional[str] = field(default=None)
+    transitive_over: Set[str] = field(default_factory=set)
+    equivalent_to_chain: Set[Tuple[str, str]] = field(default_factory=set)
+    disjoint_over: Set[str] = field(default_factory=set)
+    expand_assertion_to: Set[Definition] = field(default_factory=set)
+    expand_expression_to: Set[Definition] = field(default_factory=set)
+    metadata_tag: bool = field(default=False)
+    class_level: bool = field(default=False)
 
 
 class RelationshipSet(EntitySet["Relationship"]):

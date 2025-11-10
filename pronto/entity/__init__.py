@@ -3,13 +3,13 @@ import dataclasses
 import operator
 import typing
 import weakref
-from dataclasses import dataclass, field
+from dataclasses import field
 from typing import AbstractSet, Any, Dict, FrozenSet, Iterable, Iterator, Optional, Set
 
 from ..definition import Definition
 from ..pv import PropertyValue
 from ..synonym import Synonym, SynonymData, SynonymType
-from ..utils.meta import roundrepr, typechecked
+from ..utils.meta import dataclass, roundrepr, typechecked
 from ..xref import Xref
 
 if typing.TYPE_CHECKING:
@@ -50,8 +50,6 @@ class EntityData:
 
     if typing.TYPE_CHECKING:
         __annotations__: Dict[str, str]
-
-    #__slots__ = ("__weakref__",) + tuple(__annotations__)  # noqa: E0602
 
 
 class Entity(typing.Generic[_D, _S]):

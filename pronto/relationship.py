@@ -1,7 +1,7 @@
 import datetime
 import operator
 import typing
-from dataclasses import dataclass, field
+from dataclasses import field
 from typing import Dict, Iterable, FrozenSet, Optional, Set, Tuple, Iterator
 
 from .definition import Definition
@@ -10,7 +10,7 @@ from .logic import SubpropertiesIterator, SuperpropertiesIterator
 from .logic.lineage import SubpropertiesHandler, SuperpropertiesHandler
 from .pv import PropertyValue
 from .synonym import SynonymData
-from .utils.meta import typechecked
+from .utils.meta import typechecked, dataclass
 from .xref import Xref
 
 if typing.TYPE_CHECKING:

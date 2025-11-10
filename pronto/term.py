@@ -4,7 +4,7 @@ import itertools
 import operator
 import typing
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import field
 from typing import (
     Dict,
     FrozenSet,
@@ -25,7 +25,7 @@ from .logic.lineage import SubclassesHandler, SuperclassesHandler
 from .pv import PropertyValue
 from .relationship import Relationship
 from .synonym import SynonymData
-from .utils.meta import typechecked
+from .utils.meta import dataclass, typechecked
 from .utils.warnings import NotImplementedWarning
 from .xref import Xref
 

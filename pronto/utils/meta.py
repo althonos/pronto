@@ -5,10 +5,18 @@ import inspect
 import itertools
 import sys
 import typing
+from dataclasses import dataclass as _dataclass
 from typing import Callable, Iterator, List, Tuple, Type
 
 T = typing.TypeVar("T")
 F = typing.TypeVar("F", bound=Callable[..., object])
+
+
+def dataclass(init: bool = True, slots: bool = False, weakref_slot: bool = False):
+    if sys.version_info >= (3, 11):
+        return _dataclass(init=init, slots=slots, weakref_slot=weakref_slot)
+    else:
+        return _dataclass(init=init)
 
 
 class typechecked(object):

@@ -101,13 +101,13 @@ class TestOntologyLineage(unittest.TestCase):
         self.assertEqual(ont._relationships.lineage, {r1.id: Lineage(), r2.id: Lineage()})
 
 
-class TestPickling(object):
+class TestPickling(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         warnings.simplefilter('error')
         warnings.simplefilter('ignore', category=UnicodeWarning)
         with open(os.path.join(DATADIR, "ms.obo"), "rb") as f:
-            cls.ms = pronto.Ontology(cls.file)
+            cls.ms = pronto.Ontology(f)
 
     @classmethod
     def tearDownClass(cls):
@@ -142,13 +142,10 @@ class TestPickling(object):
     def _test_file_pickling(self, protocol):
         pickled = pickle.dumps(self.ms, protocol=protocol)
         unpickled = pickle.loads(pickled)
-        self.assertEqual(self.ms.keys(), unpickled.keys())
-        for key in self.ms.keys():
-            term_ms, term_pickled = self.ms[key]._data(), unpickled[key]._data()
-            for attr in term_ms.__annotations__:
-                attr_ms = getattr(term_ms, attr)
-                attr_pickled = getattr(term_pickled, attr)
-                self.assertEqual(attr_ms, attr_pickled)
+        self.assertEqual(list(self.ms.keys()), list(unpickled.keys()))
+        for key in self.ms.terms():
+            term_ms, term_pickled = self.ms.get_term(key.id)._data(), unpickled.get_term(key.id)._data()
+            self.assertEqual(term_ms, term_pickled)
 
     def test_file_pickling_3(self):
         self._test_file_pickling(3)

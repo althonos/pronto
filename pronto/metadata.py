@@ -1,17 +1,18 @@
 import datetime
 import functools
 import typing
+from dataclasses import field, astuple
 from typing import Dict, List, Optional, Set, Tuple
 
 from .pv import PropertyValue
 from .synonym import SynonymType
-from .utils.meta import roundrepr, typechecked
+from .utils.meta import dataclass, roundrepr, typechecked
 
 __all__ = ["Subset", "Metadata"]
 
 
-@roundrepr
 @functools.total_ordering
+@dataclass(init=True, slots=True, weakref_slot=True)
 class Subset(object):
     """A definition of a subset in an ontology.
 
@@ -22,10 +23,8 @@ class Subset(object):
 
     """
 
-    name: str
-    description: str
-
-    __slots__ = ("__weakref__", "name", "description")
+    name: str = field()
+    description: str = field()
 
     if typing.TYPE_CHECKING:
         __annotations__: Dict[str, str]
@@ -50,6 +49,7 @@ class Subset(object):
         return hash((Subset, self.name))
 
 
+@dataclass(init=True, slots=True, weakref_slot=True)
 class Metadata(object):
     """A mapping containing metadata about the current ontology.
 
@@ -97,64 +97,23 @@ class Metadata(object):
 
     """
 
-    format_version: Optional[str]
-    data_version: Optional[str]
-    ontology: Optional[str]
-    date: Optional[datetime.datetime]
-    default_namespace: Optional[str]
-    namespace_id_rule: Optional[str]
-    owl_axioms: List[str]
-    saved_by: Optional[str]
-    auto_generated_by: Optional[str]
-    subsetdefs: Set[Subset]
-    imports: Set[str]
-    synonymtypedefs: Set[SynonymType]
-    idspaces: Dict[str, Tuple[str, Optional[str]]]  # FIXME: better typing?
-    remarks: Set[str]
-    annotations: Set[PropertyValue]
-    unreserved: Dict[str, Set[str]]
-
-    if typing.TYPE_CHECKING:
-        __annotations__: Dict[str, str]
-
-    def __init__(
-        self,
-        format_version: Optional[str] = "1.4",
-        data_version: Optional[str] = None,
-        ontology: Optional[str] = None,
-        date: Optional[datetime.datetime] = None,
-        default_namespace: Optional[str] = None,
-        namespace_id_rule: Optional[str] = None,
-        owl_axioms: Optional[List[str]] = None,
-        saved_by: Optional[str] = None,
-        auto_generated_by: Optional[str] = None,
-        subsetdefs: Set[Subset] = None,
-        imports: Optional[Dict[str, str]] = None,
-        synonymtypedefs: Set[SynonymType] = None,
-        idspaces: Dict[str, Tuple[str, Optional[str]]] = None,
-        remarks: Set[str] = None,
-        annotations: Set[PropertyValue] = None,
-        **unreserved: Set[str],
-    ):
-        self.format_version = format_version
-        self.data_version = data_version
-        self.ontology = ontology
-        self.date = date
-        self.default_namespace = default_namespace
-        self.namespace_id_rule = namespace_id_rule
-        self.owl_axioms = owl_axioms or list()
-        self.saved_by = saved_by
-        self.auto_generated_by = auto_generated_by
-        self.subsetdefs = set(subsetdefs) if subsetdefs is not None else set()
-        self.imports = set(imports) if imports is not None else set()
-        self.synonymtypedefs = (
-            set(synonymtypedefs) if synonymtypedefs is not None else set()
-        )
-        self.idspaces = idspaces or dict()
-        self.remarks = remarks or set()
-        self.annotations = annotations or set()
-        self.unreserved = unreserved
+    format_version: Optional[str] = field(default="1.4")
+    data_version: Optional[str] = field(default=None)
+    ontology: Optional[str] = field(default=None)
+    date: Optional[datetime.datetime] = field(default=None)
+    default_namespace: Optional[str] = field(default=None)
+    namespace_id_rule: Optional[str] = field(default=None)
+    owl_axioms: List[str] = field(default_factory=list)
+    saved_by: Optional[str] = field(default=None)
+    auto_generated_by: Optional[str] = field(default=None)
+    subsetdefs: Set[Subset] = field(default_factory=set)
+    imports: Set[str] = field(default_factory=set)
+    synonymtypedefs: Set[SynonymType] = field(default_factory=set)
+    idspaces: Dict[str, Tuple[str, Optional[str]]] = field(default_factory=dict) # FIXME: better typing?
+    remarks: Set[str] = field(default_factory=set)
+    annotations: Set[PropertyValue] = field(default_factory=set)
+    unreserved: Dict[str, Set[str]] = field(default_factory=dict)
 
     def __bool__(self) -> bool:
         """Return `False` if the instance does not contain any metadata."""
-        return any(bool(getattr(self, x)) for x in self.__annotations__)
+        return any(map(bool, astuple(self)))

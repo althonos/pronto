@@ -5,7 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.7.1...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.7.2...HEAD
+
+## [v2.7.2] - 2025-11-10
+[v2.7.2]: https://github.com/althonos/pronto/compare/v2.7.1...v2.7.2
+### Changed
+- Use `dataclasses` to derive code for `EntityData` classes.
+### Fixed
+- Remove all direct access to `__annotations__` in the data model ([#245](https://github.com/althonos/pronto/issues/245)).
+- Enable testing with Python 3.14 in GitHub Actions.
 
 ## [v2.7.1] - 2025-10-25
 [v2.7.1]: https://github.com/althonos/pronto/compare/v2.7.0...v2.7.1

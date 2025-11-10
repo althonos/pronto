@@ -2,6 +2,7 @@ import itertools
 import os
 import unittest
 import warnings
+import dataclasses
 
 import pronto
 from pronto.term import Term, TermData, TermSet
@@ -54,8 +55,8 @@ class TestTerm(unittest.TestCase):
             s = term.add_synonym('instrument type', type=st)
 
     def test_properties(self):
-        for t in TermData.__slots__:
-            self.assertTrue(hasattr(Term, t), f"no property for {t}")
+        for field in dataclasses.fields(TermData):
+            self.assertTrue(hasattr(Term, field.name), f"no property for {field.name}")
 
     def test_subclasses(self):
         term = self.ms["MS:1003025"]

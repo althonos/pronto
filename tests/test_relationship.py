@@ -2,6 +2,7 @@ import itertools
 import os
 import unittest
 import warnings
+import dataclasses
 
 import pronto
 from pronto.relationship import Relationship, RelationshipData
@@ -22,8 +23,8 @@ class TestRelationship(unittest.TestCase):
     def test_properties(self):
         """Assert the data stored in data layer can be accessed in the view.
         """
-        for r in RelationshipData.__slots__:
-            self.assertTrue(hasattr(Relationship, r), f"no property for {r}")
+        for field in dataclasses.fields(RelationshipData):
+            self.assertTrue(hasattr(Relationship, field.name), f"no property for {field.name}")
 
     def test_superproperties(self):
         ont = pronto.Ontology()

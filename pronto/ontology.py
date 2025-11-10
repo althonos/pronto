@@ -158,6 +158,7 @@ class Ontology(Mapping[str, Union[Term, Relationship]]):
     import_depth: int
     timeout: int
     imports: Dict[str, "Ontology"]
+    metadata: Metadata
     path: Optional[str]
     handle: Optional[BinaryIO]
 

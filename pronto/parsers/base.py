@@ -85,7 +85,10 @@ class BaseParser(abc.ABC):
                 graphdata.lineage.setdefault(entity.id, Lineage())
             for subentity, lineage in graphdata.lineage.items():
                 for superentity in lineage.sup:
-                    graphdata.lineage[superentity].sub.add(subentity)
+                    if superentity in graphdata.lineage:
+                        graphdata.lineage[superentity].sub.add(subentity)
+                    else:
+                        print(f"Warning: {superentity} not found in lineage.")
 
     def import_lineage(self):
         for getter in self._entities.values():

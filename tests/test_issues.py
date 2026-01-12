@@ -151,3 +151,24 @@ class TestIssues(unittest.TestCase):
         r1 = ont.create_relationship("r1")
         r1.class_level = True
         ont.dumps()
+
+    def test_is_a_relationship(self):
+        """Assert parsing a relationship named `is_a` does not crash.
+
+        See `#246 <https://github.com/althonos/pronto/issues/246>`_.
+        """
+
+        DATA = textwrap.dedent(
+            """
+            format-version: 1.4
+
+            [Typedef]
+            id: is_a
+            name: is_a
+            xref: RO:is_a
+            """
+        )
+        buffer = io.BytesIO(DATA.encode())
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            ont = pronto.Ontology(buffer)

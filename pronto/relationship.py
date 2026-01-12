@@ -384,8 +384,6 @@ _BUILTINS = {
         id="is_a",
         anonymous=False,
         name="is a",
-        namespace=None,
-        alternate_ids=None,
         definition=Definition(
             "A subclassing relationship between one term and another",
             xrefs=set(
@@ -396,15 +394,7 @@ _BUILTINS = {
                 }
             ),
         ),
-        comment=None,
-        subsets=None,
-        synonyms=None,
-        xrefs=None,
-        annotations=None,
-        domain=None,
-        range=None,
         builtin=True,
-        holds_over_chain=None,
         antisymmetric=True,
         cyclic=True,
         reflexive=True,
@@ -413,23 +403,5 @@ _BUILTINS = {
         transitive=True,
         functional=False,
         inverse_functional=False,
-        intersection_of=None,
-        union_of=None,
-        equivalent_to=None,
-        disjoint_from=None,
-        inverse_of=None,
-        transitive_over=None,
-        equivalent_to_chain=None,
-        disjoint_over=None,
-        relationships=None,
-        obsolete=False,
-        created_by=None,
-        creation_date=None,
-        replaced_by=None,
-        consider=None,
-        expand_assertion_to=None,  # TODO
-        expand_expression_to=None,  # TODO
-        metadata_tag=False,
-        class_level=True,
     )
 }

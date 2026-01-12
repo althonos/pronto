@@ -5,7 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.7.2...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.7.3...HEAD
+
+## [v2.7.3] - 2026-01-12
+[v2.7.3]: https://github.com/althonos/pronto/compare/v2.7.2...v2.7.3
+### Fixed
+- Broken parsing of OBO files containing explicit `is_a` typedefs ([#246](https://github.com/althonos/pronto/issues/246)).
 
 ## [v2.7.2] - 2025-11-10
 [v2.7.2]: https://github.com/althonos/pronto/compare/v2.7.1...v2.7.2

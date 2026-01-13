@@ -6,7 +6,7 @@
 
 *A Python frontend to ontologies.*
 
-|Actions| |License| |Source| |Docs| |Coverage| |Sanity| |PyPI| |Bioconda| |Versions| |Wheel| |Changelog| |Issues| |DOI| |Downloads|
+|Actions| |License| |Source| |Docs| |Coverage| |Sanity| |PyPI| |Conda| |Versions| |Wheel| |Changelog| |Issues| |DOI| |Downloads|
 
 .. |Actions| image:: https://img.shields.io/github/actions/workflow/status/althonos/pronto/test.yml?branch=master&style=flat-square&maxAge=300
    :target: https://github.com/althonos/pronto/actions
@@ -29,8 +29,8 @@
 .. |PyPI| image:: https://img.shields.io/pypi/v/pronto.svg?style=flat-square&maxAge=3600
    :target: https://pypi.python.org/pypi/pronto
 
-.. |Bioconda| image:: https://img.shields.io/conda/vn/bioconda/pronto?style=flat-square&maxAge=3600
-   :target: https://anaconda.org/bioconda/pronto
+.. |Conda| image:: https://img.shields.io/conda/vn/conda-forge/pronto?style=flat-square&maxAge=3600
+   :target: https://anaconda.org/conda-forge/pronto
 
 .. |Versions| image:: https://img.shields.io/pypi/pyversions/pronto.svg?style=flat-square&maxAge=3600
    :target: https://pypi.org/project/pronto/#files

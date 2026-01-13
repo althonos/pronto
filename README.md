@@ -9,7 +9,7 @@
 [![Coverage](https://img.shields.io/codecov/c/gh/althonos/pronto?style=flat-square&maxAge=3600)](https://codecov.io/gh/althonos/pronto/)
 [![Sanity](https://img.shields.io/codacy/grade/157b5fd24e5648ea80580f28399e79a4.svg?style=flat-square&maxAge=3600)](https://codacy.com/app/althonos/pronto)
 [![PyPI](https://img.shields.io/pypi/v/pronto.svg?style=flat-square&maxAge=3600)](https://pypi.python.org/pypi/pronto)
-[![Bioconda](https://img.shields.io/conda/vn/bioconda/pronto?style=flat-square&maxAge=3600)](https://anaconda.org/bioconda/pronto)
+[![Conda](https://img.shields.io/conda/vn/conda-forge/pronto?style=flat-square&maxAge=3600)](https://anaconda.org/conda-forge/pronto)
 [![Versions](https://img.shields.io/pypi/pyversions/pronto.svg?style=flat-square&maxAge=3600)](https://pypi.org/project/pronto/#files)
 [![Wheel](https://img.shields.io/pypi/wheel/pronto?style=flat-square&maxAge=3600)](https://pypi.org/project/pronto/#files)
 [![Changelog](https://img.shields.io/badge/keep%20a-changelog-8A0707.svg?maxAge=2678400&style=flat-square)](https://github.com/althonos/pronto/blob/master/CHANGELOG.md)

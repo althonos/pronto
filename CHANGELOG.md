@@ -5,7 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[Unreleased]: https://github.com/althonos/pronto/compare/v2.7.3...HEAD
+[Unreleased]: https://github.com/althonos/pronto/compare/v2.7.4...HEAD
+
+## [v2.7.4] - 2026-10-19
+[v2.7.4]: https://github.com/althonos/pronto/compare/v2.7.3...v2.7.4
+### Fixed
+- Relax `chardet` dependency to support later versions ([#248](https://github.com/althonos/pronto/pull/248), by [@kevinschaper](https://github.com/kevinschaper))
 
 ## [v2.7.3] - 2026-01-12
 [v2.7.3]: https://github.com/althonos/pronto/compare/v2.7.2...v2.7.3

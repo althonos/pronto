@@ -4,7 +4,7 @@ recommonmark ~=0.7
 pygments-style-monokailight ~=0.4
 ipython ~=7.19
 pygments ~=2.4
-nbsphinx ~=0.8
+nbsphinx ~=0.9
 sphinxcontrib-jquery ~=4.1
 sphinx-design
 pydata-sphinx-theme

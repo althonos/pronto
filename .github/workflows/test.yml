@@ -10,7 +10,7 @@ on:
 jobs:
   test_linux:
     name: Test (Linux)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       OS: Linux
     strategy:

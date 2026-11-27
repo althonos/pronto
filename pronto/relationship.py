@@ -292,7 +292,7 @@ class Relationship(Entity["RelationshipData", "RelationshipSet"]):
         ont: "Ontology" = self._ontology()
         data: "RelationshipData" = self._data()
         return frozenset(
-            tuple(map(ont.get_term, chain))
+            tuple(map(ont.get_relationship, chain))
             for chain in data.holds_over_chain
         )
 
